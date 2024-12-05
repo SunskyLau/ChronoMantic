@@ -1,0 +1,16 @@
+#AppTitle {
+  /* ChronoMantic */
+  position: absolute;
+  width: 431px;
+  height: 49px;
+  left: calc(50% - 431px / 2 + 0.5px);
+  top: 50px;
+  font-family: "Arial";
+  font-style: normal;
+  font-weight: 700;
+  font-size: 48px;
+  line-height: 55px;
+  align-items: center;
+  text-align: center;
+  color: #619cd3;
+}

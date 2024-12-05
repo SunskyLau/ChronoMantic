@@ -324,11 +324,12 @@ def plot_segments(x: np.ndarray, y: np.ndarray, split_points: List[int]):
 
 if __name__ == "__main__":
     csv_path = "../portfolio_data.csv"
-    df = pd.read_csv(csv_path)["AMZN"][0:1000]
+    df = pd.read_csv(csv_path)["AMZN"][0:200]
     x = np.arange(len(df))
     y = df.values
+
     # 寻找最优分割
-    k = 3
+    k = 5
     split_points = generate_segments(x, y, k)
     print(f"Split points (indices): {split_points}")
     print(f"Split points (x values): {[f'{xi:.2f}' for xi in x[split_points]]}")

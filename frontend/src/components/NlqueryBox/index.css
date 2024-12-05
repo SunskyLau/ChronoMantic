@@ -1,0 +1,60 @@
+.nl-query-form {
+  position: absolute;
+  width: var(--boxWidth);
+  height: 44px;
+  left: calc(50% - var(--boxWidth) / 2);
+  top: 120px;
+  border: 1px solid #e0e0e0;
+  border-radius: 16px;
+}
+
+.query-icon {
+  position: absolute;
+  left: 10px;
+  top: 10px;
+  width: 24px;
+  height: 24px;
+}
+
+.send {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 32px;
+  height: 32px;
+  background-color: unset;
+  border: none;
+  padding: 0;
+}
+
+.send:disabled circle {
+  fill: #ccc;
+}
+
+input, .nl-query {
+  position: absolute;
+  left: 45px;
+  right: 50px;
+  top: 20%;
+  bottom: 20%;
+  font-family: "Arial";
+  font-style: normal;
+  font-weight: 400;
+  font-size: 20px;
+  line-height: 30px;
+  display: flex;
+  align-items: center;
+  border: none;
+  outline: none;
+  resize: none;
+  color: #000000;
+}
+
+.nl-query {
+  margin: 0;
+}
+
+b {
+  font-weight: normal;
+}
