@@ -1,61 +1,8 @@
 from typing import List, Tuple
 import numpy as np
 import pandas as pd
-from .MyTypes import QuerySpec
-from .scoring_functions import calculate_residual, scoring_r2
-
-
-def generate_best_segments(x: np.ndarray, y: np.ndarray, k: int) -> List[int]:
-    """
-    使用动态规划找到最优的k段分割，分割点表示每段的最后一个点
-
-    Parameters:
-    -----------
-    x: np.ndarray, 时间序列的x值
-    y: np.ndarray, 时间序列的y值
-    k: int, 目标段数
-
-    d[i][j]:前0~i序列分成j段的最优得分
-
-    Returns:
-    --------
-    List[int]: 分割点的索引列表，表示每段的最后一个点
-    """
-    n = len(x)
-
-    def segment_residual(start: int, end: int) -> float:
-        """计算某一段的R²分数"""
-        if end - start < 1:  # 至少需要2个点才能计算R²
-            return 0.0
-        return calculate_residual(x[start : end + 1], y[start : end + 1])
-
-    # dp[i][j]: 前0~i个点分成j段的最优得分
-    dp = np.zeros((n + 1, k + 1)) + np.inf
-    # prev[i][j]: 前0~i个点分成j段时，最后一段的起始位置
-    prev = np.zeros((n + 1, k + 1), dtype=int)
-
-    # 初始化：只有一段的情况
-    dp[0][0] = 0
-    for i in range(1, n):
-        dp[i][1] = segment_residual(0, i)
-
-    # 动态规划填表
-    for j in range(2, k + 1):  # 段数: 2~k
-        for i in range(j, n + 1):  # 当前位置: j~n
-            for t in range(j - 1, i):  # 上一段的结束位置: j-1~i-1
-                residual = dp[t][j - 1] + segment_residual(t, i)
-                if residual < dp[i][j]:
-                    dp[i][j] = residual
-                    prev[i][j] = t
-
-    # 回溯找到分割点（每段的最后一个点）
-    segments = []
-    pos = n - 1  # 从最后一个点开始
-    for j in range(k, 1, -1):  # 段数从后往前遍历
-        segments.append(prev[pos][j])
-        pos = prev[pos][j]  # 更新位置
-
-    return sorted(segments)
+from app.query.MyTypes import Fragment, QuerySpec, Segment, TrendConfig
+from app.model import get_best_segments
 
 
 def query_by_real_world_frequence(unit: str, num: int) -> List[int]:
@@ -80,7 +27,7 @@ def query_by_setting_sliding_window(window_size: int, step_size: int) -> List[in
     pass
 
 
-def generate_tobecalculated_fragments(querySpec: QuerySpec, time_stamps: List[str], values: np.ndarray) -> List[Tuple[int, int]]:
+def get_tobecalculated_fragments(querySpec: QuerySpec, time_stamps: List[str], values: np.ndarray) -> List[Tuple[int, int]]:
     """
     根据时间粒度生成待计算的片段
 
@@ -199,3 +146,74 @@ def generate_tobecalculated_fragments(querySpec: QuerySpec, time_stamps: List[st
         raise ValueError(f"Invalid time_granularity: {time_granularity}")
 
     return fragments
+
+
+def generate_fragments(x: np.ndarray, y: np.ndarray, querySpec: QuerySpec) -> list[Fragment]:
+    frament_index_array = get_tobecalculated_fragments(querySpec, x, y)
+    fragments = []
+    segments_length = len(querySpec.trends)
+    for start_idx, end_idx in frament_index_array:
+        time_stamp = x[start_idx : end_idx + 1]
+        values = y[start_idx : end_idx + 1]
+        segment_index_array = get_best_segments(time_stamp, values, segments_length)
+        segments = []
+        old_end = start_idx
+        for id, segment_index in enumerate(segment_index_array):
+            segment_start_idx = old_end
+            segment_end_idx = start_idx + segment_index
+            if id == len(segment_index_array) - 1:
+                segment_end_idx = end_idx
+
+            # 计算斜率
+            dy = y[segment_end_idx] - y[segment_start_idx]
+            dx = x[segment_end_idx] - x[segment_start_idx]
+            slope = dy / dx
+
+            segment = Segment(start_idx=segment_start_idx, end_idx=segment_end_idx, slope=slope, theta=None, trend=None, extent=None)
+            segments.append(segment)
+            old_end = segment_end_idx
+        fragment = Fragment(column_name=querySpec.column_name, start_idx=start_idx, end_idx=end_idx, segments=segments)
+        fragments.append(fragment)
+    return fragments
+
+
+def calculate_segment_theta(segment: Segment, ratio: float) -> float:
+    visual_slope = np.tan(segment.slope) / ratio
+    return np.arctan(visual_slope)
+
+
+def calculate_fragment_theta(fragment: Fragment, ratio: float) -> Fragment:
+    for segment in fragment.segments:
+        segment.theta = calculate_segment_theta(segment, ratio)
+    return fragment
+
+
+def determine_trends(fragment: Fragment, trendConfig: TrendConfig) -> Fragment:
+    for segment in fragment.segments:
+        if segment.slope == 0:
+            segment.trend = "flat"
+        elif segment.slope > 0:
+            if segment.theta <= trendConfig.flat_threshold:
+                segment.trend = "flat"
+            elif segment.theta <= trendConfig.weak_threshold:
+                segment.trend = "up"
+                segment.extent = "weak"
+            elif segment.theta <= trendConfig.strong_threshold:
+                segment.trend = "up"
+                segment.extent = "moderate"
+            else:
+                segment.trend = "up"
+                segment.extent = "strong"
+        else:
+            if segment.theta >= -trendConfig.flat_threshold:
+                segment.trend = "flat"
+            elif segment.theta >= -trendConfig.weak_threshold:
+                segment.trend = "down"
+                segment.extent = "weak"
+            elif segment.theta >= -trendConfig.strong_threshold:
+                segment.trend = "down"
+                segment.extent = "moderate"
+            else:
+                segment.trend = "down"
+                segment.extent = "strong"
+    return fragment

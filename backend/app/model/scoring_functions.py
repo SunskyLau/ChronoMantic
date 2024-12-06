@@ -5,7 +5,25 @@
 import numpy as np
 
 
-def calculate_residual(x: np.ndarray, y: np.ndarray) -> float:
+def calculate_residual_by_linkPoints(x: np.ndarray, y: np.ndarray) -> float:
+    """
+    计算残差
+    """
+    dy = y[-1] - y[0]
+    dx = x[-1] - x[0]
+    k = dy / dx
+    b = y[0] - k * x[0]
+
+    # 计算拟合值
+    y_fit = k * x + b
+
+    # 计算残差
+    residual = np.sum(np.abs(y - y_fit))
+
+    return residual
+
+
+def calculate_residual_by_fit(x: np.ndarray, y: np.ndarray) -> float:
     """
     计算残差
     """
