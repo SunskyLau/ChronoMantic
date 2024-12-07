@@ -1,68 +1,53 @@
 from typing import List, Tuple
 import numpy as np
 import pandas as pd
-from app.query.MyTypes import Fragment, QuerySpec, Segment, TrendConfig
+from app.query.MyTypes import Fragment, FragmentList, QuerySpec, Segment, TrendConfig
 from app.model import get_best_segments
+from app.config import Config
 
 
-def query_by_real_world_frequence(unit: str, num: int) -> List[int]:
-    """
-    以真实世界的频率查询数据
-    例如：查询每周的情况，unit='week', num=1
-          每月的情况，unit='month', num=1
-          每季度的情况，unit='quarter', num=1
-          每年的情况，unit='year', num=1
-          每小时的情况，unit='hour', num=1
-          等等...
-    """
-    pass
-
-
-def query_by_setting_sliding_window(window_size: int, step_size: int) -> List[int]:
-    """
-    以设置的滑动窗口查询数据
-    window_size: 窗口大小
-    step_size: 步长
-    """
-    pass
-
-
-def get_tobecalculated_fragments(querySpec: QuerySpec, time_stamps: List[str], values: np.ndarray) -> List[Tuple[int, int]]:
+def generate_fragments_by_time_granularity(
+    time_granularity: str, csv_name: str, time_column_name: str, value_column_name: str, start_time: float | None = None, end_time: float | None = None
+) -> FragmentList:
     """
     根据时间粒度生成待计算的片段
 
     Parameters:
     -----------
-    querySpec: QuerySpec
-        查询规范，包含时间粒度等信息
     time_stamps: List[str]
         时间戳列表
-    values: np.ndarray
-        对应的数值数组
+    time_granularity: str
+        时间粒度
+    start_time: float | None
+        起始时间
+    end_time: float | None
+        结束时间
 
     Returns:
     --------
     List[Tuple[int, int]]:
         片段的起止索引列表，每个元素为 (start_idx, end_idx)
     """
+    df = pd.read_csv(Config.UPLOAD_FOLDER + csv_name)
     # 将时间戳转换为datetime对象
+    time_stamps = df[time_column_name]
     dates = pd.to_datetime(time_stamps)
 
     # 根据时间范围过滤
     mask = np.ones(len(dates), dtype=bool)
-    if querySpec.start_time:
-        mask &= dates >= querySpec.start_time
-    if querySpec.end_time:
-        mask &= dates <= querySpec.end_time
+    if start_time:
+        mask &= dates >= start_time
+    if end_time:
+        mask &= dates <= end_time
 
     dates = dates[mask]
     valid_indices = np.where(mask)[0]
 
-    fragments = []
-    time_granularity = querySpec.time_granularity
+    fragment_list = FragmentList(csv_name=csv_name, value_column_name=value_column_name, time_column_name=time_column_name, fragments=[])
+    time_granularity = time_granularity
 
     if len(dates) == 0:
-        return fragments
+        return fragment_list
 
     if time_granularity == "day":
         # 按天分割，每天的数据作为一个片段
@@ -71,12 +56,14 @@ def get_tobecalculated_fragments(querySpec: QuerySpec, time_stamps: List[str], v
 
         for i, date in enumerate(dates[1:], 1):
             if date.date() != current_day:
-                fragments.append((start_idx, valid_indices[i - 1]))
+                # fragment_list.fragments.append((start_idx, valid_indices[i - 1]))
+                fragment_list.fragments.append(Fragment(start_idx=start_idx, end_idx=valid_indices[i - 1], segments=[]))
                 start_idx = valid_indices[i]
                 current_day = date.date()
 
         # 添加最后一个片段
-        fragments.append((start_idx, valid_indices[-1]))
+        # fragment_list.fragments.append((start_idx, valid_indices[-1]))
+        fragment_list.fragments.append(Fragment(start_idx=start_idx, end_idx=valid_indices[-1], segments=[]))
 
     elif time_granularity == "week":
         # 按周分割，使用ISO周
@@ -89,12 +76,14 @@ def get_tobecalculated_fragments(querySpec: QuerySpec, time_stamps: List[str], v
             year = date.isocalendar()[0]
 
             if week != current_week or year != current_year:
-                fragments.append((start_idx, valid_indices[i - 1]))
+                # fragment_list.fragments.append((start_idx, valid_indices[i - 1]))
+                fragment_list.fragments.append(Fragment(start_idx=start_idx, end_idx=valid_indices[i - 1], segments=[]))
                 start_idx = valid_indices[i]
                 current_week = week
                 current_year = year
 
-        fragments.append((start_idx, valid_indices[-1]))
+        # fragment_list.fragments.append((start_idx, valid_indices[-1]))
+        fragment_list.fragments.append(Fragment(start_idx=start_idx, end_idx=valid_indices[-1], segments=[]))
 
     elif time_granularity == "month":
         # 按月分割
@@ -104,12 +93,14 @@ def get_tobecalculated_fragments(querySpec: QuerySpec, time_stamps: List[str], v
 
         for i, date in enumerate(dates[1:], 1):
             if date.month != current_month or date.year != current_year:
-                fragments.append((start_idx, valid_indices[i - 1]))
+                # fragment_list.fragments.append((start_idx, valid_indices[i - 1]))
+                fragment_list.fragments.append(Fragment(start_idx=start_idx, end_idx=valid_indices[i - 1], segments=[]))
                 start_idx = valid_indices[i]
                 current_month = date.month
                 current_year = date.year
 
-        fragments.append((start_idx, valid_indices[-1]))
+        # fragment_list.fragments.append((start_idx, valid_indices[-1]))
+        fragment_list.fragments.append(Fragment(start_idx=start_idx, end_idx=valid_indices[-1], segments=[]))
 
     elif time_granularity == "quarter":
         # 按季度分割
@@ -122,12 +113,14 @@ def get_tobecalculated_fragments(querySpec: QuerySpec, time_stamps: List[str], v
             year = date.year
 
             if quarter != current_quarter or year != current_year:
-                fragments.append((start_idx, valid_indices[i - 1]))
+                # fragment_list.fragments.append((start_idx, valid_indices[i - 1]))
+                fragment_list.fragments.append(Fragment(start_idx=start_idx, end_idx=valid_indices[i - 1], segments=[]))
                 start_idx = valid_indices[i]
                 current_quarter = quarter
                 current_year = year
 
-        fragments.append((start_idx, valid_indices[-1]))
+        # fragment_list.fragments.append((start_idx, valid_indices[-1]))
+        fragment_list.fragments.append(Fragment(start_idx=start_idx, end_idx=valid_indices[-1], segments=[]))
 
     elif time_granularity == "year":
         # 按年分割
@@ -136,23 +129,34 @@ def get_tobecalculated_fragments(querySpec: QuerySpec, time_stamps: List[str], v
 
         for i, date in enumerate(dates[1:], 1):
             if date.year != current_year:
-                fragments.append((start_idx, valid_indices[i - 1]))
+                # fragment_list.fragments.append((start_idx, valid_indices[i - 1]))
+                fragment_list.fragments.append(Fragment(start_idx=start_idx, end_idx=valid_indices[i - 1], segments=[]))
+
                 start_idx = valid_indices[i]
                 current_year = date.year
 
-        fragments.append((start_idx, valid_indices[-1]))
+        # fragment_list.fragments.append((start_idx, valid_indices[-1]))
+        fragment_list.fragments.append(Fragment(start_idx=start_idx, end_idx=valid_indices[-1], segments=[]))
 
     else:
         raise ValueError(f"Invalid time_granularity: {time_granularity}")
 
-    return fragments
+    return fragment_list
 
 
-def generate_fragments(x: np.ndarray, y: np.ndarray, querySpec: QuerySpec) -> list[Fragment]:
-    frament_index_array = get_tobecalculated_fragments(querySpec, x, y)
-    fragments = []
+def generate_fragments_by_query(fragment_list: FragmentList, querySpec: QuerySpec) -> FragmentList:
+    csv_name = fragment_list.csv_name
+    value_column_name = fragment_list.value_column_name
+    time_column_name = fragment_list.time_column_name
+    result_fragment_list = FragmentList(csv_name=csv_name, value_column_name=value_column_name, time_column_name=time_column_name, fragments=[])
     segments_length = len(querySpec.patterns)
-    for start_idx, end_idx in frament_index_array:
+    df = pd.read_csv(Config.UPLOAD_FOLDER + csv_name)
+    x = (pd.to_datetime(df[time_column_name]).astype(np.int64) // 10**9).values
+    y = df[value_column_name].values
+
+    for fragment in fragment_list.fragments:
+        start_idx = fragment.start_idx
+        end_idx = fragment.end_idx
         time_stamp = x[start_idx : end_idx + 1]
         values = y[start_idx : end_idx + 1]
         segment_index_array = get_best_segments(time_stamp, values, segments_length)
@@ -172,9 +176,9 @@ def generate_fragments(x: np.ndarray, y: np.ndarray, querySpec: QuerySpec) -> li
             segment = Segment(start_idx=segment_start_idx, end_idx=segment_end_idx, slope=slope, theta=None, trend=None, extent=None)
             segments.append(segment)
             old_end = segment_end_idx
-        fragment = Fragment(column_name=querySpec.column_name, start_idx=start_idx, end_idx=end_idx, segments=segments)
-        fragments.append(fragment)
-    return fragments
+        fragment = Fragment(start_idx=start_idx, end_idx=end_idx, segments=segments)
+        result_fragment_list.fragments.append(fragment)
+    return result_fragment_list
 
 
 def calculate_segment_theta(segment: Segment, ratio: float) -> float:

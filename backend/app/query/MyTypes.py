@@ -39,12 +39,9 @@ class Pattern:
 
 @dataclass
 class QuerySpec:
-    value_column_name: str  # 数值列名
-    time_stamp_column_name: str  # 时间戳列名
     patterns: List[Pattern]  # 趋势列表：["up", "down", "flat"]，代表先上升后下降最后平坦
-    y_max_condition: ValueCondition  # y最大值大于或小于某个值
-    y_min_condition: ValueCondition  # y最小值大于或小于某个值
-    time_granularity: TimeGranularity
+    y_max_condition: ValueCondition | None  # y最大值大于或小于某个值
+    y_min_condition: ValueCondition | None  # y最小值大于或小于某个值
     start_time: str | None
     end_time: str | None
 
@@ -61,10 +58,17 @@ class Segment:
 
 @dataclass
 class Fragment:
-    column_name: str
     start_idx: int
     end_idx: int
     segments: List[Segment]
+
+
+@dataclass
+class FragmentList:
+    csv_name: str
+    value_column_name: str
+    time_column_name: str
+    fragments: List[Fragment]
 
 
 @dataclass
