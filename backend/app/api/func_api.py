@@ -12,6 +12,7 @@ from app.query import query
 func_bp = Blueprint("func", __name__)
 
 
+# TODO: tranform json to python object
 @func_bp.route("/get_scale_ratio", methods=["POST"])
 def get_scale_ratio():
     """
@@ -35,6 +36,7 @@ def get_scale_ratio():
     return ratio
 
 
+# TODO: tranform json to python object
 @func_bp.route("/get_fragments_by_time_granularity", methods=["POST"])
 def get_fragments_by_time_granularity():
     """
@@ -56,6 +58,7 @@ def get_fragments_by_time_granularity():
     return jsonify(fragment_list)
 
 
+# TODO: tranform json to python object
 @func_bp.route("/request_for_query", methods=["POST"])
 def request_for_query():
     querySpec = request.json.get("querySpec")

@@ -41,6 +41,7 @@ def query(
     value_column_name = fragment_list.value_column_name
     time_column_name = fragment_list.time_column_name
     new_fragment_list = generate_fragments_by_query(fragment_list, querySpec)
+    # print("new_fragment_list:", new_fragment_list)
     result_fragment_list = FragmentList(csv_name=csv_name, value_column_name=value_column_name, time_column_name=time_column_name, fragments=[])
 
     for fragment in new_fragment_list.fragments:

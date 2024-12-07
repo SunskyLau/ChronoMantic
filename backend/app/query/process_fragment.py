@@ -150,6 +150,7 @@ def generate_fragments_by_query(fragment_list: FragmentList, querySpec: QuerySpe
     time_column_name = fragment_list.time_column_name
     result_fragment_list = FragmentList(csv_name=csv_name, value_column_name=value_column_name, time_column_name=time_column_name, fragments=[])
     segments_length = len(querySpec.patterns)
+    print("segments_length:", segments_length)
     df = pd.read_csv(Config.UPLOAD_FOLDER + csv_name)
     x = (pd.to_datetime(df[time_column_name]).astype(np.int64) // 10**9).values
     y = df[value_column_name].values
@@ -160,13 +161,12 @@ def generate_fragments_by_query(fragment_list: FragmentList, querySpec: QuerySpe
         time_stamp = x[start_idx : end_idx + 1]
         values = y[start_idx : end_idx + 1]
         segment_index_array = get_best_segments(time_stamp, values, segments_length)
+        # print("segment_index_array:", segment_index_array)
         segments = []
         old_end = start_idx
-        for id, segment_index in enumerate(segment_index_array):
+        for segment_index in segment_index_array:
             segment_start_idx = old_end
             segment_end_idx = start_idx + segment_index
-            if id == len(segment_index_array) - 1:
-                segment_end_idx = end_idx
 
             # 计算斜率
             dy = y[segment_end_idx] - y[segment_start_idx]
@@ -176,13 +176,20 @@ def generate_fragments_by_query(fragment_list: FragmentList, querySpec: QuerySpe
             segment = Segment(start_idx=segment_start_idx, end_idx=segment_end_idx, slope=slope, theta=None, trend=None, extent=None)
             segments.append(segment)
             old_end = segment_end_idx
+        # 计算并添加最后一个片段
+        dy = y[end_idx] - y[old_end]
+        dx = x[end_idx] - x[old_end]
+        slope = dy / dx
+        segments.append(Segment(start_idx=old_end, end_idx=end_idx, slope=slope, theta=None, trend=None, extent=None))
+
         fragment = Fragment(start_idx=start_idx, end_idx=end_idx, segments=segments)
         result_fragment_list.fragments.append(fragment)
     return result_fragment_list
 
 
 def calculate_segment_theta(segment: Segment, ratio: float) -> float:
-    visual_slope = np.tan(segment.slope) / ratio
+    # print("segment.slope:", segment.slope)
+    visual_slope = segment.slope / ratio
     return np.arctan(visual_slope)
 
 
