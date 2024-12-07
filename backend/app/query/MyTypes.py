@@ -32,15 +32,21 @@ class FrequenceAndSpan:
 
 
 @dataclass
+class Pattern:
+    trend: str | None  # 趋势: up, down, flat
+    extent: str | None  # 程度：strong, moderate, weak
+
+
+@dataclass
 class QuerySpec:
     value_column_name: str  # 数值列名
     time_stamp_column_name: str  # 时间戳列名
-    trends: List[str]  # 趋势列表：["up", "down", "flat"]，代表先上升后下降最后平坦
+    patterns: List[Pattern]  # 趋势列表：["up", "down", "flat"]，代表先上升后下降最后平坦
     y_max_condition: ValueCondition  # y最大值大于或小于某个值
     y_min_condition: ValueCondition  # y最小值大于或小于某个值
     time_granularity: TimeGranularity
-    start_time: str = None
-    end_time: str = None
+    start_time: str | None
+    end_time: str | None
 
 
 @dataclass

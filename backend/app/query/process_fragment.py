@@ -151,7 +151,7 @@ def get_tobecalculated_fragments(querySpec: QuerySpec, time_stamps: List[str], v
 def generate_fragments(x: np.ndarray, y: np.ndarray, querySpec: QuerySpec) -> list[Fragment]:
     frament_index_array = get_tobecalculated_fragments(querySpec, x, y)
     fragments = []
-    segments_length = len(querySpec.trends)
+    segments_length = len(querySpec.patterns)
     for start_idx, end_idx in frament_index_array:
         time_stamp = x[start_idx : end_idx + 1]
         values = y[start_idx : end_idx + 1]

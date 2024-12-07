@@ -2,7 +2,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
 from datetime import datetime
-from app.query.MyTypes import QuerySpec, ValueCondition
+from app.query.MyTypes import Pattern, QuerySpec, ValueCondition
 from app.model import get_best_segments, get_best_segments_optimized
 from app.query.process_fragment import get_tobecalculated_fragments
 
@@ -13,7 +13,7 @@ data = pd.read_csv("../portfolio_data.csv")
 querySpec = QuerySpec(
     value_column_name="AMZN",
     time_stamp_column_name="Date",
-    trends=["up", "down", "flat"],
+    patterns=[Pattern(trend="up", extent=None), Pattern(trend="down", extent=None), Pattern(trend="up", extent=None)],
     y_max_condition=ValueCondition(comparator=">", value=100),
     y_min_condition=ValueCondition(comparator="<", value=10),
     time_granularity="year",

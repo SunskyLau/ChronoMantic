@@ -5,11 +5,20 @@ from app.query.process_fragment import calculate_fragment_theta, determine_trend
 
 
 def if_satisfy_query(fragment: Fragment, querySpec: QuerySpec):
-    if len(fragment.segments) != len(querySpec.trends):
+    if len(fragment.segments) != len(querySpec.patterns):
         return False
     for i, segment in enumerate(fragment.segments):
-        if segment.trend != querySpec.trends[i]:
-            return False
+        if querySpec.patterns[i].trend is None:
+            continue
+        else:
+            if segment.trend == querySpec.patterns[i].trend:
+                if querySpec.patterns[i].extent is None:
+                    continue
+                else:
+                    if segment.extent != querySpec.patterns[i].extent:
+                        return False
+            else:
+                return False
     return True
 
 
