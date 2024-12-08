@@ -15,58 +15,53 @@ enum Comparator {
 }
 
 type ValueCondition = {
-  comparator: Comparator;
-  value: number;
+  comparator: Comparator | null;
+  value: number | null;
 };
 
 type FrequenceAndSpan = {
-  type: string; // 类型：真实世界频率还是自定义频率
+  type: string | null;
 };
 
 type Pattern = {
-  trend: string | null; // 趋势: up, down, flat
-  extent: string | null; // 程度：strong, moderate, weak
+  trend: string | null;
+  extent: string | null;
 };
 
 type QuerySpec = {
-  patterns: Pattern[]; // 趋势列表：["up", "down", "flat"]，代表先上升后下降最后平坦
-  y_max_condition: ValueCondition | null; // y最大值大于或小于某个值
-  y_min_condition: ValueCondition | null; // y最小值大于或小于某个值
+  TimeGranularity: TimeGranularity | null;
+  valueColumnName: string | null;
+  patterns: Pattern[] | null;
+  y_max_condition: ValueCondition | null;
+  y_min_condition: ValueCondition | null;
   start_time: string | null;
   end_time: string | null;
 };
 
 type Segment = {
-  start_idx: number;
-  end_idx: number;
-  slope: number; // 斜率
-  theta: number | null; // 角度
-  trend: string | null; // 趋势
-  extent: string | null; // 程度：strong, moderate, weak
+  start_idx: number | null;
+  end_idx: number | null;
+  slope: number | null;
+  theta: number | null;
+  trend: string | null;
+  extent: string | null;
 };
 
 type Fragment = {
-  start_idx: number;
-  end_idx: number;
-  segments: Segment[];
+  start_idx: number | null;
+  end_idx: number | null;
+  segments: Segment[] | null;
 };
 
 type FragmentList = {
-  csv_name: string;
-  value_column_name: string;
-  time_column_name: string;
-  fragments: Fragment[];
+  csv_name: string | null;
+  value_column_name: string | null;
+  time_column_name: string | null;
+  fragments: Fragment[] | null;
 };
 
 type TrendConfig = {
-  flat_threshold: number;
-  weak_threshold: number;
-  strong_threshold: number;
-};
-
-// TrendConfig的默认值可以这样设置：
-const defaultTrendConfig: TrendConfig = {
-  flat_threshold: Math.PI / 18,
-  weak_threshold: Math.PI / 6,
-  strong_threshold: Math.PI / 3,
+  flat_threshold: number | null;
+  weak_threshold: number | null;
+  strong_threshold: number | null;
 };

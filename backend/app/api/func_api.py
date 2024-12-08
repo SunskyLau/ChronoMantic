@@ -6,13 +6,12 @@ from app.config import Config
 from numpy.typing import NDArray
 from app.query.process_fragment import generate_fragments_by_time_granularity
 
-from app.query.MyTypes import TrendConfig
+from app.query.MyTypes import FragmentList, QuerySpec, TrendConfig
 from app.query import query
 
 func_bp = Blueprint("func", __name__)
 
 
-# TODO: tranform json to python object
 @func_bp.route("/get_scale_ratio", methods=["POST"])
 def get_scale_ratio():
     """
@@ -25,7 +24,7 @@ def get_scale_ratio():
     return:
     ratio: 单位数量的横纵长度比例
     """
-    csv_name = request.json.get("csvName")
+    csv_name: str = request.json.get("csvName")
     time_stamp_name: str = request.json.get("timeStampColumnName")
     valueColumnName: str = request.json.get("valueColumnName")
     df = pd.read_csv(Config.UPLOAD_FOLDER + csv_name)
@@ -36,19 +35,18 @@ def get_scale_ratio():
     return ratio
 
 
-# TODO: tranform json to python object
 @func_bp.route("/get_fragments_by_time_granularity", methods=["POST"])
 def get_fragments_by_time_granularity():
     """
     | 参数名 | 必填 | 类型 | 说明 |
     |--------|------|------|------|
-    | timeStamps | 是   | List[str]  | 时间戳列表  |
     | timeGranularity | 是   | str  | 时间粒度  |
-    | startTime | 否   | float  | 起始时间  |
-    | endTime | 否   | float  | 结束时间  |
+    | csvName | 是   | str  | CSV文件名  |
+    | timeColumnName | 是   | str  | 时间戳列名  |
+    | valueColumnName | 是   | str  | 值列名  |
 
     return:
-    List[Tuple[int, int]]: 片段的起止索引列表，每个元素为 (start_idx, end_idx)
+    fragment_list: FragmentList
     """
     time_granularity: str = request.json.get("timeGranularity")
     csv_name: str = request.json.get("csvName")
@@ -58,12 +56,21 @@ def get_fragments_by_time_granularity():
     return jsonify(fragment_list)
 
 
-# TODO: tranform json to python object
 @func_bp.route("/request_for_query", methods=["POST"])
 def request_for_query():
-    querySpec = request.json.get("querySpec")
-    fragment_list = request.json.get("fragmentList")
-    optimal_ratio = request.json.get("optimalRatio")
+    """
+    | 参数名 | 必填 | 类型 | 说明 |
+    |--------|------|------|------|
+    | querySpec | 是   | QuerySpec  | 查询规则  |
+    | fragmentList | 是   | FragmentList  | 片段列表  |
+    | optimalRatio | 是   | float  | 最佳比例  |
+
+    return:
+    result_fragment_list: FragmentList
+    """
+    querySpec: QuerySpec = QuerySpec.from_dict(request.json.get("querySpec"))
+    fragment_list: FragmentList = FragmentList.from_dict(request.json.get("fragmentList"))
+    optimal_ratio: float = request.json.get("optimalRatio")
     trendConfig = TrendConfig()
     results = query(querySpec, fragment_list, optimal_ratio, trendConfig)
     return jsonify(results)
