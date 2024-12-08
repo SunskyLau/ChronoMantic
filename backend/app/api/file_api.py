@@ -11,6 +11,8 @@ def upload_csv_file():
     | 参数名 | 必填 | 类型 | 说明 |
     |--------|------|------|------|
     | file   | 是   | File | CSV文件 |
+    return:
+    code: 状态码
     """
     try:
         if "file" not in request.files:

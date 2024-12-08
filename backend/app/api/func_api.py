@@ -72,5 +72,5 @@ def request_for_query():
     fragment_list: FragmentList = FragmentList.from_dict(request.json.get("fragmentList"))
     optimal_ratio: float = request.json.get("optimalRatio")
     trendConfig = TrendConfig()
-    results = query(querySpec, fragment_list, optimal_ratio, trendConfig)
-    return jsonify(results)
+    results, others = query(querySpec, fragment_list, optimal_ratio, trendConfig)
+    return jsonify({"results": results, "others": others})

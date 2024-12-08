@@ -1,7 +1,7 @@
 from typing import List, Tuple
 import numpy as np
 import pandas as pd
-from app.query.MyTypes import Fragment, FragmentList, Pattern, QuerySpec, TrendConfig, ValueCondition
+from app.query.MyTypes import Comparator, Fragment, FragmentList, Pattern, QuerySpec, TrendConfig, ValueCondition
 from app.config import Config
 from app.query.process_fragment import (
     calculate_fragment_theta,
@@ -13,9 +13,50 @@ from app.services.banking_to_45degree import find_optimal_aspect_ratio
 from numpy.typing import NDArray
 
 
-def if_satisfy_query(fragment: Fragment, querySpec: QuerySpec):
+def if_min_max_satisfy_value_condition(minOrmax: float, value_condition: ValueCondition):
+    comparator = value_condition.comparator
+    value = value_condition.value
+    if comparator == Comparator.GREATER:
+        if minOrmax <= value:
+            return False
+    elif comparator == Comparator.LESS:
+        if minOrmax >= value:
+            return False
+    elif comparator == Comparator.EQUAL:
+        if minOrmax != value:
+            return False
+    elif comparator == Comparator.NO_LESS:
+        if minOrmax < value:
+            return False
+    elif comparator == Comparator.NO_GREATER:
+        if minOrmax > value:
+            return False
+    return True
+
+
+def if_satisfy_y_value_condition(csv_name: str, value_column_name: str, fragment: Fragment, querySpec: QuerySpec):
+    df = pd.read_csv(Config.UPLOAD_FOLDER + csv_name)
+    values = df[value_column_name].values[fragment.start_idx : fragment.end_idx + 1]
+    min = values.min()
+    max = values.max()
+
+    if querySpec.y_max_condition is not None:
+        if not if_min_max_satisfy_value_condition(max, querySpec.y_max_condition):
+            return False
+
+    if querySpec.y_min_condition is not None:
+        if not if_min_max_satisfy_value_condition(min, querySpec.y_min_condition):
+            return False
+
+    return True
+
+
+def if_satisfy_trends(fragment: Fragment, querySpec: QuerySpec):
     if len(fragment.segments) != len(querySpec.patterns):
         return False
+
+    # 阈值判定
+
     for i, segment in enumerate(fragment.segments):
         if querySpec.patterns[i].trend is None:
             continue
@@ -36,21 +77,24 @@ def query(
     fragment_list: FragmentList,
     ratio: float,
     trendConfig: TrendConfig,
-) -> List[Fragment]:
+) -> Tuple[FragmentList, FragmentList]:
     csv_name = fragment_list.csv_name
     value_column_name = fragment_list.value_column_name
     time_column_name = fragment_list.time_column_name
     new_fragment_list = generate_fragments_by_query(fragment_list, querySpec)
     # print("new_fragment_list:", new_fragment_list)
     result_fragment_list = FragmentList(csv_name=csv_name, value_column_name=value_column_name, time_column_name=time_column_name, fragments=[])
+    rest_fragment_list = FragmentList(csv_name=csv_name, value_column_name=value_column_name, time_column_name=time_column_name, fragments=[])
 
     for fragment in new_fragment_list.fragments:
         fragment = calculate_fragment_theta(fragment, ratio)
         fragment = determine_trends(fragment, trendConfig)
-        if if_satisfy_query(fragment, querySpec):
+        if if_satisfy_trends(fragment, querySpec) and if_satisfy_y_value_condition(csv_name, value_column_name, fragment, querySpec):
             result_fragment_list.fragments.append(fragment)
+        else:
+            rest_fragment_list.fragments.append(fragment)
 
-    return result_fragment_list
+    return result_fragment_list, rest_fragment_list
 
 
 if __name__ == "__main__":
@@ -81,5 +125,5 @@ if __name__ == "__main__":
     )
     # print("fragment_list:", fragment_list)
     trendConfig = TrendConfig()
-    results = query(querySpec, fragment_list, optimal_ratio, trendConfig)
+    results, others = query(querySpec, fragment_list, optimal_ratio, trendConfig)
     print(results)
