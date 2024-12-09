@@ -38,6 +38,7 @@ function CsvLoader() {
   
           result.data.forEach(row => {
             for (const [key, value] of Object.entries(row)) {
+              if (!value) continue;
               if (key === dataset.timeStampColumnName) {
                 dataset.timeStamp.push(value.toString());
               } else {
