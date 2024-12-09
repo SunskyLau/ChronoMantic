@@ -1,7 +1,9 @@
 .header {
   width: var(--width);
+  height: var(--header-height);
+  line-height: var(--header-height);
   position: relative;
-  margin: 20px auto;
+  margin: 0 auto;
   font-size: 48px;
   display: flex;
   align-items: center;

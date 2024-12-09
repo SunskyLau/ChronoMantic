@@ -135,20 +135,20 @@ export default function SearchTree({ className }: { className?: string }) {
         .attr("class", "node")
         .attr("transform", (d) => `translate(${d.y},${d.x})`)
         .on("click", (_, d) => {
-          if ((d.data.name === "Results" || d.data.name === "Others") && d.data.value) {
-            if (d.children) {
-              d.children = undefined;
-              renderTree(root);
-              return;
-            }
-            const newChildren = Array.from({ length: d.data.value }, (_, i) => ({
-              name: `Child ${i + 1}`,
-            }));
-            d.data.children = newChildren;
-            const updatedRoot = d3.hierarchy(data);
-            treeLayout(updatedRoot);
-            renderTree(updatedRoot);
+          if (d.data.name !== "Others" || !d.data.value) return;
+          if (d.children) {
+            d.children = undefined;
+            d.data.children = undefined;
+            renderTree(root);
+            return;
           }
+          const newChildren = Array.from({ length: d.data.value }, (_, i) => ({
+            name: `Child ${i + 1}`,
+          }));
+          d.data.children = newChildren;
+          const updatedRoot = d3.hierarchy(data);
+          treeLayout(updatedRoot);
+          renderTree(updatedRoot);
         });
 
       node

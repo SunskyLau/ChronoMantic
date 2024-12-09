@@ -18,6 +18,9 @@
 
 .main-right {
     margin-right: var(--gap);
+    display: flex;
+    flex-direction: column;
+    gap: var(--gap);
 }
 
 .main-body {
@@ -32,9 +35,9 @@
 }
 
 .main-body .main-body-results {
-    flex: 2 1 0;
+    flex: 1 1 0;
 }
 
-.main-body .main-body-search {
+.main-right .main-right-search {
     flex: 1 1 0;
 }

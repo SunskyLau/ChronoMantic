@@ -23,11 +23,11 @@ export default function ResultsContent() {
                     <div className="data-score">Score</div>
                 </div>
                 <div className="result-item-list">
-                    {results?.fragments?.map((fragment) => { 
+                    {results?.fragments?.map((fragment, index) => { 
                         return (
                             <div className="result-item">
                                 <div className="data-name">{columnName}</div>
-                                <FragmentChart key={fragment.start_idx} xData={xData} yData={yData} ratio={ratio} fragment={fragment} />
+                                <FragmentChart key={index} xData={xData} yData={yData} ratio={ratio} fragment={fragment} />
                                 <Overview className="data-score">
                                     {fragment.segments?.map((segment) => {
                                         return (

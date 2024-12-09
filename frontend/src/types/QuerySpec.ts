@@ -39,8 +39,8 @@ export type QuerySpec = {
 };
 
 export type Segment = {
-  start_idx: number | null;
-  end_idx: number | null;
+  start_idx: number;
+  end_idx: number;
   slope: number | null;
   theta: number | null;
   trend: string | null;
@@ -48,8 +48,8 @@ export type Segment = {
 };
 
 export type Fragment = {
-  start_idx: number | null;
-  end_idx: number | null;
+  start_idx: number;
+  end_idx: number;
   segments: Segment[] | null;
 };
 

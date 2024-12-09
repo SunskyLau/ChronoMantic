@@ -3,7 +3,7 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 export type Dataset = {
   data: Record<string, number[]>;
   timeStampColumnName: string;
-  timeStamp: string[];
+  timeStamp: number[];
   datasetName: string;
   id?: string;
 };

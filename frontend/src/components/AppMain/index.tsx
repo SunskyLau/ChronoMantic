@@ -14,10 +14,10 @@ export default function AppMain() {
             <section className="main-body">
                 <NlqueryBox />
                 <ResultsPanel className="main-body-results" />
-                <SearchTree className="main-body-search" />
             </section>
             <section className="main-right">
                 <OverView />
+                <SearchTree className="main-right-search" />
             </section>
         </main>
     )

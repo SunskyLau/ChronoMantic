@@ -1,7 +1,8 @@
 :root {
-  --width: 768px;
-  --side-width: calc(var(--width) / 2);
-  --height: 800px;
+  --width: 50%;
+  --header-height: 96px;
+  --side-width: calc((100% - var(--width)) / 2);
+  --height: calc(100vh - var(--header-height) - var(--gap));
   --gap: 16px;
 }
 
