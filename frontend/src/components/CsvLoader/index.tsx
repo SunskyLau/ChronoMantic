@@ -32,7 +32,7 @@ function CsvLoader() {
           timeStamp: [],
           datasetName: file.name,
           data: {},
-          id: res.id
+          id: res.id,
         };
 
         // 假设第一列是时间戳
