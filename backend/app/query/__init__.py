@@ -123,7 +123,7 @@ if __name__ == "__main__":
     fragment_list = generate_fragments_by_time_granularity(
         time_granularity=time_granularity, csv_name=csv_name, time_column_name=time_column_name, value_column_name=value_column_name
     )
-    # print("fragment_list:", fragment_list)
+    print("fragment_list:", fragment_list)
     trendConfig = TrendConfig()
     results, others = query(querySpec, fragment_list, optimal_ratio, trendConfig)
     print(results)

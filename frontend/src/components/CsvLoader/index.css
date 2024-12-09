@@ -1,5 +1,0 @@
-#csv-loader {
-  position: absolute;
-  left: calc(50% - var(--boxWidth) / 2);
-  top: 65px;
-}

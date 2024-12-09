@@ -1,14 +1,19 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { FragmentList, QuerySpec } from "../../types/QuerySpec";
 
 export type States = {
   NLQuery: string;
-  shownColumn: string; // 被细节视图展示的列
+  querySpec: QuerySpec | null;
+  ratio: number;
+  fragments: FragmentList | null;
 };
 
 // 使用该类型定义初始 state
 const initialState: States = {
   NLQuery: "",
-  shownColumn: "",
+  querySpec: null,
+  fragments: null,
+  ratio: 1
 };
 
 const stateSlice = createSlice({
@@ -18,11 +23,17 @@ const stateSlice = createSlice({
     setNLQuery: (state, action: PayloadAction<string>) => {
       state.NLQuery = action.payload;
     },
-    setShownColumn: (state, action: PayloadAction<string>) => {
-      state.shownColumn = action.payload;
+    setQuerySpec: (state, action: PayloadAction<QuerySpec>) => {
+      state.querySpec = action.payload;
     },
+    setRatio: (state, action: PayloadAction<number>) => {
+      state.ratio = action.payload;
+    },
+    setFragments: (state, action: PayloadAction<FragmentList>) => {
+      state.fragments = action.payload;
+    }
   },
 });
 
-export const { setNLQuery, setShownColumn } = stateSlice.actions;
+export const { setNLQuery, setQuerySpec, setRatio, setFragments } = stateSlice.actions;
 export default stateSlice.reducer;

@@ -1,12 +1,11 @@
-import "./index.css";
-import ResultsHeader from "./ResultsHeader";
 import ResultsContent from "./ResultsContent";
+import Panel from "../Panel";
+import DocumentIcon from "../../icons/Document";
 
-export default function ResultsPanel() {
+export default function ResultsPanel({className}: {className?: string}) {
   return (
-    <div id="results-panel">
-      <ResultsHeader />
+    <Panel className={className} icon={<DocumentIcon />} title="Results">
       <ResultsContent />
-    </div>
+    </Panel>
   );
 }

@@ -1,8 +1,8 @@
 :root {
-  width: 100%;
-  height: 100%;
-  padding: 0;
-  margin: 0;
+  --width: 768px;
+  --side-width: calc(var(--width) / 2);
+  --height: 800px;
+  --gap: 16px;
 }
 
 #root {
@@ -17,7 +17,6 @@ body {
   height: 100%;
   padding: 0;
   margin: 0;
-  /* 全局禁用拖拽选择功能 */
   user-select: none;
   -webkit-user-select: none;
   -moz-user-select: none;

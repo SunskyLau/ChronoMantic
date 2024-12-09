@@ -1,7 +1,11 @@
-import "./index.css";
+import Panel from "../Panel";
+import TableViewContent from "./TableContent";
+import TableIcon from "../../icons/Table";
 
-function TableView() {
-  return <div id="TableView"></div>;
+export default function TableView() {
+    return (
+        <Panel icon={<TableIcon />} title="Table">
+            <TableViewContent />
+        </Panel>
+    )
 }
-
-export default TableView;

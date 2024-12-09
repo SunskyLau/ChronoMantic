@@ -1,0 +1,40 @@
+.main {
+    display: flex;
+    justify-content: center;
+    gap: var(--gap);
+    height: var(--height);
+}
+
+.main-left,
+.main-right {
+    flex: 0 1 var(--side-width);
+    max-width: var(--side-width);
+    min-width: 0;
+}
+
+.main-left {
+    margin-left: var(--gap);
+}
+
+.main-right {
+    margin-right: var(--gap);
+}
+
+.main-body {
+    width: var(--width);
+    display: flex;
+    flex-direction: column;
+    gap: var(--gap);
+}
+
+.main-body .nl-query-form {
+    flex-shrink: 0;
+}
+
+.main-body .main-body-results {
+    flex: 2 1 0;
+}
+
+.main-body .main-body-search {
+    flex: 1 1 0;
+}

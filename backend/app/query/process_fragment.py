@@ -171,7 +171,7 @@ def generate_fragments_by_query(fragment_list: FragmentList, querySpec: QuerySpe
             # 计算斜率
             dy = y[segment_end_idx] - y[segment_start_idx]
             dx = x[segment_end_idx] - x[segment_start_idx]
-            slope = dy / dx
+            slope = dy / dx if dx != 0 else 0
 
             segment = Segment(start_idx=segment_start_idx, end_idx=segment_end_idx, slope=slope, theta=None, trend=None, extent=None)
             segments.append(segment)
