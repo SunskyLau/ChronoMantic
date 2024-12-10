@@ -29,11 +29,9 @@ export default function SearchTree({ className }: { className?: string }) {
     svg.selectAll("*").remove();
 
     const width = svgRef.current.clientWidth;
-    const height = svgRef.current.clientHeight - 1;
+    const height = svgRef.current.clientHeight;
 
-    const data: TreeNode = {
-      name: "Source"
-    };
+    const data: TreeNode = { name: "Source" };
 
     if (csvName && timeGranularity) {
       const timeNode: TreeNode = { name: `${csvName}-${timeGranularity}`, value: fragments?.fragments?.length };
@@ -45,7 +43,6 @@ export default function SearchTree({ className }: { className?: string }) {
         const othersNode = { name: "Others", value: others?.fragments?.length };
         if (!timeNode.children) timeNode.children = [];
         timeNode.children.push(resultsNode);
-        if (!timeNode.children) timeNode.children = [];
         timeNode.children.push(othersNode);
       }
     }
@@ -53,14 +50,14 @@ export default function SearchTree({ className }: { className?: string }) {
     const root = d3.hierarchy(data);
 
     const treeLayout = d3.tree<TreeNode>()
-      .nodeSize([40, 200])
-      .separation((a, b) => (a.parent === b.parent ? 2 : 2));
+      .nodeSize([width / 2, height / 8])
+      .separation((a, b) => (a.parent === b.parent ? 1 : 4));
     treeLayout(root);
 
-    const g = svg.append("g").attr("transform", `translate(${width / 4}, ${height / 2 - (root.x || 0)})`);
+    const g = svg.append("g").attr("transform", `translate(${width / 2}, ${height / 4})`);
 
     const zoom = d3.zoom<SVGSVGElement, unknown>().on("zoom", (event) => g.attr("transform", event.transform));
-    svg.call(zoom).call(zoom.transform, d3.zoomIdentity.translate(width / 4, height / 2 - (root.x || 0)));
+    svg.call(zoom).call(zoom.transform, d3.zoomIdentity.translate(width / 2, height / 4));
 
     const resetButton = document.getElementById("reset-button");
     resetButton?.addEventListener("click", reset);
@@ -68,7 +65,7 @@ export default function SearchTree({ className }: { className?: string }) {
     function reset() {
       svg.transition()
         .duration(750)
-        .call(zoom.transform, d3.zoomIdentity.translate(width / 4, height / 2 - (root.x || 0)));
+        .call(zoom.transform, d3.zoomIdentity.translate(width / 2, height / 4));
       renderTree(root);
     }
 
@@ -97,8 +94,7 @@ export default function SearchTree({ className }: { className?: string }) {
         .append("path")
         .attr("class", "link")
         .attr("d", (d) =>
-          `M${d.source.y! + 10},${d.source.x} C${(d.source.y! + d.target.y!) / 2},${d.source.x
-          } ${(d.source.y! + d.target.y!) / 2},${d.target.x} ${d.target.y! - 10},${d.target.x}`
+          `M${d.source.x},${d.source.y! + 10} C${d.source.x},${(d.source.y! + d.target.y!) / 2} ${d.target.x},${(d.source.y! + d.target.y!) / 2} ${d.target.x},${d.target.y! - 10}`
         )
         .attr("fill", "none")
         .attr("stroke", "#ccc")
@@ -114,8 +110,8 @@ export default function SearchTree({ className }: { className?: string }) {
         .enter()
         .append("text")
         .attr("class", "link-label")
-        .attr("x", (d) => (d.source.y! + d.target.y!) / 2)
-        .attr("y", (d) => (d.source.x! + d.target.x!) / 2)
+        .attr("x", (d) => (d.source.x! + d.target.x!) / 2)
+        .attr("y", (d) => (d.source.y! + d.target.y!) / 2)
         .text((d) => d.target.data.name)
         .style("fill", "#333")
         .style("font-size", "12px")
@@ -133,7 +129,7 @@ export default function SearchTree({ className }: { className?: string }) {
         .enter()
         .append("g")
         .attr("class", "node")
-        .attr("transform", (d) => `translate(${d.y},${d.x})`)
+        .attr("transform", (d) => `translate(${d.x},${d.y})`)
         .on("click", (_, d) => {
           if (d.data.name !== "Others" || !d.data.value) return;
           if (d.children) {
@@ -163,14 +159,12 @@ export default function SearchTree({ className }: { className?: string }) {
 
       node
         .append("text")
-        .attr("dy", "1.25em")
-        .attr("x", (d) => (d.children ? -15 : 15))
-        .style("text-anchor", (d) => (d.children ? "end" : "start"))
+        .attr("y", -20)
+        .style("text-anchor", "middle")
         .text((d) => d.data.name === "Source" ? d.data.name : "")
         .attr("opacity", "0")
         .transition()
         .duration(750)
-        .attr("dy", "0.35em")
         .attr("opacity", "1");
 
       node

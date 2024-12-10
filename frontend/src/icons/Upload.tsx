@@ -3,21 +3,16 @@ import Base from "./Base";
 export default function UploadIcon({ className }: { className?: string }) {
     return (
         <Base className={className}>
-            <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path
-                    d="M16.0001 6.00004L16.0001 19.3334M16.0001 6.00004C15.0664 6.00004 13.3221 8.65911 12.6667 9.33337M16.0001 6.00004C16.9337 6.00004 18.678 8.65911 19.3334 9.33337"
-                    stroke="#ACACAC"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                />
-                <path
-                    d="M26.6667 22C26.6667 25.3093 25.976 26 22.6667 26H9.33337C6.02404 26 5.33337 25.3093 5.33337 22"
-                    stroke="#ACACAC"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                />
+            <svg width="107" height="107" viewBox="0 0 107 107" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <g clipPath="url(#clip0_1563_41)">
+                    <path d="M53.4998 4.86367L53.4998 69.7122M53.4998 4.86367C49.3373 4.86367 41.5605 17.7964 38.6387 21.0758M53.4998 4.86367C57.6622 4.86367 65.439 17.7964 68.3609 21.0758" stroke="#E0E0E0" strokeWidth="10" strokeLinecap="round" strokeLinejoin="round" />
+                    <path d="M101.055 82.6819C101.055 98.7773 97.9762 102.136 83.2221 102.136H23.7777C9.02356 102.136 5.94434 98.7773 5.94434 82.6819" stroke="#E0E0E0" strokeWidth="10" strokeLinecap="round" strokeLinejoin="round" />
+                </g>
+                <defs>
+                    <clipPath id="clip0_1563_41">
+                        <rect width="107" height="107" fill="white" />
+                    </clipPath>
+                </defs>
             </svg>
         </Base>
     )

@@ -1,34 +1,40 @@
 import { useAppSelector } from '../../../app/hooks';
+import { formatTime } from '../../../utils/time';
+import CsvLoader from '../../CsvLoader';
 import "./index.css";
 
 export default function TableViewContent() {
     const csvData = useAppSelector((state) => state.dataset.dataset?.data) || {};
-    const headers = Object.keys(csvData);
-    const cols = Object.values(csvData);
+    const timeCol = useAppSelector((state) => state.dataset.dataset?.timeStamp) || [];
+    const timeColName = useAppSelector((state) => state.dataset.dataset?.timeStampColumnName);
+    const headers = [timeColName, ...Object.keys(csvData)];
+    const cols = [timeCol, ...Object.values(csvData)];
     const rowCount = cols[0]?.length || 0;
 
-    return (
+    return rowCount ? (
         <div className="table-content">
-            {headers.length > 0 && (
-                <table>
-                    <thead>
-                        <tr>
-                            <th></th>
-                            {headers.map(header => <th key={header}>{header}</th>)}
+            <table>
+                <thead>
+                    <tr>
+                        <th></th>
+                        {headers.map(header => <th key={header}>{header}</th>)}
+                    </tr>
+                </thead>
+                <tbody>
+                    {Array.from({ length: rowCount }).map((_, rowIndex) => (
+                        <tr key={rowIndex}>
+                            <td>{rowIndex}</td>
+                            {headers.map((_, colIndex) => (
+                                <td key={colIndex}>{colIndex === 0 ? formatTime(cols[colIndex][rowIndex]) : cols[colIndex][rowIndex]?.toFixed(2)}</td>
+                            ))}
                         </tr>
-                    </thead>
-                    <tbody>
-                        {Array.from({ length: rowCount }).map((_, rowIndex) => (
-                            <tr key={rowIndex}>
-                                <td>{rowIndex}</td>
-                                {headers.map((_, colIndex) => (
-                                    <td key={colIndex}>{cols[colIndex][rowIndex].toFixed(2)}</td>
-                                ))}
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-            )}
+                    ))}
+                </tbody>
+            </table>
+        </div>
+    ) : (
+        <div className="table-upload">
+            <CsvLoader></CsvLoader>
         </div>
     );
 };

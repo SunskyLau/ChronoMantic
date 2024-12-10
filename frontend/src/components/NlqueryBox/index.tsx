@@ -64,7 +64,7 @@ export default function NlqueryBox() {
         <span onClick={() => {
           flushSync(() => setIsEdit(true));
           if (inputRef.current) inputRef.current.focus();
-        }} className="nl-query" dangerouslySetInnerHTML={{ __html: coloredText || PLACEHOLDER }}></span>
+        }} className="nl-query" style={{ color: !coloredText ? "gray" : "#000" }} dangerouslySetInnerHTML={{ __html: coloredText || PLACEHOLDER }}></span>
       }
       <button className="send" type="submit" disabled={!NLQuery || isRequesting}>
         <SubmitIcon></SubmitIcon>

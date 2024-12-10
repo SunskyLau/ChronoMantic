@@ -1,6 +1,7 @@
 import NlqueryBox from "../../components/NlqueryBox";
 import ResultsPanel from "../../components/ResultsPanel";
 import TableView from "../../components/TableView";
+import AppHeader from "../AppHeader";
 import OverView from "../OverView";
 import SearchTree from "../SearchTree";
 import "./index.css";
@@ -12,6 +13,7 @@ export default function AppMain() {
                 <TableView />
             </section>
             <section className="main-body">
+                <AppHeader />
                 <NlqueryBox />
                 <ResultsPanel className="main-body-results" />
             </section>
