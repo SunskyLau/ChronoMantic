@@ -17,6 +17,9 @@ class DictMixin:
             value = data[field_name]
             if value is None:
                 kwargs[field_name] = None
+            # 处理枚举类型
+            elif isinstance(field_type, type) and issubclass(field_type, Enum):
+                kwargs[field_name] = field_type(value)
             # 处理列表类型
             elif getattr(field_type, "__origin__", None) is list:
                 item_type = field_type.__args__[0]
@@ -27,8 +30,12 @@ class DictMixin:
             # 处理可选类型
             elif getattr(field_type, "__origin__", None) is Optional:
                 item_type = field_type.__args__[0]
-                if hasattr(item_type, "from_dict"):
+                if value is None:
+                    kwargs[field_name] = None
+                elif hasattr(item_type, "from_dict"):
                     kwargs[field_name] = item_type.from_dict(value)
+                elif isinstance(item_type, type) and issubclass(item_type, Enum):
+                    kwargs[field_name] = item_type(value)
                 else:
                     kwargs[field_name] = value
             # 处理其他自定义类型
@@ -101,7 +108,6 @@ class Fragment(DictMixin):
     end_idx: int
     segments: List[Segment]
     avg_loss: Optional[float] = None
-
 
 
 @dataclass
