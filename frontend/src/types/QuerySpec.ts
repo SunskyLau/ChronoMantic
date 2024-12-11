@@ -51,6 +51,7 @@ export type Fragment = {
   start_idx: number;
   end_idx: number;
   segments: Segment[] | null;
+  avg_loss: number | undefined;
 };
 
 export type FragmentList = {

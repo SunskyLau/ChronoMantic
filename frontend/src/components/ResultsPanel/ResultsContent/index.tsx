@@ -14,27 +14,23 @@ export default function ResultsContent() {
     const ratio = useAppSelector((state) => state.states.ratio);
     const xData = dataset?.timeStamp || [];
     const yData = columnName && dataset?.data[columnName] || [];
-    const results = useAppSelector((state) => state.results.results?.results);
+    const currentFragments = useAppSelector((state) => state.states.currentFragments);
+    const fragments = [...(currentFragments?.fragments || [])].sort((a, b) => (a.avg_loss || 0) - (b.avg_loss || 0));
     return (
         <>
             <div className="results-content">
                 <div className="result-header">
                     <div className="data-name">ID</div>
-                    <div className="data-score">Score</div>
+                    <div className="data-score">Avg_loss</div>
                 </div>
                 <div className="result-item-list">
-                    {results?.fragments?.map((fragment, index) => { 
+                    {fragments.map((fragment, index) => { 
                         return (
-                            <div className="result-item">
+                            <div className="result-item" key={fragment.start_idx + "-" + fragment.end_idx + "-" + index}>
                                 <div className="data-name">{columnName}</div>
-                                <FragmentChart key={index} xData={xData} yData={yData} ratio={ratio} fragment={fragment} />
+                                <FragmentChart xData={xData} yData={yData} ratio={ratio} fragment={fragment} />
                                 <Overview className="data-score">
-                                    {fragment.segments?.map((segment) => {
-                                        return (
-                                            <div key={segment.start_idx}>
-                                            </div>
-                                        )
-                                    })}
+                                    {fragment?.avg_loss?.toFixed(4)}
                                 </Overview>
                             </div>
                         )

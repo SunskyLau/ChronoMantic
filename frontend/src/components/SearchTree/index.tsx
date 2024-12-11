@@ -3,15 +3,11 @@ import TreeIcon from "../../icons/Tree";
 import Panel from "../Panel";
 import "./index.css";
 import * as d3 from "d3";
-import { useAppSelector } from "../../app/hooks";
+import { useAppDispatch, useAppSelector } from "../../app/hooks";
 import { getColor } from "../../utils/color";
 import { classnames } from "../../utils/classname";
-
-interface TreeNode {
-  name: string;
-  children?: TreeNode[];
-  value?: number;
-}
+import { setCurrentFragments } from "../../app/slice/stateSlice";
+import { TreeNode } from "../../types/Tree";
 
 export default function SearchTree({ className }: { className?: string }) {
   const svgRef = useRef<SVGSVGElement>(null);
@@ -21,9 +17,12 @@ export default function SearchTree({ className }: { className?: string }) {
   const fragments = useAppSelector((state) => state.states.fragments);
   const results = useAppSelector((state) => state.results.results?.results);
   const others = useAppSelector((state) => state.results.results?.others);
+  const currentFragments = useAppSelector((state) => state.states.currentFragments);
+  const treeData = useAppSelector((state) => state.states.treeData);
+  const dispatch = useAppDispatch();
 
   useEffect(() => {
-    if (!svgRef.current || !dataset) return;
+    if (!svgRef.current || !dataset || !treeData) return;
 
     const svg = d3.select(svgRef.current);
     svg.selectAll("*").remove();
@@ -31,27 +30,10 @@ export default function SearchTree({ className }: { className?: string }) {
     const width = svgRef.current.clientWidth;
     const height = svgRef.current.clientHeight;
 
-    const data: TreeNode = { name: "Source" };
-
-    if (csvName && timeGranularity) {
-      const timeNode: TreeNode = { name: `${csvName}-${timeGranularity}`, value: fragments?.fragments?.length };
-      if (!data.children) data.children = [];
-      data.children.push(timeNode);
-
-      if (results || others) {
-        const resultsNode = { name: "Results", value: results?.fragments?.length };
-        const othersNode = { name: "Others", value: others?.fragments?.length };
-        if (!timeNode.children) timeNode.children = [];
-        timeNode.children.push(resultsNode);
-        timeNode.children.push(othersNode);
-      }
-    }
-
-    const root = d3.hierarchy(data);
+    const root = d3.hierarchy(treeData);
 
     const treeLayout = d3.tree<TreeNode>()
-      .nodeSize([width / 2, height / 8])
-      .separation((a, b) => (a.parent === b.parent ? 1 : 4));
+      .nodeSize([width / 2, height / 4]);
     treeLayout(root);
 
     const g = svg.append("g").attr("transform", `translate(${width / 2}, ${height / 4})`);
@@ -99,11 +81,7 @@ export default function SearchTree({ className }: { className?: string }) {
         .attr("fill", "none")
         .attr("stroke", "#ccc")
         .attr("stroke-width", 2)
-        .attr("marker-end", "url(#arrow)")
-        .attr("opacity", "0")
-        .transition()
-        .duration(750)
-        .attr("opacity", "1");
+        .attr("marker-end", "url(#arrow)");
 
       g.selectAll(".link-label")
         .data(root.links())
@@ -116,12 +94,7 @@ export default function SearchTree({ className }: { className?: string }) {
         .style("fill", "#333")
         .style("font-size", "12px")
         .style("text-anchor", "middle")
-        .attr("opacity", "0")
-        .attr("dy", 10)
-        .transition()
-        .duration(750)
-        .attr("dy", -5)
-        .attr("opacity", "1");
+        .attr("dy", -5);
 
       const node = g
         .selectAll(".node")
@@ -131,54 +104,27 @@ export default function SearchTree({ className }: { className?: string }) {
         .attr("class", "node")
         .attr("transform", (d) => `translate(${d.x},${d.y})`)
         .on("click", (_, d) => {
-          if (d.data.name !== "Others" || !d.data.value) return;
-          if (d.children) {
-            d.children = undefined;
-            d.data.children = undefined;
-            renderTree(root);
-            return;
-          }
-          const newChildren = Array.from({ length: d.data.value }, (_, i) => ({
-            name: `Child ${i + 1}`,
-          }));
-          d.data.children = newChildren;
-          const updatedRoot = d3.hierarchy(data);
-          treeLayout(updatedRoot);
-          renderTree(updatedRoot);
+          dispatch(setCurrentFragments(d.data.value || null))
         });
 
       node
         .append("circle")
-        .attr("r", 0)
         .attr("fill", (d) => getColor(d.depth % 10))
-        .attr("opacity", "0")
-        .transition()
-        .duration(750)
-        .attr("r", 10)
-        .attr("opacity", "1");
+        .attr("r", (d) => d.data.value === currentFragments || !d.data.value && !currentFragments ? 10 : 5);
 
       node
         .append("text")
         .attr("y", -20)
         .style("text-anchor", "middle")
-        .text((d) => d.data.name === "Source" ? d.data.name : "")
-        .attr("opacity", "0")
-        .transition()
-        .duration(750)
-        .attr("opacity", "1");
+        .text((d) => d.data.name === "Source" ? d.data.name : "");
 
       node
         .append("text")
-        .attr("dy", "3em")
-        .attr("opacity", "0")
         .attr("text-anchor", "middle")
         .style("font-size", "12px")
         .style("fill", "#555")
-        .text((d) => (d.data.value !== undefined ? `num: ${d.data.value}` : ""))
-        .transition()
-        .duration(750)
+        .text((d) => (d.data.value ? `num: ${d.data.value?.fragments?.length}` : ""))
         .attr("dy", "2em")
-        .attr("opacity", "1");
     }
 
     return () => {
@@ -187,7 +133,7 @@ export default function SearchTree({ className }: { className?: string }) {
       svg.selectAll("*").remove();
       resetButton?.removeEventListener("click", reset);
     };
-  }, [dataset, csvName, timeGranularity, results, others, fragments]);
+  }, [dataset, csvName, timeGranularity, results, others, fragments, currentFragments, dispatch, treeData]);
 
 
   return (
