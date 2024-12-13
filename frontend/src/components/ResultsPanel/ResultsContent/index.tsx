@@ -1,9 +1,7 @@
-import { useAppDispatch, useAppSelector } from "../../../app/hooks";
-import { setShownColumn } from "../../../app/slice/stateSlice";
-import Loading from "../../Loading";
+import { useAppSelector } from "../../../app/hooks";
+import FragmentChart from "./FragmentChart";
+import "./index.css";
 import Overview from "./Overview";
-import Detail from "./Detail";
-import { useCallback } from "react";
 
 export interface DataType {
     date: Date;
@@ -11,35 +9,33 @@ export interface DataType {
 }
 
 export default function ResultsContent() {
-    const dispatch = useAppDispatch();
-    const timeStamp = useAppSelector((state) => state.dataset.dataset?.timeStamp);
-    const data = useAppSelector((state) => state.dataset.dataset?.data);
-    const results = useAppSelector((state) => state.results.results);
-    const isRequesting = useAppSelector((state) => state.results.isRequesting);
-    const ts = useCallback((key: string): DataType[] | null => {
-        if (!data || !timeStamp) return null;
-        return timeStamp
-            ?.map((t, i) => ({
-                date: new Date(t),
-                value: data[key][i],
-            }))
-            .filter((d) => d.value && !isNaN(d.date.getTime()) && !isNaN(d.value))
-    }, [timeStamp, data])
+    const dataset = useAppSelector((state) => state.dataset.dataset);
+    const columnName = useAppSelector((state) => state.states.querySpec?.valueColumnName) || "";
+    const ratio = useAppSelector((state) => state.states.ratio);
+    const xData = dataset?.timeStamp || [];
+    const yData = columnName && dataset?.data[columnName] || [];
+    const currentFragments = useAppSelector((state) => state.states.currentFragments);
+    const fragments = [...(currentFragments?.fragments || [])].sort((a, b) => (a.avg_loss || 0) - (b.avg_loss || 0));
     return (
         <>
-            {isRequesting && <Loading className="center"></Loading>}
-            <div id="results-content">
-                {data &&
-                    Object.keys(data).map((key, index) => (
-                        <div className="results-list" key={index}>
-                            <div className="dataName" onClick={() => { dispatch(setShownColumn(key)); }}>{key}</div>
-                            <div className="result-item-list">
-                                {timeStamp && <Detail name={key} results={results[key]} segments={results[key]?.map(item => item.segments)} data={ts(key) ?? []}></Detail>}
+            <div className="results-content">
+                <div className="result-header">
+                    <div className="data-name">ID</div>
+                    <div className="data-score">Avg_loss</div>
+                </div>
+                <div className="result-item-list">
+                    {fragments.map((fragment, index) => { 
+                        return (
+                            <div className="result-item" key={fragment.start_idx + "-" + fragment.end_idx + "-" + index}>
+                                <div className="data-name">{columnName}</div>
+                                <FragmentChart xData={xData} yData={yData} ratio={ratio} fragment={fragment} />
+                                <Overview className="data-score">
+                                    {fragment?.avg_loss?.toFixed(4)}
+                                </Overview>
                             </div>
-                            <Overview></Overview>
-                        </div>
-                    ))
-                }
+                        )
+                    })}
+                </div>
             </div>
         </>
     );

@@ -1,5 +1,6 @@
 import axios from "axios";
 import type { Results, Trend } from "./app/slice/resultsSlice";
+import { FragmentList, QuerySpec, TimeGranularity } from "./types/QuerySpec";
 
 const api = axios.create({
   baseURL: "http://127.0.0.1:5000", // 替换为你的后端API地址
@@ -8,6 +9,73 @@ const api = axios.create({
     "Content-Type": "application/json",
   },
 });
+
+export const getQuerySpecRequest = async (query: string): Promise<QuerySpec> => {
+  console.log("Sending query spec request");
+  try {
+    const response = await api.get(`/api/query_spec?query=${query}`);
+    console.log(response.data);
+    return response.data;
+  } catch (error) {
+    console.error("Error sending query spec request:", error);
+    throw error;
+  }
+};
+
+export const uploadCsvFile = async (file: File) => {
+  console.log("Sending csv file:", file.name);
+  try {
+    const formData = new FormData();
+    formData.append("file", file);
+    const response = await api.post("/api/upload_csv_file", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+    console.log(response.data);
+    return response.data;
+  } catch (error) {
+    console.error("Error sending csv file:", error);
+    throw error;
+  }
+}
+
+export const getScaleRatio = async (csvName: string, timeStampColumnName: string, valueColumnName: string): Promise<number> => {
+  console.log("Sending scale ratio request");
+  try {
+    const response = await api.post(`/api/get_scale_ratio`, { csvName, timeStampColumnName, valueColumnName });
+    console.log(response.data);
+    return response.data;
+  } catch (error) {
+    console.error("Error sending scale ratio request:", error);
+    throw error;
+  }
+}
+
+export const getFragmentsByTimeGranularity = async (csvName: string, timeColumnName: string, valueColumnName: string, timeGranularity: TimeGranularity): Promise<FragmentList> => {
+  console.log("Sending fragments request");
+  try {
+    const response = await api.post(`/api/get_fragments_by_time_granularity`, { csvName, timeColumnName, valueColumnName, timeGranularity });
+    console.log(response.data);
+    return response.data;
+  } catch (error) {
+    console.error("Error sending fragments request:", error);
+    throw error;
+  }
+}
+
+export const getQueryResult = async (querySpec: QuerySpec, fragmentList: FragmentList, optimalRatio: number): Promise<Results> => {
+  console.log("Sending query result request");
+  try {
+    const { timeGranularity, valueColumnName, ...resQuerySpec } = querySpec;
+    const response = await api.post(`/api/request_for_query`, { querySpec: resQuerySpec, fragmentList, optimalRatio });
+    console.log(response.data);
+    return response.data;
+  } catch (error) {
+    console.error("Error sending query result request:", error);
+    throw error;
+  }
+}
 
 // 发送自然语言查询请求，返回shapeQuery expression
 export const sendNLQueryRequest = async (query: string) => {
@@ -57,7 +125,7 @@ export const sendQueryDatasetRequest = async (datatset_id: string, query: string
     const response = await api.get("/api/queryDataset", { params });
     console.log(response.data);
     return response.data;
-  } catch(e) {
+  } catch (e) {
     console.error("Error sending query dataset request:", e);
     return Promise.reject(e);
   }
@@ -69,7 +137,7 @@ export const sendQueryTSRequest = async (ts: number[][]): Promise<string[][]> =>
     const response = await api.post("/api/queryTS", JSON.stringify(ts));
     console.log(response.data);
     return response.data;
-  }catch (e) {
+  } catch (e) {
     console.error("Error sending query ts request:", e);
     return Promise.reject(e);
   }

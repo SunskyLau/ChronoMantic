@@ -160,7 +160,7 @@ def generate_fragments_by_query(fragment_list: FragmentList, querySpec: QuerySpe
         end_idx = fragment.end_idx
         time_stamp = x[start_idx : end_idx + 1]
         values = y[start_idx : end_idx + 1]
-        segment_index_array = get_best_segments(time_stamp, values, segments_length)
+        segment_index_array, avg_loss = get_best_segments(time_stamp, values, segments_length)
         # print("segment_index_array:", segment_index_array)
         segments = []
         old_end = start_idx
@@ -171,7 +171,7 @@ def generate_fragments_by_query(fragment_list: FragmentList, querySpec: QuerySpe
             # 计算斜率
             dy = y[segment_end_idx] - y[segment_start_idx]
             dx = x[segment_end_idx] - x[segment_start_idx]
-            slope = dy / dx
+            slope = dy / dx if dx != 0 else 0
 
             segment = Segment(start_idx=segment_start_idx, end_idx=segment_end_idx, slope=slope, theta=None, trend=None, extent=None)
             segments.append(segment)
@@ -182,7 +182,7 @@ def generate_fragments_by_query(fragment_list: FragmentList, querySpec: QuerySpe
         slope = dy / dx
         segments.append(Segment(start_idx=old_end, end_idx=end_idx, slope=slope, theta=None, trend=None, extent=None))
 
-        fragment = Fragment(start_idx=start_idx, end_idx=end_idx, segments=segments)
+        fragment = Fragment(start_idx=start_idx, end_idx=end_idx, segments=segments, avg_loss=avg_loss)
         result_fragment_list.fragments.append(fragment)
     return result_fragment_list
 

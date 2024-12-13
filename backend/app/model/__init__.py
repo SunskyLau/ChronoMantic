@@ -77,7 +77,7 @@ def get_best_segments(x: np.ndarray, y: np.ndarray, k: int) -> List[int]:
             residuals[i][j] = calculate_residual_by_linkPoints(x[i : j + 1], y[i : j + 1])
             # residuals[i][j] = calculate_residual_by_fit(x[i : j + 1], y[i : j + 1])
 
-    # dp[i][j]: 前i个点分成j段的最优得分
+    # dp[i][j]: 前0~i序列分成j段的最优得分
     dp = np.zeros((n, k + 1)) + np.inf
     prev = np.zeros((n, k + 1), dtype=int)
 
@@ -101,4 +101,5 @@ def get_best_segments(x: np.ndarray, y: np.ndarray, k: int) -> List[int]:
         segments.append(prev[pos][j])
         pos = prev[pos][j]
 
-    return sorted(segments)
+    avg_loss = dp[n - 1][k] / n
+    return sorted(segments), avg_loss

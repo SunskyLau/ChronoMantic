@@ -1,16 +1,10 @@
 import "./App.css";
-import NlqueryBox from "./components/NlqueryBox";
-import AppHeader from "./components/AppHeader";
-import CsvLoader from "./components/CsvLoader";
-import ResultsPanel from "./components/ResultsPanel";
+import AppMain from "./components/AppMain";
 
 function App() {
   return (
     <div id="app">
-      <AppHeader />
-      <NlqueryBox />
-      <CsvLoader />
-      <ResultsPanel />
+      <AppMain />
     </div>
   );
 }

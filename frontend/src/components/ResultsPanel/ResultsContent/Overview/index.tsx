@@ -1,10 +1,8 @@
+import { classnames } from "../../../../utils/classname"
 import "./index.css"
 
-export default function Overview() {
-    return <div className="result-overview">
-        <div className="result-overview-title">
-            OverView
-        </div>
-        <div className="result-overview-content"></div>
-    </div>
+export default function Overview({ className, children }: { className?: string, children?: React.ReactNode }) {
+    return (<div className={classnames("result-overview", className)}>
+        {children}
+    </div>)
 }

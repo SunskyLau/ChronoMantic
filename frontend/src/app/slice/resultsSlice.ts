@@ -1,4 +1,5 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { FragmentList } from "../../types/QuerySpec";
 
 export type ResultItem = {
   start: number;
@@ -14,20 +15,21 @@ export type Segment = {
 };
 
 export type Results = {
-  [key: string]: ResultItem[];
+  results: FragmentList;
+  others: FragmentList;
 };
 
 export type Trend = string[];
 
 export type ResultState = {
-  results: Results;
+  results: Results | null;
   isRequesting: boolean;
   trend: Trend;
 };
 
 // 使用该类型定义初始 state
 const initialState: ResultState = {
-  results: {},
+  results: null,
   isRequesting: false,
   trend: [],
 }
