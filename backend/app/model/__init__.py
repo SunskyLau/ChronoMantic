@@ -52,7 +52,7 @@ def get_best_segments_optimized(x: np.ndarray, y: np.ndarray, k: int) -> List[in
     return sorted(segments)
 
 
-def get_best_segments(x: np.ndarray, y: np.ndarray, k: int) -> List[int]:
+def get_best_segments(x: np.ndarray, y: np.ndarray, k: int):
     """
     使用动态规划找到最优的k段分割，分割点表示每段的最后一个点
 

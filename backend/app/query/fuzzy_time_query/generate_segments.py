@@ -50,7 +50,7 @@ def generate_segments(x: np.ndarray, y: np.ndarray) -> List[Segment]:
 def prune_segments(segments: List[Segment]) -> List[Segment]:
     new_segments = []
     for segment in segments:
-        if segment.r2 > 0.6:
+        if segment.r2 > Config.R2_THRESHOLD:
             new_segments.append(segment)
     return new_segments
 

@@ -1,2 +1,3 @@
 class Config:
     PROMINENCE_FACTOR = 0.02
+    R2_THRESHOLD = 0.6
