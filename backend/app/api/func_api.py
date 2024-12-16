@@ -5,7 +5,7 @@ import pandas as pd
 from app.services import find_optimal_aspect_ratio
 from app.config import Config
 from numpy.typing import NDArray
-from app.query.process_fragment import generate_fragments_by_time_granularity
+from app.query.precise_time_query.process_fragment import generate_fragments_by_time_granularity
 from app.ai_agent import myAIClient
 from app.ai_agent.constant import GPT_4O, SYSTEM_PROMPT, AZURE
 from app.query.MyTypes import FragmentList, QuerySpec, TrendConfig

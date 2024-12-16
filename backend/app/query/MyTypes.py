@@ -100,6 +100,8 @@ class Segment(DictMixin):
     theta: Optional[float] = None
     trend: Optional[str] = None
     extent: Optional[str] = None
+    sum_loss: Optional[float] = None
+    r2: Optional[float] = None
 
 
 @dataclass
