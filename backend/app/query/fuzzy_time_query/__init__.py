@@ -1,7 +1,8 @@
 import numpy as np
 import pandas as pd
 from app.query.fuzzy_time_query.generate_segments import generate_segments
-from ..MyTypes import Fragment, FragmentList, Pattern, QuerySpec, Segment
+from .config import Config
+from ...MyTypes import Fragment, FragmentList, Pattern, QuerySpec, Segment
 from typing import Dict, List
 
 
@@ -50,7 +51,7 @@ def if_add_segment(current_path: List[Segment], new_segment: Segment, x: np.ndar
     x_ratio = min_x_span / max_x_span if max_x_span > 0 else 0
     y_ratio = min_y_span / max_y_span if max_y_span > 0 else 0
 
-    return x_ratio >= 0.25 or y_ratio >= 0.25
+    return x_ratio >= Config.SPAN_THRESHOLD or y_ratio >= Config.SPAN_THRESHOLD
 
 
 def calculate_avg_loss(segments: List[Segment]) -> float:
@@ -161,6 +162,8 @@ if __name__ == "__main__":
         patterns=[
             Pattern(trend="up"),
             Pattern(trend="down"),
+            Pattern(trend="up"),
+            Pattern(trend="down"),
         ]
     )
     df = pd.read_csv("../portfolio_data.csv")
@@ -189,112 +192,27 @@ if __name__ == "__main__":
         plot_start = max(0, start_idx - padding)
         plot_end = min(len(x), end_idx + padding)
 
-        # 绘制原始数据
+        # 绘制整个范围的原始数据
         ax.plot(x[plot_start:plot_end], y[plot_start:plot_end], color="gray", alpha=0.3, linewidth=1)
 
-        # 绘制片段
+        # 绘制片段内的原始数据
+        ax.plot(x[start_idx : end_idx + 1], y[start_idx : end_idx + 1], color="gray", linewidth=2)
+
+        # 只绘制趋势线
         for segment in fragment.segments:
-            # 选择颜色：上升为红色，下降为蓝色
             color = colors[0] if segment.trend == "up" else colors[1]
 
             segment_x = x[segment.start_idx : segment.end_idx + 1]
             segment_y = y[segment.start_idx : segment.end_idx + 1]
 
-            # 绘制实际数据
-            ax.plot(segment_x, segment_y, color=color, linewidth=2)
-
-            # 绘制趋势线
+            # 只绘制趋势线
             slope = segment.slope
             b = segment_y[0] - slope * segment_x[0]
             trend_y = slope * segment_x + b
-            ax.plot(segment_x, trend_y, "--", color=color, alpha=0.5)
+            ax.plot(segment_x, trend_y, color=color, linewidth=2)
 
         ax.set_title(f"片段 {idx} (损失: {fragment.avg_loss:.2f})")
         ax.grid(True, alpha=0.3)
 
     plt.tight_layout()
     plt.show()
-
-
-# if __name__ == "__main__":
-#     import matplotlib.pyplot as plt
-#     import random
-
-#     # 设置中文字体
-#     plt.rcParams["font.sans-serif"] = ["SimHei"]
-#     plt.rcParams["axes.unicode_minus"] = False
-
-#     # 准备数据
-#     querySpec = QuerySpec(
-#         patterns=[
-#             Pattern(trend="up"),
-#             Pattern(trend="down"),
-#             # Pattern(trend="up"),
-#             # Pattern(trend="down"),
-#             # Pattern(trend="up"),
-#             # Pattern(trend="down")
-#         ]
-#     )
-#     df = pd.read_csv("../portfolio_data.csv")
-#     y = df["AMZN"].values
-#     x = np.arange(len(y))
-#     result = query(x, y, querySpec)
-
-#     # 创建图形
-#     plt.figure(figsize=(15, 8))
-
-#     # 绘制原始数据
-#     plt.plot(x, y, color="gray", alpha=0.5, label="原始数据")
-
-#     # 为每个片段随机生成不同的颜色
-#     colors = [f"#{random.randint(0, 0xFFFFFF):06x}" for _ in range(len(result.fragments))]
-
-#     # 绘制每个找到的片段
-#     for idx, fragment in enumerate(result.fragments):
-#         color = colors[idx]
-
-#         # 获取片段的x和y范围
-#         fragment_x = x[fragment.start_idx : fragment.end_idx + 1]
-#         fragment_y = y[fragment.start_idx : fragment.end_idx + 1]
-
-#         # 绘制片段
-#         plt.plot(fragment_x, fragment_y, color=color, linewidth=2, label=f"片段 {idx+1} (损失: {fragment.avg_loss:.2f})")
-
-#         # 绘制每个子段
-#         for segment in fragment.segments:
-#             seg_x = x[segment.start_idx : segment.end_idx + 1]
-#             seg_y = y[segment.start_idx : segment.end_idx + 1]
-
-#             # 计算趋势线
-#             slope = segment.slope
-#             b = seg_y[0] - slope * seg_x[0]
-#             trend_y = slope * seg_x + b
-
-#             # 绘制趋势线
-#             plt.plot(seg_x, trend_y, "--", color=color, alpha=0.5)
-
-#             # 添加趋势标注
-#             mid_x = (seg_x[0] + seg_x[-1]) / 2
-#             mid_y = (seg_y[0] + seg_y[-1]) / 2
-#             plt.annotate(
-#                 f'{"上升" if segment.trend == "up" else "下降"}', xy=(mid_x, mid_y), xytext=(10, 10), textcoords="offset points", color=color, fontsize=8
-#             )
-
-#     plt.title("时间序列片段匹配结果")
-#     plt.xlabel("时间")
-#     plt.ylabel("值")
-#     plt.legend(bbox_to_anchor=(1.05, 1), loc="upper left")
-#     plt.grid(True, alpha=0.3)
-#     plt.tight_layout()
-#     plt.show()
-
-#     # 打印片段信息
-#     print("\n找到的片段信息：")
-#     for idx, fragment in enumerate(result.fragments):
-#         print(f"\n片段 {idx+1}:")
-#         print(f"起始索引: {fragment.start_idx}")
-#         print(f"结束索引: {fragment.end_idx}")
-#         print(f"平均损失: {fragment.avg_loss:.2f}")
-#         print("子段信息:")
-#         for seg_idx, segment in enumerate(fragment.segments):
-#             print(f"  子段 {seg_idx+1}: {segment.trend} (斜率: {segment.slope:.2f})")

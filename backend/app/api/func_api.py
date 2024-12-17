@@ -8,8 +8,8 @@ from numpy.typing import NDArray
 from app.query.precise_time_query.process_fragment import generate_fragments_by_time_granularity
 from app.ai_agent import myAIClient
 from app.ai_agent.constant import GPT_4O, SYSTEM_PROMPT, AZURE
-from app.query.MyTypes import FragmentList, QuerySpec, TrendConfig
-from app.query import query
+from app.MyTypes import FragmentList, QuerySpec, TrendConfig
+from app.query.precise_time_query import query
 
 func_bp = Blueprint("func", __name__)
 

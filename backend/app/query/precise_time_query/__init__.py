@@ -1,7 +1,7 @@
 from typing import List, Tuple
 import numpy as np
 import pandas as pd
-from app.query.MyTypes import Comparator, Fragment, FragmentList, Pattern, QuerySpec, TrendConfig, ValueCondition
+from app.MyTypes import Comparator, Fragment, FragmentList, Pattern, QuerySpec, TrendConfig, ValueCondition
 from app.config import Config
 from app.query.precise_time_query.process_fragment import (
     calculate_fragment_theta,

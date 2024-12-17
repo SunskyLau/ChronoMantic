@@ -4,7 +4,7 @@ import pandas as pd
 from scipy.signal import find_peaks
 import matplotlib.pyplot as plt
 from app.query.fuzzy_time_query.config import Config
-from ..MyTypes import Segment
+from ...MyTypes import Segment
 
 
 def generate_segments(x: np.ndarray, y: np.ndarray) -> List[Segment]:
