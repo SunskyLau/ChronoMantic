@@ -130,6 +130,19 @@ class TrendConfig(DictMixin):
     strong_threshold: float = pi / 3
 
 
+@dataclass
+class TimeSeriesData(DictMixin):
+    x: List[float]
+    y: List[float]
+
+
+@dataclass
+class TableInfo(DictMixin):
+    time_column: Optional[str] = None
+    value_column: Optional[str] = None
+    metadata_columns: Optional[List[str]] = None
+
+
 if __name__ == "__main__":
     # 测试 QuerySpec
     query_spec_json = {
