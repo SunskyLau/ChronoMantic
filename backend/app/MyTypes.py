@@ -64,6 +64,7 @@ class Comparator(str, Enum):
     EQUAL = "="
     NO_LESS = ">="
     NO_GREATER = "<="
+    NO_EQUAL = "!="
 
 
 @dataclass
@@ -111,8 +112,6 @@ class Fragment(DictMixin):
     segments: List[Segment]
     avg_loss: Optional[float] = None
     source: Optional[str] = None
-    value_min: Optional[float] = None
-    value_max: Optional[float] = None
 
 
 @dataclass
