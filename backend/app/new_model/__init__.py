@@ -1,4 +1,4 @@
-from typing import List, Tuple
+from typing import Dict, List, Tuple
 import numpy as np
 
 from .utils import if_keep_fragment, precompute_residuals
@@ -39,46 +39,26 @@ def calculate_fragment_segmentation_matrix(residuals: np.ndarray, x: np.ndarray,
     return f, split_points_path_array
 
 
-def segment_sequence(x: np.ndarray, y: np.ndarray, k: int = 9):
-    """
-    主函数：分割序列
-    返回：分割点列表和最小残差和
-    参数k必须小于等于序列长度
-    """
-    length = len(x)
-    if k > length:
-        raise ValueError("k不能大于序列长度")
-    if k < 1:
-        raise ValueError("k必须大于等于1")
-
-    f, split_points_path_array = calculate_fragment_segmentation_matrix(x, y, k)
-
-    # 直接获取最优分割点，不需要回溯
-    segment_points = sorted([0] + split_points_path_array[0][length - 1][k] + [length - 1])
-
-    return segment_points, f[0][length - 1][k]
-
-
 def generate_fragments(x: np.ndarray, y: np.ndarray, k: int = 9):
     """
     生成所有片段
+
+    Returns:
+        fm- fm[i][j][m]: 表示区间[i,j]分成m段的Fragment对象
     """
     length = len(x)
-    # 初始化fragment_matrix:fm[i][j][m]表示前i~j个点分成m段的最优分割情况下产生的Fragment
     fm = [[[None for _ in range(k + 1)] for _ in range(length)] for _ in range(length)]
 
     # 计算所有区间的残差和、斜率和R²
     residuals, slopes, r_squared = precompute_residuals(x, y)
     f, split_points_path_array = calculate_fragment_segmentation_matrix(residuals, x, y, k)
 
-    kept_results: List[Tuple[int, int, int]] = []  # 根据R2和segment比例指标保留结果
     # 生成所有Fragment
     for m in range(1, k + 1):
         for i in range(length - m):
             for j in range(i + m, length):
                 # 生成Fragment
                 split_points = [i] + split_points_path_array[i][j][m] + [j]
-                # 生成segments
                 segments = []
                 for p in range(len(split_points) - 1):
                     segments.append(
@@ -96,19 +76,28 @@ def generate_fragments(x: np.ndarray, y: np.ndarray, k: int = 9):
                     segments=segments,
                     avg_loss=f[i][j][m] / (j - i + 1),
                 )
+
                 if if_keep_fragment(fragment, x, y, r_squared):
-                    kept_results.append((i, j, m))
-                fm[i][j][m] = fragment
+                    # 将保留的fragment添加到对fm的记录中
+                    fm[i][j][m] = fragment
 
-    # 根据avg_loss对kept_results排序
-    kept_results = sorted(kept_results, key=lambda x: fm[x[0]][x[1]][x[2]].avg_loss)
-
-    return fm, kept_results
+    # fm[i][j][m]:Fragment|None,为None时表示该区间无法分成m段的Fragment或者分割后的Fragment不满足条件
+    return fm
 
 
-# 使用示例
+def generate_fm_dict(data: Dict):
+    fm_dict = {}
+    for key in data:
+        x = data[key]["x"]
+        y = data[key]["y"]
+        fm = generate_fragments(x, y, k=9)
+        fm_dict[key] = fm
+    return fm_dict
+
+
 if __name__ == "__main__":
     import time
+    import matplotlib.pyplot as plt
 
     # 生成示例数据
     print("生成数据...")
@@ -117,14 +106,6 @@ if __name__ == "__main__":
 
     # 计时开始
     start_time = time.time()
-
-    fm, kept_results = generate_fragments(x, y, k=9)
-
-    # 计算耗时
+    fm = generate_fragments(x, y, k=9)
     elapsed_time = time.time() - start_time
-
-    print("耗时:", elapsed_time)
-
-    for kept_result in kept_results:
-        print(f"""保留片段: {kept_result}, avg_loss: {fm[kept_result[0]][kept_result[1]][kept_result[2]].avg_loss}""")
-    print("共有{}个片段".format(len(kept_results)))
+    print(f"耗时: {elapsed_time:.2f}秒")

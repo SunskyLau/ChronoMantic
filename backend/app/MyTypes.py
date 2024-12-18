@@ -110,6 +110,9 @@ class Fragment(DictMixin):
     end_idx: int
     segments: List[Segment]
     avg_loss: Optional[float] = None
+    source: Optional[str] = None
+    value_min: Optional[float] = None
+    value_max: Optional[float] = None
 
 
 @dataclass

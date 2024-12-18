@@ -1,4 +1,5 @@
 import json
+from typing import List
 from flask import Blueprint, request, jsonify
 import numpy as np
 import pandas as pd
@@ -8,8 +9,10 @@ from numpy.typing import NDArray
 from app.query.precise_time_query.process_fragment import generate_fragments_by_time_granularity
 from app.ai_agent import myAIClient
 from app.ai_agent.constant import GPT_4O, SYSTEM_PROMPT, AZURE
-from app.MyTypes import FragmentList, QuerySpec, TrendConfig
+from ..MyTypes import Fragment, FragmentList, QuerySpec, TrendConfig
 from app.query.precise_time_query import query
+from app.query import new_query
+from ..shared_data import time_series_data_object, fm_dict_object
 
 func_bp = Blueprint("func", __name__)
 
@@ -102,3 +105,12 @@ def query_spec():
     response = client.sendPrompt(SYSTEM_PROMPT, query, keepHistory=False, if_response_format=True)
     response = json.loads(response)
     return jsonify(response)
+
+
+@func_bp.route("/query_for_fragments", methods=["POST"])
+def query_for_fragments():
+    querySpec: QuerySpec = QuerySpec.from_dict(request.json.get("querySpec"))
+    fragments: List[Fragment] = [Fragment.from_dict(f) for f in request.json.get("fragments", [])]
+    fm_dict = fm_dict_object.get_data()
+    fragments = new_query(querySpec, fragments, fm_dict)
+    return jsonify(filter_json([fragment.to_dict() for fragment in fragments]))
