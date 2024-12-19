@@ -139,6 +139,7 @@ class TimeSeriesData(DictMixin):
 class TableInfo(DictMixin):
     time_column: Optional[str] = None
     value_column: Optional[str] = None
+    id_column: Optional[str] = None
     metadata_columns: Optional[List[str]] = None
 
 

@@ -1,0 +1,20 @@
+.choose {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: var(--gap);
+}
+
+.choose h3 i {
+    font-weight: normal;
+}
+
+.choose .choose-button {
+    padding: 10px 24px;
+    border-radius: 8px;
+    margin-top: 24px;
+    border: none;
+    color: #fff;
+    background-color: #567DFF;
+    outline: none;
+}

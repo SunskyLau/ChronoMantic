@@ -91,21 +91,45 @@ export default function OverView() {
                 .duration(750)
                 .attr("opacity", "1");
 
-            g.selectAll(".link-label")
+            const labels = g.selectAll(".link-label")
                 .data(root.links())
                 .enter()
                 .append("text")
                 .attr("class", "link-label")
                 .attr("x", (d) => d.target.y! + 20)
-                .attr("y", (d) => d.target.x! + 5)
+                .attr("y", (d) => d.target.x! + 15)
                 .text((d) => d.target.data.name)
                 .style("fill", "#333")
-                .style("font-size", "12px")
+                .style("font-size", "16px")
+                .style("font-weight", "bold")
                 .style("text-anchor", "start")
                 .style("cursor", "pointer")
                 .on("click", (_, d) => {
                     dispatch(setNLQuery(d.target.data.name));
                 })
+
+            labels.each(function () {
+                const text = d3.select(this);
+                const words = text.text().split(/\s+/).reverse();
+                const lineHeight = 1.2;
+                const y = text.attr("y");
+                const dy = parseFloat(text.attr("dy") || '0');
+                let word: string | undefined;
+                let line: string[] = [];
+                let tspan = text.text(null).append("tspan").attr("x", text.attr("x")).attr("y", y).attr("dy", dy + "em");
+                let lineNumber = 0;
+                while ((word = words.pop()), word) {
+                    line.push(word);
+                    tspan.text(line.join(" "));
+                    if (tspan.node()!.getComputedTextLength() > width / 2) {
+                        line.pop();
+                        tspan.text(line.join(" "));
+                        line = [word];
+                        tspan = text.append("tspan").attr("x", text.attr("x")).attr("y", y).attr("dy", ++lineNumber * lineHeight + dy + "em").text(word);
+                    }
+                }
+                text.attr("transform", `translate(0,-${(text.node()?.getBBox().height || 0) / 2})`);
+            });
 
             const node = g
                 .selectAll(".node")
@@ -130,10 +154,6 @@ export default function OverView() {
                 .attr("y", -20)
                 .style("text-anchor", "middle")
                 .text((d) => (d.parent ? "" : d.data.name))
-                .attr("opacity", "0")
-                .transition()
-                .duration(750)
-                .attr("opacity", "1");
 
             node
                 .append("text")

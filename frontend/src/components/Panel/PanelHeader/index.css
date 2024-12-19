@@ -17,3 +17,9 @@
     margin-left: 4px;
     font-size: 24px;
 }
+
+.panel-header .panel-header-title {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}

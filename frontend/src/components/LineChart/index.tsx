@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { memo, useEffect, useRef } from 'react';
 import * as d3 from 'd3';
 
 interface LineChartProps {
@@ -8,15 +8,15 @@ interface LineChartProps {
     title?: string;
 }
 
-export default function LineChart({ xData, yData, ratio = 1, title = "" }: LineChartProps) {
+function LineChart({ xData, yData, ratio = 0.00001, title = "" }: LineChartProps) {
     const svgRef = useRef<SVGSVGElement>(null);
 
     useEffect(() => {
         if (!svgRef.current || xData.length === 0 || yData.length === 0) return;
 
-        const margin = { top: 20, right: 20, bottom: 30, left: 50 };
+        const margin = { top: 20, right: 30, bottom: 30, left: 40 };
         const svg = d3.select(svgRef.current);
-        const width = svgRef.current.clientWidth - margin.left - margin.right;
+        const width = Math.max(10, svgRef.current.clientWidth - margin.left - margin.right);
         const xMin = d3.min(xData)!;
         const xMax = d3.max(xData)!;
         const yMin = d3.min(yData)!;
@@ -56,7 +56,7 @@ export default function LineChart({ xData, yData, ratio = 1, title = "" }: LineC
             .attr('font-weight', 'bold')
             .text(title);
 
-        const xAxis = d3.axisBottom(xScale);
+        const xAxis = d3.axisBottom(xScale).tickValues([xMin, xMax]).tickFormat((d) => new Date(d as number).toLocaleDateString());
         g.append('g')
             .attr('transform', `translate(0,${innerHeight})`)
             .call(xAxis);
@@ -75,7 +75,15 @@ export default function LineChart({ xData, yData, ratio = 1, title = "" }: LineC
     }, [xData, yData, ratio, title]);
 
     return (
-        <svg ref={svgRef} width="100%" height="100%">
-        </svg>
+        <svg ref={svgRef} width="100%" height="0"></svg>
     );
 };
+
+export default memo(LineChart, (prevProps, nextProps) => {
+    return (
+        JSON.stringify(prevProps.xData) === JSON.stringify(nextProps.xData) &&
+        JSON.stringify(prevProps.yData) === JSON.stringify(nextProps.yData) &&
+        prevProps.ratio === nextProps.ratio &&
+        prevProps.title === nextProps.title
+    );
+});

@@ -19,6 +19,7 @@ export default function SearchTree({ className }: { className?: string }) {
   const others = useAppSelector((state) => state.results.results?.others);
   const currentFragments = useAppSelector((state) => state.states.currentFragments);
   const treeData = useAppSelector((state) => state.states.treeData);
+  const zoomTransformRef = useRef<d3.ZoomTransform>();
   const dispatch = useAppDispatch();
 
   useEffect(() => {
@@ -38,8 +39,11 @@ export default function SearchTree({ className }: { className?: string }) {
 
     const g = svg.append("g").attr("transform", `translate(${width / 2}, ${height / 4})`);
 
-    const zoom = d3.zoom<SVGSVGElement, unknown>().on("zoom", (event) => g.attr("transform", event.transform));
-    svg.call(zoom).call(zoom.transform, d3.zoomIdentity.translate(width / 2, height / 4));
+    const zoom = d3.zoom<SVGSVGElement, unknown>().on("zoom", (event) => {
+      g.attr("transform", event.transform);
+      zoomTransformRef.current = event.transform;
+    });
+    svg.call(zoom).call(zoom.transform, d3.zoomIdentity.translate(zoomTransformRef.current?.x ?? width / 2, zoomTransformRef.current?.y ?? height / 4));
 
     const resetButton = document.getElementById("reset-button");
     resetButton?.addEventListener("click", reset);

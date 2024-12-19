@@ -2,7 +2,7 @@ import "./index.css";
 import Papa from "papaparse";
 import { useRef } from "react";
 import { useAppDispatch } from "../../app/hooks";
-import { setDataset, Dataset } from "../../app/slice/datasetSlice";
+import { setDataset, Dataset, ColumnType } from "../../app/slice/datasetSlice";
 import UploadIcon from "../../icons/Upload";
 import { uploadCsvFile } from "../../api";
 
@@ -12,7 +12,7 @@ function CsvLoader() {
 
   const handleClickLoadIcon = () => {
     if (fileInputRef.current) {
-      fileInputRef.current.value = ""; // 重置文件输入框的值
+      fileInputRef.current.value = "";
       fileInputRef.current.click();
     }
   };
@@ -25,31 +25,27 @@ function CsvLoader() {
 
   const parseCSV = (file: File) => {
     uploadCsvFile(file).then(res => {
-      Papa.parse<Record<string, number | string>>(file, {
+      Papa.parse<Record<string, ColumnType>>(file, {
         header: true,
         dynamicTyping: true,
         complete: (result) => {
           const dataset: Dataset = {
-            timeStamp: [],
-            datasetName: res.filename,
+            filename: res.filename,
             data: {},
-            timeStampColumnName: result.meta.fields?.shift() || ""
+            timeStampColumn: "",
+            idColumn: "",
+            valueColumn: "",
           };
-  
+
           result.data.forEach(row => {
             for (const [key, value] of Object.entries(row)) {
-              if (!value) continue;
-              if (key === dataset.timeStampColumnName) {
-                dataset.timeStamp.push(new Date(value.toString()).getTime());
-              } else {
-                if (!dataset.data[key]) {
-                  dataset.data[key] = [];
-                }
-                dataset.data[key].push(typeof value === "number" ? value : NaN);
+              if (!dataset.data[key]) {
+                dataset.data[key] = [];
               }
+              dataset.data[key].push(value);
             }
           });
-  
+
           console.log("Parsed dataset:", dataset);
           dispatch(setDataset(dataset));
         },
@@ -63,7 +59,7 @@ function CsvLoader() {
   return (
     <div className="csv-loader" onClick={handleClickLoadIcon}>
       <UploadIcon></UploadIcon>
-      <input ref={fileInputRef} type="file" accept=".csv" style={{ display: "none" }} onChange={handleFileLoad} />
+      <input ref={fileInputRef} type="file" accept=".csv" className="hidden" onChange={handleFileLoad} />
     </div>
   );
 }

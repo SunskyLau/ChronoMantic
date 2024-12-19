@@ -11,17 +11,22 @@
     flex: 0 1 var(--side-width);
     max-width: var(--side-width);
     min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--gap);
 }
 
 .main-left {
     margin-left: var(--gap);
 }
 
+.main-left .panel,
+.main-right .panel {
+    flex: 1 1 0;
+}
+
 .main-right {
     margin-right: var(--gap);
-    display: flex;
-    flex-direction: column;
-    gap: var(--gap);
 }
 
 .main-body {
@@ -36,13 +41,5 @@
 }
 
 .main-body .main-body-results {
-    flex: 1 1 0;
-}
-
-.main-right .overview {
-    flex: 1 1 0;
-}
-
-.main-right .main-right-search {
     flex: 1 1 0;
 }

@@ -9,6 +9,10 @@ export type States = {
   fragments: FragmentList | null;
   currentFragments: FragmentList | null;
   treeData: TreeNode;
+  isSettingShow: boolean;
+  timeStampUnit: string;
+  valueUnit: string;
+  aspectRatio: number;
 };
 
 // 使用该类型定义初始 state
@@ -18,7 +22,11 @@ const initialState: States = {
   fragments: null,
   currentFragments: null,
   ratio: 1,
-  treeData: { name: "Source" }
+  treeData: { name: "Source" },
+  isSettingShow: false,
+  timeStampUnit: "",
+  valueUnit: "",
+  aspectRatio: 1
 };
 
 const stateSlice = createSlice({
@@ -85,8 +93,20 @@ const stateSlice = createSlice({
         }]
       }
     },
+    setIsSettingShow: (state, action: PayloadAction<boolean|undefined>) => {
+      state.isSettingShow = action.payload ?? !state.isSettingShow;
+    },
+    setTimeStampUnit: (state, action: PayloadAction<string>) => {
+      state.timeStampUnit = action.payload;
+    },
+    setValueUnit: (state, action: PayloadAction<string>) => {
+      state.valueUnit = action.payload;
+    },
+    setAspectRatio: (state, action: PayloadAction<number>) => {
+      state.aspectRatio = action.payload;
+    }
   },
 });
 
-export const { setNLQuery, setQuerySpec, setRatio, setFragments, setQuerySpecList, setCurrentFragments, insertTreeData } = stateSlice.actions;
+export const { setNLQuery, setQuerySpec, setRatio, setFragments, setQuerySpecList, setCurrentFragments, insertTreeData, setIsSettingShow, setTimeStampUnit, setValueUnit, setAspectRatio } = stateSlice.actions;
 export default stateSlice.reducer;

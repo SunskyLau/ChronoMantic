@@ -46,14 +46,12 @@ const FragmentChart: React.FC<FragmentChartProps> = ({ xData, yData, ratio, frag
             .domain([fYMin, fYMax])
             .range([innerHeight, 0]);
 
+        const xAxis = d3.axisBottom(fragmentXScale)
+            .tickValues([fragmentXData[0], fragmentXData[fragmentXData.length - 1]])
+            .tickFormat((d) => new Date(d as number).toLocaleDateString());
         g.append('g')
             .attr('transform', `translate(0,${innerHeight})`)
-            // @ts-expect-error d3 bug
-            .call(d3.axisBottom(fragmentXScale)
-                .tickValues([new Date(fragmentXData[0]), new Date(fragmentXData[fragmentXData.length - 1])])
-                // @ts-expect-error d3 bug
-                .tickFormat(d3.timeFormat('%Y-%m-%d')));
-
+            .call(xAxis);
 
         g.append('g').call(d3.axisLeft(fragmentYScale)
             .tickValues([fYMin, fYMax]))
