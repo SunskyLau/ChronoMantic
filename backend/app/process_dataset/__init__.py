@@ -1,6 +1,7 @@
 from typing import Dict, List, Optional
 import pandas as pd
 from app.config import Config
+from app.new_model import generate_fm_dict
 from ..MyTypes import TableInfo, TimeSeriesData
 
 
@@ -41,4 +42,6 @@ def process_dataset(csv, time_column_name, value_column_name, id_column_name):
         data = csv_file[csv_file[id_column_name] == id]
         time_series_dataset[id] = TimeSeriesData(x=list(data[time_column_name]), y=list(data[value_column_name]))
 
-    return table_info, metadata_dict, time_series_dataset
+    fm_dict = generate_fm_dict(time_series_dataset)
+
+    return table_info, metadata_dict, time_series_dataset, fm_dict

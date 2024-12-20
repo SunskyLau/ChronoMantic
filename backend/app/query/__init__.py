@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 
 from ..new_model import generate_fm_dict
-from ..MyTypes import Comparator, Fragment, Pattern, QuerySpec, ValueCondition
+from ..MyTypes import Comparator, Fragment, Pattern, QuerySpec, Segment, TrendConfig, ValueCondition
 
 
 def get_new_fragment(fm_dict: Dict, fragment: Fragment, querySpec: QuerySpec) -> Optional[Fragment]:
@@ -15,11 +15,11 @@ def get_new_fragment(fm_dict: Dict, fragment: Fragment, querySpec: QuerySpec) ->
         return new_fragment
 
 
-def new_query(querySpec: QuerySpec, fragments: List[Fragment], fm_dict: Dict, time_series_dataset) -> List[Fragment]:
+def new_query(querySpec: QuerySpec, fragments: List[Fragment], fm_dict: Dict, time_series_dataset, ratio) -> List[Fragment]:
     new_fragments: List[Fragment] = []
 
     for fragment in fragments:
-        if if_satisfy_query_spec(fragment, querySpec, fm_dict, time_series_dataset):
+        if if_satisfy_query_spec(fragment, querySpec, fm_dict, time_series_dataset, ratio):
             new_fragments.append(get_new_fragment(fm_dict, fragment, querySpec))
 
     return new_fragments
@@ -40,10 +40,57 @@ def if_satisfy_value_condition(value: float, value_condition: ValueCondition) ->
         return value != value_condition.value
 
 
-def if_satisfy_query_spec(fragment: Fragment, querySpec: QuerySpec, fm_dict, time_series_data) -> bool:
+def if_satisfy_pattern_condition(pattern: Pattern, segment: Segment, trend_config: TrendConfig, ratio: float) -> bool:
+    slope = segment.slope / ratio
+    theta = np.arctan(slope)
+    segment_pattern: Pattern = Pattern(trend=None, extent=None)
+    if theta > TrendConfig.flat_threshold:
+        segment_pattern.trend = "up"
+        if theta <= trend_config.weak_threshold:
+            segment_pattern.extent = "weak"
+        elif theta <= trend_config.strong_threshold:
+            segment_pattern.extent = "moderate"
+        else:
+            segment_pattern.extent = "strong"
+    elif theta < -TrendConfig.flat_threshold:
+        segment_pattern.trend = "down"
+        if theta >= -trend_config.weak_threshold:
+            segment_pattern.extent = "weak"
+        elif theta >= -trend_config.strong_threshold:
+            segment_pattern.extent = "moderate"
+        else:
+            segment_pattern.extent = "strong"
+    else:
+        segment_pattern.trend = "flat"
+
+    if pattern.trend is not None:
+        if pattern.trend == segment_pattern.trend:
+            if pattern.extent is not None:
+                if pattern.extent != segment_pattern.extent:
+                    return False
+        else:
+            return False
+    return True
+
+
+def if_satisfy_patterns(patterns: List[Pattern], fragment: Fragment, fm_dict: Dict, trend_config: TrendConfig, ratio: float) -> bool:
+    patterns_length = len(patterns)
+    if patterns_length == 0:
+        return True
+    new_fragment: Optional[Fragment] = fm_dict[fragment.source][fragment.start_idx][fragment.end_idx][patterns_length]
+    if new_fragment is None:
+        return False
+    for idx, pattern in enumerate(patterns):
+        if not if_satisfy_pattern_condition(pattern, new_fragment.segments[idx], trend_config, ratio):
+            return False
+    return True
+
+
+def if_satisfy_query_spec(fragment: Fragment, querySpec: QuerySpec, fm_dict, time_series_data, ratio: float) -> bool:
     y = time_series_data[fragment.source]["y"]
     min_value = np.min(y[fragment.start_idx : fragment.end_idx + 1])
     max_value = np.max(y[fragment.start_idx : fragment.end_idx + 1])
+
     # 首先判断y的条件
     if querySpec.y_max_condition is not None:
         if not if_satisfy_value_condition(max_value, querySpec.y_max_condition):
@@ -52,19 +99,10 @@ def if_satisfy_query_spec(fragment: Fragment, querySpec: QuerySpec, fm_dict, tim
         if not if_satisfy_value_condition(min_value, querySpec.y_min_condition):
             return False
 
-    patterns_length = len(querySpec.patterns)
-    fm = fm_dict[fragment.source]
-    if patterns_length != 0:
-        new_fragment: Optional[Fragment] = fm[fragment.start_idx][fragment.end_idx][patterns_length]
-        if new_fragment is None:
-            return False
-        for idx, pattern in enumerate(querySpec.patterns):
-            if pattern.trend == "up" and new_fragment.segments[idx].slope > 0:
-                continue
-            elif pattern.trend == "down" and new_fragment.segments[idx].slope < 0:
-                continue
-            else:
-                return False
+    # 判断pattern的条件
+    if not if_satisfy_patterns(querySpec.patterns, fragment, fm_dict, TrendConfig(), ratio):
+        return False
+
     return True
 
 
@@ -94,8 +132,8 @@ if __name__ == "__main__":
     print("原始fragments数量:", len(old_fragments))
     print("开始查询...")
     start_time = time.time()
-    new_fragments = new_query(query_spec, old_fragments, fm_dict, time_series_dataset)
+    new_fragments = new_query(query_spec, old_fragments, fm_dict, time_series_dataset, 1)
     print("查询耗时:", time.time() - start_time)
     print("新fragments数量:", len(new_fragments))
-    for fragment in new_fragments:
-        print("fragment:", fragment)
+    # for fragment in new_fragments:
+    #     print("fragment:", fragment)

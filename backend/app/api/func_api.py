@@ -12,7 +12,7 @@ from app.ai_agent.constant import GPT_4O, SYSTEM_PROMPT, AZURE
 from ..MyTypes import Fragment, FragmentList, QuerySpec, TrendConfig
 from app.query.precise_time_query import query
 from app.query import new_query
-from ..shared_data import time_series_dataset_container, fm_dict_container
+from ..shared_data import time_series_dataset_container, fm_dict_container, metadata_dict_container, table_info_container, width_height_ratio_container
 
 func_bp = Blueprint("func", __name__)
 
@@ -107,10 +107,12 @@ def query_spec():
     return jsonify(response)
 
 
-@func_bp.route("/query_for_fragments", methods=["POST"])
-def query_for_fragments():
+@func_bp.route("/query_in_fragments", methods=["POST"])
+def query_in_fragments():
     querySpec: QuerySpec = QuerySpec.from_dict(request.json.get("querySpec"))
     fragments: List[Fragment] = [Fragment.from_dict(f) for f in request.json.get("fragments", [])]
     fm_dict = fm_dict_container.get_data()
-    fragments = new_query(querySpec, fragments, fm_dict)
+    time_series_data = time_series_dataset_container.get_data()
+    width_height_ratio = width_height_ratio_container.get_data()
+    fragments = new_query(querySpec, fragments, fm_dict, time_series_data, width_height_ratio)
     return jsonify(filter_json([fragment.to_dict() for fragment in fragments]))

@@ -124,7 +124,7 @@ class FragmentList(DictMixin):
 
 @dataclass
 class TrendConfig(DictMixin):
-    flat_threshold: float = pi / 18
+    flat_threshold: float = pi / 36
     weak_threshold: float = pi / 6
     strong_threshold: float = pi / 3
 

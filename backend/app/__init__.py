@@ -1,6 +1,5 @@
 from flask import Flask
 from flask_cors import CORS
-from app.config import Config
 from app.api import func_bp, file_bp
 
 

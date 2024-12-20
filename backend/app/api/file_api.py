@@ -1,6 +1,7 @@
 from flask import Blueprint, request, jsonify
 from app.utils import process_csv_file
 from app.process_dataset import process_dataset
+from app.shared_data import table_info_container, metadata_dict_container, time_series_dataset_container, fm_dict_container
 
 file_bp = Blueprint("file", __name__)
 
@@ -45,5 +46,14 @@ def process_dataset_fn():
     time_column_name: str = request.json.get("timeColumnName")
     value_column_name: str = request.json.get("valueColumnName")
     id_column_name: str = request.json.get("idColumnName")
-    table_info, metadata_dict, time_series_dataset = process_dataset(csv_name, time_column_name, value_column_name, id_column_name)
+
+    # Process the dataset to get table_info, metadata_dict, time_series_dataset
+    table_info, metadata_dict, time_series_dataset, fm_dict = process_dataset(csv_name, time_column_name, value_column_name, id_column_name)
+
+    # Save the processed data to shared_data
+    table_info_container.set_data(table_info)
+    metadata_dict_container.set_data(metadata_dict)
+    time_series_dataset_container.set_data(time_series_dataset)
+    fm_dict_container.set_data(fm_dict)
+
     return jsonify({"tableInfo": table_info.to_dict(), "metadataDict": metadata_dict, "timeSeriesDataset": time_series_dataset})
