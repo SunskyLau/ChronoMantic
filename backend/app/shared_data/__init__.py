@@ -59,7 +59,7 @@ class TREND_CONFIG_CONTAINER:
 
 class WIDTH_HEIGHT_RATIO_CONTAINER:
     def __init__(self):
-        self.data = None
+        self.data = 0.00001
 
     def get_data(self):
         return self.data
