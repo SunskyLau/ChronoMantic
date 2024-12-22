@@ -1,4 +1,4 @@
-import { DatePicker, InputNumber, SelectItem } from "antd";
+import { DatePicker, InputNumber, Select } from "antd";
 import Panel from "../Panel";
 import { Comparator, Extent, Fragment, QuerySpec, Trend } from "../../types/QuerySpec";
 import "./index.css";
@@ -78,16 +78,16 @@ export default function QueryCondition() {
                         {queryCondition.patterns?.map((pattern, index) => (
                             <li key={index}>
                                 <strong>{index}</strong>
-                                <SelectItem allowClear popupMatchSelectWidth={false} value={pattern.trend} options={trendOptions} onChange={(value) => {
+                                <Select allowClear popupMatchSelectWidth={false} value={pattern.trend} options={trendOptions} onChange={(value) => {
                                     const newQueryCondition = deepClone(queryCondition);
                                     newQueryCondition.patterns![index].trend = value;
                                     setQueryCondition({ ...newQueryCondition });
-                                }}></SelectItem>
-                                <SelectItem allowClear popupMatchSelectWidth={false} value={pattern.extent} options={extentOptions} onChange={(value) => {
+                                }}></Select>
+                                <Select allowClear popupMatchSelectWidth={false} value={pattern.extent} options={extentOptions} onChange={(value) => {
                                     const newQueryCondition = deepClone(queryCondition);
                                     newQueryCondition.patterns![index].extent = value;
                                     setQueryCondition({ ...newQueryCondition });
-                                }}></SelectItem>
+                                }}></Select>
                                 <button type="button" className="del-btn" onClick={() => {
                                     const newQueryCondition = deepClone(queryCondition);
                                     newQueryCondition.patterns?.splice(index, 1);
@@ -99,13 +99,13 @@ export default function QueryCondition() {
                 </section>
                 <section>
                     <span className="query-condition-title">Y MAX Value</span>
-                    <SelectItem allowClear options={comparatorOptions} value={queryCondition?.y_max_condition?.comparator} onChange={(value) => {
+                    <Select allowClear options={comparatorOptions} value={queryCondition?.y_max_condition?.comparator} onChange={(value) => {
                         const newQueryCondition = deepClone(queryCondition);
                         if (!value) newQueryCondition.y_max_condition = null;
                         else if (!newQueryCondition.y_max_condition) newQueryCondition.y_max_condition = { comparator: value, value: null };
                         else newQueryCondition.y_max_condition!.comparator = value;
                         setQueryCondition(newQueryCondition);
-                    }}></SelectItem>
+                    }}></Select>
                     {queryCondition?.y_max_condition?.comparator && <InputNumber value={queryCondition?.y_max_condition?.value} onChange={(value) => {
                         const newQueryCondition = deepClone(queryCondition);
                         newQueryCondition.y_max_condition!.value = value;
@@ -114,13 +114,13 @@ export default function QueryCondition() {
                 </section>
                 <section>
                     <span className="query-condition-title">Y MIN Value</span>
-                    <SelectItem allowClear options={comparatorOptions} value={queryCondition?.y_min_condition?.comparator} onChange={(value) => {
+                    <Select allowClear options={comparatorOptions} value={queryCondition?.y_min_condition?.comparator} onChange={(value) => {
                         const newQueryCondition = deepClone(queryCondition);
                         if (!value) newQueryCondition.y_min_condition = null;
                         else if (!newQueryCondition.y_min_condition) newQueryCondition.y_min_condition = { comparator: value, value: null };
                         else newQueryCondition.y_min_condition!.comparator = value;
                         setQueryCondition({ ...newQueryCondition });
-                    }}></SelectItem>
+                    }}></Select>
                     {queryCondition?.y_min_condition?.comparator && <InputNumber value={queryCondition?.y_min_condition?.value} onChange={(value) => {
                         const newQueryCondition = deepClone(queryCondition);
                         newQueryCondition.y_min_condition!.value = value;
