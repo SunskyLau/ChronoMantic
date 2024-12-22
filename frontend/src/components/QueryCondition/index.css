@@ -45,6 +45,10 @@
 }
 
 .query-condition section.center {
-    margin-left: 0;
+    margin: 0;
     text-align: center;
+}
+
+.query-condition section .ant-btn {
+    margin: 20px;
 }

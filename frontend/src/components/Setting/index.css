@@ -21,6 +21,7 @@
     width: 30%;
     min-width: 360px;
     height: 30%;
+    overflow: auto;
 }
 
 .setting .setting__inner .setting-form {
@@ -34,17 +35,12 @@
     align-items: center;
 }
 
-.setting .setting-form .setting-form__btn {
+.setting .setting-form .ant-btn {
     padding: 10px 24px;
     border-radius: 8px;
-    margin-block: 10px;
+    margin: 10px;
     border: none;
     color: #fff;
     background-color: #567DFF;
-    outline: none;
-}
-
-.setting .setting-form input.choose-item-content-value {
-    width: 60px;
     outline: none;
 }

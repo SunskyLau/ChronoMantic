@@ -1,4 +1,4 @@
-import { DatePicker, InputNumber, Select } from "antd";
+import { Button, DatePicker, InputNumber, Select } from "antd";
 import Panel from "../Panel";
 import { Comparator, Extent, Fragment, QuerySpec, Trend } from "../../types/QuerySpec";
 import "./index.css";
@@ -138,7 +138,7 @@ export default function QueryCondition() {
                     }}></DatePicker.RangePicker>
                 </section>
                 <section className="center">
-                    <button className="submit-btn">Confirm!</button>
+                    <Button type="primary" htmlType="submit">Confirm!</Button>
                 </section>
             </form>
         </Panel>

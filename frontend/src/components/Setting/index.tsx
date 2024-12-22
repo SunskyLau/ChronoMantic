@@ -5,7 +5,7 @@ import SettingIcon from "../../icons/Setting";
 import Panel from "../Panel";
 import SelectItem from "../SelectItem";
 import "./index.css";
-import { InputNumber } from "antd";
+import { Button, InputNumber } from "antd";
 
 export default function Setting() {
     const dispatch = useAppDispatch()
@@ -34,7 +34,7 @@ export default function Setting() {
                             <InputNumber value={aspectRatioState} min={0} step={0.00001} onChange={(val)=>val &&setAspectRatioState(val)}></InputNumber>
                         </div>
                     </div>
-                    <button className="setting-form__btn">Confirm!</button>
+                    <Button type="primary" htmlType="submit">Confirm!</Button>
                 </form>
             </Panel>
         </div>

@@ -4,6 +4,7 @@ import "./index.css";
 import { DatasetColumn, setColumn, setSymbolData } from "../../../app/slice/datasetSlice";
 import SelectItem from "../../SelectItem";
 import { processDataset } from "../../../api";
+import { Button } from "antd";
 
 export default function Choose() {
     const filename = useAppSelector((state) => state.dataset.dataset?.filename);
@@ -23,7 +24,9 @@ export default function Choose() {
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         const columns = Object.fromEntries(Object.entries(chooseColumn).map(([key, column]) => {
-            if (!column.value) throw new Error(`Please choose ${column.title}`);
+            if (!column.value) {
+                throw new Error(`Please choose ${column.title}`);
+            }
             return [key as keyof DatasetColumn, column.value];
         }))
         const { timeStampColumn, valueColumn, idColumn } = columns;
@@ -36,6 +39,6 @@ export default function Choose() {
     return <form className="choose" onSubmit={handleSubmit}>
         <h3>Received dataset: <i>{filename}</i></h3>
         {Object.values(chooseColumn).map((column) => <SelectItem key={column.title} choices={choices} value={column.value || ""} title={column.title} handleSelect={(val) => setChoiseColumn(column, val)}></SelectItem>)}
-        <button className="submit-btn">Confirm!</button>
+        <Button type="primary" htmlType="submit">Confirm!</Button>
     </form>;
 };

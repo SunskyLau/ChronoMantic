@@ -2,18 +2,19 @@ import { useAppDispatch, useAppSelector } from "../../../app/hooks";
 import LineChart from "../../LineChart";
 import "./index.css";
 import LineIcon from "../../../icons/Line";
-import AddIcon from "../../../icons/Add";
 import ArrowIcon from "../../../icons/Arrow";
 import { TimeSeries } from "../../../types";
 import { removeSelectedSymbol, removeUnselectedSymbol } from "../../../app/slice/datasetSlice";
 import { useEffect, useState } from "react";
+import { classnames } from "../../../utils/classname";
 
 export default function Exploration() {
     const symbolData = useAppSelector((state) => state.dataset.dataset?.symbolData) || {};
     const selectedSymbols = useAppSelector((state) => state.dataset.dataset?.selectedSymbols) || [];
     const unselectedSymbols = useAppSelector((state) => state.dataset.dataset?.unselectedSymbols) || [];
     const dispatch = useAppDispatch();
-    const [renderedCharts, setRenderedCharts] = useState({ selectedData: 0, unSelectedData: 0 });
+    const [renderedCharts, setRenderedCharts] = useState([0, 0]);
+    const [isShowCharts, setIsShowCharts] = useState([true, true]);
     const ratio = useAppSelector((state) => state.states.aspectRatio);
 
     const selectedData = selectedSymbols?.map((symbol): [string, TimeSeries] => [symbol, symbolData[symbol]]);
@@ -23,36 +24,45 @@ export default function Exploration() {
     useEffect(() => {
         const incrementRender = () => {
             setRenderedCharts((prev) => {
-                const newSelectedCount = Math.min(prev.selectedData + 1, selectedData.length);
-                const newUnselectedCount = Math.min(prev.unSelectedData + 1, unSelectedData.length);
+                const newSelectedCount = Math.min(prev[0] + 1, selectedData.length);
+                const newUnselectedCount = Math.min(prev[1] + 1, unSelectedData.length);
                 if (newSelectedCount === selectedData.length && newUnselectedCount === unSelectedData.length) {
                     clearInterval(interval);
                 }
-                return {
-                    selectedData: newSelectedCount,
-                    unSelectedData: newUnselectedCount,
-                };
+                return [newSelectedCount, newUnselectedCount];
             });
         };
+        setRenderedCharts([0, 0]);
         const interval = setInterval(incrementRender, 16);
         return () => clearInterval(interval);
     }, [selectedData?.length, unSelectedData?.length]);
 
     return (
         <div className="explore">
-            {Object.entries(allData).map(([type, record]) => {
+            {Object.entries(allData).map(([type, record], index) => {
                 return (
-                    <div className="explore-on explore-item" key={type}>
+                    <div className={classnames("explore-item", isShowCharts[index] ? "" : "hide")} key={type}>
                         <h3 className="explore-item-title">
                             <span>{type === "selectedData" ? "" : "Not"} Under Exploration</span>
                             <div className="tools">
-                                <button><AddIcon /></button>
-                                <button><LineIcon /></button>
-                                <button><ArrowIcon /></button>
+                                <button onClick={() => {
+                                    record.forEach(([key,]) => {
+                                        if (type === "selectedData") {
+                                            dispatch(removeSelectedSymbol(key));
+                                        } else {
+                                            dispatch(removeUnselectedSymbol(key));
+                                        }
+                                    })
+                                }}><LineIcon /></button>
+                                <button onClick={() => {
+                                    const newIsShowCharts = [...isShowCharts];
+                                    newIsShowCharts[index] = !newIsShowCharts[index];
+                                    setIsShowCharts(newIsShowCharts);
+                                }}><ArrowIcon className={isShowCharts[index] ? "rotate" : ""} /></button>
                             </div>
                         </h3>
-                        <div className="explore-item-content">
-                            {record.slice(0, renderedCharts[type as keyof typeof renderedCharts]).map(([key, { x, y }]) => (
+                        <div className={classnames("explore-item-content", isShowCharts[index] ? "" : "hide")}>
+                            {record.slice(0, renderedCharts[index]).map(([key, { x, y }]) => (
                                 <div className="explore-item-content-list" key={key} >
                                     <div className="explore-item-content-title">{key}</div>
                                     <LineChart key={key} xData={x} yData={y} ratio={ratio}></LineChart>

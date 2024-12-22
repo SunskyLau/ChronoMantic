@@ -11,28 +11,45 @@
     overflow: auto;
     display: flex;
     flex-direction: column;
+    transition: flex-grow 0.2s, flex-basis 0.2s;
+}
+
+.explore .explore-item.hide {
+    flex-grow: 0;
+    flex-basis: 40px;
 }
 
 .explore .explore-item .explore-item-title {
     position: sticky;
     margin: 0;
     top: 0;
+    height: 40px;
+    line-height: 40px;
     background-color: #fff;
-    padding-block: 8px;
     z-index: 9;
     display: flex;
     justify-content: space-between;
 }
 
+.explore .explore-item .explore-item-title .tools {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
 .explore .explore-item .explore-item-title .tools button {
     all: unset;
     cursor: pointer;
-    padding: 4px 8px;
+    overflow: hidden;
 }
 
 .explore .explore-item .explore-item-content {
     height: 100%;
     overflow: auto;
+}
+
+.explore .explore-item .explore-item-content.hide {
+    height: 0;
 }
 
 .explore .explore-item .explore-item-content-list {
@@ -57,4 +74,8 @@
     position: relative;
     margin-right: 10px;
     flex-shrink: 0;
+}
+
+.rotate {
+    transform: rotate(180deg);
 }
