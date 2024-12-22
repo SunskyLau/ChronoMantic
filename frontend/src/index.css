@@ -3,7 +3,7 @@
   --header-height: 64px;
   --side-width: calc((100% - var(--width)) / 2);
   --height: calc(100vh - var(--gap) * 2);
-  --gap: 32px;
+  --gap: 16px;
 }
 
 #root {

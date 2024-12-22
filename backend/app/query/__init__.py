@@ -1,10 +1,10 @@
-from typing import Dict, List, Optional
-
+from typing import Dict, List, Optional, Tuple
+from .config import Config
 import numpy as np
 import pandas as pd
 
 from ..new_model import generate_fm_dict
-from ..MyTypes import Comparator, Fragment, Pattern, QuerySpec, Segment, TrendConfig, ValueCondition
+from ..MyTypes import Comparator, Fragment, Pattern, QuerySpec, Segment, TimeSeriesData, TrendConfig, ValueCondition
 
 
 def get_new_fragment(fm_dict: Dict, fragment: Fragment, querySpec: QuerySpec) -> Optional[Fragment]:
@@ -15,14 +15,48 @@ def get_new_fragment(fm_dict: Dict, fragment: Fragment, querySpec: QuerySpec) ->
         return new_fragment
 
 
-def new_query(querySpec: QuerySpec, fragments: List[Fragment], fm_dict: Dict, time_series_dataset, ratio) -> List[Fragment]:
+def new_query(querySpec: QuerySpec, fragments: List[Fragment], fm_dict: Dict, time_series_dataset, ratio) -> Tuple[List[Fragment], List[Fragment]]:
     new_fragments: List[Fragment] = []
 
     for fragment in fragments:
         if if_satisfy_query_spec(fragment, querySpec, fm_dict, time_series_dataset, ratio):
             new_fragments.append(get_new_fragment(fm_dict, fragment, querySpec))
 
-    return new_fragments
+    keeped_fragments = prune_results(new_fragments, time_series_dataset)
+    return new_fragments, keeped_fragments
+
+
+# 过滤结果
+def prune_results(fragments: List[Fragment], time_series_dataset: Dict[str, TimeSeriesData]):
+
+    fragments.sort(key=lambda x: x.avg_loss)
+    keeped_fragments = [fragments[0]]
+    for i in range(1, len(fragments)):
+        flag = True
+        for j in keeped_fragments:
+            if if_two_fragment_compatible(j, fragments[i], time_series_dataset) == False:
+                flag = False
+                break
+        if flag:
+            keeped_fragments.append(fragments[i])
+
+    return keeped_fragments
+
+
+def if_two_fragment_compatible(keeped_fragment: Fragment, candidate_fragment: Fragment, time_series_data: Dict[str, TimeSeriesData]) -> bool:
+    if keeped_fragment.source == candidate_fragment.source:
+        x1 = time_series_data[keeped_fragment.source].x
+        x2 = time_series_data[candidate_fragment.source].x
+        keeped_start_time = x1[keeped_fragment.start_idx]
+        keeped_end_time = x1[keeped_fragment.end_idx]
+        candidate_start_time = x2[candidate_fragment.start_idx]
+        candidate_end_time = x2[candidate_fragment.end_idx]
+        overlap = max(0, min(keeped_end_time, candidate_end_time) - max(keeped_start_time, candidate_start_time))
+        overlap_ratio1 = overlap / (keeped_end_time - keeped_start_time)
+        overlap_ratio2 = overlap / (candidate_end_time - candidate_start_time)
+        if overlap_ratio1 >= Config.OVERLAP_RATIO_THRESHOLD and overlap_ratio2 >= Config.OVERLAP_RATIO_THRESHOLD:
+            return False
+    return True
 
 
 def if_satisfy_value_condition(value: float, value_condition: ValueCondition) -> bool:
@@ -128,11 +162,11 @@ if __name__ == "__main__":
     old_fragments: List[Fragment] = []
     for i in range(364):
         for j in range(i + 1, 365):
-            old_fragments.append(Fragment(start_idx=i, end_idx=j, segments=[], source="AMZN"))
+            old_fragments.append(Fragment(start_idx=i, end_idx=j, segments=[], source="AMZN", avg_loss=0))
     print("原始fragments数量:", len(old_fragments))
     print("开始查询...")
     start_time = time.time()
-    new_fragments = new_query(query_spec, old_fragments, fm_dict, time_series_dataset, 1)
+    new_fragments, keeped_fragments = new_query(query_spec, old_fragments, fm_dict, time_series_dataset, 1)
     print("查询耗时:", time.time() - start_time)
     print("新fragments数量:", len(new_fragments))
     # for fragment in new_fragments:

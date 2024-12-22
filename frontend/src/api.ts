@@ -5,7 +5,7 @@ import { ProcessDatasetResults } from "./types";
 
 const api = axios.create({
   baseURL: "http://127.0.0.1:5000", // 替换为你的后端API地址
-  timeout: 200000, // 可选的超时设置
+  timeout: 2000000, // 可选的超时设置
   headers: {
     "Content-Type": "application/json",
   },

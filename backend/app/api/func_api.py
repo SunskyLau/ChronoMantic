@@ -114,5 +114,12 @@ def query_in_fragments():
     fm_dict = fm_dict_container.get_data()
     time_series_data = time_series_dataset_container.get_data()
     width_height_ratio = width_height_ratio_container.get_data()
-    fragments = new_query(querySpec, fragments, fm_dict, time_series_data, width_height_ratio)
-    return jsonify(filter_json([fragment.to_dict() for fragment in fragments]))
+    result_fragments, keeped_after_prune_fragments = new_query(querySpec, fragments, fm_dict, time_series_data, width_height_ratio)
+    return jsonify(
+        filter_json(
+            {
+                "result_fragments": [fragment.to_dict() for fragment in result_fragments],
+                "keeped_after_prune_fragments": [fragment.to_dict() for fragment in keeped_after_prune_fragments],
+            }
+        )
+    )
