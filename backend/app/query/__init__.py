@@ -30,6 +30,8 @@ def new_query(querySpec: QuerySpec, fragments: List[Fragment], fm_dict: Dict, ti
 def prune_results(fragments: List[Fragment], time_series_dataset: Dict[str, TimeSeriesData]):
 
     fragments.sort(key=lambda x: x.avg_loss)
+    if len(fragments) == 0:
+        return []
     keeped_fragments = [fragments[0]]
     for i in range(1, len(fragments)):
         flag = True
