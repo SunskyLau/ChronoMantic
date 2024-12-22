@@ -1,7 +1,6 @@
 .results-content {
   width: 100%;
   height: 100%;
-  padding: 12px;
   box-sizing: border-box;
   overflow-y: scroll;
   text-align: center;
@@ -11,9 +10,12 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 16px;
   height: 64px;
   gap: 8px;
+  position: sticky;
+  top: 0;
+  padding: 12px;
+  background-color: #fff;
 }
 
 .result-header > div {
@@ -42,6 +44,7 @@
   flex-direction: column;
   min-width: 0;
   box-sizing: border-box;
+  padding: 12px;
 }
 
 .result-item {
