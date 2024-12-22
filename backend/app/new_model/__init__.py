@@ -39,7 +39,7 @@ def calculate_fragment_segmentation_matrix(residuals: np.ndarray, x: np.ndarray,
     return f, split_points_path_array
 
 
-def generate_fragments(x: np.ndarray, y: np.ndarray, k: int = 9):
+def generate_fragments(x: np.ndarray, y: np.ndarray, source: str = "", k: int = 9):
     """
     生成所有片段
 
@@ -70,12 +70,7 @@ def generate_fragments(x: np.ndarray, y: np.ndarray, k: int = 9):
                         )
                     )
 
-                fragment = Fragment(
-                    start_idx=i,
-                    end_idx=j,
-                    segments=segments,
-                    avg_loss=f[i][j][m] / (j - i + 1),
-                )
+                fragment = Fragment(start_idx=i, end_idx=j, segments=segments, avg_loss=f[i][j][m] / (j - i + 1), source=source)
 
                 if if_keep_fragment(fragment, x, y, r_squared):
                     # 将保留的fragment添加到对fm的记录中
@@ -88,9 +83,9 @@ def generate_fragments(x: np.ndarray, y: np.ndarray, k: int = 9):
 def generate_fm_dict(data: Dict):
     fm_dict = {}
     for key in data:
-        x = data[key]["x"]
-        y = data[key]["y"]
-        fm = generate_fragments(x, y, k=9)
+        x = data[key].x
+        y = data[key].y
+        fm = generate_fragments(x, y, source=key, k=9)
         fm_dict[key] = fm
     return fm_dict
 

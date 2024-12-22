@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Dict, List, Optional
 import pandas as pd
 from app.config import Config
@@ -40,7 +41,9 @@ def process_dataset(csv, time_column_name, value_column_name, id_column_name):
     time_series_dataset: Dict[str, TimeSeriesData] = {}
     for id in csv_file[id_column_name].unique():
         data = csv_file[csv_file[id_column_name] == id]
-        time_series_dataset[id] = TimeSeriesData(x=list(data[time_column_name]), y=list(data[value_column_name]))
+        time_series_dataset[id] = TimeSeriesData(
+            x=[datetime.strptime(time, "%Y-%m-%d").timestamp() for time in list(data[time_column_name])], y=list(data[value_column_name])
+        )
 
     fm_dict = generate_fm_dict(time_series_dataset)
 

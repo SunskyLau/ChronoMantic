@@ -1,5 +1,5 @@
 export interface TimeSeries {
-    x: string[];
+    x: number[];
     y: number[];
 }
 

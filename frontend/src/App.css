@@ -11,3 +11,13 @@
 ::-webkit-scrollbar-thumb:hover {
     background: #999;
 }
+
+.submit-btn {
+    padding: 10px 24px;
+    border-radius: 8px;
+    margin: 24px 0;
+    border: none;
+    color: #fff;
+    background-color: #567DFF;
+    outline: none;
+}

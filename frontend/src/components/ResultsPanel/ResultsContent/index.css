@@ -1,9 +1,10 @@
 .results-content {
   width: 100%;
   height: 100%;
-  padding: 12px 24px;
+  padding: 12px;
   box-sizing: border-box;
   overflow-y: scroll;
+  text-align: center;
 }
 
 .result-header {
@@ -11,19 +12,29 @@
   align-items: center;
   justify-content: space-between;
   margin-bottom: 16px;
+  height: 64px;
+  gap: 8px;
 }
 
-.data-name,
-.data-score {
-  line-height: 2;
-  text-align: center;
-  font-family: "Arial";
-  font-style: normal;
+.result-header > div {
+  background-color: #eee;
+  border-radius: 4px;
+  height: 100%;
+  line-height: 64px;
+}
+
+.results-content .fix-width {
+  width: 64px;
   font-weight: 700;
-  font-size: 16px;
-  align-items: center;
-  color: #000000;
-  width: 100px;
+}
+
+.result-item .data-name {
+  width: 68px;
+}
+
+.results-content .flex-width {
+  flex: 1 1 0;
+  font-weight: 700;
 }
 
 .result-item-list {
@@ -44,10 +55,25 @@
 
 .result-item svg {
   min-width: 0;
-  flex: 1;
 }
 
 .result-item.active {
   outline: 2px solid #B1B1B1;
   background-color: #F5F5F5;
+}
+
+.result-item .data-value {
+  height: 100%;
+  padding: 4px;
+  color: #fff;
+  background-color: #eee;
+  border-radius: 8px;
+  margin-inline: 12px;
+}
+
+.result-item .data-value .data-value__inner {
+  height: 100%;
+  background-color: #9CC9EE;
+  border-radius: 4px;
+  white-space: nowrap;
 }

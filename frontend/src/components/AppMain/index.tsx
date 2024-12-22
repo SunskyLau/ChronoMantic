@@ -17,7 +17,6 @@ export default function AppMain() {
             <main className="main">
                 <section className="main-left">
                     <TableView />
-                    <OverView />
                 </section>
                 <section className="main-body">
                     <AppHeader />
@@ -27,6 +26,7 @@ export default function AppMain() {
                 </section>
                 <section className="main-right">
                     <QueryCondition />
+                    <OverView />
                     <ConstraintDefinition />
                 </section>
             </main>

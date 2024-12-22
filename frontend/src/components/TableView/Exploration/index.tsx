@@ -14,6 +14,7 @@ export default function Exploration() {
     const unselectedSymbols = useAppSelector((state) => state.dataset.dataset?.unselectedSymbols) || [];
     const dispatch = useAppDispatch();
     const [renderedCharts, setRenderedCharts] = useState({ selectedData: 0, unSelectedData: 0 });
+    const ratio = useAppSelector((state) => state.states.aspectRatio);
 
     const selectedData = selectedSymbols?.map((symbol): [string, TimeSeries] => [symbol, symbolData[symbol]]);
     const unSelectedData = unselectedSymbols?.map((symbol): [string, TimeSeries] => [symbol, symbolData[symbol]]);
@@ -54,7 +55,7 @@ export default function Exploration() {
                             {record.slice(0, renderedCharts[type as keyof typeof renderedCharts]).map(([key, { x, y }]) => (
                                 <div className="explore-item-content-list" key={key} >
                                     <div className="explore-item-content-title">{key}</div>
-                                    <LineChart key={key} xData={x.map(item => new Date(item).getTime())} yData={y}></LineChart>
+                                    <LineChart key={key} xData={x} yData={y} ratio={ratio}></LineChart>
                                     <button className="explore-item-content-remove" onClick={() => {
                                         if (type === "selectedData") {
                                             dispatch(removeSelectedSymbol(key));

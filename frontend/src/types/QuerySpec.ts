@@ -14,6 +14,18 @@ export enum Comparator {
   NO_GREATER = "<=",
 }
 
+export enum Trend {
+  UP = "up",
+  DOWN = "down",
+  FLAT = "flat",
+}
+
+export enum Extent {
+  WEAK = "weak",
+  MODERATE = "moderate",
+  STRONG = "strong",
+}
+
 export type ValueCondition = {
   comparator: Comparator | null;
   value: number | null;
@@ -29,8 +41,6 @@ export type Pattern = {
 };
 
 export type QuerySpec = {
-  timeGranularity: TimeGranularity | null;
-  valueColumnName: string | null;
   patterns: Pattern[] | null;
   y_max_condition: ValueCondition | null;
   y_min_condition: ValueCondition | null;
@@ -51,7 +61,8 @@ export type Fragment = {
   start_idx: number;
   end_idx: number;
   segments: Segment[] | null;
-  avg_loss: number | undefined;
+  avg_loss?: number | undefined;
+  source: string;
 };
 
 export type FragmentList = {

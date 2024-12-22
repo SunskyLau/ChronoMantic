@@ -50,6 +50,8 @@ def precompute_residuals(x: np.ndarray, y: np.ndarray) -> tuple:
         - intercepts[i][j]: 区间[i,j]的截距
         - r_squared[i][j]: 区间[i,j]的R²值
     """
+    x = np.array(x)
+    y = np.array(y)
     n = len(x)
     residuals = np.zeros((n, n))
     slopes = np.zeros((n, n))

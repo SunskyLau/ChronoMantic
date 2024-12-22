@@ -3,6 +3,7 @@ import counterSlice from "./slice/counterSlice";
 import datasetSlice from "./slice/datasetSlice";
 import stateSlice from "./slice/stateSlice";
 import resultSlice from "./slice/resultsSlice";
+import filterSlice from "./slice/filterSlice";
 // ...
 
 const store = configureStore({
@@ -11,6 +12,7 @@ const store = configureStore({
     dataset: datasetSlice,
     states: stateSlice,
     results: resultSlice,
+    filter: filterSlice
   },
 });
 

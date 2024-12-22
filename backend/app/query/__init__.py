@@ -87,7 +87,7 @@ def if_satisfy_patterns(patterns: List[Pattern], fragment: Fragment, fm_dict: Di
 
 
 def if_satisfy_query_spec(fragment: Fragment, querySpec: QuerySpec, fm_dict, time_series_data, ratio: float) -> bool:
-    y = time_series_data[fragment.source]["y"]
+    y = time_series_data[fragment.source].y
     min_value = np.min(y[fragment.start_idx : fragment.end_idx + 1])
     max_value = np.max(y[fragment.start_idx : fragment.end_idx + 1])
 

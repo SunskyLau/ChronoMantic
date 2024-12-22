@@ -1,14 +1,16 @@
-from dataclasses import dataclass, asdict
+from dataclasses import dataclass, asdict, fields
 from enum import Enum
-from typing import List, Optional
+from typing import List, Optional, Union, get_type_hints
 from numpy import pi
 
 
 class DictMixin:
     @classmethod
     def from_dict(cls, data: dict):
-        field_types = cls.__annotations__
+        if not data:
+            return None
 
+        field_types = get_type_hints(cls)  # 动态获取字段类型
         kwargs = {}
         for field_name, field_type in field_types.items():
             if field_name not in data:
@@ -17,9 +19,12 @@ class DictMixin:
             value = data[field_name]
             if value is None:
                 kwargs[field_name] = None
+                continue
+
             # 处理枚举类型
-            elif isinstance(field_type, type) and issubclass(field_type, Enum):
+            if isinstance(field_type, type) and issubclass(field_type, Enum):
                 kwargs[field_name] = field_type(value)
+
             # 处理列表类型
             elif getattr(field_type, "__origin__", None) is list:
                 item_type = field_type.__args__[0]
@@ -27,27 +32,48 @@ class DictMixin:
                     kwargs[field_name] = [item_type.from_dict(item) for item in value]
                 else:
                     kwargs[field_name] = value
+
+            # 处理字典类型
+            elif getattr(field_type, "__origin__", None) is dict:
+                key_type, val_type = field_type.__args__
+                if hasattr(val_type, "from_dict"):
+                    kwargs[field_name] = {k: val_type.from_dict(v) for k, v in value.items()}
+                else:
+                    kwargs[field_name] = value
+
             # 处理可选类型
-            elif getattr(field_type, "__origin__", None) is Optional:
-                item_type = field_type.__args__[0]
-                if value is None:
-                    kwargs[field_name] = None
-                elif hasattr(item_type, "from_dict"):
+            elif getattr(field_type, "__origin__", None) is Union and type(None) in field_type.__args__:
+                item_type = next(t for t in field_type.__args__ if t is not type(None))
+                if hasattr(item_type, "from_dict"):
                     kwargs[field_name] = item_type.from_dict(value)
                 elif isinstance(item_type, type) and issubclass(item_type, Enum):
                     kwargs[field_name] = item_type(value)
                 else:
                     kwargs[field_name] = value
-            # 处理其他自定义类型
+
+            # 处理自定义类型
             elif hasattr(field_type, "from_dict"):
                 kwargs[field_name] = field_type.from_dict(value)
+
+            # 直接赋值其他类型
             else:
                 kwargs[field_name] = value
 
         return cls(**kwargs)
 
     def to_dict(self):
-        return asdict(self)
+        def serialize(obj):
+            if isinstance(obj, Enum):
+                return obj.value
+            elif hasattr(obj, "to_dict"):
+                return obj.to_dict()
+            elif isinstance(obj, list):
+                return [serialize(item) for item in obj]
+            elif isinstance(obj, dict):
+                return {k: serialize(v) for k, v in obj.items()}
+            return obj
+
+        return {field.name: serialize(getattr(self, field.name)) for field in fields(self)}
 
 
 class TimeGranularity(str, Enum):

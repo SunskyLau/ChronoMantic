@@ -1,13 +1,13 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { FragmentList, QuerySpec } from "../../types/QuerySpec";
+import { Fragment, FragmentList, QuerySpec } from "../../types/QuerySpec";
 import { InsertTreeNode, TreeNode } from "../../types/Tree";
 
 export type States = {
   NLQuery: string;
-  querySpec: QuerySpec | null;
-  ratio: number;
-  fragments: FragmentList | null;
-  currentFragments: FragmentList | null;
+  querySpecIndex: number;
+  querySpecList: QuerySpec[];
+  fragmentsIndex: number;
+  fragmentsList: Fragment[][];
   treeData: TreeNode;
   isSettingShow: boolean;
   timeStampUnit: string;
@@ -18,15 +18,15 @@ export type States = {
 // 使用该类型定义初始 state
 const initialState: States = {
   NLQuery: "",
-  querySpec: null,
-  fragments: null,
-  currentFragments: null,
-  ratio: 1,
+  querySpecIndex: -1,
+  querySpecList: [],
+  fragmentsIndex: -1,
+  fragmentsList: [],
   treeData: { name: "Source" },
   isSettingShow: false,
   timeStampUnit: "",
   valueUnit: "",
-  aspectRatio: 1
+  aspectRatio: 0.00001
 };
 
 const stateSlice = createSlice({
@@ -36,20 +36,20 @@ const stateSlice = createSlice({
     setNLQuery: (state, action: PayloadAction<string>) => {
       state.NLQuery = action.payload;
     },
-    setQuerySpec: (state, action: PayloadAction<QuerySpec>) => {
-      state.querySpec = action.payload;
+    addQuerySpec: (state, action: PayloadAction<QuerySpec>) => {
+      state.querySpecList = [...state.querySpecList.slice(0, state.querySpecIndex + 1), action.payload];
+      state.querySpecIndex = state.querySpecList.length - 1;
     },
-    setRatio: (state, action: PayloadAction<number>) => {
-      state.ratio = action.payload;
+    setQuerySpecIndex: (state, action: PayloadAction<number>) => {
+      state.querySpecIndex = action.payload;
     },
-    setFragments: (state, action: PayloadAction<FragmentList>) => {
-      state.fragments = action.payload;
+    addFragments: (state, action: PayloadAction<Fragment[]>) => {
+      state.fragmentsList = state.fragmentsList.slice(0, state.fragmentsIndex + 1);
+      state.fragmentsList.push(action.payload);
+      state.fragmentsIndex = state.fragmentsList.length - 1;
     },
-    setCurrentFragments: (state, action: PayloadAction<FragmentList | null>) => {
-      state.currentFragments = action.payload;
-    },
-    setQuerySpecList: (state, action: PayloadAction<QuerySpec[]>) => {
-      state.querySpec = action.payload.at(-1) || null;
+    setFragmentsIndex: (state, action: PayloadAction<number>) => {
+      state.fragmentsIndex = action.payload;
     },
     insertTreeData: (state, action: PayloadAction<InsertTreeNode>) => {
       const { fragmentList, nodes } = action.payload;
@@ -78,7 +78,7 @@ const stateSlice = createSlice({
       const isFind = findAndInsert([state.treeData], fragmentList);
       if (!isFind) {
         state.treeData.children = [{
-          name: `${state.querySpec?.valueColumnName}-${state.querySpec?.timeGranularity}`,
+          name: `${state.querySpecList[state.querySpecIndex]?.start_time}-${state.querySpecList[state.querySpecIndex]?.end_time}`,
           value: {
             ...nodes.results,
             fragments: [...nodes.results.fragments || [], ...nodes.others.fragments || []],
@@ -93,7 +93,7 @@ const stateSlice = createSlice({
         }]
       }
     },
-    setIsSettingShow: (state, action: PayloadAction<boolean|undefined>) => {
+    setIsSettingShow: (state, action: PayloadAction<boolean | undefined>) => {
       state.isSettingShow = action.payload ?? !state.isSettingShow;
     },
     setTimeStampUnit: (state, action: PayloadAction<string>) => {
@@ -108,5 +108,5 @@ const stateSlice = createSlice({
   },
 });
 
-export const { setNLQuery, setQuerySpec, setRatio, setFragments, setQuerySpecList, setCurrentFragments, insertTreeData, setIsSettingShow, setTimeStampUnit, setValueUnit, setAspectRatio } = stateSlice.actions;
+export const { setNLQuery, addFragments, addQuerySpec, setFragmentsIndex, setQuerySpecIndex, insertTreeData, setIsSettingShow, setTimeStampUnit, setValueUnit, setAspectRatio } = stateSlice.actions;
 export default stateSlice.reducer;

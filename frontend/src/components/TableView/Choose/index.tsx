@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useAppDispatch, useAppSelector } from "../../../app/hooks";
 import "./index.css";
 import { DatasetColumn, setColumn, setSymbolData } from "../../../app/slice/datasetSlice";
-import Select from "../../Select";
+import SelectItem from "../../SelectItem";
 import { processDataset } from "../../../api";
 
 export default function Choose() {
@@ -35,7 +35,7 @@ export default function Choose() {
 
     return <form className="choose" onSubmit={handleSubmit}>
         <h3>Received dataset: <i>{filename}</i></h3>
-        {Object.values(chooseColumn).map((column) => <Select key={column.title} choices={choices} value={column.value || ""} title={column.title} handleSelect={(val) => setChoiseColumn(column, val)}></Select>)}
-        <button className="choose-button">Confirm!</button>
+        {Object.values(chooseColumn).map((column) => <SelectItem key={column.title} choices={choices} value={column.value || ""} title={column.title} handleSelect={(val) => setChoiseColumn(column, val)}></SelectItem>)}
+        <button className="submit-btn">Confirm!</button>
     </form>;
 };

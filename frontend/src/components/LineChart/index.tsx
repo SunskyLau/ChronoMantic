@@ -13,12 +13,13 @@ function LineChart({ xData, yData, ratio = 0.00001, title = "" }: LineChartProps
 
     useEffect(() => {
         if (!svgRef.current || xData.length === 0 || yData.length === 0) return;
+        const timeStampData = xData.map((d) => d * 1000);
 
         const margin = { top: 20, right: 30, bottom: 30, left: 40 };
         const svg = d3.select(svgRef.current);
         const width = Math.max(10, svgRef.current.clientWidth - margin.left - margin.right);
-        const xMin = d3.min(xData)!;
-        const xMax = d3.max(xData)!;
+        const xMin = d3.min(timeStampData)!;
+        const xMax = d3.max(timeStampData)!;
         const yMin = d3.min(yData)!;
         const yMax = d3.max(yData)!;
         const xRange = xMax - xMin;
@@ -32,7 +33,7 @@ function LineChart({ xData, yData, ratio = 0.00001, title = "" }: LineChartProps
         svg.attr('height', height);
 
         const xScale = d3.scaleTime()
-            .domain([new Date(d3.min(xData)!), new Date(d3.max(xData)!)])
+            .domain([new Date(d3.min(timeStampData)!), new Date(d3.max(timeStampData)!)])
             .range([0, innerWidth]);
 
         const yScale = d3.scaleLinear()
@@ -66,7 +67,7 @@ function LineChart({ xData, yData, ratio = 0.00001, title = "" }: LineChartProps
             .call(yAxis);
 
         g.append('path')
-            .datum(xData.map((t, i) => [t, yData[i]] as [number, number]))
+            .datum(timeStampData.map((t, i) => [t, yData[i]] as [number, number]))
             .attr('d', lineGenerator)
             .attr('fill', 'none')
             .attr('stroke', '#333')

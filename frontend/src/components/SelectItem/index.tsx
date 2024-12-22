@@ -9,7 +9,7 @@ interface SelectProps {
     handleSelect: (value: string) => void;
 }
 
-export default function Select({ choices, value, title, handleSelect }: SelectProps) {
+export default function SelectItem({ choices, value, title, handleSelect }: SelectProps) {
     const [isShowChoices, setIsShowChoices] = useState(false);
     const contentRef = useRef<HTMLDivElement>(null);
     useEffect(() => {
