@@ -7,7 +7,7 @@ export type States = {
   querySpecIndex: number;
   querySpecList: QuerySpec[];
   fragmentsIndex: number;
-  fragmentsList: Fragment[][];
+  fragmentsList: [Fragment[], Fragment[]][];
   treeData: TreeNode;
   isSettingShow: boolean;
   timeStampUnit: string;
@@ -43,7 +43,7 @@ const stateSlice = createSlice({
     setQuerySpecIndex: (state, action: PayloadAction<number>) => {
       state.querySpecIndex = action.payload;
     },
-    addFragments: (state, action: PayloadAction<Fragment[]>) => {
+    addFragments: (state, action: PayloadAction<[Fragment[], Fragment[]]>) => {
       state.fragmentsList = state.fragmentsList.slice(0, state.fragmentsIndex + 1);
       state.fragmentsList.push(action.payload);
       state.fragmentsIndex = state.fragmentsList.length - 1;

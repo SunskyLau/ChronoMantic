@@ -32,7 +32,7 @@ export default function QueryCondition() {
         start_time: null,
         end_time: null
     };
-    const fragments = useAppSelector(state => state.states.fragmentsList[state.states.fragmentsIndex]) || [];
+    const fragments = useAppSelector(state => state.states.fragmentsList[state.states.fragmentsIndex]?.[0]) || [];
     const [queryCondition, setQueryCondition] = useState({ ...querySpec });
     const selectedSymbols = useAppSelector(state => state.dataset.dataset?.selectedSymbols) || [];
     const symbolData = useAppSelector(state => state.dataset.dataset?.symbolData) || {};
@@ -57,9 +57,9 @@ export default function QueryCondition() {
             return arr;
         }).flat() : fragments;
 
-        queryInFragments(queryCondition, fragmentsList, ratio).then((results) => {
+        queryInFragments(queryCondition, fragmentsList, ratio).then(({result_fragments, keeped_after_prune_fragments}) => {
             dispatch(addQuerySpec(queryCondition));
-            dispatch(addFragments(results));
+            dispatch(addFragments([result_fragments, keeped_after_prune_fragments]));
         })
     }
 

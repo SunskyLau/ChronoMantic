@@ -15,7 +15,7 @@ export interface DataType {
 export default function ResultsContent() {
     const symbolData = useAppSelector((state) => state.dataset.dataset?.symbolData);
     const ratio = useAppSelector((state) => state.states.aspectRatio);
-    const fragments = useAppSelector((state) => state.states.fragmentsList[state.states.fragmentsIndex]) || [];
+    const fragments = useAppSelector((state) => state.states.fragmentsList[state.states.fragmentsIndex]?.[1]) || [];
     const dispatch = useAppDispatch();
 
     const maxTimeSpan = Math.max(...fragments.map((fragment) => fragment.end_idx - fragment.start_idx + 1))

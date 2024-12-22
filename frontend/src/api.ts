@@ -90,7 +90,13 @@ export const getQueryResult = async (querySpec: QuerySpec, fragmentList: Fragmen
   }
 }
 
-export const queryInFragments = async (querySpec: QuerySpec, fragments: Fragment[], optimalRatio: number): Promise<Fragment[]> => {
+
+interface QueryInFragmentsResponse {
+  result_fragments: Fragment[];
+  keeped_after_prune_fragments: Fragment[];
+}
+
+export const queryInFragments = async (querySpec: QuerySpec, fragments: Fragment[], optimalRatio: number): Promise<QueryInFragmentsResponse> => {
   console.log("Sending query in fragments request");
   try {
     const response = await api.post(`/api/query_in_fragments`, { querySpec, fragments, optimalRatio });
