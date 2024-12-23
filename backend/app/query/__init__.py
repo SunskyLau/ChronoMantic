@@ -100,12 +100,16 @@ def if_satisfy_pattern_condition(pattern: Pattern, segment: Segment, trend_confi
         segment_pattern.trend = "flat"
 
     if pattern.trend is not None:
-        if pattern.trend == segment_pattern.trend:
-            if pattern.extent is not None:
-                if pattern.extent != segment_pattern.extent:
-                    return False
+        if pattern.trend == "flat":
+            if segment_pattern.trend != "flat":
+                return False
         else:
-            return False
+            if pattern.trend == segment_pattern.trend:
+                if pattern.extent is not None:
+                    if pattern.extent != segment_pattern.extent:
+                        return False
+            else:
+                return False
     return True
 
 
