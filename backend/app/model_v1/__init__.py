@@ -101,6 +101,6 @@ if __name__ == "__main__":
 
     # 计时开始
     start_time = time.time()
-    fm = generate_fragments(x, y, k=9)
+    fm = generate_fragments(x, y, k=100)
     elapsed_time = time.time() - start_time
     print(f"耗时: {elapsed_time:.2f}秒")

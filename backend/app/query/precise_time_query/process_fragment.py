@@ -2,7 +2,7 @@ from typing import List, Tuple
 import numpy as np
 import pandas as pd
 from app.MyTypes import Fragment, FragmentList, QuerySpec, Segment, TrendConfig
-from app.model import get_best_segments
+from app.model_v0 import get_best_segments
 from app.config import Config
 
 

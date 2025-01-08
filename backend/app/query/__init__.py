@@ -3,7 +3,7 @@ from .config import Config
 import numpy as np
 import pandas as pd
 
-from ..new_model import generate_fm_dict
+from ..model_v1 import generate_fm_dict
 from ..MyTypes import Comparator, Fragment, Pattern, QuerySpec, Segment, TimeSeriesData, TrendConfig, ValueCondition
 
 

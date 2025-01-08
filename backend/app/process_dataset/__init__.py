@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import Dict, List, Optional
 import pandas as pd
 from app.config import Config
-from app.new_model import generate_fm_dict
+from app.model_v1 import generate_fm_dict
 from ..MyTypes import TableInfo, TimeSeriesData
 
 
