@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 from app.MyTypes import Comparator, Fragment, FragmentList, Pattern, QuerySpec, TrendConfig, ValueCondition
 from app.config import Config
-from app.query.precise_time_query.process_fragment import (
+from app.query_v0.precise_time_query.process_fragment import (
     calculate_fragment_theta,
     determine_trends,
     generate_fragments_by_query,

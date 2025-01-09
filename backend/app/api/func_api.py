@@ -6,12 +6,12 @@ import pandas as pd
 from app.services import find_optimal_aspect_ratio
 from app.config import Config
 from numpy.typing import NDArray
-from app.query.precise_time_query.process_fragment import generate_fragments_by_time_granularity
+from app.query_v0.precise_time_query.process_fragment import generate_fragments_by_time_granularity
 from app.ai_agent import myAIClient
 from app.ai_agent.constant import GPT_4O, SYSTEM_PROMPT, AZURE
 from ..MyTypes import Fragment, FragmentList, QuerySpec, TrendConfig
-from app.query.precise_time_query import query
-from app.query import new_query
+from app.query_v0.precise_time_query import query
+from app.query_v0 import new_query
 from ..shared_data import time_series_dataset_container, fm_dict_container, metadata_dict_container, table_info_container, width_height_ratio_container
 
 func_bp = Blueprint("func", __name__)

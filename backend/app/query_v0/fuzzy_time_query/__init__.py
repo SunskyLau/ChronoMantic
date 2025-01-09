@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-from app.query.fuzzy_time_query.generate_segments import generate_segments
+from app.query_v0.fuzzy_time_query.generate_segments import generate_segments
 from .config import Config
 from ...MyTypes import Fragment, FragmentList, Pattern, QuerySpec, Segment
 from typing import Dict, List

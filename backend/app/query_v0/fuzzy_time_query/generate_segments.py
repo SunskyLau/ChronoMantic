@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 from scipy.signal import find_peaks
 import matplotlib.pyplot as plt
-from app.query.fuzzy_time_query.config import Config
+from app.query_v0.fuzzy_time_query.config import Config
 from ...MyTypes import Segment
 
 
