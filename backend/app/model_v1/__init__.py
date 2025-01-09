@@ -2,7 +2,7 @@ from typing import Dict, List, Tuple
 import numpy as np
 
 from .utils import if_keep_fragment, precompute_residuals
-from ..MyTypes import Fragment, Segment
+from ..MyTypes_v0 import Fragment, Segment
 from ..config import Config
 
 

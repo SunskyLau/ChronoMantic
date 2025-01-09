@@ -1,7 +1,7 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
-from app.MyTypes import Pattern, QuerySpec, ValueCondition
+from backend.app.MyTypes_v0 import Pattern, QuerySpec, ValueCondition
 from app.model_v0 import get_best_segments, get_best_segments_optimized
 from app.query_v0.precise_time_query import generate_fragments_by_time_granularity
 

@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 
 from ..model_v1 import generate_fm_dict
-from ..MyTypes import Comparator, Fragment, Pattern, QuerySpec, Segment, TimeSeriesData, TrendConfig, ValueCondition
+from ..MyTypes_v0 import Comparator, Fragment, Pattern, QuerySpec, Segment, TimeSeriesData, TrendConfig, ValueCondition
 
 
 def get_new_fragment(fm_dict: Dict, fragment: Fragment, querySpec: QuerySpec) -> Optional[Fragment]:

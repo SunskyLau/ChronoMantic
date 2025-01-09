@@ -1,5 +1,5 @@
 import numpy as np
-from ..MyTypes import Fragment
+from ..MyTypes_v0 import Fragment
 from .config import Config
 
 

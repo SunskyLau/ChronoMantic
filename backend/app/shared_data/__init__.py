@@ -1,5 +1,5 @@
 from typing import Dict, Optional
-from ..MyTypes import TimeSeriesData, TrendConfig
+from ..MyTypes_v0 import TimeSeriesData, TrendConfig
 
 
 class TABLE_INFO_CONTAINER:

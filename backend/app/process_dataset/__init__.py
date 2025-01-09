@@ -3,7 +3,7 @@ from typing import Dict, List, Optional
 import pandas as pd
 from app.config import Config
 from app.model_v1 import generate_fm_dict
-from ..MyTypes import TableInfo, TimeSeriesData
+from ..MyTypes_v0 import TableInfo, TimeSeriesData
 
 
 def get_metadata_columns(csv, time_column_name, value_column_name, id_column_name):
