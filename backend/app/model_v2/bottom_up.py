@@ -1,9 +1,10 @@
 import time
-from typing import Tuple
+from typing import List, Tuple
 import numpy as np
 import heapq
 import matplotlib.pyplot as plt
 import pandas as pd
+from ..MyTypes_v1 import Segment
 
 
 def segment_error(x: np.ndarray, y: np.ndarray, start: int, end: int) -> float:
@@ -90,10 +91,13 @@ def bottom_up_merge(x: np.ndarray, y: np.ndarray, k: int):
         if i < len(segments) - 1:
             update_costs(i)
 
-    return [list(range(start, end + 1)) for start, end in segments]
+    segments_idx_array = [(start, end) for start, end in segments]
+    sorted_segments_idx_array = sorted(segments_idx_array, key=lambda x: x[0])
+    segments = [Segment(start_idx=start, end_idx=end, slope=(y[end] - y[start]) / (x[end] - x[start])) for start, end in sorted_segments_idx_array]
+    return segments
 
 
-def visualize_segments(y, segments):
+def visualize_segments(y, segments: List[Segment]):
     """可视化分段结果"""
     fig, ax = plt.subplots(figsize=(15, 8))
     ax.set_facecolor("white")
@@ -105,7 +109,7 @@ def visualize_segments(y, segments):
 
     # 分段拟合
     for seg in segments:
-        start, end = seg[0], seg[-1]
+        start, end = seg.start_idx, seg.end_idx
         ax.plot([start, end], [y[start], y[end]], color="#2196F3", linewidth=2)
 
     # 设置样式
@@ -124,12 +128,14 @@ if __name__ == "__main__":
     # 分段
     start_time = time.time()
     segments = bottom_up_merge(x, y, k=22)
+    for seg in segments:
+        print(seg)
     print(f"耗时: {time.time() - start_time:.4f} 秒")
 
     # 输出结果
     for i, seg in enumerate(segments, 1):
-        error = segment_error(x, y, seg[0], seg[-1])
-        print(f"段 {i}: [{seg[0]}-{seg[-1]}], RMSE={error:.4f}")
+        error = segment_error(x, y, seg.start_idx, seg.end_idx)
+        print(f"段 {i}: [{seg.start_idx}-{seg.end_idx}], 平方误差和={error:.4f}")
 
     # 可视化
     visualize_segments(y, segments)
