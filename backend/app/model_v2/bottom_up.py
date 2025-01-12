@@ -67,7 +67,7 @@ def bottom_up_merge(value_column: str, x: np.ndarray, y: np.ndarray, k: int):
     for i in range(len(segments) - 1):
         update_costs(i)
 
-    approximation_segments_list: List[ApproximationSegments] = [ApproximationSegments(segments=segments, approximation_level=0)]
+    approximation_segments_list: List[ApproximationSegments] = [ApproximationSegments(segments=segments.copy(), approximation_level=0)]
     current_segments_length = len(segments)
     current_level = 0
 
@@ -140,8 +140,8 @@ if __name__ == "__main__":
     approximation_segments_container = bottom_up_merge("AMZN", x, y, k=1)
     print(f"耗时: {time.time() - start_time:.4f} 秒")
 
-    # for approximation_segments in approximation_segments_container.approximation_segments_list:
-    #     print(approximation_segments)
+    for approximation_segments in approximation_segments_container.approximation_segments_list:
+        print(len(approximation_segments.segments))
     # print(approximation_segments_container.max_approximation_level)
     # for seg in segments:
     #     print(seg)
