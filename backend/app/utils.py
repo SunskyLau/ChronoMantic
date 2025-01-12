@@ -25,4 +25,4 @@ def process_csv_file(file):
     # 读取CSV文件内容
     df = pd.read_csv(file_path)
 
-    return {"filename": file.filename, "row_count": len(df)}
+    return df, {"filename": file.filename, "row_count": len(df)}

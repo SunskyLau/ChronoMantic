@@ -48,11 +48,11 @@ if __name__ == "__main__":
     data = pd.read_csv("../portfolio_data.csv")
     y = data["AMZN"].values
     x = data["AMZN"].index
-    segments = bottom_up_merge(x, y, k=22)
+    segments = bottom_up_merge(x, y, k=50)
     query_spec = QuerySpec(
         patterns=[
             Pattern(slope_condition=SlopeCondition(min_slope=0.3)),
-            Pattern(slope_condition=SlopeCondition(max_slope=-0.3)),
+            Pattern(slope_condition=SlopeCondition(min_slope=0.3)),
         ]
     )
     results = query(query_spec, segments)
