@@ -5,7 +5,7 @@ interface LineChartProps {
     xData: number[];
     yData: number[];
     ratio?: number;
-    height?: number;
+    height?: number | string;
     title?: string;
     isXAxisVisible?: boolean;
     isYAxisVisible?: boolean;
@@ -31,6 +31,8 @@ function LineChart({ xData, yData, ratio, title = "", isXAxisVisible = false, is
         const margin = { top: isXAxisVisible ? 20 : 0, right: isYAxisVisible ? 40 : 0, bottom: isXAxisVisible ? 30 : 0, left: isYAxisVisible ? 40 : 0 };
         const svg = d3.select(svgRef.current);
         const width = Math.max(10, svgRef.current.clientWidth - margin.left - margin.right);
+        let iHeight: number = typeof height === 'string' ? svgRef.current.clientHeight * parseFloat(height) / 100 : height ?? 200;
+        iHeight -= margin.top + margin.bottom;
         const xMin = d3.min(timeStampData)!;
         const xMax = d3.max(timeStampData)!;
         const yMin = d3.min(valueData)!;
@@ -42,8 +44,7 @@ function LineChart({ xData, yData, ratio, title = "", isXAxisVisible = false, is
         let innerWidth = width;
         let innerHeight: number = 0;
         if (height && ratio) {
-            const realInnerHeight = height - margin.top - margin.bottom;
-            const yUnitPixel = realInnerHeight / yRange;
+            const yUnitPixel = iHeight / yRange;
             const xUnitPixel = yUnitPixel * ratio;
             innerWidth = xUnitPixel * xRange / 1000;
             if (innerWidth > width) {
@@ -61,7 +62,7 @@ function LineChart({ xData, yData, ratio, title = "", isXAxisVisible = false, is
                 valueData = extentData.map((v) => yData[v[1]]);
                 data = timeStampData.map((x, i) => [x, valueData[i]] as [number, number]);
             }
-            innerHeight = realInnerHeight;
+            innerHeight = iHeight;
             innerWidth = width;
             svg.attr("width", innerWidth + margin.left + margin.right);
         } else if (ratio) {
@@ -69,7 +70,7 @@ function LineChart({ xData, yData, ratio, title = "", isXAxisVisible = false, is
             const yUnitPixel = xUnitPixel / ratio;
             innerHeight = yRange * yUnitPixel * 1000;
         } else {
-            innerHeight = (height ?? 200) - margin.top - margin.bottom;
+            innerHeight = iHeight;
         }
         const outerHeight = innerHeight + margin.top + margin.bottom;
 
@@ -239,7 +240,7 @@ function LineChart({ xData, yData, ratio, title = "", isXAxisVisible = false, is
     }, [xData, yData, ratio, title, isXAxisVisible, isYAxisVisible, isBrush, onBrush, isFill, range, height, split, isSplitMask, brushPosition, isZoom]);
 
     return (
-        <svg ref={svgRef} width="100%" height="0"></svg>
+        <svg ref={svgRef} width="100%" height="100%"></svg>
     );
 };
 
