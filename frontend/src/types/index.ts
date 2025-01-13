@@ -39,3 +39,20 @@ export type ApproximationSegmentsContainers = {
     max_approximation_level: number;
     approximation_segments_list: Approximation_segment[];
 }[]
+
+export interface SpeechRecognitionEvent {
+    results: SpeechRecognitionResultList;
+}
+
+export class SpeechRecognitionType {
+    static lang: string = 'en-US';
+    static continuous: boolean = false;
+    static interimResults: boolean = false;
+    static maxAlternatives: number = 1;
+    onresult: null | ((event: SpeechRecognitionEvent) => void) = null;
+    onstart: null | (() => void) = null;
+    onstop: null | (() => void) = null;
+    onend: null | (() => void) = null;
+    stop: () => void = () => { };
+    start: () => void = () => { };
+}
