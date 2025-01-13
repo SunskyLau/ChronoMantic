@@ -1,14 +1,14 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../../app/hooks";
 import "./index.css";
 import { setNLQuery } from "../../app/slice/stateSlice";
 import { getColor } from "../../utils/color";
-import { flushSync } from "react-dom";
 import QueryIcon from "../../icons/Query";
 import SubmitIcon from "../../icons/Submit";
+import { flushSync } from "react-dom";
 
 export default function NlqueryBox() {
-  const inputRef = useRef<HTMLInputElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const dispatch = useAppDispatch();
   const NLQuery = useAppSelector((state) => state.states.NLQuery);
   const isRequesting = useAppSelector((state) => state.results.isRequesting);
@@ -24,14 +24,24 @@ export default function NlqueryBox() {
     });
   });
 
+  useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = "auto";
+      textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
+    }
+  }, [NLQuery, isEdit]);
+
   return (
-    <form className="nl-query-form" onSubmit={async (e) => {
-      e.preventDefault();
-    }}>
+    <form
+      className="nl-query-form"
+      onSubmit={async (e) => {
+        e.preventDefault();
+      }}
+    >
       <QueryIcon className="query-icon"></QueryIcon>
-      {isEdit ?
-        <input
-          ref={inputRef}
+      {isEdit ? (
+        <textarea
+          ref={textareaRef}
           placeholder={PLACEHOLDER}
           spellCheck="false"
           onChange={(e) => {
@@ -40,12 +50,19 @@ export default function NlqueryBox() {
           className="nl-query"
           value={NLQuery}
           onBlur={() => setIsEdit(false)}
-        /> :
-        <span onClick={() => {
-          flushSync(() => setIsEdit(true));
-          if (inputRef.current) inputRef.current.focus();
-        }} className="nl-query" style={{ color: !coloredText ? "gray" : "#000" }} dangerouslySetInnerHTML={{ __html: coloredText || PLACEHOLDER }}></span>
-      }
+          rows={1}
+        />
+      ) : (
+        <div
+          onClick={() => {
+            flushSync(() => setIsEdit(true));
+            if (textareaRef.current) textareaRef.current.focus();
+          }}
+          className="nl-query text"
+          style={{ color: !coloredText ? "gray" : "#000" }}
+          dangerouslySetInnerHTML={{ __html: coloredText || PLACEHOLDER }}
+        ></div>
+      )}
       <button className="send" type="submit" disabled={!NLQuery || isRequesting}>
         <SubmitIcon></SubmitIcon>
       </button>

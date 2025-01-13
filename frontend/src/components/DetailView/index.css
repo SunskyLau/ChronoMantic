@@ -1,0 +1,37 @@
+.smooth-level {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    gap: 8px;
+}
+
+.smooth-level .ant-slider {
+    width: 100px;
+}
+
+.smooth-level .ant-slider .ant-slider-rail,
+.smooth-level .ant-slider .ant-slider-track {
+    border-radius: 99px;
+}
+
+.main-view {
+    flex-basis: fit-content;
+    flex-grow: 0;
+}
+
+.main-view .bg {
+    background-color: #DDEFFF;
+    border-radius: 4px;
+    display: flex;
+}
+
+.main-view .bg svg {
+    flex: 1;
+}
+
+.main-view .panel-content {
+    display: flex;
+    flex-direction: column;
+    flex-basis: fit-content;
+    flex-grow: 0;
+}

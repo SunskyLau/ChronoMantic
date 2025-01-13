@@ -1,5 +1,4 @@
 import { Button, DatePicker, InputNumber, Select } from "antd";
-import Panel from "../Panel";
 import { Comparator, Extent, Fragment, QuerySpec, Trend } from "../../types/QuerySpec";
 import "./index.css";
 import { useAppDispatch, useAppSelector } from "../../app/hooks";
@@ -8,6 +7,7 @@ import { MinusCircleOutlined, PlusCircleOutlined } from "@ant-design/icons";
 import { queryInFragments } from "../../api";
 import { addFragments, addQuerySpec } from "../../app/slice/stateSlice";
 import { deepClone } from "../../utils/deepclone";
+import Block from "../Block";
 
 const comparatorOptions = Object.keys(Comparator).map(key => ({
     value: Comparator[key as keyof typeof Comparator] || "",
@@ -64,7 +64,7 @@ export default function QueryCondition() {
     }
 
     return (
-        <Panel className="query-condition" icon={<div>Q</div>} title="Query Condition">
+        <Block className="query-condition" title="Query Specification">
             <form onSubmit={handleSubmit}>
                 <h3>Query</h3>
                 <section>
@@ -141,6 +141,6 @@ export default function QueryCondition() {
                     <Button type="primary" htmlType="submit">Confirm!</Button>
                 </section>
             </form>
-        </Panel>
+        </Block>
     )
 }

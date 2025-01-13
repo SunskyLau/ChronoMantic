@@ -7,10 +7,10 @@ interface PanelProps extends PanelHeaderProps {
     className?: string;
 }
 
-export default function Panel({ children, icon, title, className }: PanelProps) {
+export default function Panel({ children, icon, title, className, right }: PanelProps) {
     return (
         <div className={classnames("panel", className)}>
-            <PanelHeader icon={icon} title={title} />
+            <PanelHeader icon={icon} title={title} right={right} />
             <div className="panel-content">{children}</div>
         </div>
     );

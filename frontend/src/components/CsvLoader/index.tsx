@@ -4,7 +4,8 @@ import { useRef } from "react";
 import { useAppDispatch } from "../../app/hooks";
 import { setDataset, Dataset, ColumnType } from "../../app/slice/datasetSlice";
 import UploadIcon from "../../icons/Upload";
-import { uploadCsvFile } from "../../api";
+import { processDataset, uploadCsvFile } from "../../api";
+import { setResults } from "../../app/slice/approximation";
 
 function CsvLoader() {
   const dispatch = useAppDispatch();
@@ -37,10 +38,19 @@ function CsvLoader() {
             valueColumn: "",
           };
 
+          const value_columns: string[] = [];
+          let time_column: string = "";
+
           result.data.forEach(row => {
             for (const [key, value] of Object.entries(row)) {
               if (!dataset.data[key]) {
                 dataset.data[key] = [];
+                if (typeof value === "number") {
+                  value_columns.push(key);
+                } else {
+                  time_column = key;
+                  dataset.timeStampColumn = key;
+                }
               }
               dataset.data[key].push(value);
             }
@@ -48,6 +58,9 @@ function CsvLoader() {
 
           console.log("Parsed dataset:", dataset);
           dispatch(setDataset(dataset));
+          processDataset({ time_column, value_columns }).then(res => {
+            dispatch(setResults(res))
+          })
         },
         error: (error) => {
           console.error("Error parsing CSV:", error);

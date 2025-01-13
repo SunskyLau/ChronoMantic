@@ -1,3 +1,11 @@
+import { Segment } from "./QuerySpec";
+
+
+export interface DataPoint {
+    x: number;
+    y: number;
+}
+
 export interface TimeSeries {
     x: number[];
     y: number[];
@@ -15,3 +23,19 @@ export interface ProcessDatasetResults {
     };
     timeSeriesDataset: TimeSeriesDataset;
 }
+
+export interface DatasetInfo {
+    time_column: string;
+    value_columns: string[];
+}
+
+export interface Approximation_segment {
+    approximation_level: number;
+    segments: Segment[];
+}
+
+export type ApproximationSegmentsContainers = {
+    source: string;
+    max_approximation_level: number;
+    approximation_segments_list: Approximation_segment[];
+}[]

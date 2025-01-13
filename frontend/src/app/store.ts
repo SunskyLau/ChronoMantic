@@ -4,6 +4,8 @@ import datasetSlice from "./slice/datasetSlice";
 import stateSlice from "./slice/stateSlice";
 import resultSlice from "./slice/resultsSlice";
 import filterSlice from "./slice/filterSlice";
+import selectSlice from "./slice/selectSlice";
+import approximationSlice from "./slice/approximation";
 // ...
 
 const store = configureStore({
@@ -12,7 +14,9 @@ const store = configureStore({
     dataset: datasetSlice,
     states: stateSlice,
     results: resultSlice,
-    filter: filterSlice
+    filter: filterSlice,
+    select: selectSlice,
+    approximation: approximationSlice
   },
 });
 

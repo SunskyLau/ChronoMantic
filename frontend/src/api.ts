@@ -1,7 +1,7 @@
 import axios from "axios";
 import type { Results } from "./app/slice/resultsSlice";
 import { Fragment, FragmentList, QuerySpec, TimeGranularity } from "./types/QuerySpec";
-import { ProcessDatasetResults } from "./types";
+import { DatasetInfo, ApproximationSegmentsContainers } from "./types";
 
 const api = axios.create({
   baseURL: "http://127.0.0.1:5000", // 替换为你的后端API地址
@@ -41,12 +41,12 @@ export const uploadCsvFile = async (file: File) => {
   }
 }
 
-export const processDataset = async (csvName: string, timeColumnName: string, valueColumnName: string, idColumnName: string): Promise<ProcessDatasetResults> => {
+export const processDataset = async (datasetInfo: DatasetInfo): Promise<ApproximationSegmentsContainers> => {
   console.log("Sending process dataset request");
   try {
-    const response = await api.post(`/api/process_dataset`, { csvName, timeColumnName, valueColumnName, idColumnName });
+    const response = await api.post(`/api/process_dataset`, { datasetInfo });
     console.log(response.data);
-    return response.data;
+    return response.data.approximationSegmentsContainers;
   } catch (error) {
     console.error("Error sending process dataset request:", error);
     throw error;

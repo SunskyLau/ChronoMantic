@@ -4,7 +4,7 @@ import DocumentIcon from "../../icons/Document";
 
 export default function ResultsPanel({className}: {className?: string}) {
   return (
-    <Panel className={className} icon={<DocumentIcon />} title="Results">
+    <Panel className={className} icon={<DocumentIcon />} title="Results Panel">
       <ResultsContent />
     </Panel>
   );

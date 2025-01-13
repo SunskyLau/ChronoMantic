@@ -1,13 +1,9 @@
 import { useAppSelector } from "../../app/hooks";
-import NlqueryBox from "../../components/NlqueryBox";
 import ResultsPanel from "../../components/ResultsPanel";
-import TableView from "../../components/TableView";
-import AppHeader from "../AppHeader";
-import ConstraintDefinition from "../ConstraintDefinition";
-import OverView from "../OverView";
-import QueryCondition from "../QueryCondition";
-import ResultList from "../ResultList";
+import DetailView from "../DetailView";
+import QueryPanel from "../QueryPanel";
 import Setting from "../Setting";
+import TableView from "../TableView";
 import "./index.css";
 
 export default function AppMain() {
@@ -16,18 +12,14 @@ export default function AppMain() {
         <>
             <main className="main">
                 <section className="main-left">
-                    <TableView />
+                    <TableView></TableView>
                 </section>
-                <section className="main-body">
-                    <AppHeader />
-                    <NlqueryBox />
-                    <ResultList />
-                    <ResultsPanel className="main-body-results" />
+                <section className="main-middle">
+                    <QueryPanel></QueryPanel>
                 </section>
                 <section className="main-right">
-                    <QueryCondition />
-                    <OverView />
-                    <ConstraintDefinition />
+                    <DetailView></DetailView>
+                    <ResultsPanel className="main-body-results" />
                 </section>
             </main>
             {isSettingShow && <Setting></Setting>}

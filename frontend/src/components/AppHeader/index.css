@@ -8,11 +8,12 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  background-color: #619CD3;
 }
 
 .header .header-title {
   text-align: center;
-  color: #0027A9;
+  color: #fff;
   margin: 0;
   font-family: Arial;
   font-size: 48px;
@@ -22,10 +23,11 @@
 
 .header .header-left,
 .header .header-right {
-  width: 50px;
+  width: 100px;
   height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 36px;
+  font-size: 32px;
+  gap: 10px;
 }
