@@ -2,7 +2,7 @@ from flask import Blueprint, request, jsonify
 from app.utils import process_csv_file
 from app.process_dataset import process_dataset
 from ..MyTypes_v1 import DatasetInfo
-from ..model_v2 import approxiamate_dataset
+from ..model_v2 import approximate_dataset
 
 # from app.shared_data import table_info_container, metadata_dict_container, time_series_dataset_container, fm_dict_container
 from ..shared_data import dataset_info_container, dataset_container, approximation_segments_containers_container
@@ -44,7 +44,7 @@ def upload_csv_file():
 def process_dataset():
     dataset_info = DatasetInfo.from_dict(request.json.get("datasetInfo"))
     dataset = dataset_container.get_data()
-    approxiamation_segments_containers = approxiamate_dataset(dataset, dataset_info)
+    approxiamation_segments_containers = approximate_dataset(dataset, dataset_info)
     approximation_segments_containers_container.set_data(approxiamation_segments_containers)
     print(approxiamation_segments_containers)
     return jsonify({"code": 200, "message": "Dataset processed successfully", "approximationSegmentsContainers": approxiamation_segments_containers})

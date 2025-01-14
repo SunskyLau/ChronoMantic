@@ -64,12 +64,15 @@ class DictMixin:
 class DatasetInfo(DictMixin):
     time_column: str
     value_columns: List[str]
+    column_ratio_dict: dict[str, float]
 
 
 @dataclass
 class Segment(DictMixin):
     start_idx: int
     end_idx: int
+    start_value: float
+    end_value: float
     slope: float
     angle: Optional[float] = None
 
@@ -115,22 +118,23 @@ class TimeCondition(DictMixin):
 class Pattern(DictMixin):
     slope_condition: Optional[SlopeCondition] = None
     angle_condition: Optional[AngleCondition] = None
-    start_value: Optional[ValueCondition] = None
-    end_value: Optional[ValueCondition] = None
-    start_time: Optional[TimeCondition] = None
-    end_time: Optional[TimeCondition] = None
+    start_value_condition: Optional[ValueCondition] = None
+    end_value_condition: Optional[ValueCondition] = None
+    start_time_condition: Optional[TimeCondition] = None
+    end_time_condition: Optional[TimeCondition] = None
 
 
 @dataclass
 class Relation(DictMixin):
     id1: int
     id2: int
-    attribute: str
-    operator: str
+    attribute: str  # "angle" or "start_value" or "end_value"
+    operator: str  # "greater" or "less" or "approximately_equal_to"
 
 
 @dataclass
 class QuerySpec(DictMixin):
+    target: str  # The target column to query
     patterns: List[Pattern]
     relations: Optional[List[Relation]] = None
 
@@ -142,6 +146,7 @@ if __name__ == "__main__":
     dataset_info = DatasetInfo.from_dict(dataset_info_json)
     print("DatasetInfo from JSON:", dataset_info)
     print("\nDatasetInfo to JSON:", dataset_info.to_dict())
+    
     # Test examples
     query_spec_json = {
         "patterns": [

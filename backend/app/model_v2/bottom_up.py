@@ -55,7 +55,9 @@ def bottom_up_merge(value_column: str, x: np.ndarray, y: np.ndarray, k: int):
     if k >= n:
         return [[i] for i in range(n)]
 
-    segments: List[Segment] = [Segment(start_idx=i, end_idx=i + 1, slope=(y[i + 1] - y[i]) / (x[i + 1] - x[i])) for i in range(n - 1)]
+    segments: List[Segment] = [
+        Segment(start_idx=i, end_idx=i + 1, slope=(y[i + 1] - y[i]) / (x[i + 1] - x[i]), start_value=y[i], end_value=y[i + 1]) for i in range(n - 1)
+    ]
     cost_heap: List[CostWrapper] = []
 
     def update_costs(i: int):
@@ -86,7 +88,11 @@ def bottom_up_merge(value_column: str, x: np.ndarray, y: np.ndarray, k: int):
         i = segments.index(seg1)
         j = segments.index(seg2)
         segments[i] = Segment(
-            start_idx=seg1.start_idx, end_idx=seg2.end_idx, slope=(y[seg2.end_idx] - y[seg1.start_idx]) / (x[seg2.end_idx] - x[seg1.start_idx])
+            start_idx=seg1.start_idx,
+            end_idx=seg2.end_idx,
+            slope=(y[seg2.end_idx] - y[seg1.start_idx]) / (x[seg2.end_idx] - x[seg1.start_idx]),
+            start_value=seg1.start_value,
+            end_value=seg2.end_value,
         )
         segments.pop(j)
 

@@ -2,13 +2,12 @@ from typing import List
 from typeguard import typechecked
 import numpy as np
 import pandas as pd
-from ..MyTypes_v1 import ApproximationSegmentsContainer, DatasetInfo
+from ..MyTypes_v1 import ApproximationSegmentsContainer, DatasetInfo, Segment
 from .bottom_up import bottom_up_merge
-from numpy.typing import NDArray
 
 
 @typechecked
-def approxiamate_dataset(dataset: pd.DataFrame, dataset_info: DatasetInfo, k: int = 1):
+def approximate_dataset(dataset: pd.DataFrame, dataset_info: DatasetInfo, k: int = 1):
     approxiamation_segments_containers: List[ApproximationSegmentsContainer] = []
     time_column = dataset_info.time_column
     value_columns = dataset_info.value_columns
@@ -17,6 +16,41 @@ def approxiamate_dataset(dataset: pd.DataFrame, dataset_info: DatasetInfo, k: in
     for vc in value_columns:
         y = dataset[vc].values
         approxiamation_segments_container = bottom_up_merge(vc, x, y, k)
+        approxiamation_segments_container = update_approximation_segments_container_with_angle(
+            approxiamation_segments_container, dataset_info.column_ratio_dict[vc]
+        )
         approxiamation_segments_containers.append(approxiamation_segments_container)
 
     return approxiamation_segments_containers
+
+
+@typechecked
+def calculate_segment_angle(ratio: float, segment: Segment):
+    return np.arctan(segment.slope / ratio) / np.pi * 180
+
+
+@typechecked
+def update_approximation_segments_container_with_angle(approximation_segments_container: ApproximationSegmentsContainer, ratio: float):
+    for approximation_segments in approximation_segments_container.approximation_segments_list:
+        for segment in approximation_segments.segments:
+            segment.angle = calculate_segment_angle(ratio, segment)
+    return approximation_segments_container
+
+
+@typechecked
+def update_container_in_container(
+    approximation_segments_container: ApproximationSegmentsContainer, approximation_segments_containers: List[ApproximationSegmentsContainer]
+):
+    for container in approximation_segments_containers:
+        if container.source == approximation_segments_container.source:
+            container = approximation_segments_container
+            return
+    approximation_segments_containers.append(approximation_segments_container)
+    return
+
+
+if __name__ == "__main__":
+    df = pd.read_csv("../portfolio_data.csv")
+    dataset_info = DatasetInfo(time_column="Date", value_columns=["AMZN", "DPZ"], column_ratio_dict={"AMZN": 1, "DPZ": 1})
+    approxiamation_segments_containers = approximate_dataset(df, dataset_info)
+    print(approxiamation_segments_containers)

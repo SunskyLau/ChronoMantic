@@ -1,14 +1,41 @@
-from typing import List
+from typing import List, Optional
+from typeguard import typechecked
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-from ..model_v2 import bottom_up_merge
-from ..MyTypes_v1 import Pattern, QuerySpec, Segment, SlopeCondition
+from ..model_v2 import approximate_dataset, bottom_up_merge
+from ..MyTypes_v1 import ApproximationSegmentsContainer, DatasetInfo, Pattern, QuerySpec, Relation, Segment, SlopeCondition
 
 
-def query(query_spec: QuerySpec, segments: List[Segment]):
-    patterns = query_spec.patterns
-    results = []
+@typechecked
+def query(query_spec: QuerySpec, approximation_segments_containers: List[ApproximationSegmentsContainer]):
+    target, patterns, relations = query_spec.target, query_spec.patterns, query_spec.relations
+    # 找到source为target的approximation_segments_container
+    approximation_segments_container = None
+    for container in approximation_segments_containers:
+        if container.source == target:
+            approximation_segments_container = container
+            break
+
+    results_dict = {}
+
+    if approximation_segments_container is None:
+        return results_dict
+
+    # 遍历每一个approximation_segments,不同的approximation_level有一个approximation_segments
+    for approximation_segments in approximation_segments_container.approximation_segments_list:
+        segments = approximation_segments.segments
+        approximation_level = approximation_segments.approximation_level
+        results = match_patterns_in_segments(patterns, relations, segments)
+        results_dict[approximation_level] = results
+
+    return results_dict
+
+
+@typechecked
+def match_patterns_in_segments(patterns: List[Pattern], relations: Optional[List[Relation]], segments: List[Segment]):
+    """根据patterns和relations在segments中匹配结果"""
+    results: List[List[Segment]] = []
     for i in range(len(segments)):
         result = []
         flag = True
@@ -26,7 +53,62 @@ def query(query_spec: QuerySpec, segments: List[Segment]):
                 result.append(segments[i + j])
         if flag:
             results.append(result)
+
+    for result in results:
+        if not if_satisfy_relations(result, relations):
+            results.remove(result)
+
     return results
+
+
+@typechecked
+def if_satisfy_relations(result: List[Segment], relations: Optional[List[Relation]] = None):
+    if relations is None:
+        return True
+
+    flag = True
+    min_value, max_value = np.inf, -np.inf
+
+    for segment in result:
+        min_value = min(min_value, segment.start_value, segment.end_value)
+        max_value = max(max_value, segment.start_value, segment.end_value)
+
+    gap = max_value - min_value
+
+    for relation in relations:
+        operator, id1, id2, attribute = relation.operator, relation.id1, relation.id2, relation.attribute
+        if attribute == "end_value":
+            id1_attribute, id2_attribute = result[id1].end_value, result[id2].end_value
+        elif attribute == "start_value":
+            id1_attribute, id2_attribute = result[id1].start_value, result[id2].start_value
+        elif attribute == "angle":
+            id1_attribute, id2_attribute = result[id1].angle, result[id2].angle
+
+        if id1_attribute is None or id2_attribute is None:
+            flag = False
+            break
+        diff = id2_attribute - id1_attribute
+        if attribute == "end_value" or attribute == "start_value":
+            if operator == "greater":
+                if diff < 0 and abs(diff) > 0.1 * gap:
+                    continue
+                else:
+                    flag = False
+                    break
+            elif operator == "less":
+                if diff > 0 and abs(diff) > 0.1 * gap:
+                    continue
+                else:
+                    flag = False
+                    break
+            elif operator == "approximately_equal_to":
+                if abs(diff) < 0.1 * gap:
+                    continue
+                else:
+                    flag = False
+                    break
+
+    return flag
 
 
 def visualize_results(x, y, results):
@@ -45,17 +127,17 @@ def visualize_results(x, y, results):
 
 
 if __name__ == "__main__":
-    data = pd.read_csv("../portfolio_data.csv")
-    y = data["AMZN"].values
-    x = data["AMZN"].index
-    segments = bottom_up_merge(x, y, k=50)
+    # 加载数据
+    df = pd.read_csv("../portfolio_data.csv")
+    dataset_info = DatasetInfo(time_column="Date", value_columns=["AMZN", "DPZ"], column_ratio_dict={"AMZN": 1, "DPZ": 1})
+    approxiamation_segments_containers = approximate_dataset(df, dataset_info)
+    # 构建query_spec
     query_spec = QuerySpec(
+        target="AMZN",
         patterns=[
-            Pattern(slope_condition=SlopeCondition(min_slope=0.3)),
-            Pattern(slope_condition=SlopeCondition(min_slope=0.3)),
-        ]
+            Pattern(slope_condition=SlopeCondition(min_slope=0.0001)),
+            Pattern(slope_condition=SlopeCondition(min_slope=0.0001)),
+        ],
     )
-    results = query(query_spec, segments)
-    visualize_results(x, y, results)
-    for result in results:
-        print(result)
+    results_dict = query(query_spec, approxiamation_segments_containers)
+    print(results_dict)
