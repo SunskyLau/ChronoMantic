@@ -1,5 +1,8 @@
 from dataclasses import dataclass, asdict, fields
+from enum import Enum
 from typing import List, Optional, Union, get_type_hints
+
+"""Dataclass Mixin for JSON Serialization"""
 
 
 class DictMixin:
@@ -60,6 +63,9 @@ class DictMixin:
         return {field.name: serialize(getattr(self, field.name)) for field in fields(self)}
 
 
+"""Foundamental Data"""
+
+
 @dataclass
 class DatasetInfo(DictMixin):
     time_column: str
@@ -90,53 +96,94 @@ class ApproximationSegmentsContainer(DictMixin):
     max_approximation_level: int
 
 
+"""QuerySpec"""
+
+
+@dataclass
+class ThresholdCondition(DictMixin):
+    value: float
+    inclusive: bool
+
+
 @dataclass
 class SlopeCondition(DictMixin):
-    max_slope: Optional[float] = None
-    min_slope: Optional[float] = None
+    max_slope: Optional[ThresholdCondition] = None
+    min_slope: Optional[ThresholdCondition] = None
 
 
 @dataclass
 class AngleCondition(DictMixin):
-    max_angle: Optional[float]
-    min_angle: Optional[float]
+    max_angle: Optional[ThresholdCondition] = None
+    min_angle: Optional[ThresholdCondition] = None
 
 
 @dataclass
 class ValueCondition(DictMixin):
-    max_value: Optional[float]
-    min_value: Optional[float]
+    max_value: Optional[ThresholdCondition] = None
+    min_value: Optional[ThresholdCondition] = None
 
 
 @dataclass
 class TimeCondition(DictMixin):
-    max_time: Optional[float]
-    min_time: Optional[float]
+    max_time: Optional[ThresholdCondition] = None
+    min_time: Optional[ThresholdCondition] = None
+
+
+class TimeSpanCondition(DictMixin):
+    max_time_span: Optional[ThresholdCondition] = None
+    min_time_span: Optional[ThresholdCondition] = None
 
 
 @dataclass
-class Pattern(DictMixin):
-    slope_condition: Optional[SlopeCondition] = None
-    angle_condition: Optional[AngleCondition] = None
-    start_value_condition: Optional[ValueCondition] = None
-    end_value_condition: Optional[ValueCondition] = None
-    start_time_condition: Optional[TimeCondition] = None
-    end_time_condition: Optional[TimeCondition] = None
+class Trend(DictMixin):
+    slope_condition: Optional[SlopeCondition] = None  # 斜率的范围条件
+    angle_condition: Optional[AngleCondition] = None  # 角度的范围条件
+    start_value_condition: Optional[ValueCondition] = None  # 起始值的范围条件
+    end_value_condition: Optional[ValueCondition] = None  # 结束值的范围条件
+    max_value_condition: Optional[ValueCondition] = None  # 最大值的范围条件
+    min_value_condition: Optional[ValueCondition] = None  # 最小值的范围条件
+    start_time_condition: Optional[TimeCondition] = None  # 起始时间的范围条件
+    end_time_condition: Optional[TimeCondition] = None  # 结束时间的范围条件
+    time_span_condition: Optional[TimeSpanCondition] = None  # 时间跨度的范围条件
+
+
+@dataclass
+class Attribute(Enum, DictMixin):
+    SLOPE = "slope"
+    ANGLE = "angle"
+    START_VALUE = "start_value"
+    END_VALUE = "end_value"
+    START_TIME = "start_time"
+    END_TIME = "end_time"
+    MAX_VALUE = "max_value"
+    MIN_VALUE = "min_value"
+    TIME_SPAN = "time_span"
+
+
+@dataclass
+class Comparator(Enum, DictMixin):
+    GREATER = ">"
+    LESS = "<"
+    EQUAL = "="
+    NO_GREATER = "<="
+    NO_LESS = ">="
+    APPROXIMATELY_EQUAL_TO = "~"
 
 
 @dataclass
 class Relation(DictMixin):
     id1: int
     id2: int
-    attribute: str  # "angle" or "start_value" or "end_value"
-    operator: str  # "greater" or "less" or "approximately_equal_to"
+    attribute: Attribute
+    comparator: Comparator
 
 
 @dataclass
 class QuerySpec(DictMixin):
     target: str  # The target column to query
-    patterns: List[Pattern]
+    patterns: List[Trend]
     relations: Optional[List[Relation]] = None
+    # time_scope: 
 
 
 if __name__ == "__main__":
@@ -146,7 +193,7 @@ if __name__ == "__main__":
     dataset_info = DatasetInfo.from_dict(dataset_info_json)
     print("DatasetInfo from JSON:", dataset_info)
     print("\nDatasetInfo to JSON:", dataset_info.to_dict())
-    
+
     # Test examples
     query_spec_json = {
         "patterns": [

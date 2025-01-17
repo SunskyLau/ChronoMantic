@@ -8,6 +8,7 @@ from .bottom_up import bottom_up_merge
 
 @typechecked
 def approximate_dataset(dataset: pd.DataFrame, dataset_info: DatasetInfo, k: int = 1):
+    """对数据集进行近似化处理"""
     approxiamation_segments_containers: List[ApproximationSegmentsContainer] = []
     time_column = dataset_info.time_column
     value_columns = dataset_info.value_columns

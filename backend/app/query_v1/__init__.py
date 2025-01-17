@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from ..model_v2 import approximate_dataset, bottom_up_merge
-from ..MyTypes_v1 import ApproximationSegmentsContainer, DatasetInfo, Pattern, QuerySpec, Relation, Segment, SlopeCondition
+from ..MyTypes_v1 import ApproximationSegmentsContainer, DatasetInfo, Trend, QuerySpec, Relation, Segment, SlopeCondition
 
 
 @typechecked
@@ -33,7 +33,7 @@ def query(query_spec: QuerySpec, approximation_segments_containers: List[Approxi
 
 
 @typechecked
-def match_patterns_in_segments(patterns: List[Pattern], relations: Optional[List[Relation]], segments: List[Segment]):
+def match_patterns_in_segments(patterns: List[Trend], relations: Optional[List[Relation]], segments: List[Segment]):
     """根据patterns和relations在segments中匹配结果"""
     results: List[List[Segment]] = []
     for i in range(len(segments)):
@@ -135,8 +135,8 @@ if __name__ == "__main__":
     query_spec = QuerySpec(
         target="AMZN",
         patterns=[
-            Pattern(slope_condition=SlopeCondition(min_slope=0.0001)),
-            Pattern(slope_condition=SlopeCondition(min_slope=0.0001)),
+            Trend(slope_condition=SlopeCondition(min_slope=0.0001)),
+            Trend(slope_condition=SlopeCondition(min_slope=0.0001)),
         ],
     )
     results_dict = query(query_spec, approxiamation_segments_containers)
