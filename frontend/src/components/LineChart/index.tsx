@@ -5,7 +5,7 @@ interface LineChartProps {
     xData: number[];
     yData: number[];
     ratio?: number;
-    height?: number;
+    height?: number | string;
     title?: string;
     isXAxisVisible?: boolean;
     isYAxisVisible?: boolean;
@@ -16,9 +16,10 @@ interface LineChartProps {
     range?: [number, number];
     split?: number[];
     isSplitMask?: boolean;
+    isZoom?: boolean;
 }
 
-function LineChart({ xData, yData, ratio, title = "", isXAxisVisible = false, isYAxisVisible = false, isBrush = false, isFill = false, onBrush, range, height, split, isSplitMask = false, brushPosition }: LineChartProps) {
+function LineChart({ xData, yData, ratio, title = "", isXAxisVisible = false, isYAxisVisible = false, isBrush = false, isFill = false, onBrush, range, height, split, isSplitMask = false, brushPosition, isZoom = false }: LineChartProps) {
     const svgRef = useRef<SVGSVGElement>(null);
 
     useEffect(() => {
@@ -30,6 +31,8 @@ function LineChart({ xData, yData, ratio, title = "", isXAxisVisible = false, is
         const margin = { top: isXAxisVisible ? 20 : 0, right: isYAxisVisible ? 40 : 0, bottom: isXAxisVisible ? 30 : 0, left: isYAxisVisible ? 40 : 0 };
         const svg = d3.select(svgRef.current);
         const width = Math.max(10, svgRef.current.clientWidth - margin.left - margin.right);
+        let iHeight: number = typeof height === 'string' ? svgRef.current.clientHeight * parseFloat(height) / 100 : height ?? 200;
+        iHeight -= margin.top + margin.bottom;
         const xMin = d3.min(timeStampData)!;
         const xMax = d3.max(timeStampData)!;
         const yMin = d3.min(valueData)!;
@@ -41,7 +44,7 @@ function LineChart({ xData, yData, ratio, title = "", isXAxisVisible = false, is
         let innerWidth = width;
         let innerHeight: number = 0;
         if (height && ratio) {
-            const yUnitPixel = height / yRange;
+            const yUnitPixel = iHeight / yRange;
             const xUnitPixel = yUnitPixel * ratio;
             innerWidth = xUnitPixel * xRange / 1000;
             if (innerWidth > width) {
@@ -59,7 +62,7 @@ function LineChart({ xData, yData, ratio, title = "", isXAxisVisible = false, is
                 valueData = extentData.map((v) => yData[v[1]]);
                 data = timeStampData.map((x, i) => [x, valueData[i]] as [number, number]);
             }
-            innerHeight = height;
+            innerHeight = iHeight;
             innerWidth = width;
             svg.attr("width", innerWidth + margin.left + margin.right);
         } else if (ratio) {
@@ -67,7 +70,7 @@ function LineChart({ xData, yData, ratio, title = "", isXAxisVisible = false, is
             const yUnitPixel = xUnitPixel / ratio;
             innerHeight = yRange * yUnitPixel * 1000;
         } else {
-            innerHeight = height ?? 200;
+            innerHeight = iHeight;
         }
         const outerHeight = innerHeight + margin.top + margin.bottom;
 
@@ -89,6 +92,13 @@ function LineChart({ xData, yData, ratio, title = "", isXAxisVisible = false, is
 
         const g = svg.append('g')
             .attr('transform', `translate(${margin.left},${margin.top})`);
+
+        if (isZoom) {
+            const zoom = d3.zoom<SVGGElement, unknown>().on("zoom", (event) => {
+                g.attr("transform", event.transform);
+            });
+            g.call(zoom);
+        }
 
         g.append('text')
             .attr('x', 10)
@@ -141,17 +151,12 @@ function LineChart({ xData, yData, ratio, title = "", isXAxisVisible = false, is
         }
 
         if (split && timeStampData.length > 2) {
-            const splitG = svg.append('g')
-                .attr('transform', `translate(${margin.left},${margin.top})`);
-            if (isSplitMask) {
-                splitG.attr("clip-path", "url(#clip-path)")
-            }
             for (let i = 0; i < split.length - 1; i++) {
                 const x1 = x(xData[split[i]] * 1000)
                 const x2 = x(xData[split[i + 1]] * 1000)
                 const y1 = y(yData[split[i]])
                 const y2 = y(yData[split[i + 1]]);
-                splitG.append('line')
+                const line = g.append('line')
                     .attr('class', 'split-line')
                     .attr('x1', x1)
                     .attr('x2', x2)
@@ -160,6 +165,9 @@ function LineChart({ xData, yData, ratio, title = "", isXAxisVisible = false, is
                     .attr('stroke', y1 > y2 ? 'red' : 'green')
                     .attr('stroke-opacity', '0.5')
                     .attr('stroke-width', 1);
+                if (isSplitMask) {
+                    line.attr("clip-path", "url(#clip-path)")
+                }
             }
         }
 
@@ -229,10 +237,10 @@ function LineChart({ xData, yData, ratio, title = "", isXAxisVisible = false, is
             };
         }
 
-    }, [xData, yData, ratio, title, isXAxisVisible, isYAxisVisible, isBrush, onBrush, isFill, range, height, split, isSplitMask, brushPosition]);
+    }, [xData, yData, ratio, title, isXAxisVisible, isYAxisVisible, isBrush, onBrush, isFill, range, height, split, isSplitMask, brushPosition, isZoom]);
 
     return (
-        <svg ref={svgRef} width="100%" height="0"></svg>
+        <svg ref={svgRef} width="100%" height="100%"></svg>
     );
 };
 

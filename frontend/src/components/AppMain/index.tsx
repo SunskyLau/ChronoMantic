@@ -19,7 +19,7 @@ export default function AppMain() {
                 </section>
                 <section className="main-right">
                     <DetailView></DetailView>
-                    <ResultsPanel className="main-body-results" />
+                    <ResultsPanel className="main-results" />
                 </section>
             </main>
             {isSettingShow && <Setting></Setting>}

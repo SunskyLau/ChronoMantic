@@ -36,3 +36,11 @@
 .main-middle .nl-query-form {
     flex-shrink: 0;
 }
+
+.main-right .main-view {
+    flex: 3 0 0;
+}
+
+.main-right .main-results {
+    flex: 2 0 0;
+}

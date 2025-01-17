@@ -16,7 +16,7 @@ export default function TableViewContent() {
                 <thead>
                     <tr>
                         <th></th>
-                        {headers.map(header => <th style={{backgroundColor: source === header ? "red" : ""}} className={classnames(header !== timeCol ? "table-header" : "")} key={header} onClick={() => {
+                        {headers.map(header => <th style={{backgroundColor: source === header ? "skyblue" : ""}} className={classnames(header !== timeCol ? "table-header" : "")} key={header} onClick={() => {
                             if (header !== timeCol) dispatch(setSource(header));
                         }}>{header}</th>)}
                     </tr>

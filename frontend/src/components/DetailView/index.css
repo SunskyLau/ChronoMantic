@@ -23,6 +23,7 @@
     background-color: #DDEFFF;
     border-radius: 4px;
     display: flex;
+    min-height: 0;
 }
 
 .main-view .bg svg {
@@ -32,6 +33,12 @@
 .main-view .panel-content {
     display: flex;
     flex-direction: column;
-    flex-basis: fit-content;
-    flex-grow: 0;
+}
+
+.main-view .detail {
+    flex: 3 0 0;
+}
+
+.main-view .overview {
+    flex: 1 0 0;
 }
