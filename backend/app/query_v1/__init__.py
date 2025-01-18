@@ -9,7 +9,7 @@ from ..MyTypes_v1 import ApproximationSegmentsContainer, DatasetInfo, Trend, Que
 
 @typechecked
 def query(query_spec: QuerySpec, approximation_segments_containers: List[ApproximationSegmentsContainer]):
-    target, patterns, relations = query_spec.target, query_spec.patterns, query_spec.relations
+    target, trends, relations = query_spec.target, query_spec.trends, query_spec.relations
     # 找到source为target的approximation_segments_container
     approximation_segments_container = None
     for container in approximation_segments_containers:
@@ -26,20 +26,20 @@ def query(query_spec: QuerySpec, approximation_segments_containers: List[Approxi
     for approximation_segments in approximation_segments_container.approximation_segments_list:
         segments = approximation_segments.segments
         approximation_level = approximation_segments.approximation_level
-        results = match_patterns_in_segments(patterns, relations, segments)
+        results = match_trends_in_segments(trends, relations, segments)
         results_dict[approximation_level] = results
 
     return results_dict
 
 
 @typechecked
-def match_patterns_in_segments(patterns: List[Trend], relations: Optional[List[Relation]], segments: List[Segment]):
-    """根据patterns和relations在segments中匹配结果"""
+def match_trends_in_segments(trends: List[Trend], relations: Optional[List[Relation]], segments: List[Segment]):
+    """根据trends和relations在segments中匹配结果"""
     results: List[List[Segment]] = []
     for i in range(len(segments)):
         result = []
         flag = True
-        for j, pattern in enumerate(patterns):
+        for j, pattern in enumerate(trends):
             if i + j >= len(segments):
                 flag = False
                 break
@@ -134,7 +134,7 @@ if __name__ == "__main__":
     # 构建query_spec
     query_spec = QuerySpec(
         target="AMZN",
-        patterns=[
+        trends=[
             Trend(slope_condition=SlopeCondition(min_slope=0.0001)),
             Trend(slope_condition=SlopeCondition(min_slope=0.0001)),
         ],

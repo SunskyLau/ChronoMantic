@@ -1,6 +1,6 @@
 from dataclasses import dataclass, asdict, fields
 from enum import Enum
-from typing import List, Optional, Union, get_type_hints
+from typing import Dict, List, Optional, Union, get_type_hints
 
 """Dataclass Mixin for JSON Serialization"""
 
@@ -70,7 +70,7 @@ class DictMixin:
 class DatasetInfo(DictMixin):
     time_column: str
     value_columns: List[str]
-    column_ratio_dict: dict[str, float]
+    column_ratio_dict: Dict[str, float]
 
 
 @dataclass
@@ -102,7 +102,7 @@ class ApproximationSegmentsContainer(DictMixin):
 @dataclass
 class ThresholdCondition(DictMixin):
     value: float
-    inclusive: bool
+    inclusive: bool  # 是否包含该值
 
 
 @dataclass
@@ -129,6 +129,7 @@ class TimeCondition(DictMixin):
     min_time: Optional[ThresholdCondition] = None
 
 
+@dataclass
 class TimeSpanCondition(DictMixin):
     max_time_span: Optional[ThresholdCondition] = None
     min_time_span: Optional[ThresholdCondition] = None
@@ -147,8 +148,7 @@ class Trend(DictMixin):
     time_span_condition: Optional[TimeSpanCondition] = None  # 时间跨度的范围条件
 
 
-@dataclass
-class Attribute(Enum, DictMixin):
+class Attribute(Enum):
     SLOPE = "slope"
     ANGLE = "angle"
     START_VALUE = "start_value"
@@ -160,14 +160,13 @@ class Attribute(Enum, DictMixin):
     TIME_SPAN = "time_span"
 
 
-@dataclass
-class Comparator(Enum, DictMixin):
+class Comparator(Enum):
     GREATER = ">"
     LESS = "<"
     EQUAL = "="
     NO_GREATER = "<="
     NO_LESS = ">="
-    APPROXIMATELY_EQUAL_TO = "~"
+    APPROXIMATELY_EQUAL_TO = "~="
 
 
 @dataclass
@@ -180,42 +179,91 @@ class Relation(DictMixin):
 
 @dataclass
 class QuerySpec(DictMixin):
-    target: str  # The target column to query
-    patterns: List[Trend]
+    target: str
+    trends: Optional[List[Trend]] = None
     relations: Optional[List[Relation]] = None
-    # time_scope: 
+    start_time_condition: Optional[TimeCondition] = None
+    end_time_condition: Optional[TimeCondition] = None
+    max_value_condition: Optional[ValueCondition] = None
+    min_value_condition: Optional[ValueCondition] = None
+
+
+def run_tests():
+    # Test DatasetInfo
+    dataset_info_dict = {
+        "time_column": "timestamp",
+        "value_columns": ["temperature", "humidity", "pressure"],
+        "column_ratio_dict": {"temperature": 0.5, "humidity": 0.3, "pressure": 0.2},
+    }
+    dataset_info = DatasetInfo.from_dict(dataset_info_dict)
+    print("\n=== DatasetInfo Test ===")
+    print("From dict:", dataset_info)
+    print("To dict:", dataset_info.to_dict())
+
+    # Test Segment and ApproximationSegments
+    segment_dict = {"start_idx": 0, "end_idx": 10, "start_value": 20.5, "end_value": 25.5, "slope": 0.5, "angle": 26.57}
+    segment = Segment.from_dict(segment_dict)
+
+    approx_segments_dict = {"segments": [segment_dict, segment_dict], "approximation_level": 2}  # Two identical segments for testing
+    approx_segments = ApproximationSegments.from_dict(approx_segments_dict)
+
+    container_dict = {"source": "temperature_data", "approximation_segments_list": [approx_segments_dict], "max_approximation_level": 5}
+    container = ApproximationSegmentsContainer.from_dict(container_dict)
+
+    print("\n=== Segments Test ===")
+    print("Single Segment:", segment)
+    print("Approximation Segments:", approx_segments)
+    print("Container:", container)
+
+    # Test Query Components
+    threshold_dict = {"value": 100.0, "inclusive": True}
+    threshold = ThresholdCondition.from_dict(threshold_dict)
+
+    slope_condition_dict = {"max_slope": threshold_dict, "min_slope": {"value": -100.0, "inclusive": False}}
+    slope_condition = SlopeCondition.from_dict(slope_condition_dict)
+
+    angle_condition_dict = {"max_angle": {"value": 45.0, "inclusive": True}, "min_angle": {"value": -45.0, "inclusive": True}}
+    angle_condition = AngleCondition.from_dict(angle_condition_dict)
+
+    value_condition_dict = {"max_value": {"value": 1000.0, "inclusive": True}, "min_value": {"value": 0.0, "inclusive": False}}
+    value_condition = ValueCondition.from_dict(value_condition_dict)
+
+    # Test Trend
+    trend_dict = {
+        "slope_condition": slope_condition_dict,
+        "angle_condition": angle_condition_dict,
+        "start_value_condition": value_condition_dict,
+        "end_value_condition": value_condition_dict,
+        "max_value_condition": value_condition_dict,
+        "min_value_condition": value_condition_dict,
+        "time_span_condition": {"max_time_span": {"value": 3600, "inclusive": True}, "min_time_span": {"value": 60, "inclusive": True}},
+    }
+    trend = Trend.from_dict(trend_dict)
+
+    # Test Relation
+    relation_dict = {"id1": 1, "id2": 2, "attribute": "SLOPE", "comparator": ">"}
+    relation = Relation.from_dict(relation_dict)
+
+    # Test Complete QuerySpec
+    query_spec_dict = {
+        "target": "temperature",
+        "trends": [trend_dict],
+        "relations": [relation_dict],
+        "start_time_condition": {"max_time": {"value": 1640995200, "inclusive": True}, "min_time": {"value": 1640908800, "inclusive": True}},
+        "max_value_condition": value_condition_dict,
+    }
+    query_spec = QuerySpec.from_dict(query_spec_dict)
+
+    print("\n=== Query Components Test ===")
+    print("Threshold Condition:", threshold)
+    print("Slope Condition:", slope_condition)
+    print("Angle Condition:", angle_condition)
+    print("Value Condition:", value_condition)
+    print("Trend:", trend)
+    print("Relation:", relation)
+    print("QuerySpec:", query_spec)
+    print("\nQuerySpec dict:", query_spec.to_dict())
 
 
 if __name__ == "__main__":
-    # Test DatasetInfo
-    dataset_info_json = {"time_column": "timestamp", "value_columns": ["temperature", "humidity", "pressure"]}
-
-    dataset_info = DatasetInfo.from_dict(dataset_info_json)
-    print("DatasetInfo from JSON:", dataset_info)
-    print("\nDatasetInfo to JSON:", dataset_info.to_dict())
-
-    # Test examples
-    query_spec_json = {
-        "patterns": [
-            {
-                "slope_condition": {"max_slope": 1.0, "min_slope": -1.0},
-                "angle_condition": {"max_angle": 45.0, "min_angle": -45.0},
-                "start_value": {"max_value": 100.0, "min_value": 0.0},
-            }
-        ],
-        "relations": [{"id1": 1, "id2": 2, "attribute": "slope", "operator": "greater"}],
-    }
-
-    query_spec = QuerySpec.from_dict(query_spec_json)
-    print("QuerySpec from JSON:", query_spec)
-    print("\nQuerySpec to JSON:", query_spec.to_dict())
-
-    segments_container_json = {
-        "source": "test_data",
-        "approximation_segments_list": [{"segments": [{"start_idx": 0, "end_idx": 5, "slope": 1.5, "angle": 30.0}], "approximation_level": 1}],
-        "max_approximation_level": 3,
-    }
-
-    container = ApproximationSegmentsContainer.from_dict(segments_container_json)
-    print("\nContainer from JSON:", container)
-    print("\nContainer to JSON:", container.to_dict())
+    run_tests()
