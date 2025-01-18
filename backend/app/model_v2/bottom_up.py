@@ -56,7 +56,17 @@ def bottom_up_merge(value_column: str, x: np.ndarray, y: np.ndarray, k: int):
         return [[i] for i in range(n)]
 
     segments: List[Segment] = [
-        Segment(start_idx=i, end_idx=i + 1, slope=(y[i + 1] - y[i]) / (x[i + 1] - x[i]), start_value=y[i], end_value=y[i + 1]) for i in range(n - 1)
+        Segment(
+            start_idx=i,
+            end_idx=i + 1,
+            slope=(y[i + 1] - y[i]) / (x[i + 1] - x[i]),
+            start_value=y[i],
+            end_value=y[i + 1],
+            start_time=x[i],
+            end_time=x[i + 1],
+            time_span=x[i + 1] - x[i],
+        )
+        for i in range(n - 1)
     ]
     cost_heap: List[CostWrapper] = []
 
@@ -93,6 +103,9 @@ def bottom_up_merge(value_column: str, x: np.ndarray, y: np.ndarray, k: int):
             slope=(y[seg2.end_idx] - y[seg1.start_idx]) / (x[seg2.end_idx] - x[seg1.start_idx]),
             start_value=seg1.start_value,
             end_value=seg2.end_value,
+            start_time=x[seg1.start_idx],
+            end_time=x[seg2.end_idx],
+            time_span=x[seg2.end_idx] - x[seg1.start_idx],
         )
         segments.pop(j)
 

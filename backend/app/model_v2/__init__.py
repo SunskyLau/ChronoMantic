@@ -38,18 +38,6 @@ def update_approximation_segments_container_with_angle(approximation_segments_co
     return approximation_segments_container
 
 
-@typechecked
-def update_container_in_container(
-    approximation_segments_container: ApproximationSegmentsContainer, approximation_segments_containers: List[ApproximationSegmentsContainer]
-):
-    for container in approximation_segments_containers:
-        if container.source == approximation_segments_container.source:
-            container = approximation_segments_container
-            return
-    approximation_segments_containers.append(approximation_segments_container)
-    return
-
-
 if __name__ == "__main__":
     df = pd.read_csv("../portfolio_data.csv")
     dataset_info = DatasetInfo(time_column="Date", value_columns=["AMZN", "DPZ"], column_ratio_dict={"AMZN": 1, "DPZ": 1})
