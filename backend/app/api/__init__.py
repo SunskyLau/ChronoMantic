@@ -18,11 +18,35 @@ bus_bp = Blueprint("bus", __name__)
 
 class CustomJSONEncoder(json.JSONEncoder):
     def default(self, o):
-        if isinstance(o, np.int64) or isinstance(o, np.int32):
+        # 处理NumPy数据类型
+        if isinstance(o, (np.int64, np.int32)):
             return int(o)
-        elif isinstance(o, np.float64) or isinstance(o, np.float32):
+        if isinstance(o, (np.float64, np.float32)):
             return float(o)
-        return super().default(o)
+
+        # 处理NumPy数组
+        if isinstance(o, np.ndarray):
+            return o.tolist()
+
+        # 如果对象有to_dict方法，优先使用该方法
+        if hasattr(o, "to_dict") and callable(getattr(o, "to_dict")):
+            return o.to_dict()
+
+        # 如果对象是可迭代的（但不是字符串），转换为列表
+        if hasattr(o, "__iter__") and not isinstance(o, (str, bytes, bytearray)):
+            return list(o)
+
+        # 尝试将对象转换为字典
+        try:
+            return o.__dict__
+        except AttributeError:
+            pass
+
+        # 如果以上方法都失败，尝试直接转换为字符串
+        try:
+            return str(o)
+        except:
+            return super().default(o)
 
 
 def filter_json(data):
@@ -91,8 +115,7 @@ def process_dataset():
     approximation_segments_containers_container.set_data(approxiamation_segments_containers)
     # 将List[ApproximationSegmentsContainer]转换为可序列化的格式
     serialized_containers = [container.to_dict() for container in approxiamation_segments_containers]
-    # print(approxiamation_segments_containers)
-    return jsonify({"code": 200, "message": "Dataset processed successfully", "approximationSegmentsContainers": serialized_containers})
+    return jsonify({"code": 200, "message": "Dataset processed successfully", "approximationSegmentsContainers": filter_json(serialized_containers)})
 
 
 @bus_bp.route("/query_by_specification", methods=["POST"])
@@ -101,4 +124,4 @@ def query_by_specification():
     approximation_segments_containers = approximation_segments_containers_container.get_data()
     df = dataset_container.get_data()
     results_dict = query(query_spec, approximation_segments_containers, df)
-    return jsonify({"code": 200, "message": "Query successful", "results": results_dict})
+    return jsonify({"code": 200, "message": "Query successful", "results": filter_json(results_dict)})

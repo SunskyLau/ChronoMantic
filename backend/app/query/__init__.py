@@ -87,8 +87,8 @@ def satisfies_global_conditions(sequence: List[Segment], query_spec: QuerySpec, 
 
     # 检查全局最大最小值条件
     if query_spec.value_scope_condition:
-        max_thresh = query_spec.value_scope_condition.max_value
-        min_thresh = query_spec.value_scope_condition.min_value
+        max_thresh = query_spec.value_scope_condition.max
+        min_thresh = query_spec.value_scope_condition.min
         if not check_double_threshold_condition(min_value, max_value, min_thresh, max_thresh):
             return False
 
@@ -97,8 +97,8 @@ def satisfies_global_conditions(sequence: List[Segment], query_spec: QuerySpec, 
         start_time = sequence[0].start_idx
         end_time = sequence[-1].end_idx
         if query_spec.time_scope_condition:
-            start_thresh = query_spec.time_scope_condition.start_time
-            end_thresh = query_spec.time_scope_condition.end_time
+            start_thresh = query_spec.time_scope_condition.min
+            end_thresh = query_spec.time_scope_condition.max
             if not check_double_threshold_condition(start_time, end_time, start_thresh, end_thresh):
                 return False
 
@@ -167,24 +167,22 @@ def match_single_trend(segment: Segment, trend: Trend) -> bool:
 
     # 检查斜率条件
     if trend.slope_scope_condition:
-        if not check_single_threshold_condition(segment.slope, trend.slope_scope_condition.min_slope, trend.slope_scope_condition.max_slope):
+        if not check_single_threshold_condition(segment.slope, trend.slope_scope_condition.min, trend.slope_scope_condition.max):
             return False
 
     # 检查角度条件
     if trend.angle_scope_condition and segment.angle is not None:
-        if not check_single_threshold_condition(segment.angle, trend.angle_scope_condition.min_angle, trend.angle_scope_condition.max_angle):
+        if not check_single_threshold_condition(segment.angle, trend.angle_scope_condition.min, trend.angle_scope_condition.max):
             return False
 
     # 检查起止时间条件
     if trend.time_scope_condition:
-        if not check_double_threshold_condition(
-            segment.start_time, segment.end_time, trend.time_scope_condition.start_time, trend.time_scope_condition.end_time
-        ):
+        if not check_double_threshold_condition(segment.start_time, segment.end_time, trend.time_scope_condition.min, trend.time_scope_condition.max):
             return False
 
     # 检查时间跨度条件
     if trend.time_span_condition and segment.time_span is not None:
-        if not check_single_threshold_condition(segment.time_span, trend.time_span_condition.min_time_span, trend.time_span_condition.max_time_span):
+        if not check_single_threshold_condition(segment.time_span, trend.time_span_condition.min, trend.time_span_condition.max):
             return False
 
     return True
@@ -193,8 +191,8 @@ def match_single_trend(segment: Segment, trend: Trend) -> bool:
 @typechecked
 def check_time_span_condition(time_span: int, condition: TimeSpanCondition) -> bool:
     """检查时间跨度是否满足条件"""
-    if condition.max_time_span:
-        thresh = condition.max_time_span
+    if condition.max:
+        thresh = condition.max
         if thresh.inclusive:
             if time_span > thresh.value:
                 return False
@@ -202,8 +200,8 @@ def check_time_span_condition(time_span: int, condition: TimeSpanCondition) -> b
             if time_span >= thresh.value:
                 return False
 
-    if condition.min_time_span:
-        thresh = condition.min_time_span
+    if condition.min:
+        thresh = condition.min
         if thresh.inclusive:
             if time_span < thresh.value:
                 return False
@@ -281,8 +279,8 @@ if __name__ == "__main__":
     query_spec1 = QuerySpec(
         target="AMZN",
         trends=[
-            Trend(slope_scope_condition=SlopeScopeCondition(min_slope=ThresholdCondition(value=0.0001, inclusive=True))),
-            Trend(slope_scope_condition=SlopeScopeCondition(min_slope=ThresholdCondition(value=0.0001, inclusive=True))),
+            Trend(slope_scope_condition=SlopeScopeCondition(min=ThresholdCondition(value=0.0001, inclusive=True))),
+            Trend(slope_scope_condition=SlopeScopeCondition(min=ThresholdCondition(value=0.0001, inclusive=True))),
         ],
         relations=[Relation(comparator=Comparator.GREATER, id1=0, id2=1, attribute=Attribute.END_VALUE)],
     )
