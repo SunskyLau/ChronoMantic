@@ -86,7 +86,7 @@ export default function ResultsContent() {
                         {fragments.length ? <SelectChart title="Time Span" data={sortedTimeSpanIter.map(([x, y]) => ({ x: Number(x), y }))} onBrush={handleDayScaleChange}></SelectChart> : "Time Span"}
                     </div>
                     <div className="flex-width">
-                        {fragments.length ? <SelectChart title="Score" data={sortedScoreIter.map(([x, y]) => ({ x: Number(x), y }))} onBrush={handleScoreScaleChange}></SelectChart> : "Score"}
+                        {fragments.length ? <SelectChart title="Smooth Iteration" data={sortedScoreIter.map(([x, y]) => ({ x: Number(x), y }))} onBrush={handleScoreScaleChange}></SelectChart> : "Smooth Iteration"}
                     </div>
                 </div>
                 <div className="result-item-list">

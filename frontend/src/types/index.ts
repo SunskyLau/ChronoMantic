@@ -27,6 +27,7 @@ export interface ProcessDatasetResults {
 export interface DatasetInfo {
     time_column: string;
     value_columns: string[];
+    column_ratio_dict: Record<string, number>;
 }
 
 export interface Approximation_segment {

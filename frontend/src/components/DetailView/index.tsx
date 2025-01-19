@@ -17,10 +17,11 @@ function SmoothLevel() {
     return (
         <ConfigProvider theme={{ components: { Slider: { railSize: 10, railBg: '#E0E0E0', railHoverBg: '#E0E0E0', trackBg: '#fff', trackHoverBg: '#fff', handleColor: '#666' } } }}>
             <div className="smooth-level">
-                <span className="smooth-level-title">smooth level</span>
+                <span className="smooth-level-title">Approximation Level</span>
                 <Slider disabled={!current} value={level} max={current?.max_approximation_level} onChange={(val) => {
                     dispatch(setLevel(val))
                 }}></Slider>
+                <span>{level}</span>
             </div>
         </ConfigProvider>
     )
@@ -29,7 +30,7 @@ function SmoothLevel() {
 export default function DetailView() {
     const data = useAppSelector((state) => state.dataset.dataset?.data) || {};
     const dispatch = useAppDispatch();
-    const ratio = useAppSelector((state) => state.states.aspectRatio)
+    const ratio = useAppSelector((state) => state.dataset.dataset?.ratios[state.approximation.source ?? ""])
     const range = useAppSelector((state) => state.select.range);
     const timeCol = Object.keys(data).shift();
     const valueCol = useAppSelector((state) => state.approximation.source);
@@ -48,7 +49,7 @@ export default function DetailView() {
                 timeCol && valueCol ?
                     <>
                         <div className="bg detail" ref={detailRef}><LineChart xData={data[timeCol].map(date => new Date(date).getTime() / 1000)} yData={data[valueCol] as number[]} isXAxisVisible={true} isYAxisVisible={true} range={range} height={'100%'} ratio={ratio} split={split} isSplitMask={true}></LineChart></div>
-                        <div className="bg overview" ref={overviewRef}><LineChart xData={data[timeCol].map(date => new Date(date).getTime() / 1000)} yData={data[valueCol] as number[]} isFill={true} isBrush={true} onBrush={handleBrush} height={'100%'} split={split} brushPosition={range}></LineChart></div>
+                        <div className="bg overview" ref={overviewRef}><LineChart xData={data[timeCol].map(date => new Date(date).getTime() / 1000)} yData={data[valueCol] as number[]} isFill={true} isBrush={true} onBrush={handleBrush} height={'100%'} split={split} brushPosition={range} isXAxisVisible={true} isYAxisVisible={true}></LineChart></div>
                     </>
                     : <Empty />
             }

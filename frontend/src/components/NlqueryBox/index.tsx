@@ -9,10 +9,29 @@ import { flushSync } from "react-dom";
 import { AudioFilled } from "@ant-design/icons";
 import { classnames } from "../../utils/classname";
 import type { SpeechRecognitionType } from "../../types";
+import { Input, Popover } from "antd";
 
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition || window.mozSpeechRecognition || window.msSpeechRecognition;
 SpeechRecognition.lang = 'en-US';
 SpeechRecognition.continuous = true;
+
+const PLACEHOLDER = "Please enter your query...";
+
+const ColoredTextComponent: React.FC<{ query: string, keys: string[] }> = ({ query, keys }) => {
+  const coloredText = (query || PLACEHOLDER).split(/(\s+)/).map((part, index) => {
+    if (keys.includes(part.toLowerCase())) {
+      return (
+        <span key={index} onClick={(e) => { e.stopPropagation(); }}>
+          <Popover content={<Input></Input>} trigger="click">
+            <b style={{ backgroundColor: getColor(index) }}>{part}</b>
+          </Popover>
+        </span>
+      );
+    }
+    return <span>{part}</span>;
+  });
+  return <span>{coloredText}</span>;
+};
 
 export default function NlqueryBox() {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -23,15 +42,6 @@ export default function NlqueryBox() {
   const [isEdit, setIsEdit] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const recognition = useRef<SpeechRecognitionType>(new SpeechRecognition());
-
-  const PLACEHOLDER = "Please enter your query...";
-  let coloredText = NLQuery.replace(/ /g, "&nbsp;");
-  trend.forEach((item, index) => {
-    const regex = new RegExp(item.replace(/ /g, "&nbsp;"), 'gi');
-    coloredText = coloredText.replace(regex, (match) => {
-      return `<b style="background-color: ${getColor(index)};">${match}</b>`;
-    });
-  });
 
   useEffect(() => {
     if (textareaRef.current) {
@@ -65,12 +75,14 @@ export default function NlqueryBox() {
         <div
           onClick={() => {
             flushSync(() => setIsEdit(true));
-            if (textareaRef.current) textareaRef.current.focus();
+            if (textareaRef.current) {
+              textareaRef.current.focus();
+              textareaRef.current.setSelectionRange(-1, -1);
+            }
           }}
           className="nl-query text"
-          style={{ color: !coloredText ? "gray" : "#000" }}
-          dangerouslySetInnerHTML={{ __html: coloredText || PLACEHOLDER }}
-        ></div>
+          style={{ color: !NLQuery ? "gray" : "#000" }}
+        ><ColoredTextComponent query={NLQuery} keys={trend}></ColoredTextComponent></div>
       )}
       <button onClick={() => {
         if (!SpeechRecognition) {

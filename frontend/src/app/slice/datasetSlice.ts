@@ -12,6 +12,7 @@ export interface DatasetColumn {
 export interface Dataset extends DatasetColumn {
   filename: string;
   data: Record<string, ColumnType[]>;
+  ratios: Record<string, number>;
   symbolData?: TimeSeriesDataset;
   selectedSymbols?: string[];
   unselectedSymbols?: string[];
@@ -53,9 +54,13 @@ const datasetSlice = createSlice({
         state.dataset.unselectedSymbols = state.dataset.unselectedSymbols.filter((item) => item !== action.payload);
         state.dataset.selectedSymbols.push(action.payload);
       }
+    },
+    setRatios: (state, action: PayloadAction<Record<string, number>>) => {
+      if (!state.dataset) return;
+      state.dataset.ratios = action.payload;
     }
   },
 });
 
-export const { setDataset, setColumn, setSymbolData, removeSelectedSymbol, removeUnselectedSymbol } = datasetSlice.actions;
+export const { setDataset, setColumn, setSymbolData, removeSelectedSymbol, removeUnselectedSymbol, setRatios } = datasetSlice.actions;
 export default datasetSlice.reducer;

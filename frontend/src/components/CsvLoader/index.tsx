@@ -4,7 +4,7 @@ import { useRef } from "react";
 import { useAppDispatch } from "../../app/hooks";
 import { setDataset, Dataset, ColumnType } from "../../app/slice/datasetSlice";
 import UploadIcon from "../../icons/Upload";
-import { processDataset, uploadCsvFile } from "../../api";
+import { getScaleRatio, processDataset, uploadCsvFile } from "../../api";
 import { setResults } from "../../app/slice/approximation";
 
 function CsvLoader() {
@@ -36,6 +36,7 @@ function CsvLoader() {
             timeStampColumn: "",
             idColumn: "",
             valueColumn: "",
+            ratios: {},
           };
 
           const value_columns: string[] = [];
@@ -56,10 +57,17 @@ function CsvLoader() {
             }
           });
 
-          console.log("Parsed dataset:", dataset);
-          dispatch(setDataset(dataset));
-          processDataset({ time_column, value_columns }).then(res => {
-            dispatch(setResults(res))
+          Promise.all(value_columns.map((value => getScaleRatio(res.filename, dataset.timeStampColumn, value)))).then(res => {
+            dataset.ratios = res.reduce((acc, cur, index) => {
+              acc[value_columns[index]] = cur;
+              return acc;
+            }, {} as Record<string, number>);
+
+            console.log("Parsed dataset:", dataset);
+            dispatch(setDataset(dataset));
+            processDataset({ time_column, value_columns, column_ratio_dict: dataset.ratios }).then(res => {
+              dispatch(setResults(res))
+            })
           })
         },
         error: (error) => {

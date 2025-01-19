@@ -3,6 +3,7 @@
     align-items: center;
     width: 100%;
     gap: 8px;
+    margin-right: 8px;
 }
 
 .smooth-level .ant-slider {
@@ -20,7 +21,7 @@
 }
 
 .main-view .bg {
-    background-color: #DDEFFF;
+    /* background-color: #DDEFFF; */
     border-radius: 4px;
     display: flex;
     min-height: 0;

@@ -28,19 +28,15 @@
     gap: var(--gap);
 }
 
-.main-middle .panel > .panel-content {
+.main .panel > .panel-content {
     display: flex;
     flex-direction: column;
 }
 
-.main-middle .nl-query-form {
+.main .nl-query-form {
     flex-shrink: 0;
 }
 
-.main-right .main-view {
+.main .main-view {
     flex: 3 0 0;
-}
-
-.main-right .main-results {
-    flex: 2 0 0;
 }

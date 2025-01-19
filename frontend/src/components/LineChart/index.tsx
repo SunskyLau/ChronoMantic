@@ -109,14 +109,14 @@ function LineChart({ xData, yData, ratio, title = "", isXAxisVisible = false, is
             .text(title);
 
         if (isXAxisVisible) {
-            const xAxis = d3.axisBottom(x).tickValues([xMin, xMax]).tickFormat((d) => new Date(d as number).toLocaleDateString());
+            const xAxis = d3.axisBottom(x).tickValues([...new Set([xMin, xMax, ...xScale])]).tickFormat((d) => new Date(d as number).toLocaleDateString());
             g.append('g')
                 .attr('transform', `translate(0,${innerHeight})`)
                 .call(xAxis);
         }
 
         if (isYAxisVisible) {
-            const yAxis = d3.axisLeft(y).tickValues([yMin, yMax]);
+            const yAxis = d3.axisLeft(y).tickValues([...new Set([yMin, yMax, ...yScale])]);
             g.append('g').call(yAxis);
         }
 
@@ -140,7 +140,7 @@ function LineChart({ xData, yData, ratio, title = "", isXAxisVisible = false, is
 
         const areaGenerator = d3.area<[number, number]>()
             .x(d => x(d[0]))
-            .y0(y(0))
+            .y0(y(yMin))
             .y1(d => y(d[1]));
 
         if (isFill) {
