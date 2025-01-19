@@ -1,15 +1,15 @@
 import json
 from flask import Blueprint
 
-from app.query_v1 import query
+from app.query import query
 from ..config import Config
 from flask import Blueprint, request, jsonify
 import numpy as np
 import pandas as pd
 from app.utils import process_csv_file
 from app.services.banking_to_45degree import find_optimal_aspect_ratio
-from ..MyTypes_v1 import DatasetInfo, QuerySpec
-from ..model_v2 import approximate_dataset
+from ..MyTypes import DatasetInfo, QuerySpec
+from ..model import approximate_dataset
 from numpy.typing import NDArray
 from ..shared_data import dataset_info_container, dataset_container, approximation_segments_containers_container
 

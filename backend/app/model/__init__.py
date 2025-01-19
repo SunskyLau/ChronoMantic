@@ -2,7 +2,7 @@ from typing import List
 from typeguard import typechecked
 import numpy as np
 import pandas as pd
-from ..MyTypes_v1 import ApproximationSegmentsContainer, DatasetInfo, Segment
+from ..MyTypes import ApproximationSegmentsContainer, DatasetInfo, Segment
 from .bottom_up import bottom_up_merge
 
 

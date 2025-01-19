@@ -5,7 +5,7 @@ import numpy as np
 import heapq
 import matplotlib.pyplot as plt
 import pandas as pd
-from ..MyTypes_v1 import ApproximationSegments, ApproximationSegmentsContainer, DatasetInfo, Segment
+from ..MyTypes import ApproximationSegments, ApproximationSegmentsContainer, DatasetInfo, Segment
 
 
 @dataclass

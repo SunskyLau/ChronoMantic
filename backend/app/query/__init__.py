@@ -2,8 +2,8 @@ from typing import List, Optional, Dict, Set, Tuple
 import pandas as pd
 from typeguard import typechecked
 
-from ..model_v2 import approximate_dataset
-from ..MyTypes_v1 import (
+from ..model import approximate_dataset
+from ..MyTypes import (
     DatasetInfo,
     QuerySpec,
     ApproximationSegmentsContainer,
