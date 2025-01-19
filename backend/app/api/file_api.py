@@ -43,11 +43,14 @@ def upload_csv_file():
 @file_bp.route("/process_dataset", methods=["POST"])
 def process_dataset():
     dataset_info = DatasetInfo.from_dict(request.json.get("datasetInfo"))
+    dataset_info_container.set_data(dataset_info)
     dataset = dataset_container.get_data()
     approxiamation_segments_containers = approximate_dataset(dataset, dataset_info)
     approximation_segments_containers_container.set_data(approxiamation_segments_containers)
+    # 将List[ApproximationSegmentsContainer]转换为可序列化的格式
+    serialized_containers = [container.to_dict() for container in approxiamation_segments_containers]
     print(approxiamation_segments_containers)
-    return jsonify({"code": 200, "message": "Dataset processed successfully", "approximationSegmentsContainers": approxiamation_segments_containers})
+    return jsonify({"code": 200, "message": "Dataset processed successfully", "approximationSegmentsContainers": serialized_containers})
 
 
 # @file_bp.route("/process_dataset", methods=["POST"])

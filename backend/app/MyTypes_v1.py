@@ -58,6 +58,8 @@ class DictMixin:
                 return obj.to_dict()
             elif isinstance(obj, list):
                 return [serialize(item) for item in obj]
+            elif hasattr(obj, "item"):  # NumPy类型都有item方法
+                return obj.item()
             return obj
 
         return {field.name: serialize(getattr(self, field.name)) for field in fields(self)}
