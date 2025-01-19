@@ -8,11 +8,11 @@ from ..MyTypes_v1 import (
     QuerySpec,
     ApproximationSegmentsContainer,
     Segment,
-    SlopeCondition,
+    SlopeScopeCondition,
     ThresholdCondition,
     Trend,
-    TimeCondition,
-    ValueCondition,
+    TimeScopeCondition,
+    ValueScopeCondition,
     TimeSpanCondition,
     Relation,
     Comparator,
@@ -86,19 +86,19 @@ def satisfies_global_conditions(sequence: List[Segment], query_spec: QuerySpec, 
     max_value = df_column[start_idx:end_idx].max()
 
     # 检查全局最大最小值条件
-    if query_spec.max_min_value_condition:
-        max_thresh = query_spec.max_min_value_condition.max_value
-        min_thresh = query_spec.max_min_value_condition.min_value
+    if query_spec.value_scope_condition:
+        max_thresh = query_spec.value_scope_condition.max_value
+        min_thresh = query_spec.value_scope_condition.min_value
         if not check_double_threshold_condition(min_value, max_value, min_thresh, max_thresh):
             return False
 
     # 检查起止时间条件
-    if query_spec.start_end_time_condition:
+    if query_spec.time_scope_condition:
         start_time = sequence[0].start_idx
         end_time = sequence[-1].end_idx
-        if query_spec.start_end_time_condition:
-            start_thresh = query_spec.start_end_time_condition.start_time
-            end_thresh = query_spec.start_end_time_condition.end_time
+        if query_spec.time_scope_condition:
+            start_thresh = query_spec.time_scope_condition.start_time
+            end_thresh = query_spec.time_scope_condition.end_time
             if not check_double_threshold_condition(start_time, end_time, start_thresh, end_thresh):
                 return False
 
@@ -166,26 +166,19 @@ def match_single_trend(segment: Segment, trend: Trend) -> bool:
     """检查单个段是否匹配趋势模式"""
 
     # 检查斜率条件
-    if trend.slope_condition:
-        if not check_single_threshold_condition(segment.slope, trend.slope_condition.min_slope, trend.slope_condition.max_slope):
+    if trend.slope_scope_condition:
+        if not check_single_threshold_condition(segment.slope, trend.slope_scope_condition.min_slope, trend.slope_scope_condition.max_slope):
             return False
 
     # 检查角度条件
-    if trend.angle_condition and segment.angle is not None:
-        if not check_single_threshold_condition(segment.angle, trend.angle_condition.min_angle, trend.angle_condition.max_angle):
-            return False
-
-    # 检查起始值条件
-    if trend.start_end_value_condition:
-        if not check_double_threshold_condition(
-            segment.start_value, segment.end_value, trend.start_end_value_condition.min_value, trend.start_end_value_condition.max_value
-        ):
+    if trend.angle_scope_condition and segment.angle is not None:
+        if not check_single_threshold_condition(segment.angle, trend.angle_scope_condition.min_angle, trend.angle_scope_condition.max_angle):
             return False
 
     # 检查起止时间条件
-    if trend.time_position_condition:
+    if trend.time_scope_condition:
         if not check_double_threshold_condition(
-            segment.start_time, segment.end_time, trend.time_position_condition.start_time, trend.time_position_condition.end_time
+            segment.start_time, segment.end_time, trend.time_scope_condition.start_time, trend.time_scope_condition.end_time
         ):
             return False
 
@@ -288,8 +281,8 @@ if __name__ == "__main__":
     query_spec1 = QuerySpec(
         target="AMZN",
         trends=[
-            Trend(slope_condition=SlopeCondition(min_slope=ThresholdCondition(value=0.0001, inclusive=True))),
-            Trend(slope_condition=SlopeCondition(min_slope=ThresholdCondition(value=0.0001, inclusive=True))),
+            Trend(slope_scope_condition=SlopeScopeCondition(min_slope=ThresholdCondition(value=0.0001, inclusive=True))),
+            Trend(slope_scope_condition=SlopeScopeCondition(min_slope=ThresholdCondition(value=0.0001, inclusive=True))),
         ],
         relations=[Relation(comparator=Comparator.GREATER, id1=0, id2=1, attribute=Attribute.END_VALUE)],
     )

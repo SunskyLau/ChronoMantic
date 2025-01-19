@@ -87,7 +87,7 @@ class Segment(DictMixin):
 
 
 @dataclass
-class ApproximationSegments(DictMixin):
+class ApproximationSegments(DictMixin):  # 近似的连续分段
     segments: List[Segment]
     approximation_level: int
 
@@ -95,7 +95,7 @@ class ApproximationSegments(DictMixin):
 @dataclass
 class ApproximationSegmentsContainer(DictMixin):
     source: str
-    approximation_segments_list: List[ApproximationSegments]
+    approximation_segments_list: List[ApproximationSegments]  # 近似的连续分段列表
     max_approximation_level: int
 
 
@@ -109,25 +109,25 @@ class ThresholdCondition(DictMixin):
 
 
 @dataclass
-class SlopeCondition(DictMixin):
+class SlopeScopeCondition(DictMixin):
     max_slope: Optional[ThresholdCondition] = None
     min_slope: Optional[ThresholdCondition] = None
 
 
 @dataclass
-class AngleCondition(DictMixin):
+class AngleScopeCondition(DictMixin):
     max_angle: Optional[ThresholdCondition] = None
     min_angle: Optional[ThresholdCondition] = None
 
 
 @dataclass
-class ValueCondition(DictMixin):
+class ValueScopeCondition(DictMixin):
     max_value: Optional[ThresholdCondition] = None
     min_value: Optional[ThresholdCondition] = None
 
 
 @dataclass
-class TimeCondition(DictMixin):
+class TimeScopeCondition(DictMixin):
     start_time: Optional[ThresholdCondition] = None
     end_time: Optional[ThresholdCondition] = None
 
@@ -140,10 +140,9 @@ class TimeSpanCondition(DictMixin):
 
 @dataclass
 class Trend(DictMixin):
-    slope_condition: Optional[SlopeCondition] = None  # 斜率的范围条件
-    angle_condition: Optional[AngleCondition] = None  # 角度的范围条件
-    start_end_value_condition: Optional[ValueCondition] = None  # 起止值的范围条件
-    time_position_condition: Optional[TimeCondition] = None  # 起止时间的范围条件
+    slope_scope_condition: Optional[SlopeScopeCondition] = None  # 斜率的范围条件
+    angle_scope_condition: Optional[AngleScopeCondition] = None  # 角度的范围条件
+    time_scope_condition: Optional[TimeScopeCondition] = None  # 时间的范围条件
     time_span_condition: Optional[TimeSpanCondition] = None  # 时间跨度的范围条件
 
 
@@ -177,5 +176,6 @@ class QuerySpec(DictMixin):
     target: str
     trends: Optional[List[Trend]] = None
     relations: Optional[List[Relation]] = None
-    start_end_time_condition: Optional[TimeCondition] = None
-    max_min_value_condition: Optional[ValueCondition] = None
+    time_span_condition: Optional[TimeSpanCondition] = None
+    time_scope_condition: Optional[TimeScopeCondition] = None
+    value_scope_condition: Optional[ValueScopeCondition] = None
