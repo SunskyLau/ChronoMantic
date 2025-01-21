@@ -41,7 +41,9 @@ export type ApproximationSegmentsContainers = {
     approximation_segments_list: ApproximationSegment[];
 }[]
 
-Dict[int, List[List[Segment]]]
+export interface ApproximationResults {
+    [key: number]: Segment[][];
+}
 
 export interface SpeechRecognitionEvent {
     results: SpeechRecognitionResultList;
