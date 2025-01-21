@@ -30,7 +30,7 @@ export interface DatasetInfo {
     column_ratio_dict: Record<string, number>;
 }
 
-export interface Approximation_segment {
+export interface ApproximationSegment {
     approximation_level: number;
     segments: Segment[];
 }
@@ -38,8 +38,12 @@ export interface Approximation_segment {
 export type ApproximationSegmentsContainers = {
     source: string;
     max_approximation_level: number;
-    approximation_segments_list: Approximation_segment[];
+    approximation_segments_list: ApproximationSegment[];
 }[]
+
+export interface ApproximationResults {
+    [key: number]: Segment[][];
+}
 
 export interface SpeechRecognitionEvent {
     results: SpeechRecognitionResultList;

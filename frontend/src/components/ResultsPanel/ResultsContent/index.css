@@ -14,6 +14,7 @@
   justify-content: space-between;
   height: 64px;
   gap: 4px;
+  margin-bottom: 4px;
   position: sticky;
   top: 0;
   background-color: #fff;
@@ -32,7 +33,7 @@
 }
 
 .result-item .data-name {
-  width: 68px;
+  width: 64px;
 }
 
 .results-content .flex-width {
@@ -53,28 +54,28 @@
 .result-item {
   width: 100%;
   background: white;
-  margin-bottom: 16px;
+  padding-block: 8px;
+  gap: 4px;
   box-sizing: border-box;
   display: flex;
   align-items: center;
+  border-bottom: 1px solid #eee;
+}
+
+.result-item.active {
+  background-color: #eee;
 }
 
 .result-item svg {
   min-width: 0;
 }
 
-.result-item.active {
-  outline: 2px solid #B1B1B1;
-  background-color: #F5F5F5;
-}
-
 .result-item .data-value {
   height: 100%;
-  padding: 4px;
+  padding: 2px;
   color: #fff;
   background-color: #eee;
   border-radius: 8px;
-  margin-inline: 12px;
 }
 
 .result-item .data-value .data-value__inner {
@@ -82,4 +83,6 @@
   background-color: #9CC9EE;
   border-radius: 4px;
   white-space: nowrap;
+  display: flex;
+  align-items: center;
 }

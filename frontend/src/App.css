@@ -25,3 +25,7 @@
 .ant-empty {
     margin: auto;
 }
+
+.flex {
+    display: flex;
+}

@@ -1,71 +1,87 @@
 import { useCallback, useEffect, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../../../app/hooks";
-import { deepClone } from "../../../utils/deepclone";
-import FragmentChart from "./FragmentChart";
 import "./index.css";
 import SelectChart from "./SelectChart";
-import { setScoreScale, setTimeSpanScale } from "../../../app/slice/filterSlice";
+import { setLevelScale, setTimeSpanScale } from "../../../app/slice/filterSlice";
 import { Empty } from "antd";
+import { Segment } from "../../../types/QuerySpec";
+import LineChart from "../../LineChart";
+import { setCurrent, setLevel, setSource } from "../../../app/slice/approximation";
+import { setRange } from "../../../app/slice/selectSlice";
+import { classnames } from "../../../utils/classname";
 
 export interface DataType {
     date: Date;
     value: number;
 }
 
-export default function ResultsContent() {
-    const symbolData = useAppSelector((state) => state.dataset.dataset?.symbolData);
-    const ratio = useAppSelector((state) => state.states.aspectRatio);
-    const fragments = useAppSelector((state) => state.states.fragmentsList[state.states.fragmentsIndex]?.[1]) || [];
-    const dispatch = useAppDispatch();
+export interface ApproximationLevelResult {
+    level: number,
+    segments: Segment[],
+    index: number
+}
 
-    const maxTimeSpan = Math.max(...fragments.map((fragment) => fragment.end_idx - fragment.start_idx + 1))
-    const maxScore = Math.max(...fragments.map((fragment) => fragment.avg_loss!))
+export type ApproximationLevelResults = ApproximationLevelResult[]
+
+export default function ResultsContent() {
+    const data = useAppSelector((state) => state.dataset.dataset?.data) || {};
+    const xData = useAppSelector((state) => (data[state.dataset.dataset?.timeStampColumn || ""]) || []).map((x) => new Date(x).getTime() / 1000);
+    const queryResultsMap = useAppSelector(state => state.approximation.queryResults) || {};
+    const queryLevelResults: ApproximationLevelResults = Object.entries(queryResultsMap).map(([key, value]: [string, Segment[][]]) => {
+        return value.map(segments => ({ level: Number(key), segments }))
+    }).flat(1).map((item, index) => ({ ...item, index }));
+    const source = useAppSelector((state) => state.states.querySpecList[state.states.querySpecIndex]?.target) || "";
+    const ratio = useAppSelector((state) => state.dataset.dataset?.ratios[source]);
+    const timeSpans = queryLevelResults.map(({ segments }) => (segments.at(-1)?.end_time || 0) - (segments.at(0)?.start_time || 0)).map((x) => x / 86400)
+    const dispatch = useAppDispatch();
+    const current = useAppSelector((state) => state.approximation.current);
+
+    const maxTimeSpan = Math.max(...timeSpans);
+    const maxLevel = Math.max(...queryLevelResults.map(({ level }) => level));
     const timeSpanScale = useAppSelector((state) => state.filter.timeSpanScale);
-    const scoreScale = useAppSelector((state) => state.filter.scoreScale);
+    const levelScale = useAppSelector((state) => state.filter.levelScale);
 
     useEffect(() => {
         dispatch(setTimeSpanScale([0, maxTimeSpan]));
-        dispatch(setScoreScale([0, maxScore]));
-    }, [maxTimeSpan, maxScore, dispatch])
+        dispatch(setLevelScale([0, maxLevel]));
+    }, [maxTimeSpan, dispatch, maxLevel])
 
     const handleDayScaleChange = useCallback((minX: number, maxX: number) => {
         dispatch(setTimeSpanScale([minX, maxX]));
     }, [dispatch]);
 
-    const handleScoreScaleChange = useCallback((minX: number, maxX: number) => {
-        dispatch(setScoreScale([minX, maxX]));
+    const handleLevelScaleChange = useCallback((minY: number, maxY: number) => {
+        dispatch(setLevelScale([minY, maxY]));
     }, [dispatch]);
 
-    const sortedFragments = deepClone(fragments).filter(fragment => (1 - fragment.avg_loss! / maxScore) >= scoreScale[0] && (1 - fragment.avg_loss! / maxScore) <= scoreScale[1] && fragment.end_idx - fragment.start_idx + 1 >= timeSpanScale[0] && fragment.end_idx - fragment.start_idx + 1 <= timeSpanScale[1]).sort((a, b) => a.avg_loss! - b.avg_loss!);
+    const sortedResults = queryLevelResults.filter(({ level }, index) => timeSpans[index] >= timeSpanScale[0] && timeSpans[index] <= timeSpanScale[1] && level >= levelScale[0] && level <= levelScale[1]);
 
     const timeSpanMap: Record<string, number> = {};
-    fragments.forEach((fragment) => {
-        const timeSpan = fragment.end_idx - fragment.start_idx + 1;
+    timeSpans.forEach((timeSpan) => {
         if (timeSpanMap[timeSpan]) {
             timeSpanMap[timeSpan] += 1;
         } else {
             timeSpanMap[timeSpan] = 1;
         }
     })
-    const sortedTimeSpanIter = Object.entries(timeSpanMap).sort(([a], [b]) => Number(a) - Number(b))
+    const sortedTimeSpanIter = Object.entries(timeSpanMap).sort(([a], [b]) => Number(a) - Number(b));
 
-    const scoreMap: Record<string, number> = {};
-    fragments.forEach((fragment) => {
-        const score = (1 - fragment.avg_loss! / maxScore).toFixed(2);
-        if (scoreMap[score]) {
-            scoreMap[score] += 1;
+    const levelMap: Record<string, number> = {};
+    queryLevelResults.forEach(({ level }) => {
+        if (levelMap[level]) {
+            levelMap[level] += 1;
         } else {
-            scoreMap[score] = 1;
+            levelMap[level] = 1;
         }
     })
-    const sortedScoreIter = Object.entries(scoreMap).sort(([a], [b]) => Number(a) - Number(b))
+    const sortedLevelIter = Object.entries(levelMap).sort(([a], [b]) => Number(a) - Number(b));
 
     const [count, setCount] = useState(0);
 
     useEffect(() => {
         const incrementRender = () => {
             setCount((count) => {
-                if (count >= sortedFragments.length) {
+                if (count >= sortedResults.length) {
                     clearInterval(interval);
                 }
                 return count + 10;
@@ -74,7 +90,7 @@ export default function ResultsContent() {
         setCount(0);
         const interval = setInterval(incrementRender, 160);
         return () => clearInterval(interval);
-    }, [sortedFragments.length]);
+    }, [sortedResults.length]);
 
     return (
         <>
@@ -83,34 +99,41 @@ export default function ResultsContent() {
                     <div className="fix-width data-name">ID</div>
                     <div className="fix-width">Graph</div>
                     <div className="flex-width">
-                        {fragments.length ? <SelectChart title="Time Span" data={sortedTimeSpanIter.map(([x, y]) => ({ x: Number(x), y }))} onBrush={handleDayScaleChange}></SelectChart> : "Time Span"}
+                        {queryLevelResults.length ? <SelectChart title="Time Span" data={sortedTimeSpanIter.map(([x, y]) => ({ x: Number(x), y }))} onBrush={handleDayScaleChange}></SelectChart> : "Time Span"}
                     </div>
                     <div className="flex-width">
-                        {fragments.length ? <SelectChart title="Smooth Iteration" data={sortedScoreIter.map(([x, y]) => ({ x: Number(x), y }))} onBrush={handleScoreScaleChange}></SelectChart> : "Smooth Iteration"}
+                        {queryLevelResults.length ? <SelectChart title="Smooth Iteration" data={sortedLevelIter.map(([x, y]) => ({ x: Number(x), y }))} onBrush={handleLevelScaleChange}></SelectChart> : "Smooth Iteration"}
                     </div>
                 </div>
                 <div className="result-item-list">
-                    {sortedFragments.length === 0 && <Empty></Empty>}
-                    {sortedFragments.slice(0, count).map((fragment) => {
-                        return (
-                            <div className="result-item" key={fragment.source + "-" + fragment.start_idx + "-" + fragment.end_idx}>
-                                <div className="data-name">{fragment.source}</div>
-                                <div className="data-name">
-                                    <FragmentChart xData={symbolData?.[fragment.source].x || []} yData={symbolData?.[fragment.source].y || []} ratio={ratio} fragment={fragment} />
-                                </div>
-                                <div className="flex-width data-value">
-                                    <div className="data-value__inner" style={{ width: `${(fragment.end_idx - fragment.start_idx + 1) / maxTimeSpan * 100}%` }} >
-                                        {fragment.end_idx - fragment.start_idx + 1} days
+                    {sortedResults.length === 0 ?
+                        <Empty></Empty> :
+                        sortedResults.slice(0, count).map((result) => {
+                            const { level, index, segments } = result;
+                            return (
+                                <div className={classnames("result-item", JSON.stringify(current) === JSON.stringify(result) ? "active" : "")} key={index} onClick={() => {
+                                    dispatch(setSource(source));
+                                    dispatch(setLevel(level));
+                                    dispatch(setCurrent(result));
+                                    dispatch(setRange([segments[0].start_idx, segments[segments.length - 1].end_idx]));
+                                }} >
+                                    <div className="data-name">{source}</div>
+                                    <div className="data-name flex">
+                                        <LineChart xData={xData} range={[segments.at(0)?.start_idx || 0, segments.at(-1)?.end_idx || 0 + 1]} yData={data?.[source] as number[]} ratio={ratio} height={50} split={[...new Set(segments.map(segment => [segment.start_idx, segment.end_idx]).flat())]} isShowRange={false} isExpand={false}></LineChart>
+                                    </div>
+                                    <div className="flex-width data-value">
+                                        <div className="data-value__inner" style={{ width: `${(timeSpans[index]) / maxTimeSpan * 100}%` }} >
+                                            {timeSpans[index]} days
+                                        </div>
+                                    </div>
+                                    <div className="flex-width data-value">
+                                        <div className="data-value__inner" style={{ width: `${(level + 1) / (maxLevel + 1) * 100}%` }} >
+                                            {level}
+                                        </div>
                                     </div>
                                 </div>
-                                <div className="flex-width data-value">
-                                    <div className="data-value__inner" style={{ width: `${(1 - fragment.avg_loss! / maxScore) * 100}%` }} >
-                                        {(1 - fragment.avg_loss! / maxScore).toFixed(2)}
-                                    </div>
-                                </div>
-                            </div>
-                        )
-                    })}
+                            )
+                        })}
                 </div>
             </div>
         </>
