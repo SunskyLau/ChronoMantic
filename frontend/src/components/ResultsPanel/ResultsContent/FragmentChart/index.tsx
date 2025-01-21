@@ -1,26 +1,27 @@
 import React, { memo, useEffect, useRef } from "react";
-import { Fragment } from "../../../../types/QuerySpec";
+import { Segment } from "../../../../types/QuerySpec";
 import * as d3 from "d3";
 
 interface FragmentChartProps {
     className?: string;
     xData: number[];
     yData: number[];
-    ratio: number;
-    fragment: Fragment;
+    ratio?: number;
+    segments: Segment[];
     isXAxisVisible?: boolean;
     isYAxisVisible?: boolean;
 }
 
-const FragmentChart: React.FC<FragmentChartProps> = ({ className, xData, yData, ratio, fragment, isXAxisVisible = false, isYAxisVisible = false }) => {
+const FragmentChart: React.FC<FragmentChartProps> = ({ className, xData, yData, ratio = 0.00001, segments, isXAxisVisible = false, isYAxisVisible = false }) => {
     const svgRef = useRef<SVGSVGElement>(null);
 
     useEffect(() => {
-        if (!svgRef.current || xData.length === 0 || yData.length === 0 || !fragment) return;
-
+        if (!svgRef.current || xData.length === 0 || yData.length === 0 || !segments) return;
+        const start = segments.at(0)!.start_idx;
+        const end = segments.at(-1)!.end_idx;
         const svg = d3.select(svgRef.current);
-        const fragmentXData = xData.slice(fragment.start_idx, fragment.end_idx + 1).map((d) => d * 1000);
-        const fragmentYData = yData.slice(fragment.start_idx, fragment.end_idx + 1);
+        const fragmentXData = xData.slice(start, end + 1).map((d) => d * 1000);
+        const fragmentYData = yData.slice(start, end + 1);
 
         const margin = { top: 4, right: 4, bottom: 4, left: 4 };
         const maxHeight = 50 - margin.top - margin.bottom;
@@ -82,7 +83,7 @@ const FragmentChart: React.FC<FragmentChartProps> = ({ className, xData, yData, 
             .attr('stroke-opacity', '30%')
             .attr('stroke-width', 1);
 
-        fragment.segments?.forEach((segment) => {
+        segments?.forEach((segment) => {
             // g.append('text')
             //     .attr('x', (fragmentXScale(xData[segment.start_idx])! + fragmentXScale(xData[segment.end_idx])!) / 2)
             //     .attr('y', 0)
@@ -92,10 +93,10 @@ const FragmentChart: React.FC<FragmentChartProps> = ({ className, xData, yData, 
             //     .attr('alignment-baseline', 'middle');
 
             g.append('line')
-                .attr('x1', fragmentXScale(fragmentXData[segment.start_idx - fragment.start_idx]) || 0)
-                .attr('y1', fragmentYScale(fragmentYData[segment.start_idx - fragment.start_idx]) || 0)
-                .attr('x2', fragmentXScale(fragmentXData[segment.end_idx! - fragment.start_idx]) || 0)
-                .attr('y2', fragmentYScale(fragmentYData[segment.end_idx! - fragment.start_idx]) || 0)
+                .attr('x1', fragmentXScale(fragmentXData[segment.start_idx - start]) || 0)
+                .attr('y1', fragmentYScale(fragmentYData[segment.start_idx - start]) || 0)
+                .attr('x2', fragmentXScale(fragmentXData[segment.end_idx! - start]) || 0)
+                .attr('y2', fragmentYScale(fragmentYData[segment.end_idx! - start]) || 0)
                 .attr('stroke', segment.slope! > 0 ? 'red' : 'green')
                 .attr('stroke-opacity', '50%')
                 .attr('stroke-width', 1);
@@ -119,11 +120,11 @@ const FragmentChart: React.FC<FragmentChartProps> = ({ className, xData, yData, 
             //     .attr('stroke-dasharray', '5,5');
         });
 
-    }, [xData, yData, ratio, fragment, isXAxisVisible, isYAxisVisible]);
+    }, [xData, yData, ratio, segments, isXAxisVisible, isYAxisVisible]);
 
     return <svg className={className} ref={svgRef} width="50"></svg>
 };
 
 export default memo(FragmentChart, (prevProps, nextProps) => {
-    return JSON.stringify(prevProps.xData) === JSON.stringify(nextProps.xData) && JSON.stringify(prevProps.yData) === JSON.stringify(nextProps.yData) && prevProps.ratio === nextProps.ratio && JSON.stringify(prevProps.fragment) === JSON.stringify(nextProps.fragment) && prevProps.isXAxisVisible === nextProps.isXAxisVisible && prevProps.isYAxisVisible === nextProps.isYAxisVisible
+    return JSON.stringify(prevProps.xData) === JSON.stringify(nextProps.xData) && JSON.stringify(prevProps.yData) === JSON.stringify(nextProps.yData) && prevProps.ratio === nextProps.ratio && JSON.stringify(prevProps.segments) === JSON.stringify(nextProps.segments) && prevProps.isXAxisVisible === nextProps.isXAxisVisible && prevProps.isYAxisVisible === nextProps.isYAxisVisible
 });

@@ -1,7 +1,7 @@
 import axios from "axios";
 import type { Results } from "./app/slice/resultsSlice";
 import { Fragment, FragmentList, QuerySpec, TimeGranularity } from "./types/QuerySpec";
-import { DatasetInfo, ApproximationSegmentsContainers } from "./types";
+import { DatasetInfo, ApproximationSegmentsContainers, ApproximationResults } from "./types";
 
 const api = axios.create({
   baseURL: "http://127.0.0.1:5000", // 替换为你的后端API地址
@@ -61,6 +61,18 @@ export const getScaleRatio = async (csvName: string, timeStampColumnName: string
     return response.data;
   } catch (error) {
     console.error("Error sending scale ratio request:", error);
+    throw error;
+  }
+}
+
+export const getFragmentsBySpec = async (querySpec: QuerySpec): Promise<ApproximationResults> => {
+  console.log("Sending fragments request");
+  try {
+    const response = await api.post(`/api/query_by_specification`, { querySpec });
+    console.log(response.data);
+    return response.data.results;
+  } catch (error) {
+    console.error("Error sending fragments request:", error);
     throw error;
   }
 }

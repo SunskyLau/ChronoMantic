@@ -7,7 +7,7 @@
 }
 
 .main-left,
-.main-middle {
+.main-right {
     flex: 0 1 var(--side-width);
     max-width: var(--side-width);
     min-width: 0;
@@ -22,6 +22,9 @@
 
 .main-right {
     margin-right: var(--gap);
+}
+
+.main-middle {
     width: var(--width);
     display: flex;
     flex-direction: column;

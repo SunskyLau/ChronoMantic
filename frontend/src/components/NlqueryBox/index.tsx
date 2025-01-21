@@ -28,7 +28,7 @@ const ColoredTextComponent: React.FC<{ query: string, keys: string[] }> = ({ que
         </span>
       );
     }
-    return <span>{part}</span>;
+    return <span key={index}>{part}</span>;
   });
   return <span>{coloredText}</span>;
 };

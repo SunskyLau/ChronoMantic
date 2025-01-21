@@ -1,4 +1,4 @@
-import { memo, useEffect, useRef } from 'react';
+import { memo, useEffect, useId, useRef } from 'react';
 import * as d3 from 'd3';
 
 interface LineChartProps {
@@ -14,13 +14,16 @@ interface LineChartProps {
     brushPosition?: [number, number];
     isFill?: boolean;
     range?: [number, number];
+    isShowRange?: boolean;
     split?: number[];
     isSplitMask?: boolean;
+    isExpand?: boolean;
     isZoom?: boolean;
 }
 
-function LineChart({ xData, yData, ratio, title = "", isXAxisVisible = false, isYAxisVisible = false, isBrush = false, isFill = false, onBrush, range, height, split, isSplitMask = false, brushPosition, isZoom = false }: LineChartProps) {
+function LineChart({ xData, yData, ratio, title = "", isXAxisVisible = false, isYAxisVisible = false, isBrush = false, isFill = false, onBrush, range, height, split, isSplitMask = false, brushPosition, isZoom = false, isExpand = true, isShowRange = true }: LineChartProps) {
     const svgRef = useRef<SVGSVGElement>(null);
+    const id = useId();
 
     useEffect(() => {
         if (!svgRef.current || xData.length === 0 || yData.length === 0) return;
@@ -57,10 +60,12 @@ function LineChart({ xData, yData, ratio, title = "", isXAxisVisible = false, is
                 const delta = xRange * scale - xRange;
                 xScale[0] -= delta / 2;
                 xScale[1] += delta / 2;
-                const extentData = xData.map((d, i) => [d * 1000, i]).filter((v) => v[0] >= xScale[0] && v[0] <= xScale[1]);
-                timeStampData = extentData.map((v) => v[0]);
-                valueData = extentData.map((v) => yData[v[1]]);
-                data = timeStampData.map((x, i) => [x, valueData[i]] as [number, number]);
+                if (isExpand) {
+                    const extentData = xData.map((d, i) => [d * 1000, i]).filter((v) => v[0] >= xScale[0] && v[0] <= xScale[1]);
+                    timeStampData = extentData.map((v) => v[0]);
+                    valueData = extentData.map((v) => yData[v[1]]);
+                    data = timeStampData.map((x, i) => [x, valueData[i]] as [number, number]);
+                }
             }
             innerHeight = iHeight;
             innerWidth = width;
@@ -89,6 +94,15 @@ function LineChart({ xData, yData, ratio, title = "", isXAxisVisible = false, is
             .y((d) => y(d[1]));
 
         svg.selectAll('*').remove();
+
+        svg.append("defs")
+            .append("clipPath")
+            .attr("id", `clip-path-${id}`)
+            .append("rect")
+            .attr("x", 0)
+            .attr("y", 0)
+            .attr("width", innerWidth)
+            .attr("height", innerHeight);
 
         const g = svg.append('g')
             .attr('transform', `translate(${margin.left},${margin.top})`);
@@ -120,23 +134,46 @@ function LineChart({ xData, yData, ratio, title = "", isXAxisVisible = false, is
             g.append('g').call(yAxis);
         }
 
-        svg.append("defs")
-            .append("clipPath")
-            .attr("id", "clip-path")
-            .append("rect")
-            .attr("x", 0)
-            .attr("y", 0)
-            .attr("width", innerWidth)
-            .attr("height", innerHeight);
-
-        if (range && range[0] !== range[1] || !range)
+        if (range && range[0] !== range[1] || !range) {
             g.append('path')
                 .datum(timeStampData.map((t, i) => [t, valueData[i]] as [number, number]))
                 .attr('d', lineGenerator)
                 .attr('fill', 'none')
                 .attr('stroke', '#82C4FF')
-                .attr("clip-path", `url(#clip-path)`)
+                .attr("clip-path", `url(#clip-path-${id})`)
                 .attr('stroke-width', 1);
+        }
+
+        if (split && timeStampData.length > 2) {
+            const splitG = g.append('g').attr('class', 'split-line');
+            if (isSplitMask) {
+                splitG.attr("clip-path", `url(#clip-path-${id})`)
+            }
+            for (let i = 0; i < split.length - 1; i++) {
+                const x1 = x(xData[split[i]] * 1000)
+                const x2 = x(xData[split[i + 1]] * 1000)
+                const y1 = y(yData[split[i]])
+                const y2 = y(yData[split[i + 1]]);
+                splitG.append('line')
+                    .attr('class', 'split-line')
+                    .attr('x1', x1)
+                    .attr('x2', x2)
+                    .attr('y1', y1)
+                    .attr('y2', y2)
+                    .attr('stroke', y1 > y2 ? 'red' : 'green')
+                    .attr('stroke-opacity', '0.5')
+                    .attr('stroke-width', 1);
+            }
+        }
+
+        if (range && isShowRange) {
+            g.append('rect')
+                .attr('x', x(xMin))
+                .attr('y', 0)
+                .attr('width', x(xMax) - x(xMin))
+                .attr('height', innerHeight)
+                .attr('fill', '#3331');
+        }
 
         const areaGenerator = d3.area<[number, number]>()
             .x(d => x(d[0]))
@@ -148,36 +185,6 @@ function LineChart({ xData, yData, ratio, title = "", isXAxisVisible = false, is
                 .datum(data)
                 .attr("d", areaGenerator)
                 .attr("fill", "#82C4FF99");
-        }
-
-        if (split && timeStampData.length > 2) {
-            for (let i = 0; i < split.length - 1; i++) {
-                const x1 = x(xData[split[i]] * 1000)
-                const x2 = x(xData[split[i + 1]] * 1000)
-                const y1 = y(yData[split[i]])
-                const y2 = y(yData[split[i + 1]]);
-                const line = g.append('line')
-                    .attr('class', 'split-line')
-                    .attr('x1', x1)
-                    .attr('x2', x2)
-                    .attr('y1', y1)
-                    .attr('y2', y2)
-                    .attr('stroke', y1 > y2 ? 'red' : 'green')
-                    .attr('stroke-opacity', '0.5')
-                    .attr('stroke-width', 1);
-                if (isSplitMask) {
-                    line.attr("clip-path", "url(#clip-path)")
-                }
-            }
-        }
-
-        if (range) {
-            g.append('rect')
-                .attr('x', x(xMin))
-                .attr('y', 0)
-                .attr('width', x(xMax) - x(xMin))
-                .attr('height', innerHeight)
-                .attr('fill', '#3331');
         }
 
         if (isBrush) {
@@ -237,7 +244,7 @@ function LineChart({ xData, yData, ratio, title = "", isXAxisVisible = false, is
             };
         }
 
-    }, [xData, yData, ratio, title, isXAxisVisible, isYAxisVisible, isBrush, onBrush, isFill, range, height, split, isSplitMask, brushPosition, isZoom]);
+    }, [xData, yData, ratio, title, isXAxisVisible, isYAxisVisible, isBrush, onBrush, isFill, range, height, split, isSplitMask, brushPosition, isZoom, isExpand, isShowRange, id]);
 
     return (
         <svg ref={svgRef} width="100%" height="100%"></svg>
@@ -258,6 +265,8 @@ export default memo(LineChart, (prevProps, nextProps) => {
         JSON.stringify(prevProps.range) === JSON.stringify(nextProps.range) &&
         prevProps.height === prevProps.height &&
         JSON.stringify(prevProps.split) === JSON.stringify(nextProps.split) &&
-        prevProps.isSplitMask === nextProps.isSplitMask
+        prevProps.isSplitMask === nextProps.isSplitMask &&
+        prevProps.isExpand === nextProps.isExpand &&
+        prevProps.isShowRange === nextProps.isShowRange
     );
 });
