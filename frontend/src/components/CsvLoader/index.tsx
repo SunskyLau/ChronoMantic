@@ -34,22 +34,17 @@ function CsvLoader() {
             filename: res.filename,
             data: {},
             timeStampColumn: "",
-            idColumn: "",
-            valueColumn: "",
+            valueColumns: [],
             ratios: {},
           };
-
-          const value_columns: string[] = [];
-          let time_column: string = "";
 
           result.data.forEach(row => {
             for (const [key, value] of Object.entries(row)) {
               if (!dataset.data[key]) {
                 dataset.data[key] = [];
                 if (typeof value === "number") {
-                  value_columns.push(key);
+                  dataset.valueColumns.push(key);
                 } else {
-                  time_column = key;
                   dataset.timeStampColumn = key;
                 }
               }
@@ -57,15 +52,15 @@ function CsvLoader() {
             }
           });
 
-          Promise.all(value_columns.map((value => getScaleRatio(res.filename, dataset.timeStampColumn, value)))).then(res => {
+          Promise.all(dataset.valueColumns.map((value => getScaleRatio(res.filename, dataset.timeStampColumn, value)))).then(res => {
             dataset.ratios = res.reduce((acc, cur, index) => {
-              acc[value_columns[index]] = cur;
+              acc[dataset.valueColumns[index]] = cur;
               return acc;
             }, {} as Record<string, number>);
 
             console.log("Parsed dataset:", dataset);
             dispatch(setDataset(dataset));
-            processDataset({ time_column, value_columns, column_ratio_dict: dataset.ratios }).then(res => {
+            processDataset({ time_column: dataset.timeStampColumn, value_columns: dataset.valueColumns, column_ratio_dict: dataset.ratios }).then(res => {
               dispatch(setResults(res))
             })
           })

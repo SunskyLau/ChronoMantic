@@ -16,11 +16,7 @@ export default function QueryCondition() {
         trends: [],
         relations: [],
     };
-    const values = useAppSelector((state) => {
-        const arr = new Set(Object.keys(state.dataset.dataset?.data ?? {}));
-        arr.delete(state.dataset.dataset?.timeStampColumn ?? "");
-        return [...arr];
-    });
+    const values = useAppSelector((state) => state.dataset.dataset?.valueColumns) || [];
     const [queryCondition, setQueryCondition] = useState({ ...querySpec });
     const dispatch = useAppDispatch();
 

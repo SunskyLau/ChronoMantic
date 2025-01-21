@@ -7,7 +7,7 @@ import { Empty } from "antd";
 import { Segment } from "../../../types/QuerySpec";
 import LineChart from "../../LineChart";
 import { setCurrent, setLevel, setSource } from "../../../app/slice/approximation";
-import { setRange } from "../../../app/slice/selectSlice";
+import { setBrushPosition, setRange } from "../../../app/slice/selectSlice";
 import { classnames } from "../../../utils/classname";
 
 export interface DataType {
@@ -25,7 +25,8 @@ export type ApproximationLevelResults = ApproximationLevelResult[]
 
 export default function ResultsContent() {
     const data = useAppSelector((state) => state.dataset.dataset?.data) || {};
-    const xData = useAppSelector((state) => (data[state.dataset.dataset?.timeStampColumn || ""]) || []).map((x) => new Date(x).getTime() / 1000);
+    const x = useAppSelector((state) => (data[state.dataset.dataset?.timeStampColumn ?? ""])) || [];
+    const xData = x.map((x) => new Date(x).getTime() / 1000);
     const queryResultsMap = useAppSelector(state => state.approximation.queryResults) || {};
     const queryLevelResults: ApproximationLevelResults = Object.entries(queryResultsMap).map(([key, value]: [string, Segment[][]]) => {
         return value.map(segments => ({ level: Number(key), segments }))
@@ -35,6 +36,7 @@ export default function ResultsContent() {
     const timeSpans = queryLevelResults.map(({ segments }) => (segments.at(-1)?.end_time || 0) - (segments.at(0)?.start_time || 0)).map((x) => x / 86400)
     const dispatch = useAppDispatch();
     const current = useAppSelector((state) => state.approximation.current);
+    const range = useAppSelector((state) => state.select.range);
 
     const maxTimeSpan = Math.max(...timeSpans);
     const maxLevel = Math.max(...queryLevelResults.map(({ level }) => level));
@@ -111,10 +113,11 @@ export default function ResultsContent() {
                         sortedResults.slice(0, count).map((result) => {
                             const { level, index, segments } = result;
                             return (
-                                <div className={classnames("result-item", JSON.stringify(current) === JSON.stringify(result) ? "active" : "")} key={index} onClick={() => {
+                                <div className={classnames("result-item", JSON.stringify(current) === JSON.stringify(result) && current?.segments[0].start_idx === range[0] && current.segments[segments.length - 1].end_idx === range[1] ? "active" : "")} key={index} onClick={() => {
                                     dispatch(setSource(source));
                                     dispatch(setLevel(level));
                                     dispatch(setCurrent(result));
+                                    dispatch(setBrushPosition([segments[0].start_idx, segments[segments.length - 1].end_idx]));
                                     dispatch(setRange([segments[0].start_idx, segments[segments.length - 1].end_idx]));
                                 }} >
                                     <div className="data-name">{source}</div>

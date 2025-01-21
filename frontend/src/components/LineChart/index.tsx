@@ -11,6 +11,7 @@ interface LineChartProps {
     isYAxisVisible?: boolean;
     isBrush?: boolean;
     onBrush?: (start: number, end: number) => void;
+    onBrushEnd?: (start: number, end: number) => void;
     brushPosition?: [number, number];
     isFill?: boolean;
     range?: [number, number];
@@ -21,7 +22,7 @@ interface LineChartProps {
     isZoom?: boolean;
 }
 
-function LineChart({ xData, yData, ratio, title = "", isXAxisVisible = false, isYAxisVisible = false, isBrush = false, isFill = false, onBrush, range, height, split, isSplitMask = false, brushPosition, isZoom = false, isExpand = true, isShowRange = true }: LineChartProps) {
+function LineChart({ xData, yData, ratio, title = "", isXAxisVisible = false, isYAxisVisible = false, isBrush = false, isFill = false, onBrush, onBrushEnd, range, height, split, isSplitMask = false, brushPosition, isZoom = false, isExpand = true, isShowRange = true }: LineChartProps) {
     const svgRef = useRef<SVGSVGElement>(null);
     const id = useId();
 
@@ -214,6 +215,7 @@ function LineChart({ xData, yData, ratio, title = "", isXAxisVisible = false, is
                     if (!selection) {
                         svg.select(".area").remove();
                         onBrush?.(0, 0);
+                        onBrushEnd?.(0, 0);
                         return;
                     }
                     const [x0, x1] = selection;
@@ -223,6 +225,7 @@ function LineChart({ xData, yData, ratio, title = "", isXAxisVisible = false, is
                         .filter(d => d.value[0] >= minX.getTime() && d.value[0] <= maxX.getTime())
                         .map(d => d.index);
                     onBrush?.(filteredIndices.at(0) || 0, filteredIndices.at(-1) || 0);
+                    onBrushEnd?.(filteredIndices.at(0) || 0, filteredIndices.at(-1) || 0);
                 });
 
             const brushG = svg.append("g")
@@ -244,7 +247,7 @@ function LineChart({ xData, yData, ratio, title = "", isXAxisVisible = false, is
             };
         }
 
-    }, [xData, yData, ratio, title, isXAxisVisible, isYAxisVisible, isBrush, onBrush, isFill, range, height, split, isSplitMask, brushPosition, isZoom, isExpand, isShowRange, id]);
+    }, [xData, yData, ratio, title, isXAxisVisible, isYAxisVisible, isBrush, onBrush, isFill, range, height, split, isSplitMask, brushPosition, isZoom, isExpand, isShowRange, id, onBrushEnd]);
 
     return (
         <svg ref={svgRef} width="100%" height="100%"></svg>
@@ -252,21 +255,9 @@ function LineChart({ xData, yData, ratio, title = "", isXAxisVisible = false, is
 };
 
 export default memo(LineChart, (prevProps, nextProps) => {
-    return (
-        JSON.stringify(prevProps.xData) === JSON.stringify(nextProps.xData) &&
-        JSON.stringify(prevProps.yData) === JSON.stringify(nextProps.yData) &&
-        prevProps.ratio === nextProps.ratio &&
-        prevProps.title === nextProps.title &&
-        prevProps.isXAxisVisible === nextProps.isXAxisVisible &&
-        prevProps.isYAxisVisible === nextProps.isYAxisVisible &&
-        prevProps.isBrush === nextProps.isBrush &&
-        prevProps.onBrush === nextProps.onBrush &&
-        prevProps.isFill === nextProps.isFill &&
-        JSON.stringify(prevProps.range) === JSON.stringify(nextProps.range) &&
-        prevProps.height === prevProps.height &&
-        JSON.stringify(prevProps.split) === JSON.stringify(nextProps.split) &&
-        prevProps.isSplitMask === nextProps.isSplitMask &&
-        prevProps.isExpand === nextProps.isExpand &&
-        prevProps.isShowRange === nextProps.isShowRange
-    );
+    return Object.keys(prevProps).every((key)=>{
+        const k = key as keyof LineChartProps;
+        if (typeof prevProps[k] === 'object') return JSON.stringify(prevProps[k]) === JSON.stringify(nextProps[k]);
+        return prevProps[k] === nextProps[k];
+    })
 });

@@ -5,8 +5,7 @@ export type ColumnType = string | number;
 
 export interface DatasetColumn {
   timeStampColumn: string;
-  valueColumn: string;
-  idColumn: string;
+  valueColumns: string[];
 }
 
 export interface Dataset extends DatasetColumn {
