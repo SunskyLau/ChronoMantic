@@ -173,18 +173,18 @@ def satisfy_single_relation(segments: List[Segment], relation: Relation):
 
     seg1, seg2 = segments[relation.id1], segments[relation.id2]
 
-    # 获取对应属性的值
-    val1 = get_attribute_value(seg1, relation.attribute)
-    val2 = get_attribute_value(seg2, relation.attribute)
+    # 获取对应属性的绝对值
+    val1 = abs(get_attribute_value(seg1, relation.attribute))
+    val2 = abs(get_attribute_value(seg2, relation.attribute))
 
     if val1 is None or val2 is None:
         return False
 
     # 根据比较器进行比较
     if relation.comparator == Comparator.GREATER:
-        return val1 > val2
+        return val1 > val2 and abs(val1 - val2) > abs(val2 * 0.02)
     elif relation.comparator == Comparator.LESS:
-        return val1 < val2
+        return val1 < val2 and abs(val1 - val2) > abs(val1 * 0.02)
     elif relation.comparator == Comparator.EQUAL:
         return val1 == val2
     elif relation.comparator == Comparator.NO_GREATER:
@@ -192,7 +192,7 @@ def satisfy_single_relation(segments: List[Segment], relation: Relation):
     elif relation.comparator == Comparator.NO_LESS:
         return val1 >= val2
     elif relation.comparator == Comparator.APPROXIMATELY_EQUAL_TO:
-        return abs(val1 - val2) <= abs(val1 * 0.01)  # 1%容差
+        return abs(val1 - val2) <= abs(val1 * 0.02)  # 2%容差
 
     return False
 
