@@ -21,6 +21,8 @@ class Segment(DictMixin):
     slope: float
     start_value: float
     end_value: float
+    max_value: float
+    min_value: float
     start_time: Optional[float] = None
     end_time: Optional[float] = None
     angle: Optional[float] = None

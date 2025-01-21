@@ -1,6 +1,7 @@
 from typing import List, Optional, Dict, Set, Tuple
 import pandas as pd
 from typeguard import typechecked
+from .utils import check_double_threshold_condition, check_single_threshold_condition, query_by_no_trends
 
 from ..model import approximate_dataset
 from ..MyTypes import (
@@ -30,6 +31,10 @@ def query(query_spec: QuerySpec, approximation_segments_containers: List[Approxi
     if not container:
         return {}
 
+    # TODO: trend_length为0时的情况没有仔细讨论
+    if not query_spec.trends:
+        return query_by_no_trends(query_spec, container, df)
+
     results_dict = {}
 
     for approximation_segments in container.approximation_segments_list:
@@ -47,8 +52,7 @@ def query(query_spec: QuerySpec, approximation_segments_containers: List[Approxi
 def find_matching_sequences(segments: List[Segment], query_spec: QuerySpec, df_column: pd.Series) -> List[List[Segment]]:
     """查找满足所有条件的连续段序列"""
     results = []
-    # TODO: trend_length为0时的情况没有仔细讨论
-    trend_length = len(query_spec.trends) if query_spec.trends else 1
+    trend_length = len(query_spec.trends) if query_spec.trends else 0
 
     for i in range(len(segments) - trend_length + 1):
         sequence = segments[i : i + trend_length]
@@ -102,49 +106,12 @@ def satisfies_global_conditions(sequence: List[Segment], query_spec: QuerySpec, 
             if not check_double_threshold_condition(start_time, end_time, start_thresh, end_thresh):
                 return False
 
-    return True
+    # 检查时间跨度条件
+    if query_spec.time_span_condition:
+        time_span = sequence[-1].end_time - sequence[0].start_time
+        if not check_single_threshold_condition(time_span, query_spec.time_span_condition.min, query_spec.time_span_condition.max):
+            return False
 
-
-@typechecked
-def check_double_threshold_condition(
-    min_value: float, max_value: float, min_thresh: Optional[ThresholdCondition], max_thresh: Optional[ThresholdCondition]
-) -> bool:
-    """检查双值是否满足阈值条件"""
-    if max_thresh:
-        if max_thresh.inclusive:
-            if max_value > max_thresh.value:
-                return False
-        else:
-            if max_value >= max_thresh.value:
-                return False
-
-    if min_thresh:
-        if min_thresh.inclusive:
-            if min_value < min_thresh.value:
-                return False
-        else:
-            if min_value <= min_thresh.value:
-                return False
-    return True
-
-
-@typechecked
-def check_single_threshold_condition(value: float, min_thresh: Optional[ThresholdCondition], max_thresh: Optional[ThresholdCondition]) -> bool:
-    """检查单值是否满足阈值条件"""
-    if max_thresh:
-        if max_thresh.inclusive:
-            if value > max_thresh.value:
-                return False
-        else:
-            if value >= max_thresh.value:
-                return False
-    if min_thresh:
-        if min_thresh.inclusive:
-            if value < min_thresh.value:
-                return False
-        else:
-            if value <= min_thresh.value:
-                return False
     return True
 
 
@@ -189,30 +156,6 @@ def match_single_trend(segment: Segment, trend: Trend) -> bool:
 
 
 @typechecked
-def check_time_span_condition(time_span: int, condition: TimeSpanCondition) -> bool:
-    """检查时间跨度是否满足条件"""
-    if condition.max:
-        thresh = condition.max
-        if thresh.inclusive:
-            if time_span > thresh.value:
-                return False
-        else:
-            if time_span >= thresh.value:
-                return False
-
-    if condition.min:
-        thresh = condition.min
-        if thresh.inclusive:
-            if time_span < thresh.value:
-                return False
-        else:
-            if time_span <= thresh.value:
-                return False
-
-    return True
-
-
-@typechecked
 def satisfies_relations(segments: List[Segment], relations: List[Relation]) -> bool:
     """检查段序列是否满足关系约束"""
     for relation in relations:
@@ -249,7 +192,7 @@ def satisfy_single_relation(segments: List[Segment], relation: Relation):
     elif relation.comparator == Comparator.NO_LESS:
         return val1 >= val2
     elif relation.comparator == Comparator.APPROXIMATELY_EQUAL_TO:
-        return abs(val1 - val2) <= abs(val1 * 0.05)  # 5%容差
+        return abs(val1 - val2) <= abs(val1 * 0.01)  # 1%容差
 
     return False
 
