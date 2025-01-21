@@ -64,4 +64,5 @@
 .nl-query b {
   font-weight: normal;
   cursor: pointer;
+  padding-block: 4px;
 }

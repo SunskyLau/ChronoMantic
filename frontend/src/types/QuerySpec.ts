@@ -101,10 +101,12 @@ export interface Relation {
 }
 
 export interface QuerySpec {
-  target: string;
+  target?: string;
   trends?: Trend[];
   relations?: Relation[];
   time_span_condition?: ScopeCondition;
   time_scope_condition?: ScopeCondition;
   value_scope_condition?: ScopeCondition;
 }
+
+export type Query = { text: string; condition?: QuerySpec }[];

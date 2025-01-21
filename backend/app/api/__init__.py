@@ -2,6 +2,7 @@ import json
 from flask import Blueprint
 
 from app.query import query
+from app.ai_agent.query import get_query_spec, adjust_query
 from ..config import Config
 from flask import Blueprint, request, jsonify
 import numpy as np
@@ -125,3 +126,15 @@ def query_by_specification():
     df = dataset_container.get_data()
     results_dict = query(query_spec, approximation_segments_containers, df)
     return jsonify({"code": 200, "message": "Query successful", "results": filter_json(results_dict)})
+
+
+@bus_bp.route("/parse_query", methods=["POST"])
+def parse_query():
+    query_spec = get_query_spec(request.json.get("query"))
+    return jsonify({"code": 200, "message": "Query successful", "results": filter_json(query_spec)})
+
+
+@bus_bp.route("/tune_query", methods=["POST"])
+def tune_query():
+    query_spec = adjust_query(request.json.get("query"))
+    return jsonify({"code": 200, "message": "Query successful", "results": query_spec})

@@ -1,3 +1,4 @@
+import json
 import os
 from typeguard import typechecked
 from openai import OpenAI, AzureOpenAI
@@ -24,7 +25,6 @@ class myAIClient:
         elif platform == AZURE:
             self.client = AzureOpenAI(
                 api_key=AZURE_OPENAI_KEY,
-                # api_version="2024-09-01-preview",
                 api_version="2024-11-01-preview",
                 azure_endpoint="https://idg-oai.openai.azure.com/",
             )
@@ -78,8 +78,21 @@ class myAIClient:
         return text
 
 
-if __name__ == "__main__":
+def get_query_spec(query: str) -> Dict:
+    client = myAIClient(GPT_4O, AZURE)
+    response = client.sendPrompt(SYSTEM_PROMPT, query, keepHistory=False, if_response_format=True)
+    return json.loads(response)
+
+
+def adjust_query(query: str) -> str:
     client = myAIClient(GPT_4O, AZURE)
     response = client.sendPrompt(
-        SYSTEM_PROMPT, "Show me   periods when    price appear   a head-and-shoulder shape", keepHistory=False, if_response_format=False
+        """You are a text processing expert. I will provide you with the original text and some modification suggestions, and you need to give the modified result without any punctuation marks. Here is an example: "AMZN", "{target: "BTC"}", you need to output BTC; "from 2021 to 2023","time_scope_condition:{min:{value:2021},max:{value:2022}}", you need to output from 2021 to 2022.""",
+        query,
+        keepHistory=False,
     )
+    return response
+
+
+if __name__ == "__main__":
+    get_query_spec("Show me   periods when    price appear   a head-and-shoulder shape")

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../../app/hooks";
 import "./index.css";
-import { setNLQuery } from "../../app/slice/stateSlice";
+import { addQuerySpec, setNLQuery, setQuery } from "../../app/slice/stateSlice";
 import { getColor } from "../../utils/color";
 import QueryIcon from "../../icons/Query";
 import SubmitIcon from "../../icons/Submit";
@@ -9,7 +9,15 @@ import { flushSync } from "react-dom";
 import { AudioFilled } from "@ant-design/icons";
 import { classnames } from "../../utils/classname";
 import type { SpeechRecognitionType } from "../../types";
-import { Input, Popover } from "antd";
+import { Empty, Popover } from "antd";
+import { getFragmentsBySpec, getQuerySpecRequest } from "../../api";
+import { Query, QuerySpec } from "../../types/QuerySpec";
+import Target from "./Target";
+import { deepClone } from "../../utils/deepclone";
+import Scope from "./Scope";
+import Trend from "./Trend";
+import Relation from "./Relation";
+import { setQueryResults } from "../../app/slice/approximation";
 
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition || window.mozSpeechRecognition || window.msSpeechRecognition;
 SpeechRecognition.lang = 'en-US';
@@ -17,28 +25,70 @@ SpeechRecognition.continuous = true;
 
 const PLACEHOLDER = "Please enter your query...";
 
-const ColoredTextComponent: React.FC<{ query: string, keys: string[] }> = ({ query, keys }) => {
-  const coloredText = (query || PLACEHOLDER).split(/(\s+)/).map((part, index) => {
-    if (keys.includes(part.toLowerCase())) {
+const ColoredTextComponent: React.FC<{ query: Query | null }> = ({ query }) => {
+  const values = useAppSelector((state) => state.dataset.dataset?.valueColumns) || [];
+  const NLQuery = useAppSelector((state) => state.states.NLQuery);
+  const dispatch = useAppDispatch();
+  if (!query || !query.length) return <span>{NLQuery || PLACEHOLDER}</span>;
+  const querySpec: QuerySpec = query?.reduce((acc, cur) => Object.assign(acc, cur.condition), {});
+  const coloredText = query.map((part, index) => {
+    const text = part.text;
+    if (part.condition) {
+      const keys = Object.keys(part.condition);
       return (
         <span key={index} onClick={(e) => { e.stopPropagation(); }}>
-          <Popover content={<Input></Input>} trigger="click">
-            <b style={{ backgroundColor: getColor(index) }}>{part}</b>
+          <Popover content={keys.map((key) => {
+            const k = key as keyof QuerySpec;
+            switch (k) {
+              case "target":
+                return <Target key={k} title={k} value={part.condition?.[k] || ""} options={values} onChange={(val) => {
+                  const newQuery = deepClone(query);
+                  newQuery[index].condition = { [k]: val };
+                  newQuery[index].text = val;
+                  dispatch(setQuery(newQuery));
+                }}></Target>;
+              case "trends":
+                return <Trend key={k} trends={part.condition?.[k] || []} onChange={(trends) => {
+                  const newQuery = deepClone(query);
+                  newQuery[index].condition = { ...newQuery[index].condition, [k]: trends };
+                  dispatch(setQuery(newQuery));
+                }}></Trend>;
+              case "relations":
+                return <Relation key={k} relations={part.condition?.[k] || []} idLength={querySpec.trends?.length || 0} onChange={(relations) => {
+                  const newQuery = deepClone(query);
+                  newQuery[index].condition = { ...newQuery[index].condition, [k]: relations };
+                  dispatch(setQuery(newQuery));
+                }}></Relation>;
+              case "time_span_condition":
+              case "time_scope_condition":
+              case "value_scope_condition":
+                return <Scope key={k} title={k} min={part.condition?.[k]?.min?.value || null} max={part.condition?.[k]?.max?.value || null} minInclusive={!!part.condition?.[k]?.min?.inclusive} maxInclusive={!!part.condition?.[k]?.max?.inclusive} onChange={(min, max, minInclusive, maxInclusive) => {
+                  const newQuery = deepClone(query);
+                  const change = { [k]: { min: !min ? null : { value: min, inclusive: minInclusive }, max: !max ? null : { value: max, inclusive: maxInclusive } } };
+                  newQuery[index].condition = { ...newQuery[index].condition, ...change };
+                  dispatch(setQuery(newQuery));
+                }} ></Scope>;
+              default:
+                return <Empty key={k}></Empty>;
+            }
+          })} trigger="click">
+            <b style={{ backgroundColor: getColor(index) }}>{text}</b>
           </Popover>
         </span>
       );
     }
-    return <span key={index}>{part}</span>;
+    return <span key={index}>{text}</span>;
   });
   return <span>{coloredText}</span>;
 };
 
 export default function NlqueryBox() {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const query = useAppSelector((state) => state.states.query) || [];
+  const querySpec: QuerySpec = query?.reduce((acc, cur) => Object.assign(acc, cur.condition), {});
   const dispatch = useAppDispatch();
   const NLQuery = useAppSelector((state) => state.states.NLQuery);
   const isRequesting = useAppSelector((state) => state.results.isRequesting);
-  const trend = useAppSelector((state) => state.results.trend);
   const [isEdit, setIsEdit] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const recognition = useRef<SpeechRecognitionType>(new SpeechRecognition());
@@ -55,6 +105,17 @@ export default function NlqueryBox() {
       className="nl-query-form"
       onSubmit={async (e) => {
         e.preventDefault();
+        if (!NLQuery.trim()) return;
+        if (!query.length || query.reduce((acc, cur) => acc + cur.text, "").trim() !== NLQuery.trim()) {
+          getQuerySpecRequest(NLQuery).then(res => {
+            dispatch(setQuery(res));
+          });
+        } else {
+          getFragmentsBySpec(querySpec).then(res => {
+            dispatch(setQueryResults(res));
+            dispatch(addQuerySpec(querySpec));
+          });
+        }
       }}
     >
       <QueryIcon className="query-icon"></QueryIcon>
@@ -82,7 +143,7 @@ export default function NlqueryBox() {
           }}
           className="nl-query text"
           style={{ color: !NLQuery ? "gray" : "#000" }}
-        ><ColoredTextComponent query={NLQuery} keys={trend}></ColoredTextComponent></div>
+        ><ColoredTextComponent query={query}></ColoredTextComponent></div>
       )}
       <button onClick={() => {
         if (!SpeechRecognition) {

@@ -1,6 +1,6 @@
 import axios from "axios";
 import type { Results } from "./app/slice/resultsSlice";
-import { Fragment, FragmentList, QuerySpec, TimeGranularity } from "./types/QuerySpec";
+import { Fragment, FragmentList, Query, QuerySpec, TimeGranularity } from "./types/QuerySpec";
 import { DatasetInfo, ApproximationSegmentsContainers, ApproximationResults } from "./types";
 
 const api = axios.create({
@@ -11,12 +11,24 @@ const api = axios.create({
   },
 });
 
-export const getQuerySpecRequest = async (query: string): Promise<QuerySpec> => {
+export const getQuerySpecRequest = async (query: string): Promise<Query> => {
   console.log("Sending query spec request");
   try {
-    const response = await api.get(`/api/query_spec?query=${query}`);
+    const response = await api.post(`/api/parse_query`, { query });
     console.log(response.data);
-    return response.data;
+    return response.data.results;
+  } catch (error) {
+    console.error("Error sending query spec request:", error);
+    throw error;
+  }
+};
+
+export const adjustQuerySpec = async (query: string): Promise<string> => {
+  console.log("Sending query spec request");
+  try {
+    const response = await api.post(`/api/tune_query`, { query });
+    console.log(response.data);
+    return response.data.results;
   } catch (error) {
     console.error("Error sending query spec request:", error);
     throw error;

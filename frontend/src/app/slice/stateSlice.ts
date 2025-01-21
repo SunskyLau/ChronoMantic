@@ -1,9 +1,10 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { Fragment, FragmentList, QuerySpec } from "../../types/QuerySpec";
+import { Fragment, FragmentList, Query, QuerySpec } from "../../types/QuerySpec";
 import { InsertTreeNode, TreeNode } from "../../types/Tree";
 
 export type States = {
   NLQuery: string;
+  query: Query | null;
   querySpecIndex: number;
   querySpecList: QuerySpec[];
   fragmentsIndex: number;
@@ -26,7 +27,8 @@ const initialState: States = {
   isSettingShow: false,
   timeStampUnit: "",
   valueUnit: "",
-  aspectRatio: 0.00001
+  aspectRatio: 0.00001,
+  query: null
 };
 
 const stateSlice = createSlice({
@@ -35,6 +37,9 @@ const stateSlice = createSlice({
   reducers: {
     setNLQuery: (state, action: PayloadAction<string>) => {
       state.NLQuery = action.payload;
+    },
+    setQuery: (state, action: PayloadAction<Query | null>) => {
+      state.query = action.payload;
     },
     addQuerySpec: (state, action: PayloadAction<QuerySpec>) => {
       state.querySpecList = [...state.querySpecList.slice(0, state.querySpecIndex + 1), action.payload];
@@ -108,5 +113,5 @@ const stateSlice = createSlice({
   },
 });
 
-export const { setNLQuery, addFragments, addQuerySpec, setFragmentsIndex, setQuerySpecIndex, insertTreeData, setIsSettingShow, setTimeStampUnit, setValueUnit, setAspectRatio } = stateSlice.actions;
+export const { setNLQuery, setQuery, addFragments, addQuerySpec, setFragmentsIndex, setQuerySpecIndex, insertTreeData, setIsSettingShow, setTimeStampUnit, setValueUnit, setAspectRatio } = stateSlice.actions;
 export default stateSlice.reducer;
