@@ -94,13 +94,12 @@ def satisfies_global_conditions(sequence: List[Segment], query_spec: QuerySpec, 
 
     # 检查起止时间条件
     if query_spec.time_scope_condition:
-        start_time = sequence[0].start_idx
-        end_time = sequence[-1].end_idx
-        if query_spec.time_scope_condition:
-            start_thresh = query_spec.time_scope_condition.min
-            end_thresh = query_spec.time_scope_condition.max
-            if not check_double_threshold_condition(start_time, end_time, start_thresh, end_thresh):
-                return False
+        start_time = sequence[0].start_time
+        end_time = sequence[-1].end_time
+        start_thresh = query_spec.time_scope_condition.min
+        end_thresh = query_spec.time_scope_condition.max
+        if not check_double_threshold_condition(start_time, end_time, start_thresh, end_thresh):
+            return False
 
     # 检查时间跨度条件
     if query_spec.time_span_condition:
