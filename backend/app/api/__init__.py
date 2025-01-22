@@ -131,10 +131,10 @@ def query_by_specification():
 @bus_bp.route("/parse_query", methods=["POST"])
 def parse_query():
     query_spec = get_query_spec(request.json.get("query"))
-    return jsonify({"code": 200, "message": "Query successful", "results": filter_json(query_spec)})
+    return jsonify({"code": 200, "message": "Parse successful", "results": filter_json(query_spec)})
 
 
 @bus_bp.route("/tune_query", methods=["POST"])
 def tune_query():
     query_spec = adjust_query(request.json.get("query"))
-    return jsonify({"code": 200, "message": "Query successful", "results": query_spec})
+    return jsonify({"code": 200, "message": "Tune successful", "results": query_spec})
