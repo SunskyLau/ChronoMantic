@@ -109,4 +109,4 @@ export interface QuerySpec {
   value_scope_condition?: ScopeCondition;
 }
 
-export type Query = { text: string; condition?: QuerySpec }[];
+export type Query = { text: string; condition?: QuerySpec; exact?: boolean }[];

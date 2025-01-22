@@ -84,15 +84,5 @@ def get_query_spec(query: str) -> Dict:
     return json.loads(response)
 
 
-def adjust_query(query: str) -> str:
-    client = myAIClient(GPT_4O, AZURE)
-    response = client.sendPrompt(
-        """You are a text processing expert. I will provide you with the original text and some modification suggestions, and you need to give the modified result without any punctuation marks. Here is an example: "AMZN", "{target: "BTC"}", you need to output BTC; "from 2021 to 2023","time_scope_condition:{min:{value:2021},max:{value:2022}}", you need to output from 2021 to 2022.""",
-        query,
-        keepHistory=False,
-    )
-    return response
-
-
 if __name__ == "__main__":
-    get_query_spec("Show me   periods when    price appear   a head-and-shoulder shape")
+    get_query_spec("Show me AMZN where appear a rise the fall then flat trend")

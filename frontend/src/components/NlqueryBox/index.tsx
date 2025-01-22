@@ -41,7 +41,7 @@ const ColoredTextComponent: React.FC<{ query: Query | null }> = ({ query }) => {
             const k = key as keyof QuerySpec;
             switch (k) {
               case "target":
-                return <Target key={k} title={k} value={part.condition?.[k] || ""} options={values} onChange={(val) => {
+                return <Target disabled={part.exact} key={k} title={k} value={part.condition?.[k] || ""} options={values} onChange={(val) => {
                   const newQuery = deepClone(query);
                   newQuery[index].condition = { [k]: val };
                   newQuery[index].text = val;
