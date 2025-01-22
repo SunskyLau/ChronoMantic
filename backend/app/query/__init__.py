@@ -12,9 +12,6 @@ from ..MyTypes import (
     SlopeScopeCondition,
     ThresholdCondition,
     Trend,
-    TimeScopeCondition,
-    ValueScopeCondition,
-    TimeSpanCondition,
     Relation,
     Comparator,
     Attribute,
@@ -31,7 +28,6 @@ def query(query_spec: QuerySpec, approximation_segments_containers: List[Approxi
     if not container:
         return {}
 
-    # TODO: trend_length为0时的情况没有仔细讨论
     if not query_spec.trends:
         return query_by_no_trends(query_spec, container, df)
 

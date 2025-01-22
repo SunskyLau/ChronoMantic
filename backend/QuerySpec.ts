@@ -14,6 +14,8 @@ export interface Segment {
   slope: number;
   start_value: number;
   end_value: number;
+  max_value: number;
+  min_value: number;
   start_time?: number;
   end_time?: number;
   angle?: number;
@@ -34,7 +36,6 @@ export interface ApproximationSegmentsContainer {
 /**
  * QuerySpec
  */
-// 需要在里面加上一个对应的文本字段，让LLM识别出相应的condition来自于NL中的哪个部分
 export interface ThresholdCondition {
   value: number;
   inclusive: boolean; // 是否包含该值
