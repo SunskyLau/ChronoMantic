@@ -309,7 +309,7 @@ def create_system_prompt(dataset_info: str) -> str:
 "Check the column sales_amount with a double top trend at the increase period which increase at least 20 dollars per day. The value of y is less than 500 and time from 2021 to 2023. "
 
 	输出：
-[{{
+{{"output":[{{
   "text": "Check the column "
 }},{{
   "text": "sales_amount",
@@ -403,7 +403,7 @@ def create_system_prompt(dataset_info: str) -> str:
   "exact": true
 }},{{
   "text": ". "
-}}]
+}}]}}
 
 示例二：
 
@@ -411,7 +411,7 @@ def create_system_prompt(dataset_info: str) -> str:
 "Show me periods when price appear a sharp head-and-shoulder shape over 20 days in Amazon stock".
 
 	输出：
-[{{
+{{"output":[{{
   "text": "Show me periods when "
 }},{{
   "text": "price",
@@ -499,7 +499,7 @@ def create_system_prompt(dataset_info: str) -> str:
 	}},
 	"exact": true
 }}
-]
+]}}
 """
     return system_prompt
 
