@@ -47,15 +47,14 @@ const stateSlice = createSlice({
         if (condition) {
           for (const key in condition) {
             const k = key as keyof QuerySpec;
-            if (Object.prototype.hasOwnProperty.call(condition, key)) {
-              const value = condition[k];
-              if (acc[k] && Array.isArray(acc[k]) && Array.isArray(value)) {
-                acc[k].push(...value);
-              }
+            const value = condition[k];
+            if (acc[k] && Array.isArray(acc[k]) && Array.isArray(value)) {
+              (acc as { [key: string]: QuerySpec[keyof QuerySpec] })[k] = [...acc[k], ...value];
+            } else {
               (acc as { [key: string]: QuerySpec[keyof QuerySpec] })[k] = value;
-              return acc;
             }
           }
+          return acc;
         }
         return acc;
       }, {} as QuerySpec) : null;
