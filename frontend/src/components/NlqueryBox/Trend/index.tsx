@@ -14,6 +14,7 @@ interface TrendProps {
 }
 
 export default function Trend({ title, trends, minValue, maxValue, onChange }: TrendProps) {
+    if (!trends.length) return null;
     return (
         <>
             <Typography.Title level={4} keyboard>{title ?? 'Trend'}</Typography.Title>

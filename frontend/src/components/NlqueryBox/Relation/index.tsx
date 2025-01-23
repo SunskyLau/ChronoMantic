@@ -10,6 +10,7 @@ interface RelationProps {
 }
 
 export default function Relation({ title, relations, idLength, onChange }: RelationProps) {
+    if (!relations.length) return null;
     return (
         <>
             <Typography.Title level={4} keyboard>{title ?? 'Relation'}</Typography.Title>
