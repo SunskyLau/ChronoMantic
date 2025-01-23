@@ -30,10 +30,10 @@ const ColoredTextComponent: React.FC<{ query: Query | null }> = ({ query }) => {
   const NLQuery = useAppSelector((state) => state.states.NLQuery);
   const data = useAppSelector((state) => state.dataset.dataset?.data) || {};
   const date = useAppSelector((state) => state.dataset.dataset?.data[state.dataset.dataset.timeStampColumn]);
+  const querySpec = useAppSelector((state) => state.states.querySpec);
   const dispatch = useAppDispatch();
   if (!query || !query.length) return <span>{NLQuery || PLACEHOLDER}</span>;
-  const querySpec: QuerySpec = query?.reduce((acc, cur) => Object.assign(acc, cur.condition), {});
-  const value = data[querySpec.target || ""] as number[] || [];
+  const value = data[querySpec?.target || ""] as number[] || [];
   const maxValue = Math.floor(Math.max(...value));
   const minValue = Math.ceil(Math.min(...value));
   const time = date?.map(d => new Date(d).getTime()) || [];
@@ -62,7 +62,7 @@ const ColoredTextComponent: React.FC<{ query: Query | null }> = ({ query }) => {
                   dispatch(setQuery(newQuery));
                 }}></Trend>;
               case "relations":
-                return <Relation key={k} relations={part.condition?.[k] || []} idLength={querySpec.trends?.length || 0} onChange={(relations) => {
+                return <Relation key={k} relations={part.condition?.[k] || []} idLength={querySpec?.trends?.length || 0} onChange={(relations) => {
                   const newQuery = deepClone(query);
                   newQuery[index].condition = { ...newQuery[index].condition, [k]: relations };
                   dispatch(setQuery(newQuery));
@@ -105,7 +105,7 @@ const ColoredTextComponent: React.FC<{ query: Query | null }> = ({ query }) => {
 export default function NlqueryBox() {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const query = useAppSelector((state) => state.states.query) || [];
-  const querySpec: QuerySpec = query?.reduce((acc, cur) => Object.assign(acc, cur.condition), {});
+  const querySpec = useAppSelector((state) => state.states.querySpec);
   const dispatch = useAppDispatch();
   const NLQuery = useAppSelector((state) => state.states.NLQuery);
   const isRequesting = useAppSelector((state) => state.results.isRequesting);
@@ -125,17 +125,11 @@ export default function NlqueryBox() {
       className="nl-query-form"
       onSubmit={async (e) => {
         e.preventDefault();
-        if (!NLQuery.trim()) return;
-        if (!query.length || query.reduce((acc, cur) => acc + cur.text, "").trim() !== NLQuery.trim()) {
-          getQuerySpecRequest(NLQuery).then(res => {
-            dispatch(setQuery(res));
-          });
-        } else {
-          getFragmentsBySpec(querySpec).then(res => {
-            dispatch(setQueryResults(res));
-            dispatch(addQuerySpec(querySpec));
-          });
-        }
+        if (!NLQuery.trim() || !querySpec) return;
+        getFragmentsBySpec(querySpec).then(res => {
+          dispatch(setQueryResults(res));
+          dispatch(addQuerySpec(querySpec));
+        });
       }}
     >
       <QueryIcon className="query-icon"></QueryIcon>
@@ -144,6 +138,18 @@ export default function NlqueryBox() {
           ref={textareaRef}
           placeholder={PLACEHOLDER}
           spellCheck="false"
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              if (textareaRef.current && NLQuery.trim()) {
+                textareaRef.current.blur();
+                dispatch(setQuery(null));
+                getQuerySpecRequest(NLQuery).then(res => {
+                  dispatch(setQuery(res));
+                });
+              }
+            }
+          }}
           onChange={(e) => {
             dispatch(setNLQuery(e.target.value));
           }}

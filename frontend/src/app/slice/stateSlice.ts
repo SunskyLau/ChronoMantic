@@ -5,6 +5,7 @@ import { InsertTreeNode, TreeNode } from "../../types/Tree";
 export type States = {
   NLQuery: string;
   query: Query | null;
+  querySpec: QuerySpec | null;
   querySpecIndex: number;
   querySpecList: QuerySpec[];
   fragmentsIndex: number;
@@ -28,7 +29,8 @@ const initialState: States = {
   timeStampUnit: "",
   valueUnit: "",
   aspectRatio: 0.00001,
-  query: null
+  query: null,
+  querySpec: null,
 };
 
 const stateSlice = createSlice({
@@ -40,6 +42,23 @@ const stateSlice = createSlice({
     },
     setQuery: (state, action: PayloadAction<Query | null>) => {
       state.query = action.payload;
+      state.querySpec = action.payload ? action.payload.reduce((acc, cur) => {
+        const condition = cur.condition;
+        if (condition) {
+          for (const key in condition) {
+            const k = key as keyof QuerySpec;
+            if (Object.prototype.hasOwnProperty.call(condition, key)) {
+              const value = condition[k];
+              if (acc[k] && Array.isArray(acc[k]) && Array.isArray(value)) {
+                acc[k].push(...value);
+              }
+              (acc as { [key: string]: QuerySpec[keyof QuerySpec] })[k] = value;
+              return acc;
+            }
+          }
+        }
+        return acc;
+      }, {} as QuerySpec) : null;
     },
     addQuerySpec: (state, action: PayloadAction<QuerySpec>) => {
       state.querySpecList = [...state.querySpecList.slice(0, state.querySpecIndex + 1), action.payload];
