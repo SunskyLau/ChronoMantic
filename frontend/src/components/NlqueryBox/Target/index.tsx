@@ -11,7 +11,7 @@ interface TargetProps {
 export default function Target({ disabled, title, value, options, onChange }: TargetProps) {
     return (
         <>
-            <Typography.Title level={5} keyboard>{title ?? 'Target'}</Typography.Title>
+            <Typography.Title level={4} keyboard>{title ?? 'Target'}</Typography.Title>
             <Select
                 disabled={disabled}
                 allowClear

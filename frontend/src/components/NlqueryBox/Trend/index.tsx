@@ -1,55 +1,63 @@
-import { Checkbox, Divider, InputNumber, Typography } from "antd";
+import { Divider, Typography } from "antd";
 import { Trend as TrendType } from "../../../types/QuerySpec";
 import { deepClone } from "../../../utils/deepclone";
+import InclusiveSlider from "../InclusiveSlider";
+import Span from "../Span";
+import Time from "../Time";
 
 interface TrendProps {
     title?: string;
     trends: TrendType[];
+    maxValue?: number;
+    minValue?: number;
     onChange: (trends: TrendType[]) => void;
 }
 
-export default function Trend({ title, trends, onChange }: TrendProps) {
+export default function Trend({ title, trends, minValue, maxValue, onChange }: TrendProps) {
     return (
         <>
-            <Typography.Title level={5} keyboard>{title ?? 'Trend'}</Typography.Title>
+            <Typography.Title level={4} keyboard>{title ?? 'Trend'}</Typography.Title>
             {trends.map((trend, index) => (
-                <div key={index}>
-                    <Typography.Paragraph>No.{index}</Typography.Paragraph>
-                    {Object.keys(trend).map(key => {
+                <li key={index}>
+                    <Typography.Title level={5}>No.{index}</Typography.Title>
+                    {Object.keys(trend).map((key, i) => {
                         const k = key as keyof typeof trend;
-                        return (
-                            <span key={k}>
-                                <Typography.Paragraph>{k}</Typography.Paragraph>
-                                <Typography.Text>MIN</Typography.Text>
-                                <InputNumber className="ml-1" value={trend[k]?.min?.value} onChange={(value) => {
+                        if (!trend[k]) return null;
+                        switch (k) {
+                            case 'time_span_condition':
+                                return (<div key={i}><Typography.Paragraph>{k}</Typography.Paragraph><Span valueFormatter={86400} addonAfter="days" minValue={0} min={trend.time_span_condition?.min?.value || null} max={trend.time_span_condition?.max?.value || null} maxInclusive={!!trend.time_span_condition?.max?.inclusive} minInclusive={!!trend.time_span_condition?.min?.inclusive} onChange={(min, max, minInclusive, maxInclusive) => {
                                     const newTrends = deepClone(trends);
-                                    if (!value) newTrends[index][k] = { ...newTrends[index][k], min: null };
-                                    else newTrends[index][k] = { ...newTrends[index][k], min: { value, inclusive: trend[k]?.min?.inclusive } };
+                                    const change = { [k]: { min: !min ? null : { value: min, inclusive: minInclusive }, max: !max ? null : { value: max, inclusive: maxInclusive } } };
+                                    newTrends[index] = { ...newTrends[index], ...change };
                                     onChange(newTrends);
-                                }} />
-                                <Checkbox className="ml-1" checked={trend[k]?.min?.inclusive} disabled={!trend[k]?.min?.value} onChange={(e) => {
+                                }}></Span></div>)
+                            case 'angle_scope_condition':
+                                return (<div key={i}><Typography.Paragraph>{k}</Typography.Paragraph><InclusiveSlider minValue={-90} maxValue={90} min={trend[k]?.min?.value || null} max={trend[k]?.max?.value || null} minInclusive={!!trend[k]?.min?.inclusive} maxInclusive={!!trend[k]?.max?.inclusive} onChange={(min, max, minInclusive, maxInclusive) => {
                                     const newTrends = deepClone(trends);
-                                    newTrends[index][k] = { ...newTrends[index][k], min: { value: trend[k]?.min?.value, inclusive: e.target.checked } };
+                                    const change = { [k]: { min: !min ? null : { value: min, inclusive: minInclusive }, max: !max ? null : { value: max, inclusive: maxInclusive } } };
+                                    newTrends[index] = { ...newTrends[index], ...change };
                                     onChange(newTrends);
-                                }}></Checkbox>
-                                <br></br>
-                                <Typography.Text>MAX</Typography.Text>
-                                <InputNumber className="ml-1" value={trend[k]?.max?.value} onChange={(value) => {
+                                }}></InclusiveSlider></div>)
+                            case 'slope_scope_condition':
+                                return (<div key={i}><Typography.Paragraph>{k}</Typography.Paragraph><Span min={trend[k]?.min?.value || null} max={trend[k]?.max?.value || null} maxInclusive={!!trend[k]?.max?.inclusive} minInclusive={!!trend[k]?.min?.inclusive} onChange={(min, max, minInclusive, maxInclusive) => {
                                     const newTrends = deepClone(trends);
-                                    if (!value) newTrends[index][k] = { ...newTrends[index][k], max: null };
-                                    else newTrends[index][k] = { ...newTrends[index][k], max: { value, inclusive: trend[k]?.max?.inclusive } };
+                                    const change = { [k]: { min: !min ? null : { value: min, inclusive: minInclusive }, max: !max ? null : { value: max, inclusive: maxInclusive } } };
+                                    newTrends[index] = { ...newTrends[index], ...change };
                                     onChange(newTrends);
-                                }} />
-                                <Checkbox className="ml-1" checked={trend[k]?.max?.inclusive} disabled={!trend[k]?.max?.value} onChange={(e) => {
+                                }}></Span></div>)
+                            case 'time_scope_condition':
+                                return (<div key={i}><Typography.Paragraph>{k}</Typography.Paragraph><Time min={trend[k]?.min?.value || null} max={trend[k]?.max?.value || null} maxInclusive={!!trend[k]?.max?.inclusive} minInclusive={!!trend[k]?.min?.inclusive} minValue={minValue ?? null} maxValue={maxValue ?? null} onChange={(min, max, minInclusive, maxInclusive) => {
                                     const newTrends = deepClone(trends);
-                                    newTrends[index][k] = { ...newTrends[index][k], max: { value: trend[k]?.max?.value, inclusive: e.target.checked } };
+                                    const change = { [k]: { min: !min ? null : { value: min, inclusive: minInclusive }, max: !max ? null : { value: max, inclusive: maxInclusive } } };
+                                    newTrends[index] = { ...newTrends[index], ...change };
                                     onChange(newTrends);
-                                }}></Checkbox>
-                            </span>
-                        )
+                                }}></Time></div>)
+                            default:
+                                return null;
+                        }
                     })}
                     <Divider></Divider>
-                </div>
+                </li>
             ))}
         </>
     )

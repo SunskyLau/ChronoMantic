@@ -12,7 +12,7 @@ interface RelationProps {
 export default function Relation({ title, relations, idLength, onChange }: RelationProps) {
     return (
         <>
-            <Typography.Title level={5} keyboard>{title ?? 'Relation'}</Typography.Title>
+            <Typography.Title level={4} keyboard>{title ?? 'Relation'}</Typography.Title>
             {relations.map((relation, index) => (
                 <div key={index}>
                     <Select popupMatchSelectWidth={false} options={Object.values(Attribute).map(attr => ({ value: attr, label: attr }))} value={relation.attribute} onChange={(value) => {
