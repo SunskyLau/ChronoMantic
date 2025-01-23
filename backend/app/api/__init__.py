@@ -3,6 +3,7 @@ from flask import Blueprint
 
 from app.query import query
 from app.ai_agent.query import get_query_spec
+from ..ai_agent.constant import create_system_prompt
 from ..config import Config
 from flask import Blueprint, request, jsonify
 import numpy as np
@@ -12,7 +13,7 @@ from app.services.banking_to_45degree import find_optimal_aspect_ratio
 from ..MyTypes import DatasetInfo, QuerySpec
 from ..model import approximate_dataset
 from numpy.typing import NDArray
-from ..shared_data import dataset_info_container, dataset_container, approximation_segments_containers_container
+from ..shared_data import dataset_info_container, dataset_container, approximation_segments_containers_container, system_prompt_container
 
 bus_bp = Blueprint("bus", __name__)
 
@@ -110,6 +111,10 @@ def upload_csv_file():
 @bus_bp.route("/process_dataset", methods=["POST"])
 def process_dataset():
     dataset_info = DatasetInfo.from_dict(request.json.get("datasetInfo"))
+    dataset_info_str = json.dumps(dataset_info.to_dict(), cls=CustomJSONEncoder)
+    system_prompt = create_system_prompt(dataset_info_str)
+    print(system_prompt)
+    system_prompt_container.set_data(system_prompt)
     dataset_info_container.set_data(dataset_info)
     dataset = dataset_container.get_data()
     approxiamation_segments_containers = approximate_dataset(dataset, dataset_info)
@@ -130,5 +135,5 @@ def query_by_specification():
 
 @bus_bp.route("/parse_query", methods=["POST"])
 def parse_query():
-    query_spec = get_query_spec(request.json.get("query"))
+    query_spec = get_query_spec(system_prompt_container.get_data(), request.json.get("query"))
     return jsonify({"code": 200, "message": "Parse successful", "results": filter_json(query_spec)})

@@ -1,6 +1,10 @@
 from datetime import datetime
 
-
+DEEPSEEK = "deepseek"
+DEEPSEEK_API_KEY = "sk-8afa35e69734436e88fec6fb5191e954"
+DEEPSEEK_BASE_URL = "https://api.deepseek.com"
+DEEPSEEK_CHAT = "deepseek-chat"
+DEEPSEEK_REASONER = "deepseek-reasoner"
 OPENAI = "openai"
 AZURE = "azure"
 GPT_4O = "gpt-4o"
@@ -224,3 +228,281 @@ Here is another query example, "Show me periods when price appear a head-and-sho
 
 Note: You only need to output the final feature statement result, without providing any other output, such as comments and explanations.
 """
+
+
+def create_system_prompt(dataset_info: str) -> str:
+    system_prompt = f"""
+你是一个用于将针对时间序列片段的自然语言查询解析为相应的结构化查询语法的解析器。你被应用于一个自然语言驱动的时间序列片段查询工具，以下项目的相关背景和知识。
+	
+1. 项目背景
+	本项目旨在开发一个自然语言驱动的时间序列片段查询工具，允许用户通过输入自然语言来表达查询条件和意图，使得用户轻松使用这个查询工具。在底层，我们构建了一套结构化的查询语法以及时间序列分割模型，用于实现时间序列片段的检索。对于用户输入的自然语言查询，我们使用LLM作为解析器，将自然语言查询解析为相应的结构化查询，这便是我们需要你充当的角色。
+	
+2. 时间序列分割模型
+	为了满足对时间序列片段的趋势和形状描述，我们使用线段拟合分割方法对时间序列进行不同模糊等级的分割预处理。分割后的时间序列是许多连续线段组成的数组，它们首尾相连形成整个通过分割模糊化后的时间序列。每一段都是一条以两个分割点为起止点的线段。通过这种线段拟合分段的方式，可以满足基本的趋势和形状查询，只需要从原段序列中匹配出满足趋势或者形状的子段序列即可。
+	
+3. 结构化查询语法
+	为了满足丰富的查询条件和语义，我们设计了一套结构化查询语法。以下是这套语法的细节。
+	```
+	interface ThresholdCondition {{
+	  value?: number;
+	  inclusive?: boolean;  // 是否包含阈值
+	}}
+
+	interface ScopeCondition {{
+	  max?: ThresholdCondition | null;  // 范围最大值
+	  min?: ThresholdCondition | null;  // 范围最小值
+	}}
+	
+	interface Trend {{
+	  angle_scope_condition?: ScopeCondition | null;  // 当趋势呈 `flat` 状态时，角度应在 -5 到 5 之间。当趋势向上时，角度的最小值应大于 5。当趋势向下时，角度的最大值应小于 -5。当用户指明趋势的程度时，你可以根据该程度调整范围。例如，`sharply` 可能意味着上升趋势的角度应大于 60 或 下降的趋势应该小于 -60。此外，你还需要根据时间序列片段的形态进行推断，并推导出合适的角度范围。
+	  slope_scope_condition?: ScopeCondition | null;  // 当用户明确指出每天的增减幅度时，就会用到斜率范围条件。
+	  time_scope_condition?: ScopeCondition | null;  // 时间范围条件，数值为时间戳，单位为秒。
+	  time_span_condition?: ScopeCondition | null;  // 时间跨度条件，数值为时间戳，单位为秒。
+	}}
+	
+	interface Relation {{  // 两个Trend段之间某个属性的比较关系。你应始终关注用户想要表达的时间序列趋势的形态，并评估它们之间的关系。
+	  id1?: number;  // 比较中，第一个 Trend段 的索引，注意不能超过trends数组的索引范围。
+	  id2?: number;  // 比较中，第二个 Trend段 的索引，注意不能超过trends数组的索引范围。
+	  attribute?: "slope" | "angle" | "start_value" | "end_value" | "time_span";  // 需要比较的属性，例如“两个连续峰值”需要比较第0个和第2个的"end_value"，让他们大约相等。
+	  comparator?: ">" | "<" | "=" | "<=" | ">=" | "~=";  // 你需要谨慎使用 "="，当不确定时，请尽量使用 "~="。
+	}}
+	
+	interface QuerySpec {{
+	  target?: string;  // 查询的目标时间序列列名，来源于数据集信息中的value_columns。
+	  trends?: Trend[]; // 描述时间序列趋势模式的数组
+	  relations?: Relation[]; // 描述不同trend段之间的关系数组
+	  time_span_condition?: ScopeCondition;  // 全局时间跨度条件，数值为时间戳，单位为秒。
+	  time_scope_condition?: ScopeCondition;  // 全局时间范围条件，数值为时间戳，单位为秒。
+	  value_scope_condition?: ScopeCondition;  // 全局数值范围条件。
+	}}
+	```
+
+4. 数据集信息
+	用户上传的是一个股票价格数据集，包含了多个公司的股票数据。
+	以下是用户要查询的时间序列数据集的基本信息：
+	{dataset_info}
+    你只需要关注其中的value_columns信息，其中包含了时间序列的列名信息，是你之后解析出target字段的来源。
+
+5. 目标态输出Output
+	为了告诉使用我们工具的用户相应的自然语言文本能够产生哪些查询条件，并允许用户调整查询条件来消除自然语言的歧义或模糊，我们构建了一个目标态输出数据结构Output，作为你最终解析NL得到的目标。首先，你需要将自然语言查询文本进行合理的分块，然后对每一块进行解析。以下是解析目标态输出Output的细节，它是由Chunk构成的数组，Chunk是对每个text块解析的结果：
+	```
+	type Chunk= {{
+		text: str // 对应从NL中分块出的文本，所有Chunk的text可以组合成原NL
+		condition?: QuerSpec // 从text中被解析出来的结构化查询条件，不对应任何查询条件的则不出现这个字段，所有的Chunk对应的condition可以恰好组合成一个完整的QuerySpec,对应整个NL的语义。
+		exact?: boolean // 文本是否存在歧义或者模糊，准确情况下为true，不准确情况下为false
+	}}
+	
+	type Output = Chunk[] //最终的目标输出，由连续的Chunk数组组成。
+	```
+
+任务：
+	请你作为一个NL解析器，根据以上的背景和知识，将用户对时间序列片段的自然语言查询解析为Output的形式。要求你的输出有且仅有为Output类型的json字符串，不要使用代码块或```等内容，也不要添加注释。
+    要求：
+		1. 原始NL查询文本中的每个字符都应该被保留在Output中的Chunk的text字段中
+        2. 按照顺序提取Chunk中的text字段，要保证恰好组合成一个完整的原始NL查询文本
+        3. 对于解析出的condition，应该保证恰好可以组成有且仅有一个完整的QuerySpec，对应整个NL的语义，这个完整的QuerySpec不应该出现任何重复冗余的字段。例如,target字段只能在所有condition中出现一次。
+	
+	
+示例一：
+		
+	输入：
+"Check the column sales_amount with a double top trend at the increase period which increase at least 20 dollars per day. The value of y is less than 500 and time from 2021 to 2023. "
+
+	输出：
+[{{
+  "text": "Check the column "
+}},{{
+  "text": "sales_amount",
+  "condition": {{
+    "target": "sales_amount"
+  }},
+  "exact": true
+}},{{
+  "text": " with "
+}},{{
+  "text": "a double top trend at the increase period which increase at least 20 dollars per day",
+  "condition": {{
+    "trends": [{{
+      "angle_scope_condition": {{
+        "min": {{
+          "value": 5,
+          "inclusive": true
+        }}
+      }},
+      "slope_scope_condition":{{
+        "min": {{
+          "value": 20,
+          "inclusive": true
+        }}
+      }}
+    }}, {{
+      "angle_scope_condition": {{
+        "max": {{
+          "value": -5,
+          "inclusive": true
+        }}
+      }}
+    }}, {{
+      "angle_scope_condition": {{
+        "min": {{
+          "value": 5,
+          "inclusive": true
+        }}
+      }},
+      "slope_scope_condition":{{
+        "min": {{
+          "value": 20,
+          "inclusive": true
+        }}
+      }}
+    }}, {{
+      "angle_scope_condition": {{
+        "max": {{
+          "value": -5,
+          "inclusive": true
+        }}
+      }}
+    }}],
+    "relations": [{{
+      "id1": 0,
+      "id2": 2,
+      "attribute": "end_value",
+      "comparator": "~="
+    }}]
+  }},
+  "exact": false
+}},{{
+  "text": ". "
+}},{{
+  "text": "The value of y is less than 500",
+  "condition": {{
+    "value_scope_condition": {{
+      "min": {{
+        "value": 500,
+        "inclusive": false
+      }}
+    }}
+  }},
+  "exact": true
+}},{{
+  "text": " and "
+}},{{
+  "text": "time from 2021 to 2023",
+  "condition": {{
+    "time_scope_condition": {{
+      "min": {{
+        "value": 1609459200,
+        "inclusive": true
+      }},
+      "max": {{
+        "value": 1672531200,
+        "inclusive": true
+      }}
+    }}
+  }},
+  "exact": true
+}},{{
+  "text": ". "
+}}]
+
+示例二：
+
+	输入：
+"Show me periods when price appear a sharp head-and-shoulder shape over 20 days in Amazon stock".
+
+	输出：
+[{{
+  "text": "Show me periods when "
+}},{{
+  "text": "price",
+}},{{
+  "text": " appear "
+}},{{
+  "text": "a sharp head-and-shoulder shape",
+  "condition": {{
+    "trends": [{{
+      "angle_scope_condition": {{
+        "min": {{
+          "value": 60,
+          "inclusive": true
+        }}
+      }}
+    }},{{
+      "angle_scope_condition": {{
+        "max": {{
+          "value": -60,
+          "inclusive": true
+        }}
+      }}
+    }},{{
+      "angle_scope_condition": {{
+        "min": {{
+          "value": 60,
+          "inclusive": true
+        }}
+      }}
+    }},{{
+      "angle_scope_condition": {{
+        "max": {{
+          "value": -60,
+          "inclusive": true
+        }}
+      }}
+    }},{{
+      "angle_scope_condition": {{
+        "min": {{
+          "value": 5,
+          "inclusive": true
+        }}
+      }}
+    }},{{
+      "angle_scope_condition": {{
+        "max": {{
+          "value": -60,
+          "inclusive": true
+        }}
+      }}
+    }}],
+    "relations": [{{
+      "id1": 0,
+      "id2": 2,
+      "attribute": "end_value",
+      "comparator": "<"
+    }},
+    {{
+      "id1": 2,
+      "id2": 4,
+      "attribute": "end_value",
+      "comparator": ">"
+    }}]
+  }},
+  "exact": false
+}},{{
+  "text": " "
+}},{{
+  "text": "over 20 days",
+  "condition": {{
+    "time_span_condition": {{
+      "min": {{
+        "value": 1728000,
+        "inclusive": true
+      }}
+    }}
+  }},
+  "exact": true
+}},{{
+	"text":" "
+}},{{
+	"text":"in Amazon stock"",
+	"condition":{{
+		"target":AMZN
+	}},
+	"exact": true
+}}
+]
+"""
+    return system_prompt
+
+
+if __name__ == "__main__":
+    pass
