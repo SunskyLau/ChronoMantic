@@ -10,17 +10,18 @@ interface TrendProps {
     trends: TrendType[];
     maxValue?: number;
     minValue?: number;
+    start?: number;
     onChange: (trends: TrendType[]) => void;
 }
 
-export default function Trend({ title, trends, minValue, maxValue, onChange }: TrendProps) {
+export default function Trend({ title, trends, minValue, maxValue, onChange, start = 0 }: TrendProps) {
     if (!trends.length) return null;
     return (
         <>
             <Typography.Title level={4} keyboard>{title ?? 'Trend'}</Typography.Title>
             {trends.map((trend, index) => (
                 <li key={index}>
-                    <Typography.Title level={5}>No.{index}</Typography.Title>
+                    <Typography.Title level={5}>No.{index + start}</Typography.Title>
                     {Object.keys(trend).map((key, i) => {
                         const k = key as keyof typeof trend;
                         if (!trend[k]) return null;

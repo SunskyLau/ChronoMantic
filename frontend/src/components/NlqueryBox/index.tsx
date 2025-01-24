@@ -56,7 +56,7 @@ const ColoredTextComponent: React.FC<{ query: Query | null }> = ({ query }) => {
                   dispatch(setQuery(newQuery));
                 }}></Target>;
               case "trends":
-                return <Trend maxValue={maxDate} minValue={minDate} key={k} trends={part.condition?.[k] || []} onChange={(trends) => {
+                return <Trend maxValue={maxDate} minValue={minDate} start={querySpec?.trends?.indexOf(part.condition?.[k]?.at(0) || {})} key={k} trends={part.condition?.[k] || []} onChange={(trends) => {
                   const newQuery = deepClone(query);
                   newQuery[index].condition = { ...newQuery[index].condition, [k]: trends };
                   dispatch(setQuery(newQuery));
