@@ -1,4 +1,4 @@
-import { Select, Typography } from "antd";
+import { Flex, Select, Typography } from "antd";
 
 interface TargetProps {
     title?: string;
@@ -10,8 +10,8 @@ interface TargetProps {
 
 export default function Target({ disabled, title, value, options, onChange }: TargetProps) {
     return (
-        <>
-            <Typography.Title level={4} keyboard>{title ?? 'Target'}</Typography.Title>
+        <Flex align="center" justify="space-between" gap={16}>
+            <Typography.Title level={4} keyboard style={{ marginBottom: 0 }}>{title ?? 'Target'}</Typography.Title>
             <Select
                 disabled={disabled}
                 allowClear
@@ -20,6 +20,6 @@ export default function Target({ disabled, title, value, options, onChange }: Ta
                 onChange={onChange}
                 options={options.map((value) => ({ value }))}
             ></Select>
-        </>
+        </Flex>
     )
 }

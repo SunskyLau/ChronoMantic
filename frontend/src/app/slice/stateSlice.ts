@@ -15,6 +15,7 @@ export type States = {
   timeStampUnit: string;
   valueUnit: string;
   aspectRatio: number;
+  isDrawer: boolean;
 };
 
 // 使用该类型定义初始 state
@@ -31,6 +32,7 @@ const initialState: States = {
   aspectRatio: 0.00001,
   query: null,
   querySpec: null,
+  isDrawer: false,
 };
 
 const stateSlice = createSlice({
@@ -49,7 +51,7 @@ const stateSlice = createSlice({
             const k = key as keyof QuerySpec;
             const value = condition[k];
             if (acc[k] && Array.isArray(acc[k]) && Array.isArray(value)) {
-              (acc as { [key: string]: QuerySpec[keyof QuerySpec] })[k] = [...acc[k], ...value];
+              (acc as { [key: string]: QuerySpec[keyof QuerySpec] })[k] = [...acc[k], ...value].sort((a, b) => a?.index - b?.index);
             } else {
               (acc as { [key: string]: QuerySpec[keyof QuerySpec] })[k] = value;
             }
@@ -127,9 +129,12 @@ const stateSlice = createSlice({
     },
     setAspectRatio: (state, action: PayloadAction<number>) => {
       state.aspectRatio = action.payload;
-    }
+    },
+    setIsDrawer: (state, action: PayloadAction<boolean>) => {
+      state.isDrawer = action.payload;
+    },
   },
 });
 
-export const { setNLQuery, setQuery, addFragments, addQuerySpec, setFragmentsIndex, setQuerySpecIndex, insertTreeData, setIsSettingShow, setTimeStampUnit, setValueUnit, setAspectRatio } = stateSlice.actions;
+export const { setNLQuery, setQuery, addFragments, addQuerySpec, setFragmentsIndex, setQuerySpecIndex, insertTreeData, setIsSettingShow, setTimeStampUnit, setValueUnit, setAspectRatio, setIsDrawer } = stateSlice.actions;
 export default stateSlice.reducer;

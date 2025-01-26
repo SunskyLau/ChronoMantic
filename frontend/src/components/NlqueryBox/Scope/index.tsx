@@ -15,13 +15,14 @@ interface ScopeProps {
 }
 
 export default function Scope({ title, min, max, minValue, maxValue, minInclusive, maxInclusive, onChange }: ScopeProps) {
+    const t = title?.toLowerCase().split(" ").filter(Boolean).join("_");
     return (
         <>
             <Typography.Title level={4} keyboard>{title ?? 'Scope'}</Typography.Title>
             {
-                title === "value_scope_condition" && minValue && maxValue ? (
+                t === "value_scope_condition" && minValue && maxValue ? (
                     <InclusiveSlider min={min} max={max} minInclusive={minInclusive} maxInclusive={maxInclusive} minValue={minValue} maxValue={maxValue} onChange={onChange}></InclusiveSlider>
-                ) : title === "time_scope_condition" ? (
+                ) : t === "time_scope_condition" ? (
                     <Time min={min} max={max} minInclusive={minInclusive} maxInclusive={maxInclusive} maxValue={maxValue ?? null} minValue={minValue ?? null} onChange={onChange}></Time>
                 ) : (
                     <Span valueFormatter={86400} addonAfter="days" min={min} max={max} minInclusive={minInclusive} maxInclusive={maxInclusive} minValue={0} onChange={onChange}></Span>

@@ -1,14 +1,19 @@
-import { Button, Checkbox, InputNumber, Select } from "antd";
-import { Comparator, QuerySpec, Attribute } from "../../types/QuerySpec";
+import { Button, Divider } from "antd";
+import { QuerySpec } from "../../types/QuerySpec";
 import "./index.css";
 import { useAppDispatch, useAppSelector } from "../../app/hooks";
 import { useState } from "react";
-import { ArrowRightOutlined, MinusCircleOutlined, PlusCircleOutlined } from "@ant-design/icons";
 import { getFragmentsBySpec } from "../../api";
-import Block from "../Block";
 import { setQueryResults } from "../../app/slice/approximation";
-import { addQuerySpec } from "../../app/slice/stateSlice";
+import { addQuerySpec, setIsDrawer } from "../../app/slice/stateSlice";
 import { deepClone } from "../../utils/deepclone";
+import Target from "../NlqueryBox/Target";
+import Scope from "../NlqueryBox/Scope";
+import Relation from "../NlqueryBox/Relation";
+import Trend from "../NlqueryBox/Trend";
+import Panel from "../Panel";
+import { RightOutlined } from "@ant-design/icons";
+import { classnames } from "../../utils/classname";
 
 export default function QueryCondition() {
     const querySpec: QuerySpec = useAppSelector((state) => state.states.querySpecList.at(state.states.querySpecIndex)) || {
@@ -17,8 +22,13 @@ export default function QueryCondition() {
         relations: [],
     };
     const values = useAppSelector((state) => state.dataset.dataset?.valueColumns) || [];
-    const [queryCondition, setQueryCondition] = useState({ ...querySpec });
+    const [queryCondition, setQueryCondition] = useState(deepClone(querySpec));
     const dispatch = useAppDispatch();
+    const data = useAppSelector((state) => state.dataset.dataset?.data) || {};
+    const value = data[querySpec.target || ""] as number[] || [];
+    const maxValue = Math.floor(Math.max(...value));
+    const minValue = Math.ceil(Math.min(...value));
+    const isDrawer = useAppSelector((state) => state.states.isDrawer);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -30,320 +40,61 @@ export default function QueryCondition() {
     };
 
     return (
-        <Block className="query-condition" title="Query Specification">
+        <Panel className={classnames(isDrawer ? "active" : "hide", "query-condition")} title="Query Specification" right={<RightOutlined onClick={() => { dispatch(setIsDrawer(!isDrawer)) }}></RightOutlined>}>
             <form onSubmit={handleSubmit}>
-                <h3>Query</h3>
                 <section>
-                    <span className="query-condition-title">Target</span>
-                    <Select
-                        allowClear
-                        popupMatchSelectWidth={false}
-                        value={queryCondition.target}
-                        onChange={(value) => {
-                            const newQueryCondition = deepClone(queryCondition);
-                            newQueryCondition.target = value;
-                            setQueryCondition(newQueryCondition);
-                        }}
-                        options={values.map((value) => ({ value }))}
-                    ></Select>
+                    <Target value={queryCondition.target || ""} options={values} onChange={(val) => {
+                        const newQueryCondition = deepClone(queryCondition);
+                        newQueryCondition.target = val;
+                        setQueryCondition(newQueryCondition);
+                    }}></Target>
+                    <Divider></Divider>
                 </section>
                 <section>
-                    <span className="query-condition-title">Trends</span>
-                    <button
-                        type="button"
-                        className="add-btn"
-                        onClick={() => {
-                            const newQueryCondition = deepClone(queryCondition);
-                            if (!newQueryCondition.trends) newQueryCondition.trends = [];
-                            newQueryCondition.trends.push({
-                                angle_scope_condition: undefined,
-                                slope_scope_condition: undefined,
-                                time_scope_condition: undefined,
-                                time_span_condition: undefined
-                            });
-                            setQueryCondition(newQueryCondition);
-                        }}
-                    >
-                        <PlusCircleOutlined />
-                    </button>
-                    <ul>
-                        {queryCondition.trends?.map((trend, index) => (
-                            <li key={index}>
-                                {Object.keys(trend).map((key) => {
-                                    const k = key as keyof typeof trend;
-                                    return (<>
-                                        <InputNumber
-                                            placeholder={key + ' min'}
-                                            style={{ width: '35%' }}
-                                            value={trend[k]?.min?.value}
-                                            onChange={(value) => {
-                                                const newQueryCondition = deepClone(queryCondition);
-                                                if (!newQueryCondition.trends![index][k]) {
-                                                    newQueryCondition.trends![index][k] = {};
-                                                }
-                                                if (!value) {
-                                                    delete newQueryCondition.trends![index][k].min;
-                                                } else {
-                                                    newQueryCondition.trends![index][k]!.min = {
-                                                        value: value,
-                                                        inclusive: false
-                                                    };
-                                                }
-                                                setQueryCondition(newQueryCondition);
-                                            }}
-                                        ></InputNumber>
-                                        <Checkbox checked={trend[k]?.min?.inclusive} disabled={!trend[k]?.min?.value} onChange={(e) => {
-                                            const newQueryCondition = deepClone(queryCondition);
-                                            newQueryCondition.trends![index][k]!.min!.inclusive = e.target.checked;
-                                            setQueryCondition(newQueryCondition);
-                                        }}></Checkbox>
-                                        <i><ArrowRightOutlined></ArrowRightOutlined></i>
-                                        <InputNumber
-                                            placeholder={key + ' max'}
-                                            style={{ width: '35%' }}
-                                            value={trend[k]?.max?.value}
-                                            onChange={(value) => {
-                                                const newQueryCondition = deepClone(queryCondition);
-                                                if (!newQueryCondition.trends![index][k]) {
-                                                    newQueryCondition.trends![index][k] = {};
-                                                }
-                                                if (!value) {
-                                                    delete newQueryCondition.trends![index][k].max;
-                                                } else {
-                                                    newQueryCondition.trends![index][k]!.max = {
-                                                        value: value,
-                                                        inclusive: false
-                                                    };
-                                                }
-                                                setQueryCondition(newQueryCondition);
-                                            }}
-                                        ></InputNumber>
-                                        <Checkbox checked={trend[k]?.max?.inclusive} disabled={!trend[k]?.max?.value} onChange={(e) => {
-                                            const newQueryCondition = deepClone(queryCondition);
-                                            newQueryCondition.trends![index][k]!.max!.inclusive = e.target.checked;
-                                            setQueryCondition(newQueryCondition);
-                                        }}></Checkbox>
-                                    </>)
-                                })}
-                                <button
-                                    type="button"
-                                    className="del-btn"
-                                    onClick={() => {
-                                        const newQueryCondition = deepClone(queryCondition);
-                                        newQueryCondition.trends?.splice(index, 1);
-                                        setQueryCondition(newQueryCondition);
-                                    }}
-                                >
-                                    <MinusCircleOutlined />
-                                </button>
-                            </li>
-                        ))}
-                    </ul>
+                    <Trend isEdit={true} trends={queryCondition.trends || []} minValue={minValue} maxValue={maxValue} onChange={(trends) => {
+                        const newQueryCondition = deepClone(queryCondition);
+                        newQueryCondition.trends = trends;
+                        setQueryCondition(newQueryCondition);
+                    }}></Trend>
                 </section>
                 <section>
-                    <span className="query-condition-title">Relations</span>
-                    <button
-                        type="button"
-                        className="add-btn"
-                        onClick={() => {
-                            const newQueryCondition = deepClone(queryCondition);
-                            if (!newQueryCondition.relations) newQueryCondition.relations = [];
-                            newQueryCondition.relations.push({
-                                id1: undefined,
-                                id2: undefined,
-                                attribute: undefined,
-                                comparator: undefined
-                            });
-                            setQueryCondition(newQueryCondition);
-                        }}
-                    >
-                        <PlusCircleOutlined />
-                    </button>
-                    <ul>
-                        {queryCondition.relations?.map((relation, index) => (
-                            <li key={index}>
-                                <Select placeholder={'attribute'} style={{ width: '100%' }} options={Object.values(Attribute).map(attr => ({ value: attr, label: attr }))} value={relation.attribute} onChange={(value) => {
-                                    const newQueryCondition = deepClone(queryCondition);
-                                    newQueryCondition.relations![index].attribute = value;
-                                    setQueryCondition(newQueryCondition);
-                                }}></Select>
-                                <Select
-                                    placeholder={'id1'}
-                                    style={{ width: '30%' }}
-                                    value={relation.id1}
-                                    options={Array.from({ length: queryCondition.trends?.length ?? 0 }, (_, i) => ({
-                                        value: i
-                                    }))}
-                                    onChange={(value) => {
-                                        const newQueryCondition = deepClone(queryCondition);
-                                        newQueryCondition.relations![index].id1 = value || 0;
-                                        setQueryCondition(newQueryCondition);
-                                    }}
-                                ></Select>
-                                <Select style={{ width: '30%' }} placeholder={'comparator'} options={Object.values(Comparator).map(attr => ({ value: attr, label: attr }))} value={relation.comparator} onChange={(value) => {
-                                    const newQueryCondition = deepClone(queryCondition);
-                                    newQueryCondition.relations![index].comparator = value;
-                                    setQueryCondition(newQueryCondition);
-                                }} />
-                                <Select
-                                    placeholder={'id2'}
-                                    style={{ width: '30%' }}
-                                    value={relation.id2}
-                                    options={Array.from({ length: queryCondition.trends?.length ?? 0 }, (_, i) => ({
-                                        value: i
-                                    }))}
-                                    onChange={(value) => {
-                                        const newQueryCondition = deepClone(queryCondition);
-                                        newQueryCondition.relations![index].id2 = value || 0;
-                                        setQueryCondition(newQueryCondition);
-                                    }}
-                                ></Select>
-                                <button
-                                    type="button"
-                                    className="del-btn"
-                                    onClick={() => {
-                                        const newQueryCondition = deepClone(queryCondition);
-                                        newQueryCondition.relations?.splice(index, 1);
-                                        setQueryCondition(newQueryCondition);
-                                    }}
-                                >
-                                    <MinusCircleOutlined />
-                                </button>
-                            </li>
-                        ))}
-                    </ul>
+                    <Relation isEdit={true} relations={queryCondition.relations || []} idLength={queryCondition.trends?.length || 0} onChange={(relations) => {
+                        const newQueryCondition = deepClone(queryCondition);
+                        newQueryCondition.relations = relations;
+                        setQueryCondition(newQueryCondition);
+                    }}></Relation>
                 </section>
                 <section>
-                    <p className="query-condition-title">Time Span Condition</p>
-                    <InputNumber placeholder={'min'} style={{ width: '30%' }} value={queryCondition.time_span_condition?.min?.value} onChange={(value) => {
+                    <Scope title="Time Span Condition" min={queryCondition.time_span_condition?.min?.value || null} max={queryCondition.time_span_condition?.max?.value || null} minInclusive={!!queryCondition.time_span_condition?.min?.inclusive} maxInclusive={!!queryCondition.time_span_condition?.max?.inclusive} onChange={(min, max, minInclusive, maxInclusive) => {
                         const newQueryCondition = deepClone(queryCondition);
-                        if (!newQueryCondition.time_span_condition) {
-                            newQueryCondition.time_span_condition = {};
-                        }
-                        if (!value) {
-                            delete newQueryCondition.time_span_condition.min;
-                        } else {
-                            newQueryCondition.time_span_condition!.min = {
-                                value,
-                                inclusive: false
-                            }
-                        }
+                        newQueryCondition.time_span_condition = {
+                            min: !min ? null : { value: min, inclusive: minInclusive },
+                            max: !max ? null : { value: max, inclusive: maxInclusive }
+                        };
                         setQueryCondition(newQueryCondition);
-                    }} />
-                    <Checkbox checked={queryCondition.time_span_condition?.min?.inclusive} disabled={!queryCondition.time_span_condition?.min} onChange={(e) => {
-                        const newQueryCondition = deepClone(queryCondition);
-                        newQueryCondition.time_span_condition!.min!.inclusive = e.target.checked;
-                        setQueryCondition(newQueryCondition);
-                    }}></Checkbox>
-                    <i><ArrowRightOutlined></ArrowRightOutlined></i>
-                    <InputNumber placeholder={'max'} style={{ width: '30%' }} value={queryCondition.time_span_condition?.max?.value} onChange={(value) => {
-                        const newQueryCondition = deepClone(queryCondition);
-                        if (!newQueryCondition.time_span_condition) {
-                            newQueryCondition.time_span_condition = {};
-                        }
-                        if (!value) {
-                            delete newQueryCondition.time_span_condition.max;
-                        } else {
-                            newQueryCondition.time_span_condition!.max = {
-                                value,
-                                inclusive: false
-                            }
-                        }
-                        setQueryCondition(newQueryCondition);
-                    }} />
-                    <Checkbox checked={queryCondition.time_span_condition?.max?.inclusive} disabled={!queryCondition.time_span_condition?.max} onChange={(e) => {
-                        const newQueryCondition = deepClone(queryCondition);
-                        newQueryCondition.time_span_condition!.max!.inclusive = e.target.checked;
-                        setQueryCondition(newQueryCondition);
-                    }}></Checkbox>
+                    }}></Scope>
+                    <Divider></Divider>
                 </section>
                 <section>
-                    <p className="query-condition-title">Time Scope Condition</p>
-                    <InputNumber placeholder={'min'} style={{ width: '30%' }} value={queryCondition.time_scope_condition?.min?.value} onChange={(value) => {
+                    <Scope title="Time Scope Condition" min={queryCondition.time_scope_condition?.min?.value || null} max={queryCondition.time_scope_condition?.max?.value || null} minInclusive={!!queryCondition.time_scope_condition?.min?.inclusive} maxInclusive={!!queryCondition.time_scope_condition?.max?.inclusive} onChange={(min, max, minInclusive, maxInclusive) => {
                         const newQueryCondition = deepClone(queryCondition);
-                        if (!newQueryCondition.time_scope_condition) {
-                            newQueryCondition.time_scope_condition = {};
-                        }
-                        if (!value) {
-                            delete newQueryCondition.time_scope_condition.min;
-                        } else {
-                            newQueryCondition.time_scope_condition!.min = {
-                                value,
-                                inclusive: false
-                            }
-                        }
+                        newQueryCondition.time_scope_condition = {
+                            min: !min ? null : { value: min, inclusive: minInclusive },
+                            max: !max ? null : { value: max, inclusive: maxInclusive }
+                        };
                         setQueryCondition(newQueryCondition);
-                    }} />
-                    <Checkbox checked={queryCondition.time_scope_condition?.min?.inclusive} disabled={!queryCondition.time_scope_condition?.min} onChange={(e) => {
-                        const newQueryCondition = deepClone(queryCondition);
-                        newQueryCondition.time_scope_condition!.min!.inclusive = e.target.checked;
-                        setQueryCondition(newQueryCondition);
-                    }}></Checkbox>
-                    <i><ArrowRightOutlined></ArrowRightOutlined></i>
-                    <InputNumber placeholder={'max'} style={{ width: '30%' }} value={queryCondition.time_scope_condition?.max?.value} onChange={(value) => {
-                        const newQueryCondition = deepClone(queryCondition);
-                        if (!newQueryCondition.time_scope_condition) {
-                            newQueryCondition.time_scope_condition = {};
-                        }
-                        if (!value) {
-                            delete newQueryCondition.time_scope_condition.max;
-                        } else {
-                            newQueryCondition.time_scope_condition!.max = {
-                                value,
-                                inclusive: false
-                            }
-                        }
-                        setQueryCondition(newQueryCondition);
-                    }} />
-                    <Checkbox checked={queryCondition.time_scope_condition?.max?.inclusive} disabled={!queryCondition.time_scope_condition?.max} onChange={(e) => {
-                        const newQueryCondition = deepClone(queryCondition);
-                        newQueryCondition.time_scope_condition!.max!.inclusive = e.target.checked;
-                        setQueryCondition(newQueryCondition);
-                    }}></Checkbox>
+                    }}></Scope>
+                    <Divider></Divider>
                 </section>
                 <section>
-                    <p className="query-condition-title">Value Scope Condition</p>
-                    <InputNumber placeholder={'min'} style={{ width: '30%' }} value={queryCondition.value_scope_condition?.min?.value} onChange={(value) => {
+                    <Scope title="Value Scope Condition" min={queryCondition.value_scope_condition?.min?.value || null} max={queryCondition.value_scope_condition?.max?.value || null} minInclusive={!!queryCondition.value_scope_condition?.min?.inclusive} maxInclusive={!!queryCondition.value_scope_condition?.max?.inclusive} minValue={minValue} maxValue={maxValue} onChange={(min, max, minInclusive, maxInclusive) => {
                         const newQueryCondition = deepClone(queryCondition);
-                        if (!newQueryCondition.value_scope_condition) {
-                            newQueryCondition.value_scope_condition = {};
-                        }
-                        if (!value) {
-                            delete newQueryCondition.value_scope_condition.min;
-                        } else {
-                            newQueryCondition.value_scope_condition!.min = {
-                                value,
-                                inclusive: false
-                            }
-                        }
+                        newQueryCondition.value_scope_condition = {
+                            min: !min ? null : { value: min, inclusive: minInclusive },
+                            max: !max ? null : { value: max, inclusive: maxInclusive }
+                        };
                         setQueryCondition(newQueryCondition);
-                    }} />
-                    <Checkbox checked={queryCondition.value_scope_condition?.min?.inclusive} disabled={!queryCondition.value_scope_condition?.min} onChange={(e) => {
-                        const newQueryCondition = deepClone(queryCondition);
-                        newQueryCondition.value_scope_condition!.min!.inclusive = e.target.checked;
-                        setQueryCondition(newQueryCondition);
-                    }}></Checkbox>
-                    <i><ArrowRightOutlined></ArrowRightOutlined></i>
-                    <InputNumber placeholder={'max'} style={{ width: '30%' }} value={queryCondition.value_scope_condition?.max?.value} onChange={(value) => {
-                        const newQueryCondition = deepClone(queryCondition);
-                        if (!newQueryCondition.value_scope_condition) {
-                            newQueryCondition.value_scope_condition = {};
-                        }
-                        if (!value) {
-                            delete newQueryCondition.value_scope_condition.max;
-                        } else {
-                            newQueryCondition.value_scope_condition!.max = {
-                                value,
-                                inclusive: false
-                            }
-                        }
-                        setQueryCondition(newQueryCondition);
-                    }} />
-                    <Checkbox checked={queryCondition.value_scope_condition?.max?.inclusive} disabled={!queryCondition.value_scope_condition?.max} onChange={(e) => {
-                        const newQueryCondition = deepClone(queryCondition);
-                        newQueryCondition.value_scope_condition!.max!.inclusive = e.target.checked;
-                        setQueryCondition(newQueryCondition);
-                    }}></Checkbox>
+                    }}></Scope>
                 </section>
                 <section className="center">
                     <Button type="primary" htmlType="submit">
@@ -351,6 +102,6 @@ export default function QueryCondition() {
                     </Button>
                 </section>
             </form>
-        </Block>
+        </Panel>
     );
 }

@@ -8,12 +8,13 @@
 
 .main-left,
 .main-right {
-    flex: 0 1 var(--side-width);
+    flex: 1 1 var(--side-width);
     max-width: var(--side-width);
     min-width: 0;
     display: flex;
     flex-direction: column;
     gap: var(--gap);
+    transition: .1s;
 }
 
 .main-left {
@@ -27,8 +28,10 @@
 .main-middle {
     width: var(--width);
     display: flex;
+    flex: 3 1 0;
     flex-direction: column;
     gap: var(--gap);
+    min-width: 0;
 }
 
 .main .panel > .panel-content {
@@ -42,4 +45,10 @@
 
 .main .main-view {
     flex: 3 0 0;
+}
+
+.main .main-right.hide {
+    max-width: 0;
+    flex-grow: 0;
+    margin-right: 0;
 }

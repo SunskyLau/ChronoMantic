@@ -80,7 +80,15 @@ export const getScaleRatio = async (csvName: string, timeStampColumnName: string
 export const getFragmentsBySpec = async (querySpec: QuerySpec): Promise<ApproximationResults> => {
   console.log("Sending fragments request");
   try {
-    const response = await api.post(`/api/query_by_specification`, { querySpec });
+    const response = await api.post(`/api/query_by_specification`, {
+      querySpec: {
+        ...querySpec,
+        trends: querySpec.trends?.map(trend => {
+          const { index, ...newTrend } = trend;
+          return newTrend;
+        })
+      }
+    });
     console.log(response.data);
     return response.data.results;
   } catch (error) {

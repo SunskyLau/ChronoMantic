@@ -91,6 +91,7 @@ export interface Trend {
   angle_scope_condition?: ScopeCondition | null;
   time_scope_condition?: ScopeCondition | null;
   time_span_condition?: ScopeCondition | null;
+  index?: number;
 }
 
 export interface Relation {

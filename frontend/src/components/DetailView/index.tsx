@@ -4,7 +4,7 @@ import "./index.css";
 import LineChart from "../LineChart";
 import { useAppDispatch, useAppSelector } from "../../app/hooks";
 import { setBrushPosition, setRange } from "../../app/slice/selectSlice";
-import { useCallback, useRef } from "react";
+import { useCallback } from "react";
 import { setLevel } from "../../app/slice/approximation";
 
 function SmoothLevel() {
@@ -40,18 +40,16 @@ export default function DetailView() {
     const segments = current?.segments || [];
     const split = [...new Set([...segments.map(s => s.start_idx), ...segments.map(s => s.end_idx)])];
     const brushPosition = useAppSelector((state) => state.select.brushPosition);
-    const handleBrush = useCallback((start: number, end: number) => { dispatch(setRange([start, end])) }, [dispatch]);
+    const handleBrush = useCallback((start: number, end: number) => { console.log('brush'); dispatch(setRange([start, end])) }, [dispatch]);
     const handleBrushEnd = useCallback((start: number, end: number) => { dispatch(setBrushPosition([start, end])) }, [dispatch]);
-    const detailRef = useRef<HTMLDivElement>(null);
-    const overviewRef = useRef<HTMLDivElement>(null);
 
     return (
         <Panel className="main-view" icon={<div>D</div>} title="Main View" right={<SmoothLevel />}>
             {
                 timeCol && valueCol ?
                     <>
-                        <div className="bg detail" ref={detailRef}><LineChart xData={data[timeCol].map(date => new Date(date).getTime() / 1000)} yData={data[valueCol] as number[]} isXAxisVisible={true} isYAxisVisible={true} range={range} height={'100%'} ratio={ratio} split={split} isSplitMask={true}></LineChart></div>
-                        <div className="bg overview" ref={overviewRef}><LineChart xData={data[timeCol].map(date => new Date(date).getTime() / 1000)} yData={data[valueCol] as number[]} isFill={true} isBrush={true} onBrush={handleBrush} height={'100%'} split={split} brushPosition={brushPosition} isXAxisVisible={true} isYAxisVisible={true} onBrushEnd={handleBrushEnd}></LineChart></div>
+                        <div className="bg detail"><LineChart xData={data[timeCol].map(date => new Date(date).getTime() / 1000)} yData={data[valueCol] as number[]} isXAxisVisible={true} isYAxisVisible={true} range={range} height={'100%'} ratio={ratio} split={split} isSplitMask={true}></LineChart></div>
+                        <div className="bg overview"><LineChart xData={data[timeCol].map(date => new Date(date).getTime() / 1000)} yData={data[valueCol] as number[]} isFill={true} isBrush={true} onBrush={handleBrush} height={'100%'} split={split} brushPosition={brushPosition} isXAxisVisible={true} isYAxisVisible={true} onBrushEnd={handleBrushEnd}></LineChart></div>
                     </>
                     : <Empty />
             }

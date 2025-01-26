@@ -258,6 +258,7 @@ def create_system_prompt(dataset_info: str) -> str:
 	  slope_scope_condition?: ScopeCondition | null;  // 当用户明确指出每天的增减幅度时，就会用到斜率范围条件。
 	  time_scope_condition?: ScopeCondition | null;  // 时间范围条件，数值为时间戳，单位为秒。
 	  time_span_condition?: ScopeCondition | null;  // 时间跨度条件，数值为时间戳，单位为秒。
+	  index: number; // trend在全局QuerySpec中trends数组的索引，即该trend在全局trends中的顺序。
 	}}
 	
 	interface Relation {{  // 两个Trend段之间某个属性的比较关系。你应始终关注用户想要表达的时间序列趋势的形态，并评估它们之间的关系。
@@ -284,23 +285,26 @@ def create_system_prompt(dataset_info: str) -> str:
     你只需要关注其中的value_columns信息，其中包含了时间序列的列名信息，是你之后解析出target字段的来源。
 
 5. 目标态输出Output
-	为了告诉使用我们工具的用户相应的自然语言文本能够产生哪些查询条件，并允许用户调整查询条件来消除自然语言的歧义或模糊，我们构建了一个目标态输出数据结构Output，作为你最终解析NL得到的目标。首先，你需要将自然语言查询文本进行合理的分块，然后对每一块进行解析。以下是解析目标态输出Output的细节，它是由Chunk构成的数组，Chunk是对每个text块解析的结果：
+	为了告诉使用我们工具的用户相应的自然语言文本能够产生哪些查询条件，并允许用户调整查询条件来消除自然语言的歧义或模糊，我们构建了一个目标态输出数据结构Output，作为你最终解析NL得到的目标。
+	首先，你需要对自然语言查询文本进行完整分析，得到一个全局的QuerySpec，然后根据QuerySpec每一条内容的来源所在位置对自然语言进行划分，得到合适的Chunk，最后进行输出。以下是解析目标态输出Output的细节，它是由Chunk构成的数组，Chunk是对每个text块解析的结果：
 	```
 	type Chunk= {{
-		text: str // 对应从NL中分块出的文本，所有Chunk的text可以组合成原NL
-		condition?: QuerSpec // 从text中被解析出来的结构化查询条件，不对应任何查询条件的则不出现这个字段，所有的Chunk对应的condition可以恰好组合成一个完整的QuerySpec,对应整个NL的语义。
+		text: str // 对应从NL中划分出的文本，所有Chunk的text可以组合成原NL
+		condition?: QuerSpec // 从QuerySpec中被解析出来的一部分与当前文本有关的结构化查询条件，不对应任何查询条件的则不出现这个字段，所有的Chunk对应的condition可以恰好组合成一个完整的QuerySpec，对应整个NL的语义。请注意trends的顺序问题，用户声明的trends顺序可能是混乱的，全局组织好QuerySpec之后，请按照正确的trends出现顺序进行分配，即使index为0的文本出现在后面。
 		exact?: boolean // 文本是否存在歧义或者模糊，准确情况下为true，不准确情况下为false
 	}}
 	
-	type Output = Chunk[] //最终的目标输出，由连续的Chunk数组组成。
+	type Output = {{ output: Chunk[] }} //最终的目标输出，由连续的Chunk数组组成。
 	```
 
 任务：
 	请你作为一个NL解析器，根据以上的背景和知识，将用户对时间序列片段的自然语言查询解析为Output的形式。要求你的输出有且仅有为Output类型的json字符串，不要使用代码块或```等内容，也不要添加注释。
     要求：
 		1. 原始NL查询文本中的每个字符都应该被保留在Output中的Chunk的text字段中
-        2. 按照顺序提取Chunk中的text字段，要保证恰好组合成一个完整的原始NL查询文本
-        3. 对于解析出的condition，应该保证恰好可以组成有且仅有一个完整的QuerySpec，对应整个NL的语义，这个完整的QuerySpec不应该出现任何重复冗余的字段。例如,target字段只能在所有condition中出现一次。
+    2. 按照顺序提取Chunk中的text字段，要保证恰好组合成一个完整的原始NL查询文本
+    3. 你需要先解析出来一个完整的QuerySpec，然后再将他们分配到各自的Chunk中，注意，需要分配trends到位置次序中
+    4. 对于解析出的condition，应该保证恰好可以组成有且仅有一个完整的QuerySpec，对应整个NL的语义，这个完整的QuerySpec不应该出现任何重复冗余的字段
+    5. 你需要注意trends的先后顺序
 	
 	
 示例一：
@@ -334,14 +338,16 @@ def create_system_prompt(dataset_info: str) -> str:
           "value": 20,
           "inclusive": true
         }}
-      }}
+      }},
+      "index": 0
     }}, {{
       "angle_scope_condition": {{
         "max": {{
           "value": -5,
           "inclusive": true
         }}
-      }}
+      }},
+      "index": 1
     }}, {{
       "angle_scope_condition": {{
         "min": {{
@@ -354,14 +360,16 @@ def create_system_prompt(dataset_info: str) -> str:
           "value": 20,
           "inclusive": true
         }}
-      }}
+      }},
+      "index": 2
     }}, {{
       "angle_scope_condition": {{
         "max": {{
           "value": -5,
           "inclusive": true
         }}
-      }}
+      }},
+      "index": 3
     }}],
     "relations": [{{
       "id1": 0,
@@ -408,7 +416,7 @@ def create_system_prompt(dataset_info: str) -> str:
 示例二：
 
 	输入：
-"Show me periods when price appear a sharp head-and-shoulder shape over 20 days in Amazon stock".
+"Show me periods when price appears a sharp head-and-shoulder shape and before that it rises slowly over 20 days in Amazon stock".
 
 	输出：
 {{"output":[{{
@@ -416,7 +424,7 @@ def create_system_prompt(dataset_info: str) -> str:
 }},{{
   "text": "price",
 }},{{
-  "text": " appear "
+  "text": " appears "
 }},{{
   "text": "a sharp head-and-shoulder shape",
   "condition": {{
@@ -426,59 +434,82 @@ def create_system_prompt(dataset_info: str) -> str:
           "value": 60,
           "inclusive": true
         }}
-      }}
+      }},
+      "index": 1
     }},{{
       "angle_scope_condition": {{
         "max": {{
           "value": -60,
           "inclusive": true
         }}
-      }}
+      }},
+      "index": 2
     }},{{
       "angle_scope_condition": {{
         "min": {{
           "value": 60,
           "inclusive": true
         }}
-      }}
+      }},
+      "index": 3
     }},{{
       "angle_scope_condition": {{
         "max": {{
           "value": -60,
           "inclusive": true
         }}
-      }}
+      }},
+      "index": 4
     }},{{
       "angle_scope_condition": {{
         "min": {{
-          "value": 5,
+          "value": 60,
           "inclusive": true
         }}
-      }}
+      }},
+      "index": 5
     }},{{
       "angle_scope_condition": {{
         "max": {{
           "value": -60,
           "inclusive": true
         }}
-      }}
+      }},
+      "index": 6
     }}],
     "relations": [{{
-      "id1": 0,
-      "id2": 2,
+      "id1": 1,
+      "id2": 3,
       "attribute": "end_value",
       "comparator": "<"
     }},
     {{
-      "id1": 2,
-      "id2": 4,
+      "id1": 3,
+      "id2": 5,
       "attribute": "end_value",
       "comparator": ">"
     }}]
   }},
   "exact": false
 }},{{
-  "text": " "
+  "text": " and before that it "
+}},{{
+  "text": "rises slowly",
+  "condition": {{
+    "trends": [{{
+      "angle_scope_condition": {{
+        "min": {{
+          "value": 5,
+          "inclusive": true
+        }},
+        "max": {{
+	        "value": 30,
+	        "inclusive": true
+        }}
+      }},
+      "index": 0
+    }}]
+  }},
 }},{{
   "text": "over 20 days",
   "condition": {{
@@ -493,13 +524,12 @@ def create_system_prompt(dataset_info: str) -> str:
 }},{{
 	"text":" "
 }},{{
-	"text":"in Amazon stock"",
+	"text":"in Amazon stock",
 	"condition":{{
 		"target":AMZN
 	}},
 	"exact": true
-}}
-]}}
+}}]}}
 """
     return system_prompt
 

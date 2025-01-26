@@ -1,5 +1,5 @@
 import * as d3 from "d3";
-import { memo, useEffect, useRef } from "react";
+import { memo, useCallback, useEffect, useRef } from "react";
 import { debounce } from "../../../../utils/debounce";
 
 interface DataPoint {
@@ -16,7 +16,7 @@ interface SelectChartProps {
 function SelectChart({ data, title, onBrush }: SelectChartProps) {
     const svgRef = useRef<SVGSVGElement | null>(null);
 
-    useEffect(() => {
+    const draw = useCallback(() => {
         if (svgRef.current && data.length > 0) {
             const width = svgRef.current.clientWidth;
             const height = svgRef.current.clientHeight;
@@ -42,6 +42,7 @@ function SelectChart({ data, title, onBrush }: SelectChartProps) {
                 .y((d) => y(d.y));
 
             const svg = d3.select(svgRef.current);
+            svg.selectAll('*').remove();
 
             const g = svg.append('g').attr('transform', `translate(${margin.left},${margin.top})`);
 
@@ -116,6 +117,15 @@ function SelectChart({ data, title, onBrush }: SelectChartProps) {
             };
         }
     }, [data, onBrush, title]);
+
+    useEffect(() => {
+        const cancel = draw();
+        window.addEventListener('resize', draw);
+        return () => {
+            window.removeEventListener('resize', draw);
+            cancel?.();
+        };
+    },[draw]);
 
     return (<svg ref={svgRef} width="100%" height="100%"></svg>);
 }

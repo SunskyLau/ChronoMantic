@@ -1,5 +1,7 @@
+import { useEffect } from "react";
 import { useAppSelector } from "../../app/hooks";
 import ResultsPanel from "../../components/ResultsPanel";
+import { classnames } from "../../utils/classname";
 import DetailView from "../DetailView";
 import NlqueryBox from "../NlqueryBox";
 import QueryCondition from "../QueryCondition";
@@ -9,6 +11,12 @@ import "./index.css";
 
 export default function AppMain() {
     const isSettingShow = useAppSelector(state => state.states.isSettingShow);
+    const isDrawer = useAppSelector(state => state.states.isDrawer);
+
+    useEffect(() => {
+        setTimeout(() => window.dispatchEvent(new Event("resize")), 100);
+    }, [isDrawer]);
+
     return (
         <>
             <main className="main">
@@ -20,7 +28,7 @@ export default function AppMain() {
                     <NlqueryBox></NlqueryBox>
                     <DetailView></DetailView>
                 </section>
-                <section className="main-right">
+                <section className={classnames("main-right", isDrawer ? "active" : "hide")}>
                     <QueryCondition></QueryCondition>
                 </section>
             </main>

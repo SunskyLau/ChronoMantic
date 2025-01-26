@@ -51,3 +51,7 @@ h4:first-child {
 .ant-popover-inner-content::-webkit-scrollbar {
     width: 4px;
 }
+
+ul {
+    list-style: none;
+}

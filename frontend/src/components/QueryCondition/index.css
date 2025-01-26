@@ -1,60 +1,49 @@
-.query-condition .block-content h3 {
-    margin: 4px 0;
+.query-condition .panel-content {
+    padding: 16px;
 }
 
-.query-condition .block-content {
-    padding: 12px 20px;
-    background-color: #f2f2f2;
-    border-radius: 8px;
+.query-condition.active {
+    flex-grow: 1;
 }
 
-.query-condition section,
-.query-condition section ul li {
-    margin-left: 40px;
-    margin-top: 20px;
-    position: relative;
+.query-condition.hide {
+    flex-grow: 0;
 }
 
-.query-condition .query-condition-title::before,
-.query-condition section ul li::before {
-    content: '';
-    position: absolute;
-    width: 10px;
-    height: 10px;
-    background-color: #000;
-    border-radius: 50%;
-    left: -20px;
-    top: 50%;
-    transform: translateY(-50%);
+.query-condition section {
+    margin-bottom: 12px;
 }
 
-.query-condition .query-condition-title {
-    position: relative;
-}
-
-.query-condition section>*,
-.query-condition section ul li>* {
-    margin-right: 12px;
-}
-
-.query-condition section ul {
-    list-style: none;
+.query-condition kbd {
     margin: 0;
-    padding: 0;
-    position: relative;
 }
 
-.query-condition .del-btn,
-.query-condition .add-btn {
-    all: unset;
-    cursor: pointer;
+.query-condition section h4:first-child {
+    margin: 4px 0 12px;
 }
 
-.query-condition section.center {
+.query-condition section:first-child h4:first-child {
+    margin-top: 0;
+}
+
+.query-condition section h5 {
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
+.query-condition section .ant-typography {
     margin: 0;
-    text-align: center;
 }
 
-.query-condition section .ant-btn {
-    margin: 20px;
+.query-condition section .trend-item .trend-item-attr {
+    margin-top: 8px;
+}
+
+.query-condition section .trend-item .trend-item-attr .ant-typography {
+    margin-bottom: 8px;
+}
+
+.query-condition .center {
+    margin: auto;
+    width: fit-content;
 }
