@@ -431,7 +431,7 @@ def create_system_prompt(dataset_info: str) -> str:
     "trends": [{{
       "angle_scope_condition": {{
         "min": {{
-          "value": 60,
+          "value": 10,
           "inclusive": true
         }}
       }},
@@ -439,7 +439,7 @@ def create_system_prompt(dataset_info: str) -> str:
     }},{{
       "angle_scope_condition": {{
         "max": {{
-          "value": -60,
+          "value": -10,
           "inclusive": true
         }}
       }},
@@ -447,7 +447,7 @@ def create_system_prompt(dataset_info: str) -> str:
     }},{{
       "angle_scope_condition": {{
         "min": {{
-          "value": 60,
+          "value": 10,
           "inclusive": true
         }}
       }},
@@ -455,7 +455,7 @@ def create_system_prompt(dataset_info: str) -> str:
     }},{{
       "angle_scope_condition": {{
         "max": {{
-          "value": -60,
+          "value": -10,
           "inclusive": true
         }}
       }},
@@ -463,7 +463,7 @@ def create_system_prompt(dataset_info: str) -> str:
     }},{{
       "angle_scope_condition": {{
         "min": {{
-          "value": 60,
+          "value": 10,
           "inclusive": true
         }}
       }},
@@ -471,21 +471,21 @@ def create_system_prompt(dataset_info: str) -> str:
     }},{{
       "angle_scope_condition": {{
         "max": {{
-          "value": -60,
+          "value": -10,
           "inclusive": true
         }}
       }},
       "index": 6
     }}],
     "relations": [{{
-      "id1": 1,
-      "id2": 3,
+      "id1": 0,
+      "id2": 2,
       "attribute": "end_value",
       "comparator": "<"
     }},
     {{
-      "id1": 3,
-      "id2": 5,
+      "id1": 2,
+      "id2": 4,
       "attribute": "end_value",
       "comparator": ">"
     }}]
