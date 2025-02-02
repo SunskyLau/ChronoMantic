@@ -107,7 +107,7 @@ class Comparator(Enum):
 
 
 @dataclass
-class Relation(DictMixin):
+class Relation(DictMixin):  # 不同trend之间的关系
     id1: int
     id2: int
     attribute: Attribute
