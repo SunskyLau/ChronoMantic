@@ -300,11 +300,15 @@ def create_system_prompt(dataset_info: str) -> str:
 任务：
 	请你作为一个NL解析器，根据以上的背景和知识，将用户对时间序列片段的自然语言查询解析为Output的形式。要求你的输出有且仅有为Output类型的json字符串，不要使用代码块或```等内容，也不要添加注释。
     要求：
-		1. 原始NL查询文本中的每个字符都应该被保留在Output中的Chunk的text字段中
-    2. 按照顺序提取Chunk中的text字段，要保证恰好组合成一个完整的原始NL查询文本
-    3. 你需要先解析出来一个完整的QuerySpec，然后再将他们分配到各自的Chunk中，注意，需要分配trends到位置次序中
+    1. 你需要一步一步思考，遵从下面的思考过程：
+      - 先根据自然语言查询文本解析出一个完整的QuerySpec
+      - 然后再根据完整的QuerySpec将自然语言分段为若干个Chunk
+      - 将整个QuerySpec分为若干个condition分配到各自的Chunk中，并且正确设置exact属性（当text可以准确无误地反映condition的时候，设置为true，否则设置为false）
+      - 你需要特别注意：不能重复分配同一个QuerySpec的字段到condition中，例如trends中每一项只能唯一分配给一个Chunk，然后其余Chunk将不能再出现相同的trends，你必须确保你分配的Chunk中的文字可以最完整的代表该condition
+		2. 原始NL查询文本中的每个字符都应该被保留在Output中的Chunk的text字段中
+    3. 按照顺序提取Chunk中的text字段，要保证恰好组合成一个完整的原始NL查询文本
     4. 对于解析出的condition，应该保证恰好可以组成有且仅有一个完整的QuerySpec，对应整个NL的语义，这个完整的QuerySpec不应该出现任何重复冗余的字段
-    5. 你需要注意trends的先后顺序
+    5. 你需要注意QuerySpec中trends的先后顺序，并确保所有Chunk的trends都是直接从完整QuerySpec中直接获得的，即使这个Chunk靠后，它对应的trends的index也可能是靠前的，你需要根据语义进行分析，保证所有Chunk中的trends不能重复，必须是唯一出现的
 	
 	
 示例一：
@@ -416,102 +420,118 @@ def create_system_prompt(dataset_info: str) -> str:
 示例二：
 
 	输入：
-"Show me periods when price appears a sharp head-and-shoulder shape and before that it rises slowly over 20 days in Amazon stock".
+"Show me the periods when the price of Amazon stock shows a sharp head-and-shoulders shape and before that it resembles a slowly formed V shape over 20 days"
 
 	输出：
 {{"output":[{{
-  "text": "Show me periods when "
+  "text": "Show me periods when the price of "
 }},{{
-  "text": "price",
+  "text": "Amazon stock",
+  "condition": {{
+    "target": "AMZN"
+  }},
+  "exact": true
 }},{{
-  "text": " appears "
+  "text": " shows "
 }},{{
-  "text": "a sharp head-and-shoulder shape",
+  "text": "a sharp head-and-shoulders shape",
   "condition": {{
     "trends": [{{
       "angle_scope_condition": {{
         "min": {{
-          "value": 10,
-          "inclusive": true
-        }}
-      }},
-      "index": 1
-    }},{{
-      "angle_scope_condition": {{
-        "max": {{
-          "value": -10,
+          "value": 60,
           "inclusive": true
         }}
       }},
       "index": 2
     }},{{
       "angle_scope_condition": {{
-        "min": {{
-          "value": 10,
+        "max": {{
+          "value": -60,
           "inclusive": true
         }}
       }},
       "index": 3
     }},{{
       "angle_scope_condition": {{
-        "max": {{
-          "value": -10,
+        "min": {{
+          "value": 60,
           "inclusive": true
         }}
       }},
       "index": 4
     }},{{
       "angle_scope_condition": {{
-        "min": {{
-          "value": 10,
+        "max": {{
+          "value": -60,
           "inclusive": true
         }}
       }},
       "index": 5
     }},{{
       "angle_scope_condition": {{
-        "max": {{
-          "value": -10,
+        "min": {{
+          "value": 60,
           "inclusive": true
         }}
       }},
       "index": 6
+    }},{{
+      "angle_scope_condition": {{
+        "max": {{
+          "value": -60,
+          "inclusive": true
+        }}
+      }},
+      "index": 7
     }}],
     "relations": [{{
-      "id1": 0,
-      "id2": 2,
+      "id1": 2,
+      "id2": 4,
       "attribute": "end_value",
       "comparator": "<"
     }},
     {{
-      "id1": 2,
-      "id2": 4,
+      "id1": 4,
+      "id2": 6,
       "attribute": "end_value",
       "comparator": ">"
     }}]
   }},
   "exact": false
 }},{{
-  "text": " and before that it "
+  "text": " and before that it resembles "
 }},{{
-  "text": "rises slowly",
+  "text": "a slowly formed V shape",
   "condition": {{
     "trends": [{{
+      "angle_scope_condition": {{
+        "max": {{
+          "value": -5,
+          "inclusive": true
+        }},
+        "min": {{
+	        "value": -30,
+	        "inclusive": true
+        }}
+      }},
+      "index": 0
+    }},{{
       "angle_scope_condition": {{
         "min": {{
           "value": 5,
           "inclusive": true
         }},
         "max": {{
-	        "value": 30,
-	        "inclusive": true
+          "value": 30,
+          "inclusive": true
         }}
       }},
-      "index": 0
+      "index": 1
     }}]
   }},
 }},{{
-  "text": "over 20 days",
+  "text": " over 20 days",
   "condition": {{
     "time_span_condition": {{
       "min": {{
@@ -521,15 +541,74 @@ def create_system_prompt(dataset_info: str) -> str:
     }}
   }},
   "exact": true
-}},{{
-	"text":" "
-}},{{
-	"text":"in Amazon stock",
-	"condition":{{
-		"target":AMZN
-	}},
-	"exact": true
 }}]}}
+
+
+示例三：
+
+	输入：
+"In Amazon stock. Look up two consecutive rises and the time period when the first rose slowly and the second rose sharp".
+
+	输出：
+{{"output":[
+  {{
+    "text": "In Amazon stock.",
+    "condition": {{
+      "target": "AMZN"
+    }},
+    "exact": true
+  }},
+  {{
+    "text": " Look up "
+  }},
+  {{
+    "text": "two consecutive rises",
+    "condition": {{
+      "relations": [
+        {{
+          "id1": 0,
+          "id2": 1,
+          "attribute": "end_value",
+          "comparator": "<"
+        }}
+      ]
+    }},
+    "exact": false
+  }},
+  {{
+    "text": " and the time period when "
+  }},
+  {{
+    "text": "the first rose slowly and the second rose sharp",
+    "condition": {{
+      "trends": [
+        {{
+          "angle_scope_condition": {{
+            "min": {{
+              "value": 5,
+              "inclusive": true
+            }},
+            "max": {{
+              "value": 30,
+              "inclusive": true
+            }}
+          }},
+          "index": 0
+        }},
+        {{
+          "angle_scope_condition": {{
+            "min": {{
+              "value": 60,
+              "inclusive": true
+            }}
+          }},
+          "index": 1
+        }}
+      ]
+    }},
+    "exact": false
+  }}
+]}}
 """
     return system_prompt
 

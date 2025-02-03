@@ -77,8 +77,8 @@ class myAIClient:
 
 
 def get_query_spec(system_prompt: str, query: str) -> Dict:
-    # client = myAIClient(GPT_4O, AZURE)
-    client = myAIClient(DEEPSEEK_CHAT, DEEPSEEK)
+    client = myAIClient(GPT_4O, AZURE)
+    # client = myAIClient(DEEPSEEK_CHAT, DEEPSEEK)
     response = client.send_prompt(system_prompt, query, keep_history=False, if_json_format=True)
     return json.loads(response)["output"]
 
