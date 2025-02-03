@@ -56,33 +56,33 @@ const ColoredTextComponent: React.FC<{ query: Query | null }> = ({ query }) => {
                   dispatch(setQuery(newQuery));
                 }}></Target>;
               case "trends":
-                return <Trend maxValue={maxDate} minValue={minDate} start={querySpec?.trends?.indexOf(part.condition?.[k]?.at(0) || {})} key={k} trends={part.condition?.[k] || []} onChange={(trends) => {
+                return <Trend disabled={part.exact} maxValue={maxDate} minValue={minDate} start={querySpec?.trends?.indexOf(part.condition?.[k]?.at(0) || {})} key={k} trends={part.condition?.[k] || []} onChange={(trends) => {
                   const newQuery = deepClone(query);
                   newQuery[index].condition = { ...newQuery[index].condition, [k]: trends };
                   dispatch(setQuery(newQuery));
                 }}></Trend>;
               case "relations":
-                return <Relation key={k} relations={part.condition?.[k] || []} idLength={querySpec?.trends?.length || 0} onChange={(relations) => {
+                return <Relation disabled={part.exact} key={k} relations={part.condition?.[k] || []} idLength={querySpec?.trends?.length || 0} onChange={(relations) => {
                   const newQuery = deepClone(query);
                   newQuery[index].condition = { ...newQuery[index].condition, [k]: relations };
                   dispatch(setQuery(newQuery));
                 }}></Relation>;
               case "time_span_condition":
-                return <Scope key={k} title={k} min={part.condition?.[k]?.min?.value || null} max={part.condition?.[k]?.max?.value || null} minInclusive={!!part.condition?.[k]?.min?.inclusive} maxInclusive={!!part.condition?.[k]?.max?.inclusive} onChange={(min, max, minInclusive, maxInclusive) => {
+                return <Scope disabled={part.exact} key={k} title={k} min={part.condition?.[k]?.min?.value || null} max={part.condition?.[k]?.max?.value || null} minInclusive={!!part.condition?.[k]?.min?.inclusive} maxInclusive={!!part.condition?.[k]?.max?.inclusive} onChange={(min, max, minInclusive, maxInclusive) => {
                   const newQuery = deepClone(query);
                   const change = { [k]: { min: !min ? null : { value: min, inclusive: minInclusive }, max: !max ? null : { value: max, inclusive: maxInclusive } } };
                   newQuery[index].condition = { ...newQuery[index].condition, ...change };
                   dispatch(setQuery(newQuery));
                 }} ></Scope>;
               case "time_scope_condition":
-                return <Scope key={k} title={k} minValue={minDate} maxValue={maxDate} min={part.condition?.[k]?.min?.value || null} max={part.condition?.[k]?.max?.value || null} minInclusive={!!part.condition?.[k]?.min?.inclusive} maxInclusive={!!part.condition?.[k]?.max?.inclusive} onChange={(min, max, minInclusive, maxInclusive) => {
+                return <Scope disabled={part.exact} key={k} title={k} minValue={minDate} maxValue={maxDate} min={part.condition?.[k]?.min?.value || null} max={part.condition?.[k]?.max?.value || null} minInclusive={!!part.condition?.[k]?.min?.inclusive} maxInclusive={!!part.condition?.[k]?.max?.inclusive} onChange={(min, max, minInclusive, maxInclusive) => {
                   const newQuery = deepClone(query);
                   const change = { [k]: { min: !min ? null : { value: min, inclusive: minInclusive }, max: !max ? null : { value: max, inclusive: maxInclusive } } };
                   newQuery[index].condition = { ...newQuery[index].condition, ...change };
                   dispatch(setQuery(newQuery));
                 }} ></Scope>;
               case "value_scope_condition":
-                return <Scope key={k} title={k} minValue={minValue} maxValue={maxValue} min={part.condition?.[k]?.min?.value || null} max={part.condition?.[k]?.max?.value || null} minInclusive={!!part.condition?.[k]?.min?.inclusive} maxInclusive={!!part.condition?.[k]?.max?.inclusive} onChange={(min, max, minInclusive, maxInclusive) => {
+                return <Scope disabled={part.exact} key={k} title={k} minValue={minValue} maxValue={maxValue} min={part.condition?.[k]?.min?.value || null} max={part.condition?.[k]?.max?.value || null} minInclusive={!!part.condition?.[k]?.min?.inclusive} maxInclusive={!!part.condition?.[k]?.max?.inclusive} onChange={(min, max, minInclusive, maxInclusive) => {
                   const newQuery = deepClone(query);
                   const change = { [k]: { min: !min ? null : { value: min, inclusive: minInclusive }, max: !max ? null : { value: max, inclusive: maxInclusive } } };
                   newQuery[index].condition = { ...newQuery[index].condition, ...change };
