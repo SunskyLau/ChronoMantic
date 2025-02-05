@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../../app/hooks";
 import "./index.css";
 import { addQuerySpec, setNLQuery, setQuery } from "../../app/slice/stateSlice";
-import { getColor } from "../../utils/color";
 import QueryIcon from "../../icons/Query";
 import SubmitIcon from "../../icons/Submit";
 import { flushSync } from "react-dom";
@@ -18,6 +17,7 @@ import Scope from "./Scope";
 import Trend from "./Trend";
 import Relation from "./Relation";
 import { setQueryResults } from "../../app/slice/approximation";
+import Glyph from "./Glyph";
 
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition || window.mozSpeechRecognition || window.msSpeechRecognition;
 SpeechRecognition.lang = 'en-US';
@@ -44,62 +44,65 @@ const ColoredTextComponent: React.FC<{ query: Query | null }> = ({ query }) => {
     if (part.condition) {
       const keys = Object.keys(part.condition);
       return (
-        <span key={index} onClick={(e) => { e.stopPropagation(); }}>
-          <Popover content={keys.map((key) => {
-            const k = key as keyof QuerySpec;
-            switch (k) {
-              case "target":
-                return <Target disabled={part.exact} key={k} title={k} value={part.condition?.[k] || ""} options={values} onChange={(val) => {
-                  const newQuery = deepClone(query);
-                  newQuery[index].condition = { [k]: val };
-                  newQuery[index].text = val;
-                  dispatch(setQuery(newQuery));
-                }}></Target>;
-              case "trends":
-                return <Trend disabled={part.exact} maxValue={maxDate} minValue={minDate} start={querySpec?.trends?.indexOf(part.condition?.[k]?.at(0) || {})} key={k} trends={part.condition?.[k] || []} onChange={(trends) => {
-                  const newQuery = deepClone(query);
-                  newQuery[index].condition = { ...newQuery[index].condition, [k]: trends };
-                  dispatch(setQuery(newQuery));
-                }}></Trend>;
-              case "relations":
-                return <Relation disabled={part.exact} key={k} relations={part.condition?.[k] || []} idLength={querySpec?.trends?.length || 0} onChange={(relations) => {
-                  const newQuery = deepClone(query);
-                  newQuery[index].condition = { ...newQuery[index].condition, [k]: relations };
-                  dispatch(setQuery(newQuery));
-                }}></Relation>;
-              case "time_span_condition":
-                return <Scope disabled={part.exact} key={k} title={k} min={part.condition?.[k]?.min?.value || null} max={part.condition?.[k]?.max?.value || null} minInclusive={!!part.condition?.[k]?.min?.inclusive} maxInclusive={!!part.condition?.[k]?.max?.inclusive} onChange={(min, max, minInclusive, maxInclusive) => {
-                  const newQuery = deepClone(query);
-                  const change = { [k]: { min: !min ? null : { value: min, inclusive: minInclusive }, max: !max ? null : { value: max, inclusive: maxInclusive } } };
-                  newQuery[index].condition = { ...newQuery[index].condition, ...change };
-                  dispatch(setQuery(newQuery));
-                }} ></Scope>;
-              case "time_scope_condition":
-                return <Scope disabled={part.exact} key={k} title={k} minValue={minDate} maxValue={maxDate} min={part.condition?.[k]?.min?.value || null} max={part.condition?.[k]?.max?.value || null} minInclusive={!!part.condition?.[k]?.min?.inclusive} maxInclusive={!!part.condition?.[k]?.max?.inclusive} onChange={(min, max, minInclusive, maxInclusive) => {
-                  const newQuery = deepClone(query);
-                  const change = { [k]: { min: !min ? null : { value: min, inclusive: minInclusive }, max: !max ? null : { value: max, inclusive: maxInclusive } } };
-                  newQuery[index].condition = { ...newQuery[index].condition, ...change };
-                  dispatch(setQuery(newQuery));
-                }} ></Scope>;
-              case "value_scope_condition":
-                return <Scope disabled={part.exact} key={k} title={k} minValue={minValue} maxValue={maxValue} min={part.condition?.[k]?.min?.value || null} max={part.condition?.[k]?.max?.value || null} minInclusive={!!part.condition?.[k]?.min?.inclusive} maxInclusive={!!part.condition?.[k]?.max?.inclusive} onChange={(min, max, minInclusive, maxInclusive) => {
-                  const newQuery = deepClone(query);
-                  const change = { [k]: { min: !min ? null : { value: min, inclusive: minInclusive }, max: !max ? null : { value: max, inclusive: maxInclusive } } };
-                  newQuery[index].condition = { ...newQuery[index].condition, ...change };
-                  dispatch(setQuery(newQuery));
-                }} ></Scope>;
-              default:
-                return <Empty key={k}></Empty>;
-            }
-          })} trigger="click">
-            <b style={{ backgroundColor: getColor(index) }}>{text}</b>
-          </Popover>
-        </span>
+        <>
+          <span key={index} onClick={(e) => { e.stopPropagation(); }}>
+            <Popover content={keys.map((key) => {
+              const k = key as keyof QuerySpec;
+              switch (k) {
+                case "target":
+                  return <Target disabled={part.exact} key={k} title={k} value={part.condition?.[k] || ""} options={values} onChange={(val) => {
+                    const newQuery = deepClone(query);
+                    newQuery[index].condition = { [k]: val };
+                    newQuery[index].text = val;
+                    dispatch(setQuery(newQuery));
+                  }}></Target>;
+                case "trends":
+                  return <Trend disabled={part.exact} maxValue={maxDate} minValue={minDate} start={querySpec?.trends?.indexOf(part.condition?.[k]?.at(0) || {})} key={k} trends={part.condition?.[k] || []} onChange={(trends) => {
+                    const newQuery = deepClone(query);
+                    newQuery[index].condition = { ...newQuery[index].condition, [k]: trends };
+                    dispatch(setQuery(newQuery));
+                  }}></Trend>;
+                case "relations":
+                  return <Relation disabled={part.exact} key={k} relations={part.condition?.[k] || []} idLength={querySpec?.trends?.length || 0} onChange={(relations) => {
+                    const newQuery = deepClone(query);
+                    newQuery[index].condition = { ...newQuery[index].condition, [k]: relations };
+                    dispatch(setQuery(newQuery));
+                  }}></Relation>;
+                case "time_span_condition":
+                  return <Scope disabled={part.exact} key={k} title={k} min={part.condition?.[k]?.min?.value || null} max={part.condition?.[k]?.max?.value || null} minInclusive={!!part.condition?.[k]?.min?.inclusive} maxInclusive={!!part.condition?.[k]?.max?.inclusive} onChange={(min, max, minInclusive, maxInclusive) => {
+                    const newQuery = deepClone(query);
+                    const change = { [k]: { min: !min ? null : { value: min, inclusive: minInclusive }, max: !max ? null : { value: max, inclusive: maxInclusive } } };
+                    newQuery[index].condition = { ...newQuery[index].condition, ...change };
+                    dispatch(setQuery(newQuery));
+                  }} ></Scope>;
+                case "time_scope_condition":
+                  return <Scope disabled={part.exact} key={k} title={k} minValue={minDate} maxValue={maxDate} min={part.condition?.[k]?.min?.value || null} max={part.condition?.[k]?.max?.value || null} minInclusive={!!part.condition?.[k]?.min?.inclusive} maxInclusive={!!part.condition?.[k]?.max?.inclusive} onChange={(min, max, minInclusive, maxInclusive) => {
+                    const newQuery = deepClone(query);
+                    const change = { [k]: { min: !min ? null : { value: min, inclusive: minInclusive }, max: !max ? null : { value: max, inclusive: maxInclusive } } };
+                    newQuery[index].condition = { ...newQuery[index].condition, ...change };
+                    dispatch(setQuery(newQuery));
+                  }} ></Scope>;
+                case "value_scope_condition":
+                  return <Scope disabled={part.exact} key={k} title={k} minValue={minValue} maxValue={maxValue} min={part.condition?.[k]?.min?.value || null} max={part.condition?.[k]?.max?.value || null} minInclusive={!!part.condition?.[k]?.min?.inclusive} maxInclusive={!!part.condition?.[k]?.max?.inclusive} onChange={(min, max, minInclusive, maxInclusive) => {
+                    const newQuery = deepClone(query);
+                    const change = { [k]: { min: !min ? null : { value: min, inclusive: minInclusive }, max: !max ? null : { value: max, inclusive: maxInclusive } } };
+                    newQuery[index].condition = { ...newQuery[index].condition, ...change };
+                    dispatch(setQuery(newQuery));
+                  }} ></Scope>;
+                default:
+                  return <Empty key={k}></Empty>;
+              }
+            })} trigger="click">
+              <b style={{ backgroundColor: "#0077FF33" }}>{text}</b>
+            </Popover>
+          </span>
+          {keys.includes("trends") || keys.includes("relations") ? <Glyph key={`glyph-${index}`} trends={part.condition.trends} relations={part.condition.relations} allTrends={querySpec?.trends}></Glyph> : null}
+        </>
       );
     }
     return <span key={index}>{text}</span>;
   });
-  return <span>{coloredText}</span>;
+  return <>{coloredText}<Glyph allTrends={querySpec?.trends} relations={querySpec?.relations} trends={querySpec?.trends}></Glyph></>;
 };
 
 export default function NlqueryBox() {

@@ -59,6 +59,9 @@
   white-space: pre-wrap;
   line-break: anywhere;
   overflow: hidden;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
 }
 
 .nl-query b {
