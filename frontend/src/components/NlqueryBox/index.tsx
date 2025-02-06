@@ -40,12 +40,12 @@ const ColoredTextComponent: React.FC<{ query: Query | null }> = ({ query }) => {
   const minDate = Math.min(...time);
   const maxDate = Math.max(...time);
   const coloredText = query.map((part, index) => {
-    const text = part.text.split(" ").map((t, i, arr) => <span key={i}>{t}{i !== arr.length - 1 ? ' ' : ''}</span>);
+    const text = part.text;
     if (part.condition) {
       const keys = Object.keys(part.condition);
       return (
-        <>
-          <span key={index} onClick={(e) => { e.stopPropagation(); }}>
+        <span key={index}>
+          <span onClick={(e) => { e.stopPropagation(); }}>
             <Popover content={keys.map((key) => {
               const k = key as keyof QuerySpec;
               switch (k) {
@@ -97,7 +97,7 @@ const ColoredTextComponent: React.FC<{ query: Query | null }> = ({ query }) => {
             </Popover>
           </span>
           {keys.includes("trends") || keys.includes("relations") ? <Glyph key={`glyph-${index}`} trends={part.condition.trends} relations={part.condition.relations} allTrends={querySpec?.trends}></Glyph> : null}
-        </>
+        </span>
       );
     }
     return <span key={index}>{text}</span>;

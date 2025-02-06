@@ -8,18 +8,18 @@ interface GlyphProps {
     allTrends?: Trend[];
 }
 
+const scale = d3.scaleLinear<string>()
+    .domain([-90, 90])
+    .range(["#00f", "#f00"]);
 const getColorFromAngle = (angle: number) => {
-    const scale = d3.scaleLinear<string>()
-        .domain([-90, 90])
-        .range(["#00f", "#f00"]);
     return scale(angle);
 };
 
 const getAverageValue = (trend: Trend) => {
     const scope = trend.angle_scope_condition || trend.slope_scope_condition;
     if (!scope) return 0;
-    const min = scope.min?.value ?? 0;
-    const max = scope.max?.value ?? 0;
+    const min = scope.min?.value ?? -90;
+    const max = scope.max?.value ?? 90;
     return (min + max) / 2;
 };
 
