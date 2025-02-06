@@ -40,7 +40,7 @@ const ColoredTextComponent: React.FC<{ query: Query | null }> = ({ query }) => {
   const minDate = Math.min(...time);
   const maxDate = Math.max(...time);
   const coloredText = query.map((part, index) => {
-    const text = part.text;
+    const text = part.text.split(" ").map((t, i, arr) => <span key={i}>{t}{i !== arr.length - 1 ? ' ' : ''}</span>);
     if (part.condition) {
       const keys = Object.keys(part.condition);
       return (
