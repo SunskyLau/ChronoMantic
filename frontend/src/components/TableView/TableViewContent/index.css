@@ -5,6 +5,8 @@
     border-right: var(--border);
     border-bottom: var(--border);
     text-align: center;
+    font-size: 13px;
+    font-family: Arial, sans-serif;
 }
 
 .table-content table thead {
