@@ -306,7 +306,7 @@ def create_system_prompt(dataset_info: str) -> str:
       - 将整个QuerySpec分为若干个condition分配到各自的Chunk中，并且正确设置exact属性（当text可以准确无误地反映condition的时候，设置为true，否则设置为false）
       - 你需要特别注意：不能重复分配同一个QuerySpec的字段到condition中，例如trends中每一项只能唯一分配给一个Chunk，然后其余Chunk将不能再出现相同的trends，你必须确保你分配的Chunk中的文字可以最完整的代表该condition
 		2. 原始NL查询文本中的每个字符都应该被保留在Output中的Chunk的text字段中
-    3. 按照顺序提取Chunk中的text字段，要保证恰好组合成一个完整的原始NL查询文本
+    3. 按照顺序提取Chunk中的text字段，要保证恰好组合成一个完整的原始NL查询文本，你需要确保含有condition的Chunk中的text字段两端必须是字母，不应该任何无意义的字符（例如空格、符号或者连接词）
     4. 对于解析出的condition，应该保证恰好可以组成有且仅有一个完整的QuerySpec，对应整个NL的语义，这个完整的QuerySpec不应该出现任何重复冗余的字段
     5. 你需要注意QuerySpec中trends的先后顺序，并确保所有Chunk的trends都是直接从完整QuerySpec中直接获得的，即使这个Chunk靠后，它对应的trends的index也可能是靠前的，你需要根据语义进行分析，保证所有Chunk中的trends不能重复，必须是唯一出现的
 	
@@ -314,11 +314,13 @@ def create_system_prompt(dataset_info: str) -> str:
 示例一：
 		
 	输入：
-"Check the column sales_amount with a double top trend at the increase period which increase at least 20 dollars per day. The value of y is less than 500 and time from 2021 to 2023. "
+"Check the column sales_amount with a double top trend at the increase period which increase at least 20 dollars per day, with the value of y is less than 500 and time from 2021 to 2023. "
 
 	输出：
 {{"output":[{{
-  "text": "Check the column "
+  "text": "Check the column"
+}},{{
+  "text": " "
 }},{{
   "text": "sales_amount",
   "condition": {{
@@ -326,7 +328,11 @@ def create_system_prompt(dataset_info: str) -> str:
   }},
   "exact": true
 }},{{
-  "text": " with "
+  "text": " "
+}},{{
+  "text": "with"
+}},{{
+  "text": " "
 }},{{
   "text": "a double top trend at the increase period which increase at least 20 dollars per day",
   "condition": {{
@@ -384,9 +390,15 @@ def create_system_prompt(dataset_info: str) -> str:
   }},
   "exact": false
 }},{{
-  "text": ". "
+  "text": ","
 }},{{
-  "text": "The value of y is less than 500",
+  "text": " "
+}},{{
+  "text": "with"
+}},{{
+  "text": " "
+}},{{
+  "text": "the value of y is less than 500",
   "condition": {{
     "value_scope_condition": {{
       "min": {{
@@ -397,7 +409,11 @@ def create_system_prompt(dataset_info: str) -> str:
   }},
   "exact": true
 }},{{
-  "text": " and "
+  "text": " "
+}},{{
+  "text": "and"
+}},{{
+  "text": " "
 }},{{
   "text": "time from 2021 to 2023",
   "condition": {{
@@ -414,7 +430,9 @@ def create_system_prompt(dataset_info: str) -> str:
   }},
   "exact": true
 }},{{
-  "text": ". "
+  "text": "."
+}},{{
+  "text": " "
 }}]}}
 
 示例二：
@@ -424,7 +442,9 @@ def create_system_prompt(dataset_info: str) -> str:
 
 	输出：
 {{"output":[{{
-  "text": "Show me periods when the price of "
+  "text": "Show me periods when the price of"
+}},{{
+  "text": " "
 }},{{
   "text": "Amazon stock",
   "condition": {{
@@ -432,7 +452,11 @@ def create_system_prompt(dataset_info: str) -> str:
   }},
   "exact": true
 }},{{
-  "text": " shows "
+  "text": " "
+}},{{
+  "text": "shows"
+}},{{
+  "text": " "
 }},{{
   "text": "a sharp head-and-shoulders shape",
   "condition": {{
@@ -500,7 +524,11 @@ def create_system_prompt(dataset_info: str) -> str:
   }},
   "exact": false
 }},{{
-  "text": " and before that it resembles "
+  "text": " "
+}},{{
+  "text": "and before that it resembles"
+}},{{
+  "text": " "
 }},{{
   "text": "a slowly formed V shape",
   "condition": {{
@@ -531,7 +559,9 @@ def create_system_prompt(dataset_info: str) -> str:
     }}]
   }},
 }},{{
-  "text": " over 20 days",
+  "text": " "
+}},{{
+  "text": "over 20 days",
   "condition": {{
     "time_span_condition": {{
       "min": {{
@@ -547,67 +577,76 @@ def create_system_prompt(dataset_info: str) -> str:
 示例三：
 
 	输入：
-"In Amazon stock. Look up two consecutive rises and the time period when the first rose slowly and the second rose sharp".
+"In Amazon stock, look up two consecutive rises and the time period when the first rose slowly and the second rose sharp"
 
 	输出：
-{{"output":[
-  {{
-    "text": "In Amazon stock.",
-    "condition": {{
-      "target": "AMZN"
-    }},
-    "exact": true
+{{"output":[{{
+  "text": "In"
+}},{{
+  "text": " "
+}},{{
+  "text": "Amazon stock",
+  "condition": {{
+    "target": "AMZN"
   }},
-  {{
-    "text": " Look up "
+  "exact": true
+}},{{
+  "text": ","
+}},{{
+  "text": " "
+}},{{
+  "text": "look up"
+}},{{
+  "text": " "
+}},{{
+  "text": "two consecutive rises",
+  "condition": {{
+    "relations": [
+      {{
+        "id1": 0,
+        "id2": 1,
+        "attribute": "end_value",
+        "comparator": "<"
+      }}
+    ]
   }},
-  {{
-    "text": "two consecutive rises",
-    "condition": {{
-      "relations": [
-        {{
-          "id1": 0,
-          "id2": 1,
-          "attribute": "end_value",
-          "comparator": "<"
-        }}
-      ]
-    }},
-    "exact": false
-  }},
-  {{
-    "text": " and the time period when "
-  }},
-  {{
-    "text": "the first rose slowly and the second rose sharp",
-    "condition": {{
-      "trends": [
-        {{
-          "angle_scope_condition": {{
-            "min": {{
-              "value": 5,
-              "inclusive": true
-            }},
-            "max": {{
-              "value": 30,
-              "inclusive": true
-            }}
+  "exact": false
+}},{{
+  "text": " "
+}},{{
+  "text": "and the time period when"
+}},{{
+  "text": " "
+}},{{
+  "text": "the first rose slowly and the second rose sharp",
+  "condition": {{
+    "trends": [
+      {{
+        "angle_scope_condition": {{
+          "min": {{
+            "value": 5,
+            "inclusive": true
           }},
-          "index": 0
+          "max": {{
+            "value": 30,
+            "inclusive": true
+          }}
         }},
-        {{
-          "angle_scope_condition": {{
-            "min": {{
-              "value": 60,
-              "inclusive": true
-            }}
-          }},
-          "index": 1
-        }}
-      ]
-    }},
-    "exact": false
-  }}
+        "index": 0
+      }},
+      {{
+        "angle_scope_condition": {{
+          "min": {{
+            "value": 60,
+            "inclusive": true
+          }}
+        }},
+        "index": 1
+      }}
+    ]
+  }},
+  "exact": false
+}}
 ]}}
 """
     return system_prompt
