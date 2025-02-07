@@ -1,5 +1,5 @@
 import { DatePicker } from "antd";
-import dayjs from "dayjs";
+import dayjs, { Dayjs } from "dayjs";
 
 interface TimeProps {
     min: number | null;
@@ -13,7 +13,8 @@ interface TimeProps {
 }
 
 export default function Time({ min, max, minInclusive, maxInclusive, maxValue, minValue, onChange, disabled }: TimeProps) {
-    return <DatePicker.RangePicker disabled={disabled} minDate={dayjs(minValue)} maxDate={dayjs(maxValue)} defaultValue={[dayjs((min || 0) * 1000), dayjs((max || 0) * 1000)]} allowClear allowEmpty onChange={(dates) => {
+    const defaultValue: [Dayjs | null, Dayjs | null] | undefined = !min && !max ? undefined : [min ? dayjs(min * 1000) : null, max ? dayjs(max * 1000) : null];
+    return <DatePicker.RangePicker disabled={disabled} minDate={dayjs(minValue)} maxDate={dayjs(maxValue)} defaultValue={defaultValue} allowClear allowEmpty onChange={(dates) => {
         if (!dates) return onChange(null, null, minInclusive, maxInclusive);
         else if (dates[0] && dates[1]) return onChange(dates[0].valueOf() / 1000 || null, dates[1].valueOf() / 1000 || null, true, true);
         else if (!dates[0] && dates[1]) return onChange(null, dates[1]?.valueOf() / 1000, minInclusive, true);
