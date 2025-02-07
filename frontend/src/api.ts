@@ -1,6 +1,6 @@
 import axios from "axios";
 import type { Results } from "./app/slice/resultsSlice";
-import { Fragment, FragmentList, Query, QuerySpec, TimeGranularity } from "./types/QuerySpec";
+import { Fragment, FragmentList, Query, QuerySpec, Segment, TimeGranularity } from "./types/QuerySpec";
 import { DatasetInfo, ApproximationSegmentsContainers, ApproximationResults } from "./types";
 
 const api = axios.create({
@@ -89,6 +89,18 @@ export const getFragmentsBySpec = async (querySpec: QuerySpec): Promise<Approxim
         })
       }
     });
+    console.log(response.data);
+    return response.data.results;
+  } catch (error) {
+    console.error("Error sending fragments request:", error);
+    throw error;
+  }
+}
+
+export const getQueryByTS = async (source:string, segments: Segment[], choices: string[]): Promise<string[]> => {
+  console.log("Sending query_by_ts request");
+  try {
+    const response = await api.post(`/api/query_by_ts`, {segments, source, choices});
     console.log(response.data);
     return response.data.results;
   } catch (error) {

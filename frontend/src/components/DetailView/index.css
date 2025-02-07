@@ -38,8 +38,31 @@
 
 .main-view .detail {
     flex: 3 0 0;
+    position: relative;
 }
 
 .main-view .overview {
     flex: 1 0 0;
+}
+
+.checkbox-list {
+    margin: 0;
+    padding: 0;
+}
+
+.main-view .detail .ant-btn {
+    position: absolute;
+    opacity: .3;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%) translateY(-50px);
+}
+
+.main-view .detail .ant-btn:disabled {
+    background-color: #0003;
+    color: #fff;
+}
+
+.main-view .detail .ant-btn:hover {
+    opacity: 1;
 }
