@@ -51,4 +51,5 @@
     max-width: 0;
     flex-grow: 0;
     margin-right: 0;
+    overflow: hidden;
 }
