@@ -8,6 +8,7 @@ import QueryCondition from "../QueryCondition";
 import Setting from "../Setting";
 import TableView from "../TableView";
 import "./index.css";
+import Recommendation from "../Recommendation";
 
 export default function AppMain() {
     const isSettingShow = useAppSelector(state => state.states.isSettingShow);
@@ -26,6 +27,7 @@ export default function AppMain() {
                 </section>
                 <section className="main-middle">
                     <NlqueryBox></NlqueryBox>
+                    <Recommendation></Recommendation>
                     <DetailView></DetailView>
                 </section>
                 <section className={classnames("main-right", isDrawer ? "active" : "hide")}>

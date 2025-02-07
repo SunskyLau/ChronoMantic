@@ -20,9 +20,10 @@ interface LineChartProps {
     isSplitMask?: boolean;
     isExpand?: boolean;
     isZoom?: boolean;
+    children?: React.ReactNode;
 }
 
-function LineChart({ xData, yData, ratio, title = "", isXAxisVisible = false, isYAxisVisible = false, isBrush = false, isFill = false, onBrush, onBrushEnd, range, height, split, isSplitMask = false, brushPosition, isZoom = false, isExpand = true, isShowRange = true }: LineChartProps) {
+function LineChart({ xData, yData, ratio, title = "", isXAxisVisible = false, isYAxisVisible = false, isBrush = false, isFill = false, onBrush, onBrushEnd, range, height, split, isSplitMask = false, brushPosition, isZoom = false, isExpand = true, isShowRange = true, children }: LineChartProps) {
     const svgRef = useRef<SVGSVGElement>(null);
     const id = useId();
 
@@ -35,6 +36,8 @@ function LineChart({ xData, yData, ratio, title = "", isXAxisVisible = false, is
 
         const margin = { top: isXAxisVisible ? 20 : 0, right: isYAxisVisible ? 40 : 0, bottom: isXAxisVisible ? 30 : 0, left: isYAxisVisible ? 40 : 0 };
         const svg = d3.select(svgRef.current);
+        svg.attr('width', '100%');
+        svg.attr('height', '100%');
         const width = Math.max(10, svgRef.current.clientWidth - margin.left - margin.right);
         let iHeight: number = typeof height === 'string' ? svgRef.current.clientHeight * parseFloat(height) / 100 : height ?? 200;
         iHeight -= margin.top + margin.bottom;
@@ -271,13 +274,17 @@ function LineChart({ xData, yData, ratio, title = "", isXAxisVisible = false, is
     }, [draw]);
 
     return (
-        <svg ref={svgRef} width="100%" height="100%"></svg>
+        <>
+            <svg ref={svgRef} width="100%" height="100%"></svg>
+            {children}
+        </>
     );
 };
 
 export default memo(LineChart, (prevProps, nextProps) => {
     return Object.keys(prevProps).every((key) => {
         const k = key as keyof LineChartProps;
+        if (k === 'children') return false;
         if (typeof prevProps[k] === 'object') return JSON.stringify(prevProps[k]) === JSON.stringify(nextProps[k]);
         return prevProps[k] === nextProps[k];
     })

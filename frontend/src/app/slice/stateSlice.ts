@@ -16,6 +16,7 @@ export type States = {
   valueUnit: string;
   aspectRatio: number;
   isDrawer: boolean;
+  querys: string[];
 };
 
 // 使用该类型定义初始 state
@@ -33,6 +34,7 @@ const initialState: States = {
   query: null,
   querySpec: null,
   isDrawer: false,
+  querys: [],
 };
 
 const stateSlice = createSlice({
@@ -133,8 +135,11 @@ const stateSlice = createSlice({
     setIsDrawer: (state, action: PayloadAction<boolean>) => {
       state.isDrawer = action.payload;
     },
+    setQuerys: (state, action: PayloadAction<string[]>) => {
+      state.querys = action.payload;
+    },
   },
 });
 
-export const { setNLQuery, setQuery, addFragments, addQuerySpec, setFragmentsIndex, setQuerySpecIndex, insertTreeData, setIsSettingShow, setTimeStampUnit, setValueUnit, setAspectRatio, setIsDrawer } = stateSlice.actions;
+export const { setNLQuery, setQuery, addFragments, addQuerySpec, setFragmentsIndex, setQuerySpecIndex, insertTreeData, setIsSettingShow, setTimeStampUnit, setValueUnit, setAspectRatio, setIsDrawer, setQuerys } = stateSlice.actions;
 export default stateSlice.reducer;
