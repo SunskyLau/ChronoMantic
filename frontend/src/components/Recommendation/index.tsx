@@ -11,7 +11,7 @@ export default function Recommendation() {
     const isRequesting = useAppSelector(state => state.results.isRequesting);
     const dispatch = useAppDispatch();
     return (
-        <Flex gap={12} className="recommendation">
+        <Flex gap={'var(--gap)'} className="recommendation">
             {querys.map((query, index) => {
                 return <Card key={index}>
                     <Typography.Paragraph disabled={isRequesting} ellipsis={{ rows: 2, tooltip: true }} onClick={() => {
