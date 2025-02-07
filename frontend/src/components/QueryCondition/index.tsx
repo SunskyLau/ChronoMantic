@@ -1,8 +1,7 @@
 import { Button, Divider } from "antd";
-import { QuerySpec } from "../../types/QuerySpec";
 import "./index.css";
 import { useAppDispatch, useAppSelector } from "../../app/hooks";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { getFragmentsBySpec } from "../../api";
 import { setQueryResults } from "../../app/slice/approximation";
 import { addQuerySpec, setIsDrawer } from "../../app/slice/stateSlice";
@@ -16,19 +15,24 @@ import { RightOutlined } from "@ant-design/icons";
 import { classnames } from "../../utils/classname";
 
 export default function QueryCondition() {
-    const querySpec: QuerySpec = useAppSelector((state) => state.states.querySpecList.at(state.states.querySpecIndex)) || {
+    const querySpec = useAppSelector((state) => state.states.querySpec);
+    const memoizedQuerySpec = useMemo(() => deepClone(querySpec || {
         target: "",
         trends: [],
         relations: [],
-    };
+    }), [querySpec]);
     const values = useAppSelector((state) => state.dataset.dataset?.valueColumns) || [];
-    const [queryCondition, setQueryCondition] = useState(deepClone(querySpec));
+    const [queryCondition, setQueryCondition] = useState(memoizedQuerySpec);
     const dispatch = useAppDispatch();
     const data = useAppSelector((state) => state.dataset.dataset?.data) || {};
-    const value = data[querySpec.target || ""] as number[] || [];
+    const value = data[memoizedQuerySpec.target || ""] as number[] || [];
     const maxValue = Math.floor(Math.max(...value));
     const minValue = Math.ceil(Math.min(...value));
     const isDrawer = useAppSelector((state) => state.states.isDrawer);
+
+    useEffect(() => {
+        setQueryCondition(deepClone(memoizedQuerySpec));
+    }, [memoizedQuerySpec])
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
