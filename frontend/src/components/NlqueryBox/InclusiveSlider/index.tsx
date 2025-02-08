@@ -12,12 +12,13 @@ interface InclusiveSliderProps {
 }
 
 export default function InclusiveSlider({ min, max, minInclusive, maxInclusive, minValue, maxValue, onChange, disabled }: InclusiveSliderProps) {
+    const defaultValue = [min || minValue, max || maxValue];
     return (
         <Flex gap={"small"}>
             <Checkbox checked={minInclusive} disabled={disabled || !min} onChange={(e) => {
                 onChange(min, max, e.target.checked, maxInclusive);
             }}></Checkbox>
-            <Col flex={1}><Slider disabled={disabled} step={1} range defaultValue={[min || minValue, max || maxValue]} min={minValue} max={maxValue} onChangeComplete={(value) => {
+            <Col flex={1}><Slider disabled={disabled} step={1} range defaultValue={defaultValue} min={minValue} max={maxValue} onChangeComplete={(value) => {
                 onChange(value[0], value[1], minInclusive, maxInclusive);
             }} /></Col>
             <Checkbox checked={maxInclusive} disabled={disabled || !max} onChange={(e) => {

@@ -5,7 +5,7 @@ import { addQuerySpec, setNLQuery, setQuery } from "../../app/slice/stateSlice";
 import QueryIcon from "../../icons/Query";
 import SubmitIcon from "../../icons/Submit";
 import { flushSync } from "react-dom";
-import { AudioFilled } from "@ant-design/icons";
+import { AudioFilled, LoadingOutlined } from "@ant-design/icons";
 import { classnames } from "../../utils/classname";
 import type { SpeechRecognitionType } from "../../types";
 import { Empty, Popover } from "antd";
@@ -18,6 +18,7 @@ import Trend from "./Trend";
 import Relation from "./Relation";
 import { setQueryResults } from "../../app/slice/approximation";
 import Glyph from "./Glyph";
+import { setIsRequesting } from "../../app/slice/resultsSlice";
 
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition || window.mozSpeechRecognition || window.msSpeechRecognition;
 SpeechRecognition.lang = 'en-US';
@@ -144,11 +145,14 @@ export default function NlqueryBox() {
           onKeyDown={(e) => {
             if (e.key === "Enter") {
               e.preventDefault();
+              dispatch(setIsRequesting(true))
               if (textareaRef.current && NLQuery.trim()) {
                 textareaRef.current.blur();
                 dispatch(setQuery(null));
                 getQuerySpecRequest(NLQuery).then(res => {
                   dispatch(setQuery(res));
+                }).finally(() => {
+                  dispatch(setIsRequesting(false))
                 });
               }
             }
@@ -172,7 +176,7 @@ export default function NlqueryBox() {
           }}
           className="nl-query text"
           style={{ color: !NLQuery ? "gray" : "#000" }}
-        ><ColoredTextComponent query={query}></ColoredTextComponent></div>
+        ><ColoredTextComponent query={query}></ColoredTextComponent>{isRequesting && <LoadingOutlined style={{marginLeft: 8}} />}</div>
       )}
       <button onClick={() => {
         if (!SpeechRecognition) {

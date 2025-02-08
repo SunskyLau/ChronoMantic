@@ -1,8 +1,7 @@
 import { Button, Divider } from "antd";
-import { QuerySpec } from "../../types/QuerySpec";
 import "./index.css";
 import { useAppDispatch, useAppSelector } from "../../app/hooks";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { getFragmentsBySpec } from "../../api";
 import { setQueryResults } from "../../app/slice/approximation";
 import { addQuerySpec, setIsDrawer } from "../../app/slice/stateSlice";
@@ -16,19 +15,24 @@ import { RightOutlined } from "@ant-design/icons";
 import { classnames } from "../../utils/classname";
 
 export default function QueryCondition() {
-    const querySpec: QuerySpec = useAppSelector((state) => state.states.querySpecList.at(state.states.querySpecIndex)) || {
+    const querySpec = useAppSelector((state) => state.states.querySpec);
+    const memoizedQuerySpec = useMemo(() => deepClone(querySpec) || {
         target: "",
         trends: [],
         relations: [],
-    };
+    }, [querySpec]);
     const values = useAppSelector((state) => state.dataset.dataset?.valueColumns) || [];
-    const [queryCondition, setQueryCondition] = useState(deepClone(querySpec));
+    const [queryCondition, setQueryCondition] = useState(memoizedQuerySpec);
     const dispatch = useAppDispatch();
     const data = useAppSelector((state) => state.dataset.dataset?.data) || {};
-    const value = data[querySpec.target || ""] as number[] || [];
+    const value = data[memoizedQuerySpec.target || ""] as number[] || [];
     const maxValue = Math.floor(Math.max(...value));
     const minValue = Math.ceil(Math.min(...value));
     const isDrawer = useAppSelector((state) => state.states.isDrawer);
+
+    useEffect(() => {
+        setQueryCondition(deepClone(memoizedQuerySpec));
+    }, [memoizedQuerySpec])
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -76,7 +80,7 @@ export default function QueryCondition() {
                     <Divider></Divider>
                 </section>
                 <section>
-                    <Scope title="Time Scope Condition" min={queryCondition.time_scope_condition?.min?.value || null} max={queryCondition.time_scope_condition?.max?.value || null} minInclusive={!!queryCondition.time_scope_condition?.min?.inclusive} maxInclusive={!!queryCondition.time_scope_condition?.max?.inclusive} onChange={(min, max, minInclusive, maxInclusive) => {
+                    <Scope key={queryCondition.time_scope_condition?.min?.value || queryCondition.time_span_condition?.max?.value} title="Time Scope Condition" min={queryCondition.time_scope_condition?.min?.value || null} max={queryCondition.time_scope_condition?.max?.value || null} minInclusive={!!queryCondition.time_scope_condition?.min?.inclusive} maxInclusive={!!queryCondition.time_scope_condition?.max?.inclusive} onChange={(min, max, minInclusive, maxInclusive) => {
                         const newQueryCondition = deepClone(queryCondition);
                         newQueryCondition.time_scope_condition = {
                             min: !min ? null : { value: min, inclusive: minInclusive },
@@ -87,7 +91,7 @@ export default function QueryCondition() {
                     <Divider></Divider>
                 </section>
                 <section>
-                    <Scope title="Value Scope Condition" min={queryCondition.value_scope_condition?.min?.value || null} max={queryCondition.value_scope_condition?.max?.value || null} minInclusive={!!queryCondition.value_scope_condition?.min?.inclusive} maxInclusive={!!queryCondition.value_scope_condition?.max?.inclusive} minValue={minValue} maxValue={maxValue} onChange={(min, max, minInclusive, maxInclusive) => {
+                    <Scope key={queryCondition.value_scope_condition?.min?.value || queryCondition.time_scope_condition?.max?.value} title="Value Scope Condition" min={queryCondition.value_scope_condition?.min?.value || null} max={queryCondition.value_scope_condition?.max?.value || null} minInclusive={!!queryCondition.value_scope_condition?.min?.inclusive} maxInclusive={!!queryCondition.value_scope_condition?.max?.inclusive} minValue={minValue} maxValue={maxValue} onChange={(min, max, minInclusive, maxInclusive) => {
                         const newQueryCondition = deepClone(queryCondition);
                         newQueryCondition.value_scope_condition = {
                             min: !min ? null : { value: min, inclusive: minInclusive },

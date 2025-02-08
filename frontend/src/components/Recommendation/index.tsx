@@ -1,17 +1,31 @@
-import Block from "../Block";
+import { Card, Flex, Typography } from "antd";
+import { useAppDispatch, useAppSelector } from "../../app/hooks";
 import "./index.css";
+import { setNLQuery, setQuery } from "../../app/slice/stateSlice";
+import { getQuerySpecRequest } from "../../api";
+import { setIsRequesting } from "../../app/slice/resultsSlice";
 
-const choices = ["template", "clustering", "example"];
 
 export default function Recommendation() {
+    const querys = useAppSelector(state => state.states.querys);
+    const isRequesting = useAppSelector(state => state.results.isRequesting);
+    const dispatch = useAppDispatch();
     return (
-        <Block title="Recommendation" className="recommendation">
-            <div className="recommendation-choices">
-                {choices.map(choice => (
-                    <div className="recommendation-choice" key={choice}>{choice}</div>
-                ))}
-            </div>
-            <div className="recommendation-content">1</div>
-        </Block>
+        <Flex gap={'var(--gap)'} className="recommendation">
+            {querys.map((query, index) => {
+                return <Card key={index}>
+                    <Typography.Paragraph disabled={isRequesting} ellipsis={{ rows: 2, tooltip: true }} onClick={() => {
+                        dispatch(setQuery(null));
+                        dispatch(setIsRequesting(true));
+                        dispatch(setNLQuery(query));
+                        getQuerySpecRequest(query).then(res => {
+                            dispatch(setQuery(res));
+                        }).finally(() => {
+                            dispatch(setIsRequesting(false));
+                        });
+                    }}>{query}</Typography.Paragraph>
+                </Card>
+            })}
+        </Flex>
     )
 }
