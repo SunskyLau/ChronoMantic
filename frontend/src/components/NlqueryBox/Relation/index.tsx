@@ -2,6 +2,7 @@ import { Button, Divider, Empty, Flex, Select, Typography } from "antd";
 import { Attribute, Comparator, Relation as RelationType } from "../../../types/QuerySpec";
 import { deepClone } from "../../../utils/deepclone";
 import { MinusOutlined, PlusOutlined } from "@ant-design/icons";
+import { classnames } from "../../../utils/classname";
 
 interface RelationProps {
     title?: string;
@@ -9,10 +10,11 @@ interface RelationProps {
     idLength: number;
     isEdit?: boolean;
     disabled?: boolean;
+    highlight?: number[];
     onChange: (relations: RelationType[]) => void;
 }
 
-export default function Relation({ title, relations, idLength, isEdit, onChange, disabled }: RelationProps) {
+export default function Relation({ title, relations, idLength, isEdit, onChange, disabled, highlight = [] }: RelationProps) {
     return (
         <>
             <Flex justify="space-between" align="center">
@@ -24,7 +26,7 @@ export default function Relation({ title, relations, idLength, isEdit, onChange,
                 }}></Button>}
             </Flex>
             {!relations.length ? <Empty description="no relations"></Empty> : relations.map((relation, index) => (
-                <div key={index}>
+                <><div key={index} className={classnames("relation-item", highlight.includes(index) ? "active" : "")} >
                     <Flex gap={4}>
                         <Select disabled={disabled} placeholder="attribute" popupMatchSelectWidth={false} options={Object.values(Attribute).map(attr => ({ value: attr, label: attr }))} value={relation.attribute} onChange={(value) => {
                             const newRelations = deepClone(relations);
@@ -52,8 +54,7 @@ export default function Relation({ title, relations, idLength, isEdit, onChange,
                             onChange(newRelations);
                         }}></Button>}
                     </Flex>
-                    <Divider></Divider>
-                </div>
+                </div><Divider key={`divider-${index}`}></Divider></>
             ))}
         </>
     )

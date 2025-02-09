@@ -111,13 +111,18 @@ export const getQueryByTS = async (source:string, segments: Segment[], choices: 
 
 let abortController: AbortController | null = null;
 
+export const abortRequest = () => {
+  if (abortController) {
+    abortController.abort();
+    console.log("Request aborted manually");
+    abortController = null;
+  }
+};
+
 export const getSearchPrompt = async (query: string): Promise<string[]> => {
   console.log("Sending search_prompt request");
 
-  if (abortController) {
-    abortController.abort();
-  }
-
+  abortRequest();
   abortController = new AbortController();
   const signal = abortController.signal;
 
@@ -129,7 +134,7 @@ export const getSearchPrompt = async (query: string): Promise<string[]> => {
     console.error("Error sending search_prompt request:", error);
     throw error;
   }
-}
+};
 
 export const getFragmentsByTimeGranularity = async (csvName: string, timeColumnName: string, valueColumnName: string, timeGranularity: TimeGranularity): Promise<FragmentList> => {
   console.log("Sending fragments request");

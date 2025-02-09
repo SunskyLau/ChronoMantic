@@ -24,3 +24,11 @@ body {
   -moz-user-select: none;
   -ms-user-select: none;
 }
+
+.pointer {
+  cursor: pointer;
+}
+
+.flex {
+  display: flex;
+}

@@ -6,6 +6,8 @@ import Span from "../Span";
 import Time from "../Time";
 import { MinusOutlined, PlusOutlined } from "@ant-design/icons";
 import { ReactNode } from "react";
+import { classnames } from "../../../utils/classname";
+import { getColor } from "../../../utils/color";
 
 interface TrendProps {
     title?: string;
@@ -15,26 +17,28 @@ interface TrendProps {
     start?: number;
     isEdit?: boolean;
     disabled?: boolean;
+    highlight?: number[];
     onChange: (trends: TrendType[]) => void;
 }
 
-export default function Trend({ title, trends, minValue, maxValue, onChange, start = 0, isEdit, disabled }: TrendProps) {
+export default function Trend({ title, trends, minValue, maxValue, onChange, start = 0, isEdit, disabled, highlight = [] }: TrendProps) {
+    const allTrends = isEdit ? deepClone(trends).map(trend => Object.assign({ time_scope_condition: {}, angle_scope_condition: {}, slope_scope_condition: {}, time_span_condition: {} }, trend)) : trends;
     return (
         <>
             <Flex justify="space-between" align="center">
                 <Typography.Title level={4} keyboard>{title ?? 'Trend'}</Typography.Title>
                 {isEdit && !disabled && <Button icon={<PlusOutlined />} onClick={() => {
-                    const newTrends = deepClone(trends);
+                    const newTrends = deepClone(allTrends);
                     newTrends.push({ time_scope_condition: {}, angle_scope_condition: {}, slope_scope_condition: {}, time_span_condition: {} });
                     onChange(newTrends);
                 }}></Button>}
             </Flex>
-            {!trends.length ? <Empty description="no trends"></Empty> : trends.map((trend, index) => (
-                <div className="trend-item" key={index}>
+            {!trends.length ? <Empty description="no trends"></Empty> : allTrends.map((trend, index) => (
+                <><div className={classnames("trend-item", highlight.includes(index) ? "active" : "")} style={{ backgroundColor: highlight.includes(index) ? getColor(index) : undefined }} key={index}>
                     <Flex justify="space-between" align="center">
-                        <Typography.Title level={5}>No.{trend.index ?? index + start}</Typography.Title>
+                        <Typography.Title level={5}>No.{index + start}</Typography.Title>
                         {isEdit && !disabled && <Button type="primary" icon={<MinusOutlined />} danger onClick={() => {
-                            const newTrends = deepClone(trends);
+                            const newTrends = deepClone(allTrends);
                             newTrends.splice(index, 1);
                             onChange(newTrends);
                         }}></Button>}
@@ -47,7 +51,7 @@ export default function Trend({ title, trends, minValue, maxValue, onChange, sta
                         switch (k) {
                             case 'time_span_condition':
                                 components.push(<Span disabled={disabled} key={k} valueFormatter={86400} addonAfter="days" minValue={0} min={trend.time_span_condition?.min?.value || null} max={trend.time_span_condition?.max?.value || null} maxInclusive={!!trend.time_span_condition?.max?.inclusive} minInclusive={!!trend.time_span_condition?.min?.inclusive} onChange={(min, max, minInclusive, maxInclusive) => {
-                                    const newTrends = deepClone(trends);
+                                    const newTrends = deepClone(allTrends);
                                     const change = { [k]: { min: !min && min !== 0 ? null : { value: min, inclusive: minInclusive }, max: !max && max !== 0 ? null : { value: max, inclusive: maxInclusive } } };
                                     newTrends[index] = { ...newTrends[index], ...change };
                                     onChange(newTrends);
@@ -55,7 +59,7 @@ export default function Trend({ title, trends, minValue, maxValue, onChange, sta
                                 break;
                             case 'angle_scope_condition':
                                 components.push(<InclusiveSlider disabled={disabled} key={k} minValue={-90} maxValue={90} min={trend[k]?.min?.value || null} max={trend[k]?.max?.value || null} minInclusive={!!trend[k]?.min?.inclusive} maxInclusive={!!trend[k]?.max?.inclusive} onChange={(min, max, minInclusive, maxInclusive) => {
-                                    const newTrends = deepClone(trends);
+                                    const newTrends = deepClone(allTrends);
                                     const change = { [k]: { min: !min && min !== 0 ? null : { value: min, inclusive: minInclusive }, max: !max && max !== 0 ? null : { value: max, inclusive: maxInclusive } } };
                                     newTrends[index] = { ...newTrends[index], ...change };
                                     onChange(newTrends);
@@ -63,7 +67,7 @@ export default function Trend({ title, trends, minValue, maxValue, onChange, sta
                                 break;
                             case 'slope_scope_condition':
                                 components.push(<Span disabled={disabled} key={k} min={trend[k]?.min?.value || null} max={trend[k]?.max?.value || null} maxInclusive={!!trend[k]?.max?.inclusive} minInclusive={!!trend[k]?.min?.inclusive} onChange={(min, max, minInclusive, maxInclusive) => {
-                                    const newTrends = deepClone(trends);
+                                    const newTrends = deepClone(allTrends);
                                     const change = { [k]: { min: !min && min !== 0 ? null : { value: min, inclusive: minInclusive }, max: !max && max !== 0 ? null : { value: max, inclusive: maxInclusive } } };
                                     newTrends[index] = { ...newTrends[index], ...change };
                                     onChange(newTrends);
@@ -71,7 +75,7 @@ export default function Trend({ title, trends, minValue, maxValue, onChange, sta
                                 break;
                             case 'time_scope_condition':
                                 components.push(<Time disabled={disabled} key={k} min={trend[k]?.min?.value || null} max={trend[k]?.max?.value || null} maxInclusive={!!trend[k]?.max?.inclusive} minInclusive={!!trend[k]?.min?.inclusive} minValue={minValue ?? null} maxValue={maxValue ?? null} onChange={(min, max, minInclusive, maxInclusive) => {
-                                    const newTrends = deepClone(trends);
+                                    const newTrends = deepClone(allTrends);
                                     const change = { [k]: { min: !min && min !== 0 ? null : { value: min, inclusive: minInclusive }, max: !max && max !== 0 ? null : { value: max, inclusive: maxInclusive } } };
                                     newTrends[index] = { ...newTrends[index], ...change };
                                     onChange(newTrends);
@@ -82,8 +86,7 @@ export default function Trend({ title, trends, minValue, maxValue, onChange, sta
                         }
                         return <div className="trend-item-attr" key={i}>{components}</div>
                     })}
-                    <Divider></Divider>
-                </div>
+                </div><Divider key={`divider-${index}`}></Divider></>
             ))}
         </>
     )

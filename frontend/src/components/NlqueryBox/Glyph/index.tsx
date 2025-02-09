@@ -1,11 +1,18 @@
 import { Attribute, Comparator, Relation, Trend } from "../../../types/QuerySpec"
 import * as d3 from "d3";
 import { deepClone } from "../../../utils/deepclone";
+import { getColor } from "../../../utils/color";
+
+type ClickType = "Trend" | "Relation";
 
 interface GlyphProps {
     trends?: Trend[];
     relations?: Relation[];
     allTrends?: Trend[];
+    height?: number;
+    curTrends?: number[];
+    curRelations?: number[];
+    onClick?: (type: ClickType, index: number) => void;
 }
 
 const scale = d3.scaleLinear<string>()
@@ -16,6 +23,7 @@ const getColorFromAngle = (angle: number) => {
 };
 
 const getAverageValue = (trend: Trend) => {
+    if (!trend) return 0;
     const scope = trend.angle_scope_condition || trend.slope_scope_condition;
     if (!scope) return 0;
     const min = scope.min?.value ?? -90;
@@ -32,12 +40,11 @@ const comparatorMap = {
     [Comparator.APPROXIMATELY_EQUAL_TO]: Comparator.APPROXIMATELY_EQUAL_TO
 };
 
-const Glyph = ({ trends = [], relations = [], allTrends = [] }: GlyphProps) => {
-    const height = 32;
+const Glyph = ({ trends = [], relations = [], allTrends = [], height = 32, onClick, curTrends = [], curRelations = [] }: GlyphProps) => {
     const paddingY = 10;
     const paddingX = 4;
     const trendLength = height - paddingY * 1.5;
-    const t = deepClone(trends);
+    const t = deepClone(trends).map((trends, index) => (trends.index = index, trends));
 
     const getTrend = (trend: Trend, i: number, showIndex = false) => {
         const angle = getAverageValue(trend) || 0;
@@ -49,14 +56,15 @@ const Glyph = ({ trends = [], relations = [], allTrends = [] }: GlyphProps) => {
         const id = Math.random().toString(36).substring(2, 7);
 
         return (
-            <g key={i}>
+            <g key={i} onClick={() => onClick?.("Trend", i)}>
                 <defs>
                     <marker id={`arrow-${id}-${i}`} markerWidth="4" markerHeight="4" refX="3" refY="2" orient="auto" markerUnits="strokeWidth">
                         <path d="M4,2 L0,4 M4,2 L0,0" fill="none" stroke={color} strokeWidth="1" />
                     </marker>
                 </defs>
+                <rect x={x1} y={paddingY} width={trendLength} height={height - paddingY * 2} fill={curTrends.includes(i) ? getColor(i) : "#eee0"} opacity={.5}></rect>
                 <line x1={x1} y1={y1} x2={x2} y2={y2} stroke={color} strokeWidth={1.5} markerEnd={`url(#arrow-${id}-${i})`} />
-                {showIndex && <text x={angle > 0 ? x2 - 6 : x1 + 1} y={angle > 0 ? y1 : y2} fontSize="8" fill="#000c" fontWeight="bold">{trend.index}</text>}
+                {showIndex && <text x={angle > 0 ? x2 - 8 - height / 16 : x1 + height / 16} y={angle > 0 ? y1 : y2} fontSize={height / 3} fill="#000c" fontWeight="bold">{i}</text>}
             </g>
         );
     };
@@ -67,16 +75,16 @@ const Glyph = ({ trends = [], relations = [], allTrends = [] }: GlyphProps) => {
         );
     };
 
-    const drawConnect = (x1: number, y1: number, x2: number, y2: number, v: number, color: string = "#0005", strokeWidth: number = 0.5) => {
+    const drawConnect = (x1: number, y1: number, x2: number, y2: number, v: number, index: number, color: string = "#0005", strokeWidth: number = 0.5) => {
         return (
-            <path d={`M${x1},${y1} V${v} H${x2} V${y2}`} stroke={color} fill="none" strokeDasharray="2,2" strokeLinecap="round" strokeWidth={strokeWidth} />
+            <path onClick={() => onClick?.("Relation", index)} d={`M${x1},${y1} V${v} H${x2} V${y2}`} stroke={curRelations.includes(index) ? "#000" : color} fill="none" strokeDasharray="2,2" strokeLinecap="round" strokeWidth={strokeWidth} />
         )
     };
 
-    const drawComparator = (x: number, y: number, comparator: Comparator, reverse: boolean = false, color: string = "#000") => {
+    const drawComparator = (x: number, y: number, comparator: Comparator, index: number, reverse: boolean = false, color: string = "#000") => {
         const newComparator = reverse && comparatorMap[comparator] ? comparatorMap[comparator] : comparator;
         return (
-            <text x={x} y={y} fontSize="12" fill={color} textAnchor="middle">{newComparator}</text>
+            <text onClick={() => onClick?.("Relation", index)} x={x} y={y} fontSize={height / 3} fill={color} fontWeight={700} textAnchor="middle">{newComparator}</text>
         )
     }
 
@@ -121,10 +129,10 @@ const Glyph = ({ trends = [], relations = [], allTrends = [] }: GlyphProps) => {
 
             return (
                 <g key={i}>
-                    {drawConnect(x1, y1, x2, y2, is1 ? y1 - 6 : y1 + 6)}
+                    {drawConnect(x1, y1, x2, y2, is1 ? y1 - 6 : y1 + 6, i)}
                     {drawCircle(x1, y1)}
                     {drawCircle(x2, y2)}
-                    {drawComparator((x1 + x2) / 2, is1 ? y1 - 2 : y1 + 10, relation.comparator!, isReverse)}
+                    {drawComparator((x1 + x2) / 2, is1 ? y1 : y1 + height / 4, relation.comparator!, i, isReverse)}
                 </g>
             );
         }
@@ -142,7 +150,7 @@ const Glyph = ({ trends = [], relations = [], allTrends = [] }: GlyphProps) => {
             const y1 = angle1 > 0 ? height - paddingY : paddingY;
             const y2 = angle2 > 0 ? height - paddingY : paddingY;
 
-            const arcRadius = 6;
+            const arcRadius = height / 4;
 
             const createArc = (angle: number) => d3.arc()
                 .innerRadius(0)
@@ -156,8 +164,8 @@ const Glyph = ({ trends = [], relations = [], allTrends = [] }: GlyphProps) => {
                     <path d={createArc(angle1)()} transform={`translate(${x1},${y1})`} stroke="#0008" fill="none" />
                     {/* @ts-expect-error null */}
                     <path d={createArc(angle2)()} transform={`translate(${x2},${y2})`} stroke="#0008" fill="none" />
-                    {drawConnect(x1 + 4, y1, x2 + 4, y2, paddingY / 2)}
-                    {drawComparator((x1 + x2) / 2 + 4, paddingY - 1, relation.comparator!, isReverse)}
+                    {drawConnect(x1 + height / 8, y1, x2 + height / 8, y2, paddingY / 2, i)}
+                    {drawComparator((x1 + x2) / 2 + 4, paddingY, relation.comparator!, i, isReverse)}
                 </g>
             );
         }
@@ -174,10 +182,10 @@ const Glyph = ({ trends = [], relations = [], allTrends = [] }: GlyphProps) => {
 
             return (
                 <g key={i}>
-                    {drawConnect(x11, y, x12, y, y + 2, "#0008")}
-                    {drawConnect(x21, y, x22, y, y + 2, "#0008")}
-                    {drawConnect((x12 + x11) / 2, y + 2, (x21 + x22) / 2, y + 2, y + 6)}
-                    {drawComparator((x12 + x21) / 2, y + 10, relation.comparator!, isReverse)}
+                    {drawConnect(x11, y, x12, y, y + 2, -1, "#0008")}
+                    {drawConnect(x21, y, x22, y, y + 2, -1, "#0008")}
+                    {drawConnect((x12 + x11) / 2, y + 2, (x21 + x22) / 2, y + 2, y + 6, i)}
+                    {drawComparator((x12 + x21) / 2, y + height / 4, relation.comparator!, i, isReverse)}
                 </g>
             );
         }

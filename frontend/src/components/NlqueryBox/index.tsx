@@ -1,88 +1,26 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../../app/hooks";
 import "./index.css";
-import { addQuerySpec, setNLQuery, setQuery, setQuerySpec } from "../../app/slice/stateSlice";
+import { addQuerySpec, setCurRelations, setCurTrends, setNLQuery, setQuery, setQuerySpec } from "../../app/slice/stateSlice";
 import QueryIcon from "../../icons/Query";
 import SubmitIcon from "../../icons/Submit";
 import { flushSync } from "react-dom";
 import { AudioFilled, LoadingOutlined } from "@ant-design/icons";
 import { classnames } from "../../utils/classname";
 import type { SpeechRecognitionType } from "../../types";
-import { Divider, Dropdown, Popover } from "antd";
-import { getFragmentsBySpec, getQuerySpecRequest, getSearchPrompt } from "../../api";
-import Target from "./Target";
-import { deepClone } from "../../utils/deepclone";
-import Scope from "./Scope";
-import Trend from "./Trend";
-import Relation from "./Relation";
+import { Dropdown, Popover } from "antd";
+import { abortRequest, getFragmentsBySpec, getQuerySpecRequest, getSearchPrompt } from "../../api";
 import { setQueryResults } from "../../app/slice/approximation";
 import Glyph from "./Glyph";
 import { setIsRequesting } from "../../app/slice/resultsSlice";
 import { debounce } from "../../utils/debounce";
+import QueryCondition from "../QueryCondition";
 
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition || window.mozSpeechRecognition || window.msSpeechRecognition;
 SpeechRecognition.lang = 'en-US';
 SpeechRecognition.continuous = true;
 
 const PLACEHOLDER = "Please enter your query...";
-
-const ColoredTextComponent = () => {
-  const values = useAppSelector((state) => state.dataset.dataset?.valueColumns) || [];
-  const NLQuery = useAppSelector((state) => state.states.NLQuery);
-  const data = useAppSelector((state) => state.dataset.dataset?.data) || {};
-  const date = useAppSelector((state) => state.dataset.dataset?.data[state.dataset.dataset.timeStampColumn]);
-  const querySpec = useAppSelector((state) => state.states.querySpec);
-  const dispatch = useAppDispatch();
-  if (!querySpec) return <span>{NLQuery || PLACEHOLDER}</span>;
-  const value = data[querySpec?.target || ""] as number[] || [];
-  const maxValue = Math.floor(Math.max(...value));
-  const minValue = Math.ceil(Math.min(...value));
-  const time = date?.map(d => new Date(d).getTime()) || [];
-  const minDate = Math.min(...time);
-  const maxDate = Math.max(...time);
-  return <>
-    {NLQuery}
-    <span onClick={(e) => e.stopPropagation()}>
-      <Popover content={
-        <>
-          <Target title="Target" value={querySpec?.target || ""} options={values} onChange={(val) => {
-            const newQuerySpec = deepClone(querySpec);
-            newQuerySpec.target = val;
-            dispatch(setQuerySpec(newQuerySpec));
-          }}></Target>
-          <Divider></Divider>
-          {querySpec.trends?.length && <Trend maxValue={maxDate} minValue={minDate} trends={querySpec.trends || []} onChange={(trends) => {
-            const newQuerySpec = deepClone(querySpec);
-            newQuerySpec.trends = trends;
-            dispatch(setQuerySpec(newQuerySpec));
-          }}></Trend>}
-          {querySpec.relations?.length && <Relation relations={querySpec.relations || []} idLength={querySpec?.trends?.length || 0} onChange={(relations) => {
-            const newQuerySpec = deepClone(querySpec);
-            newQuerySpec.relations = relations;
-            dispatch(setQuerySpec(newQuerySpec));
-          }}></Relation>}
-          {querySpec.time_span_condition && <><Scope title={"Time Span Condition"} min={querySpec.time_span_condition?.min?.value || null} max={querySpec.time_span_condition?.max?.value || null} minInclusive={!!querySpec.time_span_condition?.min?.inclusive} maxInclusive={!!querySpec.time_span_condition?.max?.inclusive} onChange={(min, max, minInclusive, maxInclusive) => {
-            const newQuerySpec = deepClone(querySpec);
-            newQuerySpec.time_span_condition = { min: !min && min !== 0 ? null : { value: min, inclusive: minInclusive }, max: !max && max !== 0 ? null : { value: max, inclusive: maxInclusive } };
-            dispatch(setQuerySpec(newQuerySpec));
-          }} ></Scope><Divider></Divider></>}
-          {querySpec.time_scope_condition && <><Scope title={"Time Scope Condition"} minValue={minDate} maxValue={maxDate} min={querySpec.time_scope_condition?.min?.value || null} max={querySpec.time_scope_condition?.max?.value || null} minInclusive={!!querySpec.time_scope_condition?.min?.inclusive} maxInclusive={!!querySpec.time_scope_condition?.max?.inclusive} onChange={(min, max, minInclusive, maxInclusive) => {
-            const newQuerySpec = deepClone(querySpec);
-            newQuerySpec.time_scope_condition = { min: !min && min !== 0 ? null : { value: min, inclusive: minInclusive }, max: !max && max !== 0 ? null : { value: max, inclusive: maxInclusive } };
-            dispatch(setQuerySpec(newQuerySpec));
-          }} ></Scope><Divider></Divider></>}
-          {querySpec.value_scope_condition && <Scope title={"Value Scope Condition"} minValue={minValue} maxValue={maxValue} min={querySpec.value_scope_condition?.min?.value || null} max={querySpec.value_scope_condition?.max?.value || null} minInclusive={!!querySpec.value_scope_condition?.min?.inclusive} maxInclusive={!!querySpec.value_scope_condition?.max?.inclusive} onChange={(min, max, minInclusive, maxInclusive) => {
-            const newQuerySpec = deepClone(querySpec);
-            newQuerySpec.value_scope_condition = { min: !min && min !== 0 ? null : { value: min, inclusive: minInclusive }, max: !max && max !== 0 ? null : { value: max, inclusive: maxInclusive } };
-            dispatch(setQuerySpec(newQuerySpec));
-          }} ></Scope>}
-        </>
-      } trigger="click">
-        <span style={{ cursor: "pointer" }}><Glyph allTrends={querySpec?.trends} relations={querySpec?.relations} trends={querySpec?.trends}></Glyph></span>
-      </Popover>
-    </span>
-  </>;
-};
 
 export default function NlqueryBox() {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -97,16 +35,22 @@ export default function NlqueryBox() {
   const [promptList, setPromptList] = useState<string[]>([]);
   const [isDropdownVisible, setIsDropdownVisible] = useState(false);
   const [editPos, setEditPos] = useState<{ x: number, y: number, width: number }>({ x: 0, y: 0, width: 0 });
+  const curTrends = useAppSelector((state) => state.states.curTrends);
+  const curRelations = useAppSelector((state) => state.states.curRelations);
+
+  function adjustPos() {
+    const dom = textareaRef.current || textRef.current;
+    if (!dom) return;
+    const rect = dom.getBoundingClientRect();
+    setEditPos({ x: rect.left, y: rect.top + rect.height, width: rect.width });
+  }
 
   const fetchPrompt = useCallback(debounce((query: string) => {
     setPromptList([]);
     getSearchPrompt(query).then(res => {
       setIsDropdownVisible(true);
       setPromptList(res);
-      const dom = textareaRef.current || textRef.current;
-      if (!dom) return;
-      const rect = dom.getBoundingClientRect();
-      setEditPos({ x: rect.left, y: rect.top + rect.height, width: rect.width });
+      adjustPos();
     })
   }, 1000), [])
 
@@ -117,6 +61,11 @@ export default function NlqueryBox() {
       window.dispatchEvent(new Event("resize"));
     }
   }, [NLQuery, isEdit]);
+
+  useEffect(() => {
+    abortRequest();
+    adjustPos();
+  }, [NLQuery]);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -189,9 +138,33 @@ export default function NlqueryBox() {
           }}
           ref={textRef}
           className="nl-query text"
-          style={{ color: !NLQuery ? "gray" : "#000", cursor: isRequesting ? "not-allowed" : "pointer" }}
-        ><ColoredTextComponent></ColoredTextComponent>{isRequesting && <LoadingOutlined style={{ marginLeft: 8 }} />}</div>
+          style={{ color: !NLQuery ? "gray" : "#000", cursor: isRequesting ? "not-allowed" : "text" }}
+        >{NLQuery || PLACEHOLDER}{isRequesting && <LoadingOutlined style={{ marginLeft: 8 }} />}</div>
       )}
+      <button type="button" className="btn" style={{ width: 'fit-content' }}>
+        <Popover trigger={["hover"]} content={<QueryCondition></QueryCondition>}>
+          <div className="pointer flex"><Glyph onClick={(type, index) => {
+            switch (type) {
+              case "Trend":
+                if (curTrends.includes(index)) {
+                  dispatch(setCurTrends(curTrends.filter(t => t !== index)))
+                } else {
+                  dispatch(setCurTrends([...curTrends, index]))
+                }
+                break;
+              case "Relation":
+                if (curRelations.includes(index)) {
+                  dispatch(setCurRelations(curRelations.filter(t => t !== index)))
+                } else {
+                  dispatch(setCurRelations([...curRelations, index]))
+                }
+                break;
+              default:
+                break;
+            }
+          }} height={48} trends={querySpec?.trends || []} allTrends={querySpec?.trends || []} relations={querySpec?.relations || []} curTrends={curTrends} curRelations={curRelations}></Glyph></div>
+        </Popover>
+      </button>
       <button onClick={() => {
         if (!SpeechRecognition) {
           console.error("SpeechRecognition is not supported!");
