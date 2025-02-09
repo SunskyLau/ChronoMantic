@@ -232,6 +232,12 @@ Note: You only need to output the final feature statement result, without provid
 
 def create_system_prompt(dataset_info: str) -> str:
     system_prompt = f"""
+
+	
+示例一：
+		
+	输入：
+"Check the column sales_amount with a double top trend at the increase period which increase at least 20 dollars per day, with the value of y is less than 500 and time from 2021 to 2023. "
 你是一个用于将针对时间序列片段的自然语言查询解析为相应的结构化查询语法的解析器。你被应用于一个自然语言驱动的时间序列片段查询工具，以下项目的相关背景和知识。
 	
 1. 项目背景
@@ -285,155 +291,88 @@ def create_system_prompt(dataset_info: str) -> str:
     你只需要关注其中的value_columns信息，其中包含了时间序列的列名信息，是你之后解析出target字段的来源。
 
 5. 目标态输出Output
-	为了告诉使用我们工具的用户相应的自然语言文本能够产生哪些查询条件，并允许用户调整查询条件来消除自然语言的歧义或模糊，我们构建了一个目标态输出数据结构Output，作为你最终解析NL得到的目标。
-	首先，你需要对自然语言查询文本进行完整分析，得到一个全局的QuerySpec，然后根据QuerySpec每一条内容的来源所在位置对自然语言进行划分，得到合适的Chunk，最后进行输出。以下是解析目标态输出Output的细节，它是由Chunk构成的数组，Chunk是对每个text块解析的结果：
-	```
-	type Chunk= {{
-		text: str // 对应从NL中划分出的文本，所有Chunk的text可以组合成原NL
-		condition?: QuerSpec // 从QuerySpec中被解析出来的一部分与当前文本有关的结构化查询条件，不对应任何查询条件的则不出现这个字段，所有的Chunk对应的condition可以恰好组合成一个完整的QuerySpec，对应整个NL的语义。请注意trends的顺序问题，用户声明的trends顺序可能是混乱的，全局组织好QuerySpec之后，请按照正确的trends出现顺序进行分配，即使index为0的文本出现在后面。
-		exact?: boolean // 文本是否存在歧义或者模糊，准确情况下为true，不准确情况下为false
-	}}
-	
-	type Output = {{ output: Chunk[] }} //最终的目标输出，由连续的Chunk数组组成。
+	你需要对自然语言查询文本进行完整分析，得到一个全局的QuerySpec：
+	```	
+	type Output = {{ output: QuerySpec }} //最终的目标输出。
 	```
 
 任务：
 	请你作为一个NL解析器，根据以上的背景和知识，将用户对时间序列片段的自然语言查询解析为Output的形式。要求你的输出有且仅有为Output类型的json字符串，不要使用代码块或```等内容，也不要添加注释。
     要求：
-    1. 你需要一步一步思考，遵从下面的思考过程：
-      - 先根据自然语言查询文本解析出一个完整的QuerySpec
-      - 然后再根据完整的QuerySpec将自然语言分段为若干个Chunk
-      - 将整个QuerySpec分为若干个condition分配到各自的Chunk中，并且正确设置exact属性（当text可以准确无误地反映condition的时候，设置为true，否则设置为false）
-      - 你需要特别注意：不能重复分配同一个QuerySpec的字段到condition中，例如trends中每一项只能唯一分配给一个Chunk，然后其余Chunk将不能再出现相同的trends，你必须确保你分配的Chunk中的文字可以最完整的代表该condition
-		2. 原始NL查询文本中的每个字符都应该被保留在Output中的Chunk的text字段中
-    3. 按照顺序提取Chunk中的text字段，要保证恰好组合成一个完整的原始NL查询文本，含有condition的Chunk中的text字段不应该任何无意义的字符（例如空格、符号或者连接词），无意义的字符需要单独形成一个Chunk
-    4. 对于解析出的condition，应该保证恰好可以组成有且仅有一个完整的QuerySpec，对应整个NL的语义，这个完整的QuerySpec不应该出现任何重复冗余的字段
-    5. 你需要注意QuerySpec中trends的先后顺序，并确保所有Chunk的trends都是直接从完整QuerySpec中直接获得的，即使这个Chunk靠后，它对应的trends的index也可能是靠前的，你需要根据语义进行分析，保证所有Chunk中的trends不能重复，必须是唯一出现的
+    1. 你需要直接根据自然语言查询文本解析出一个完整的QuerySpec
 	
-	
-示例一：
-		
-	输入：
-"Check the column sales_amount with a double top trend at the increase period which increase at least 20 dollars per day, with the value of y is less than 500 and time from 2021 to 2023. "
-
 	输出：
-{{"output":[{{
-  "text": "Check the column"
-}},{{
-  "text": " "
-}},{{
-  "text": "sales_amount",
-  "condition": {{
-    "target": "sales_amount"
-  }},
-  "exact": true
-}},{{
-  "text": " "
-}},{{
-  "text": "with"
-}},{{
-  "text": " "
-}},{{
-  "text": "a double top trend at the increase period which increase at least 20 dollars per day",
-  "condition": {{
-    "trends": [{{
-      "angle_scope_condition": {{
-        "min": {{
-          "value": 5,
-          "inclusive": true
-        }}
-      }},
-      "slope_scope_condition":{{
-        "min": {{
-          "value": 20,
-          "inclusive": true
-        }}
-      }},
-      "index": 0
-    }}, {{
-      "angle_scope_condition": {{
-        "max": {{
-          "value": -5,
-          "inclusive": true
-        }}
-      }},
-      "index": 1
-    }}, {{
-      "angle_scope_condition": {{
-        "min": {{
-          "value": 5,
-          "inclusive": true
-        }}
-      }},
-      "slope_scope_condition":{{
-        "min": {{
-          "value": 20,
-          "inclusive": true
-        }}
-      }},
-      "index": 2
-    }}, {{
-      "angle_scope_condition": {{
-        "max": {{
-          "value": -5,
-          "inclusive": true
-        }}
-      }},
-      "index": 3
-    }}],
-    "relations": [{{
-      "id1": 0,
-      "id2": 2,
-      "attribute": "end_value",
-      "comparator": "~="
-    }}]
-  }},
-  "exact": false
-}},{{
-  "text": ","
-}},{{
-  "text": " "
-}},{{
-  "text": "with"
-}},{{
-  "text": " "
-}},{{
-  "text": "the value of y is less than 500",
-  "condition": {{
-    "value_scope_condition": {{
+{{"output":{{
+  "target": "sales_amount",
+  "trends": [{{
+    "angle_scope_condition": {{
       "min": {{
-        "value": 500,
-        "inclusive": false
-      }}
-    }}
-  }},
-  "exact": true
-}},{{
-  "text": " "
-}},{{
-  "text": "and"
-}},{{
-  "text": " "
-}},{{
-  "text": "time from 2021 to 2023",
-  "condition": {{
-    "time_scope_condition": {{
-      "min": {{
-        "value": 1609459200,
+        "value": 5,
         "inclusive": true
-      }},
+      }}
+    }},
+    "slope_scope_condition":{{
+      "min": {{
+        "value": 20,
+        "inclusive": true
+      }}
+    }},
+    "index": 0
+  }}, {{
+    "angle_scope_condition": {{
       "max": {{
-        "value": 1672531200,
+        "value": -5,
         "inclusive": true
       }}
+    }},
+    "index": 1
+  }}, {{
+    "angle_scope_condition": {{
+      "min": {{
+        "value": 5,
+        "inclusive": true
+      }}
+    }},
+    "slope_scope_condition":{{
+      "min": {{
+        "value": 20,
+        "inclusive": true
+      }}
+    }},
+    "index": 2
+  }}, {{
+    "angle_scope_condition": {{
+      "max": {{
+        "value": -5,
+        "inclusive": true
+      }}
+    }},
+    "index": 3
+  }}],
+  "relations": [{{
+    "id1": 0,
+    "id2": 2,
+    "attribute": "end_value",
+    "comparator": "~="
+  }}],
+  "value_scope_condition": {{
+    "min": {{
+      "value": 500,
+      "inclusive": false
     }}
   }},
-  "exact": true
-}},{{
-  "text": "."
-}},{{
-  "text": " "
-}}]}}
+  "time_scope_condition": {{
+    "min": {{
+      "value": 1609459200,
+      "inclusive": true
+    }},
+    "max": {{
+      "value": 1672531200,
+      "inclusive": true
+    }}
+  }}
+  }}}}
+ 
 
 示例二：
 
@@ -441,137 +380,99 @@ def create_system_prompt(dataset_info: str) -> str:
 "Show me the periods when the price of Amazon stock shows a sharp head-and-shoulders shape and before that it resembles a slowly formed V shape over 20 days"
 
 	输出：
-{{"output":[{{
-  "text": "Show me periods when the price of"
-}},{{
-  "text": " "
-}},{{
-  "text": "Amazon stock",
-  "condition": {{
-    "target": "AMZN"
-  }},
-  "exact": true
-}},{{
-  "text": " "
-}},{{
-  "text": "shows"
-}},{{
-  "text": " "
-}},{{
-  "text": "a sharp head-and-shoulders shape",
-  "condition": {{
-    "trends": [{{
-      "angle_scope_condition": {{
-        "min": {{
-          "value": 60,
-          "inclusive": true
-        }}
+{{"output":{{
+  "target": "AMZN"
+  "trends": [{{
+    "angle_scope_condition": {{
+      "max": {{
+        "value": -5,
+        "inclusive": true
       }},
-      "index": 2
-    }},{{
-      "angle_scope_condition": {{
-        "max": {{
-          "value": -60,
-          "inclusive": true
-        }}
-      }},
-      "index": 3
-    }},{{
-      "angle_scope_condition": {{
-        "min": {{
-          "value": 60,
-          "inclusive": true
-        }}
-      }},
-      "index": 4
-    }},{{
-      "angle_scope_condition": {{
-        "max": {{
-          "value": -60,
-          "inclusive": true
-        }}
-      }},
-      "index": 5
-    }},{{
-      "angle_scope_condition": {{
-        "min": {{
-          "value": 60,
-          "inclusive": true
-        }}
-      }},
-      "index": 6
-    }},{{
-      "angle_scope_condition": {{
-        "max": {{
-          "value": -60,
-          "inclusive": true
-        }}
-      }},
-      "index": 7
-    }}],
-    "relations": [{{
-      "id1": 2,
-      "id2": 4,
-      "attribute": "end_value",
-      "comparator": "<"
-    }},
-    {{
-      "id1": 4,
-      "id2": 6,
-      "attribute": "end_value",
-      "comparator": ">"
-    }}]
-  }},
-  "exact": false
-}},{{
-  "text": " "
-}},{{
-  "text": "and before that it resembles"
-}},{{
-  "text": " "
-}},{{
-  "text": "a slowly formed V shape",
-  "condition": {{
-    "trends": [{{
-      "angle_scope_condition": {{
-        "max": {{
-          "value": -5,
-          "inclusive": true
-        }},
-        "min": {{
-	        "value": -30,
-	        "inclusive": true
-        }}
-      }},
-      "index": 0
-    }},{{
-      "angle_scope_condition": {{
-        "min": {{
-          "value": 5,
-          "inclusive": true
-        }},
-        "max": {{
-          "value": 30,
-          "inclusive": true
-        }}
-      }},
-      "index": 1
-    }}]
-  }},
-}},{{
-  "text": " "
-}},{{
-  "text": "over 20 days",
-  "condition": {{
-    "time_span_condition": {{
       "min": {{
-        "value": 1728000,
+        "value": -30,
         "inclusive": true
       }}
+    }},
+    "index": 0
+  }},{{
+    "angle_scope_condition": {{
+      "min": {{
+        "value": 5,
+        "inclusive": true
+      }},
+      "max": {{
+        "value": 30,
+        "inclusive": true
+      }}
+    }},
+    "index": 1
+  }},{{
+    "angle_scope_condition": {{
+      "min": {{
+        "value": 60,
+        "inclusive": true
+      }}
+    }},
+    "index": 2
+  }},{{
+    "angle_scope_condition": {{
+      "max": {{
+        "value": -60,
+        "inclusive": true
+      }}
+    }},
+    "index": 3
+  }},{{
+    "angle_scope_condition": {{
+      "min": {{
+        "value": 60,
+        "inclusive": true
+      }}
+    }},
+    "index": 4
+  }},{{
+    "angle_scope_condition": {{
+      "max": {{
+        "value": -60,
+        "inclusive": true
+      }}
+    }},
+    "index": 5
+  }},{{
+    "angle_scope_condition": {{
+      "min": {{
+        "value": 60,
+        "inclusive": true
+      }}
+    }},
+    "index": 6
+  }},{{
+    "angle_scope_condition": {{
+      "max": {{
+        "value": -60,
+        "inclusive": true
+      }}
+    }},
+    "index": 7
+  }}],
+  "relations": [{{
+    "id1": 2,
+    "id2": 4,
+    "attribute": "end_value",
+    "comparator": "<"
+  }}, {{
+    "id1": 4,
+    "id2": 6,
+    "attribute": "end_value",
+    "comparator": ">"
+  }}],
+  "time_span_condition": {{
+    "min": {{
+      "value": 1728000,
+      "inclusive": true
     }}
-  }},
-  "exact": true
-}}]}}
+  }}
+}}}}
 
 
 示例三：
@@ -580,74 +481,38 @@ def create_system_prompt(dataset_info: str) -> str:
 "In Amazon stock, look up two consecutive rises and the time period when the first rose slowly and the second rose sharp"
 
 	输出：
-{{"output":[{{
-  "text": "In"
-}},{{
-  "text": " "
-}},{{
-  "text": "Amazon stock",
-  "condition": {{
-    "target": "AMZN"
-  }},
-  "exact": true
-}},{{
-  "text": ","
-}},{{
-  "text": " "
-}},{{
-  "text": "look up"
-}},{{
-  "text": " "
-}},{{
-  "text": "two consecutive rises",
-  "condition": {{
-    "relations": [
-      {{
-        "id1": 0,
-        "id2": 1,
-        "attribute": "end_value",
-        "comparator": "<"
-      }}
-    ]
-  }},
-  "exact": false
-}},{{
-  "text": " "
-}},{{
-  "text": "and the time period when"
-}},{{
-  "text": " "
-}},{{
-  "text": "the first rose slowly and the second rose sharp",
-  "condition": {{
-    "trends": [
-      {{
-        "angle_scope_condition": {{
-          "min": {{
-            "value": 5,
-            "inclusive": true
-          }},
-          "max": {{
-            "value": 30,
-            "inclusive": true
-          }}
-        }},
-        "index": 0
+{{"output":{{
+  "target": "AMZN",
+  "relations": [
+    {{
+      "id1": 0,
+      "id2": 1,
+      "attribute": "end_value",
+      "comparator": "<"
+    }}
+  ],
+  "trends": [{{
+    "angle_scope_condition": {{
+      "min": {{
+        "value": 5,
+        "inclusive": true
       }},
-      {{
-        "angle_scope_condition": {{
-          "min": {{
-            "value": 60,
-            "inclusive": true
-          }}
-        }},
-        "index": 1
+      "max": {{
+        "value": 30,
+        "inclusive": true
       }}
-    ]
-  }},
-  "exact": false
-}}
-]}}
+    }},
+    "index": 0
+      }},{{
+    "angle_scope_condition": {{
+      "min": {{
+        "value": 60,
+        "inclusive": true
+      }}
+    }},
+    "index": 1
+  }}]
+}}}}
 """
     return system_prompt
 
@@ -743,6 +608,85 @@ choices: ["angle_scope_condition","value_scope_condition"]
 
 """
     return ts_prompt
+
+
+def create_search_prompt(dataset_info: str) -> str:
+    search_prompt = f"""
+你是一个根据上文补充下文的专家。你被应用于一个自然语言驱动的时间序列片段查询工具，以下是项目的相关背景和知识。
+
+0. 技能
+- 你是大数据处理的专家，擅长自然语言处理、机器学习和时间序列分析。
+- 你能够解析用户意图，并自动生成符合要求的查询语句。
+
+1. 项目背景
+本项目旨在开发一个自然语言驱动的时间序列片段查询工具，使用户能够使用自然语言表达查询需求。底层采用结构化查询语法和时间序列分割模型，以支持时间序列片段的检索。我们使用LLM作为解析器，将自然语言查询解析为相应的结构化查询。你的角色是补充缺失的上下文信息，根据用户提供的部分输入自动推断并完善完整的查询。
+
+2. 结构化查询语法
+为了支持多样化的查询条件，我们设计了一套结构化查询语法。以下是具体的结构定义：
+
+```
+interface Trend {{
+  angle_scope_condition?: ScopeCondition | null;  // 角度范围条件，例如“角度应大于45度”
+  slope_scope_condition?: ScopeCondition | null;  // 斜率范围条件，例如“斜率为正”
+  time_scope_condition?: ScopeCondition | null;  // 发生时间范围，例如“发生在2023年”
+  time_span_condition?: ScopeCondition | null;  // 持续时间条件，例如“趋势持续至少10天”
+}}
+
+interface Relation {{
+  id1?: number;  // 第一个Trend片段的索引，需在trends数组范围内
+  id2?: number;  // 第二个Trend片段的索引，需在trends数组范围内
+  attribute?: "slope" | "angle" | "start_value" | "end_value" | "time_span";  // 需要比较的属性，如“两个峰值的end_value大致相等”
+  comparator?: ">" | "<" | "=" | "<=" | ">=" | "~=";  // 关系运算符，优先使用"~="表示近似相等
+}}
+
+interface QuerySpec {{
+  target?: string;  // 查询的目标时间序列列名，取自数据集的value_columns
+  trends?: Trend[]; // 描述时间序列趋势的模式
+  relations?: Relation[]; // 不同Trend段之间的关系
+  time_span_condition?: ScopeCondition;  // 全局时间跨度条件，单位秒
+  time_scope_condition?: ScopeCondition;  // 全局时间范围条件，单位秒
+  value_scope_condition?: ScopeCondition;  // 全局数值范围条件
+}}
+```
+
+基于这套语法，你需要根据用户的查询内容自动推测并补全QuerySpec，例如：
+- 如果用户未指定 `target`，默认选择 `value_columns` 中的第一个列。
+- 如果用户未指定 `trends`，可以补全合理的趋势模式，例如 `double-top`、`head-and-shoulders`、`rising then falling`、`consecutive rises` 等。
+- 如果用户未指定 `relations`、`time_span_condition`、`time_scope_condition`、`value_scope_condition`，可以根据查询内容合理补全。
+- 你的重点是理解 `target` 和 `trends`，确保查询完整且符合用户意图。
+
+3. 数据集信息
+用户提供的时间序列数据集包含多个公司的股票价格数据，数据集基本信息如下：
+{dataset_info}
+你只需关注 `value_columns`，它提供了时间序列的列名，是 `target` 字段的来源。
+
+4. 目标输出格式（Output）
+```
+type Output = {{ output: string[] }}  // 结果是一个字符串数组
+```
+
+任务要求：
+你需要根据用户的上文补充合理的查询内容，并输出符合 Output 格式的 JSON 字符串。
+- 仅输出 JSON 字符串，不要添加代码块或额外注释。
+- 如果没有合适的输出，请不要输出任何字符串，返回 []，确保生成的内容不重复已有信息。
+- 深入分析用户意图，并推荐相关下文。
+- 生成的下文需要符合上下文语境，可以适当添加一些连接词。
+
+示例：
+用户输入："Find AMZN"
+返回：
+{{"output": ["where has a double top trend", "where has a continuous upward trend"]}}
+
+用户输入："Show me an uptrend"
+返回：
+{{"output": ["in AMZN", "in DPZ", "in BTC", "in NFLX"]}}
+
+用户输入："find amzn with a double top where the double top trend occurred in 2023 and the trend lasted at least 10 days"
+返回：
+{{"output": []}}
+
+"""
+    return search_prompt
 
 
 if __name__ == "__main__":

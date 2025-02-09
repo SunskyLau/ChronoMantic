@@ -1,16 +1,15 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../../app/hooks";
 import "./index.css";
-import { addQuerySpec, setNLQuery, setQuery } from "../../app/slice/stateSlice";
+import { addQuerySpec, setNLQuery, setQuery, setQuerySpec } from "../../app/slice/stateSlice";
 import QueryIcon from "../../icons/Query";
 import SubmitIcon from "../../icons/Submit";
 import { flushSync } from "react-dom";
 import { AudioFilled, LoadingOutlined } from "@ant-design/icons";
 import { classnames } from "../../utils/classname";
 import type { SpeechRecognitionType } from "../../types";
-import { Empty, Popover } from "antd";
-import { getFragmentsBySpec, getQuerySpecRequest } from "../../api";
-import { Query, QuerySpec } from "../../types/QuerySpec";
+import { Divider, Dropdown, Popover } from "antd";
+import { getFragmentsBySpec, getQuerySpecRequest, getSearchPrompt } from "../../api";
 import Target from "./Target";
 import { deepClone } from "../../utils/deepclone";
 import Scope from "./Scope";
@@ -19,6 +18,7 @@ import Relation from "./Relation";
 import { setQueryResults } from "../../app/slice/approximation";
 import Glyph from "./Glyph";
 import { setIsRequesting } from "../../app/slice/resultsSlice";
+import { debounce } from "../../utils/debounce";
 
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition || window.mozSpeechRecognition || window.msSpeechRecognition;
 SpeechRecognition.lang = 'en-US';
@@ -26,89 +26,67 @@ SpeechRecognition.continuous = true;
 
 const PLACEHOLDER = "Please enter your query...";
 
-const ColoredTextComponent: React.FC<{ query: Query | null }> = ({ query }) => {
+const ColoredTextComponent = () => {
   const values = useAppSelector((state) => state.dataset.dataset?.valueColumns) || [];
   const NLQuery = useAppSelector((state) => state.states.NLQuery);
   const data = useAppSelector((state) => state.dataset.dataset?.data) || {};
   const date = useAppSelector((state) => state.dataset.dataset?.data[state.dataset.dataset.timeStampColumn]);
   const querySpec = useAppSelector((state) => state.states.querySpec);
   const dispatch = useAppDispatch();
-  if (!query || !query.length) return <span>{NLQuery || PLACEHOLDER}</span>;
+  if (!querySpec) return <span>{NLQuery || PLACEHOLDER}</span>;
   const value = data[querySpec?.target || ""] as number[] || [];
   const maxValue = Math.floor(Math.max(...value));
   const minValue = Math.ceil(Math.min(...value));
   const time = date?.map(d => new Date(d).getTime()) || [];
   const minDate = Math.min(...time);
   const maxDate = Math.max(...time);
-  const coloredText = query.map((part, index) => {
-    const text = part.text;
-    if (part.condition) {
-      const keys = Object.keys(part.condition);
-      return (
-        <span key={index}>
-          <span onClick={(e) => { e.stopPropagation(); }}>
-            <Popover content={keys.map((key) => {
-              const k = key as keyof QuerySpec;
-              switch (k) {
-                case "target":
-                  return <Target disabled={part.exact} key={k} title={k} value={part.condition?.[k] || ""} options={values} onChange={(val) => {
-                    const newQuery = deepClone(query);
-                    newQuery[index].condition = { [k]: val };
-                    newQuery[index].text = val;
-                    dispatch(setQuery(newQuery));
-                  }}></Target>;
-                case "trends":
-                  return <Trend disabled={part.exact} maxValue={maxDate} minValue={minDate} start={querySpec?.trends?.indexOf(part.condition?.[k]?.at(0) || {})} key={k} trends={part.condition?.[k] || []} onChange={(trends) => {
-                    const newQuery = deepClone(query);
-                    newQuery[index].condition = { ...newQuery[index].condition, [k]: trends };
-                    dispatch(setQuery(newQuery));
-                  }}></Trend>;
-                case "relations":
-                  return <Relation disabled={part.exact} key={k} relations={part.condition?.[k] || []} idLength={querySpec?.trends?.length || 0} onChange={(relations) => {
-                    const newQuery = deepClone(query);
-                    newQuery[index].condition = { ...newQuery[index].condition, [k]: relations };
-                    dispatch(setQuery(newQuery));
-                  }}></Relation>;
-                case "time_span_condition":
-                  return <Scope disabled={part.exact} key={k} title={k} min={part.condition?.[k]?.min?.value || null} max={part.condition?.[k]?.max?.value || null} minInclusive={!!part.condition?.[k]?.min?.inclusive} maxInclusive={!!part.condition?.[k]?.max?.inclusive} onChange={(min, max, minInclusive, maxInclusive) => {
-                    const newQuery = deepClone(query);
-                    const change = { [k]: { min: !min ? null : { value: min, inclusive: minInclusive }, max: !max ? null : { value: max, inclusive: maxInclusive } } };
-                    newQuery[index].condition = { ...newQuery[index].condition, ...change };
-                    dispatch(setQuery(newQuery));
-                  }} ></Scope>;
-                case "time_scope_condition":
-                  return <Scope disabled={part.exact} key={k} title={k} minValue={minDate} maxValue={maxDate} min={part.condition?.[k]?.min?.value || null} max={part.condition?.[k]?.max?.value || null} minInclusive={!!part.condition?.[k]?.min?.inclusive} maxInclusive={!!part.condition?.[k]?.max?.inclusive} onChange={(min, max, minInclusive, maxInclusive) => {
-                    const newQuery = deepClone(query);
-                    const change = { [k]: { min: !min ? null : { value: min, inclusive: minInclusive }, max: !max ? null : { value: max, inclusive: maxInclusive } } };
-                    newQuery[index].condition = { ...newQuery[index].condition, ...change };
-                    dispatch(setQuery(newQuery));
-                  }} ></Scope>;
-                case "value_scope_condition":
-                  return <Scope disabled={part.exact} key={k} title={k} minValue={minValue} maxValue={maxValue} min={part.condition?.[k]?.min?.value || null} max={part.condition?.[k]?.max?.value || null} minInclusive={!!part.condition?.[k]?.min?.inclusive} maxInclusive={!!part.condition?.[k]?.max?.inclusive} onChange={(min, max, minInclusive, maxInclusive) => {
-                    const newQuery = deepClone(query);
-                    const change = { [k]: { min: !min ? null : { value: min, inclusive: minInclusive }, max: !max ? null : { value: max, inclusive: maxInclusive } } };
-                    newQuery[index].condition = { ...newQuery[index].condition, ...change };
-                    dispatch(setQuery(newQuery));
-                  }} ></Scope>;
-                default:
-                  return <Empty key={k}></Empty>;
-              }
-            })} trigger="click">
-              <b style={{ backgroundColor: "#0077FF33" }}>{text}</b>
-            </Popover>
-          </span>
-          {keys.includes("trends") || keys.includes("relations") ? <Glyph key={`glyph-${index}`} trends={part.condition.trends} relations={part.condition.relations} allTrends={querySpec?.trends}></Glyph> : null}
-        </span>
-      );
-    }
-    return <span key={index}>{text}</span>;
-  });
-  return <>{coloredText}<Glyph allTrends={querySpec?.trends} relations={querySpec?.relations} trends={querySpec?.trends}></Glyph></>;
+  return <>
+    {NLQuery}
+    <span onClick={(e) => e.stopPropagation()}>
+      <Popover content={
+        <>
+          <Target title="Target" value={querySpec?.target || ""} options={values} onChange={(val) => {
+            const newQuerySpec = deepClone(querySpec);
+            newQuerySpec.target = val;
+            dispatch(setQuerySpec(newQuerySpec));
+          }}></Target>
+          <Divider></Divider>
+          {querySpec.trends?.length && <Trend maxValue={maxDate} minValue={minDate} trends={querySpec.trends || []} onChange={(trends) => {
+            const newQuerySpec = deepClone(querySpec);
+            newQuerySpec.trends = trends;
+            dispatch(setQuerySpec(newQuerySpec));
+          }}></Trend>}
+          {querySpec.relations?.length && <Relation relations={querySpec.relations || []} idLength={querySpec?.trends?.length || 0} onChange={(relations) => {
+            const newQuerySpec = deepClone(querySpec);
+            newQuerySpec.relations = relations;
+            dispatch(setQuerySpec(newQuerySpec));
+          }}></Relation>}
+          {querySpec.time_span_condition && <><Scope title={"Time Span Condition"} min={querySpec.time_span_condition?.min?.value || null} max={querySpec.time_span_condition?.max?.value || null} minInclusive={!!querySpec.time_span_condition?.min?.inclusive} maxInclusive={!!querySpec.time_span_condition?.max?.inclusive} onChange={(min, max, minInclusive, maxInclusive) => {
+            const newQuerySpec = deepClone(querySpec);
+            newQuerySpec.time_span_condition = { min: !min && min !== 0 ? null : { value: min, inclusive: minInclusive }, max: !max && max !== 0 ? null : { value: max, inclusive: maxInclusive } };
+            dispatch(setQuerySpec(newQuerySpec));
+          }} ></Scope><Divider></Divider></>}
+          {querySpec.time_scope_condition && <><Scope title={"Time Scope Condition"} minValue={minDate} maxValue={maxDate} min={querySpec.time_scope_condition?.min?.value || null} max={querySpec.time_scope_condition?.max?.value || null} minInclusive={!!querySpec.time_scope_condition?.min?.inclusive} maxInclusive={!!querySpec.time_scope_condition?.max?.inclusive} onChange={(min, max, minInclusive, maxInclusive) => {
+            const newQuerySpec = deepClone(querySpec);
+            newQuerySpec.time_scope_condition = { min: !min && min !== 0 ? null : { value: min, inclusive: minInclusive }, max: !max && max !== 0 ? null : { value: max, inclusive: maxInclusive } };
+            dispatch(setQuerySpec(newQuerySpec));
+          }} ></Scope><Divider></Divider></>}
+          {querySpec.value_scope_condition && <Scope title={"Value Scope Condition"} minValue={minValue} maxValue={maxValue} min={querySpec.value_scope_condition?.min?.value || null} max={querySpec.value_scope_condition?.max?.value || null} minInclusive={!!querySpec.value_scope_condition?.min?.inclusive} maxInclusive={!!querySpec.value_scope_condition?.max?.inclusive} onChange={(min, max, minInclusive, maxInclusive) => {
+            const newQuerySpec = deepClone(querySpec);
+            newQuerySpec.value_scope_condition = { min: !min && min !== 0 ? null : { value: min, inclusive: minInclusive }, max: !max && max !== 0 ? null : { value: max, inclusive: maxInclusive } };
+            dispatch(setQuerySpec(newQuerySpec));
+          }} ></Scope>}
+        </>
+      } trigger="click">
+        <span style={{ cursor: "pointer" }}><Glyph allTrends={querySpec?.trends} relations={querySpec?.relations} trends={querySpec?.trends}></Glyph></span>
+      </Popover>
+    </span>
+  </>;
 };
 
 export default function NlqueryBox() {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const query = useAppSelector((state) => state.states.query) || [];
+  const textRef = useRef<HTMLDivElement>(null);
   const querySpec = useAppSelector((state) => state.states.querySpec);
   const dispatch = useAppDispatch();
   const NLQuery = useAppSelector((state) => state.states.NLQuery);
@@ -116,13 +94,46 @@ export default function NlqueryBox() {
   const [isEdit, setIsEdit] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const recognition = useRef<SpeechRecognitionType>(new SpeechRecognition());
+  const [promptList, setPromptList] = useState<string[]>([]);
+  const [isDropdownVisible, setIsDropdownVisible] = useState(false);
+  const [editPos, setEditPos] = useState<{ x: number, y: number, width: number }>({ x: 0, y: 0, width: 0 });
+
+  const fetchPrompt = useCallback(debounce((query: string) => {
+    setPromptList([]);
+    getSearchPrompt(query).then(res => {
+      setIsDropdownVisible(true);
+      setPromptList(res);
+      const dom = textareaRef.current || textRef.current;
+      if (!dom) return;
+      const rect = dom.getBoundingClientRect();
+      setEditPos({ x: rect.left, y: rect.top + rect.height, width: rect.width });
+    })
+  }, 1000), [])
 
   useEffect(() => {
     if (textareaRef.current) {
       textareaRef.current.style.height = "auto";
       textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
+      window.dispatchEvent(new Event("resize"));
     }
   }, [NLQuery, isEdit]);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        textareaRef.current &&
+        !textareaRef.current.contains(event.target as Node) &&
+        !document.querySelector(".ant-dropdown")?.contains(event.target as Node)
+      ) {
+        setIsEdit(false);
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   return (
     <form
@@ -148,9 +159,10 @@ export default function NlqueryBox() {
               dispatch(setIsRequesting(true))
               if (textareaRef.current && NLQuery.trim()) {
                 textareaRef.current.blur();
+                setIsEdit(false);
                 dispatch(setQuery(null));
                 getQuerySpecRequest(NLQuery).then(res => {
-                  dispatch(setQuery(res));
+                  dispatch(setQuerySpec(res));
                 }).finally(() => {
                   dispatch(setIsRequesting(false))
                 });
@@ -159,24 +171,26 @@ export default function NlqueryBox() {
           }}
           onChange={(e) => {
             dispatch(setNLQuery(e.target.value));
+            fetchPrompt(e.target.value)
           }}
           className="nl-query"
           value={NLQuery}
-          onBlur={() => setIsEdit(false)}
           rows={1}
         />
       ) : (
         <div
           onClick={() => {
-            flushSync(() => setIsEdit(true));
+            if (isRequesting) return;
+            flushSync(() => { setIsEdit(true); });
             if (textareaRef.current) {
               textareaRef.current.focus();
               textareaRef.current.setSelectionRange(-1, -1);
             }
           }}
+          ref={textRef}
           className="nl-query text"
-          style={{ color: !NLQuery ? "gray" : "#000" }}
-        ><ColoredTextComponent query={query}></ColoredTextComponent>{isRequesting && <LoadingOutlined style={{marginLeft: 8}} />}</div>
+          style={{ color: !NLQuery ? "gray" : "#000", cursor: isRequesting ? "not-allowed" : "pointer" }}
+        ><ColoredTextComponent></ColoredTextComponent>{isRequesting && <LoadingOutlined style={{ marginLeft: 8 }} />}</div>
       )}
       <button onClick={() => {
         if (!SpeechRecognition) {
@@ -204,6 +218,22 @@ export default function NlqueryBox() {
       <button className="btn send" type="submit" disabled={!NLQuery || isRequesting}>
         <SubmitIcon></SubmitIcon>
       </button>
+      <Dropdown overlayStyle={{ position: 'absolute', top: `${editPos.y}px`, left: `${editPos.x}px`, width: `${editPos.width}px` }} open={isEdit && isDropdownVisible} menu={{
+        items: promptList.map((prompt) => ({ key: prompt, label: prompt })), onClick: (info) => {
+          const value = NLQuery + (NLQuery[NLQuery.length - 1] === ' ' ? '' : ' ') + info.key;
+          dispatch(setNLQuery(value));
+          setIsDropdownVisible(false);
+          setPromptList([]);
+          flushSync(() => setIsEdit(true));
+          if (textareaRef.current) {
+            textareaRef.current.focus();
+            textareaRef.current.setSelectionRange(-1, -1);
+          }
+          fetchPrompt(value);
+        }
+      }}>
+        <span style={{ visibility: 'hidden' }}> </span>
+      </Dropdown>
     </form>
   );
 }

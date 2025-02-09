@@ -138,8 +138,11 @@ const stateSlice = createSlice({
     setQuerys: (state, action: PayloadAction<string[]>) => {
       state.querys = action.payload;
     },
+    setQuerySpec: (state, action: PayloadAction<QuerySpec | null>) => {
+      state.querySpec = action.payload;
+    },
   },
 });
 
-export const { setNLQuery, setQuery, addFragments, addQuerySpec, setFragmentsIndex, setQuerySpecIndex, insertTreeData, setIsSettingShow, setTimeStampUnit, setValueUnit, setAspectRatio, setIsDrawer, setQuerys } = stateSlice.actions;
+export const { setNLQuery, setQuery, setQuerySpec, addFragments, addQuerySpec, setFragmentsIndex, setQuerySpecIndex, insertTreeData, setIsSettingShow, setTimeStampUnit, setValueUnit, setAspectRatio, setIsDrawer, setQuerys } = stateSlice.actions;
 export default stateSlice.reducer;

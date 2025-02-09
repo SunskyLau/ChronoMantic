@@ -1,6 +1,6 @@
 import axios from "axios";
 import type { Results } from "./app/slice/resultsSlice";
-import { Fragment, FragmentList, Query, QuerySpec, Segment, TimeGranularity } from "./types/QuerySpec";
+import { Fragment, FragmentList, QuerySpec, Segment, TimeGranularity } from "./types/QuerySpec";
 import { DatasetInfo, ApproximationSegmentsContainers, ApproximationResults } from "./types";
 
 const api = axios.create({
@@ -11,7 +11,7 @@ const api = axios.create({
   },
 });
 
-export const getQuerySpecRequest = async (query: string): Promise<Query> => {
+export const getQuerySpecRequest = async (query: string): Promise<QuerySpec> => {
   console.log("Sending query spec request");
   try {
     const response = await api.post(`/api/parse_query`, { query });
@@ -105,6 +105,28 @@ export const getQueryByTS = async (source:string, segments: Segment[], choices: 
     return response.data.results;
   } catch (error) {
     console.error("Error sending fragments request:", error);
+    throw error;
+  }
+}
+
+let abortController: AbortController | null = null;
+
+export const getSearchPrompt = async (query: string): Promise<string[]> => {
+  console.log("Sending search_prompt request");
+
+  if (abortController) {
+    abortController.abort();
+  }
+
+  abortController = new AbortController();
+  const signal = abortController.signal;
+
+  try {
+    const response = await api.post(`/api/search_prompt`, { query }, { signal });
+    console.log(response.data);
+    return response.data.results;
+  } catch (error) {
+    console.error("Error sending search_prompt request:", error);
     throw error;
   }
 }
