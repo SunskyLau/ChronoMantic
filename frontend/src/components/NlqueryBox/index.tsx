@@ -64,6 +64,8 @@ export default function NlqueryBox() {
 
   useEffect(() => {
     abortRequest();
+    setIsDropdownVisible(false);
+    setPromptList([]);
     adjustPos();
   }, [NLQuery]);
 
