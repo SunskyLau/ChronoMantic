@@ -23,11 +23,11 @@ export default function QueryCondition() {
     const maxValue = Math.floor(Math.max(...value));
     const minValue = Math.ceil(Math.min(...value));
     const time = useAppSelector((state) => state.dataset.dataset?.data[state.dataset.dataset.timeStampColumn]) || [];
-    const date = time.map(t=> new Date(t).getTime())
+    const date = time.map(t => new Date(t).getTime())
     const minDate = Math.min(...date)
     const maxDate = Math.max(...date)
-    const curTrends = useAppSelector((state) => state.states.curTrends);
-    const curRelations = useAppSelector((state) => state.states.curRelations);
+    const curTrend = useAppSelector((state) => state.states.curTrend);
+    const curRelation = useAppSelector((state) => state.states.curRelation);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -44,14 +44,14 @@ export default function QueryCondition() {
                 <Divider></Divider>
             </section>
             <section>
-                <Trend highlight={curTrends} isEdit={true} trends={memoizedQuerySpec.trends || []} minValue={minDate} maxValue={maxDate} onChange={(trends) => {
+                <Trend highlight={curTrend ?? -1} isEdit={true} trends={memoizedQuerySpec.trends || []} minValue={minDate} maxValue={maxDate} onChange={(trends) => {
                     const newQuerySpec = deepClone(memoizedQuerySpec);
                     newQuerySpec.trends = trends;
                     dispatch(setQuerySpec(newQuerySpec))
                 }}></Trend>
             </section>
             <section>
-                <Relation highlight={curRelations} isEdit={true} relations={memoizedQuerySpec.relations || []} idLength={memoizedQuerySpec.trends?.length || 0} onChange={(relations) => {
+                <Relation highlight={curRelation ?? -1} isEdit={true} relations={memoizedQuerySpec.relations || []} idLength={memoizedQuerySpec.trends?.length || 0} onChange={(relations) => {
                     const newQuerySpec = deepClone(memoizedQuerySpec);
                     newQuerySpec.relations = relations;
                     dispatch(setQuerySpec(newQuerySpec))

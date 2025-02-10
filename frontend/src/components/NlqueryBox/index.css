@@ -106,3 +106,12 @@
   pointer-events: none;
   z-index: -1;
 }
+
+@keyframes dashFlow {
+  from {
+      stroke-dashoffset: 0;
+  }
+  to {
+      stroke-dashoffset: -8; /* 让虚线向左流动 */
+  }
+}

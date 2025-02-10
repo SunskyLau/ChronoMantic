@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../../app/hooks";
 import "./index.css";
-import { addQuerySpec, setCurRelations, setCurTrends, setNLQuery, setQuery, setQuerySpec } from "../../app/slice/stateSlice";
+import { addQuerySpec, setCurRelation, setCurTrend, setNLQuery, setQuery, setQuerySpec } from "../../app/slice/stateSlice";
 import QueryIcon from "../../icons/Query";
 import SubmitIcon from "../../icons/Submit";
 import { flushSync } from "react-dom";
@@ -35,8 +35,8 @@ export default function NlqueryBox() {
   const [promptList, setPromptList] = useState<string[]>([]);
   const [isDropdownVisible, setIsDropdownVisible] = useState(false);
   const [editPos, setEditPos] = useState<{ x: number, y: number, width: number }>({ x: 0, y: 0, width: 0 });
-  const curTrends = useAppSelector((state) => state.states.curTrends);
-  const curRelations = useAppSelector((state) => state.states.curRelations);
+  const curTrend = useAppSelector((state) => state.states.curTrend);
+  const curRelation = useAppSelector((state) => state.states.curRelation);
 
   function adjustPos() {
     const dom = textareaRef.current || textRef.current;
@@ -146,23 +146,17 @@ export default function NlqueryBox() {
           <div className="pointer flex"><Glyph onClick={(type, index) => {
             switch (type) {
               case "Trend":
-                if (curTrends.includes(index)) {
-                  dispatch(setCurTrends(curTrends.filter(t => t !== index)))
-                } else {
-                  dispatch(setCurTrends([...curTrends, index]))
-                }
+                flushSync(() => dispatch(setCurTrend(null)))
+                dispatch(setCurTrend(index))
                 break;
               case "Relation":
-                if (curRelations.includes(index)) {
-                  dispatch(setCurRelations(curRelations.filter(t => t !== index)))
-                } else {
-                  dispatch(setCurRelations([...curRelations, index]))
-                }
+                flushSync(() => dispatch(setCurRelation(null)))
+                dispatch(setCurRelation(index))
                 break;
               default:
                 break;
             }
-          }} height={48} trends={querySpec?.trends || []} allTrends={querySpec?.trends || []} relations={querySpec?.relations || []} curTrends={curTrends} curRelations={curRelations}></Glyph></div>
+          }} height={48} trends={querySpec?.trends || []} allTrends={querySpec?.trends || []} relations={querySpec?.relations || []} curTrend={curTrend ?? -1} curRelation={curRelation ?? -1}></Glyph></div>
         </Popover>
       </button>
       <button onClick={() => {

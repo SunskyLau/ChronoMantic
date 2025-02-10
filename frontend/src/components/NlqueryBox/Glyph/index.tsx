@@ -10,8 +10,8 @@ interface GlyphProps {
     relations?: Relation[];
     allTrends?: Trend[];
     height?: number;
-    curTrends?: number[];
-    curRelations?: number[];
+    curTrend?: number;
+    curRelation?: number;
     onClick?: (type: ClickType, index: number) => void;
 }
 
@@ -40,7 +40,7 @@ const comparatorMap = {
     [Comparator.APPROXIMATELY_EQUAL_TO]: Comparator.APPROXIMATELY_EQUAL_TO
 };
 
-const Glyph = ({ trends = [], relations = [], allTrends = [], height = 32, onClick, curTrends = [], curRelations = [] }: GlyphProps) => {
+const Glyph = ({ trends = [], relations = [], allTrends = [], height = 32, onClick, curTrend, curRelation }: GlyphProps) => {
     const paddingY = 10;
     const paddingX = 4;
     const trendLength = height - paddingY * 1.5;
@@ -62,7 +62,7 @@ const Glyph = ({ trends = [], relations = [], allTrends = [], height = 32, onCli
                         <path d="M4,2 L0,4 M4,2 L0,0" fill="none" stroke={color} strokeWidth="1" />
                     </marker>
                 </defs>
-                <rect x={x1} y={paddingY} width={trendLength} height={height - paddingY * 2} fill={curTrends.includes(i) ? getColor(i) : "#eee0"} opacity={.5}></rect>
+                <rect x={x1} y={paddingY} width={trendLength} height={height - paddingY * 2} fill={curTrend === i ? getColor(i) : "#eee0"} opacity={.5}></rect>
                 <line x1={x1} y1={y1} x2={x2} y2={y2} stroke={color} strokeWidth={1.5} markerEnd={`url(#arrow-${id}-${i})`} />
                 {showIndex && <text x={angle > 0 ? x2 - 8 - height / 16 : x1 + height / 16} y={angle > 0 ? y1 : y2} fontSize={height / 3} fill="#000c" fontWeight="bold">{i}</text>}
             </g>
@@ -75,9 +75,11 @@ const Glyph = ({ trends = [], relations = [], allTrends = [], height = 32, onCli
         );
     };
 
-    const drawConnect = (x1: number, y1: number, x2: number, y2: number, v: number, index: number, color: string = "#0005", strokeWidth: number = 0.5) => {
+    const drawConnect = (x1: number, y1: number, x2: number, y2: number, v: number, index: number, color: string = "#0005", strokeWidth: number = 1) => {
         return (
-            <path onClick={() => onClick?.("Relation", index)} d={`M${x1},${y1} V${v} H${x2} V${y2}`} stroke={curRelations.includes(index) ? "#000" : color} fill="none" strokeDasharray="2,2" strokeLinecap="round" strokeWidth={strokeWidth} />
+            <path onClick={() => onClick?.("Relation", index)} d={`M${x1},${y1} V${v} H${x2} V${y2}`} stroke={curRelation === index ? "#000" : color} style={{
+                animation: curRelation === index ? "dashFlow 1s linear infinite" : "none"
+            }} fill="none" strokeDasharray="2,2" strokeLinecap="round" strokeWidth={strokeWidth} />
         )
     };
 
