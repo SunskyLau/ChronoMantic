@@ -7,11 +7,15 @@ from typing import List, Dict, Optional
 from .constant import (
     AZURE_OPENAI_KEY,
     DEEPSEEK,
+    DEEPSEEK_AI_DEEPSEEK_V3,
     DEEPSEEK_API_KEY,
     DEEPSEEK_BASE_URL,
     AZURE,
     DEEPSEEK_CHAT,
     GPT_4O,
+    QWEN,
+    SILIICONFLOW,
+    SILIICONFLOW_API_KEY,
 )
 from .debugger import debugger
 
@@ -29,6 +33,8 @@ class myAIClient:
                 api_version="2024-11-01-preview",
                 azure_endpoint="https://idg-oai.openai.azure.com/",
             )
+        elif platform == SILIICONFLOW:
+            self.client = OpenAI(api_key=SILIICONFLOW_API_KEY, base_url="https://api.siliconflow.cn/v1")
         else:
             raise ValueError("Invalid platform")
 
@@ -77,11 +83,15 @@ class myAIClient:
 
 
 def get_query_spec(system_prompt: str, query: str) -> Dict:
-    client = myAIClient(GPT_4O, AZURE)
+    # client = myAIClient(GPT_4O, AZURE)
     # client = myAIClient(DEEPSEEK_CHAT, DEEPSEEK)
-    response = client.send_prompt(system_prompt, query, keep_history=False, if_json_format=True)
+    client = myAIClient(DEEPSEEK_AI_DEEPSEEK_V3, SILIICONFLOW)
+    # client = myAIClient(QWEN, SILIICONFLOW)
+
+    response = client.send_prompt(system_prompt, query, keep_history=False, if_json_format=False)
     return json.loads(response)["output"]
 
 
 if __name__ == "__main__":
-    pass
+    client = myAIClient(DEEPSEEK_AI_DEEPSEEK_V3, SILIICONFLOW)
+    response = client.send_prompt("You are a helpful assistant!", "你是谁？", keep_history=False, if_json_format=True)

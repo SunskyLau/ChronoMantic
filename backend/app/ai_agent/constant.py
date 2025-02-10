@@ -1,15 +1,24 @@
 from datetime import datetime
 
-DEEPSEEK = "deepseek"
-DEEPSEEK_API_KEY = "sk-8afa35e69734436e88fec6fb5191e954"
+# model_name
 DEEPSEEK_BASE_URL = "https://api.deepseek.com"
 DEEPSEEK_CHAT = "deepseek-chat"
 DEEPSEEK_REASONER = "deepseek-reasoner"
-OPENAI = "openai"
-AZURE = "azure"
 GPT_4O = "gpt-4o"
 GPT_4O_REALTIME = "gpt-4o-realtime-preview"
+DEEPSEEK_AI_DEEPSEEK_V3 = "deepseek-ai/DeepSeek-V3"
+QWEN = "Qwen/Qwen2.5-7B-Instruct"
+# platform
+OPENAI = "openai"
+DEEPSEEK = "deepseek"
+AZURE = "azure"
+SILIICONFLOW = "siliconflow"
+
+# api_key
 AZURE_OPENAI_KEY = "c1812815d31d45aa9b450a22fc875845"
+DEEPSEEK_API_KEY = "sk-8afa35e69734436e88fec6fb5191e954"
+SILIICONFLOW_API_KEY = "sk-vjgfhfunedghhljnnwfdpvnheuppfktpbxvczttcmygtukxh"
+
 PROMPT_SPLITTER = "\n--------------------\n\n"
 NOW = datetime.now().strftime("%Y-%m-%d")
 
