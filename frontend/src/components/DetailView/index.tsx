@@ -6,10 +6,19 @@ import { useAppDispatch, useAppSelector } from "../../app/hooks";
 import { setBrushPosition, setRange, setSelectPosition } from "../../app/slice/selectSlice";
 import { useCallback, useMemo, useState } from "react";
 import { setLevel } from "../../app/slice/approximation";
-import { getQueryByTS } from "../../api";
-import { setQuerys } from "../../app/slice/stateSlice";
+import { getModifyPrompt, getQueryByTS } from "../../api";
+import { setModifyPrompts, setNLQuery, setQuerys } from "../../app/slice/stateSlice";
+import { deepEqual } from "../../utils/deepclone";
 
 const choiceMap = ["angle_scope_condition", "slope_scope_condition", "time_scope_condition", "time_span_condition", "value_scope_condition", "relations"]
+
+enum PopoverState {
+    QUERY,
+    LOADING_REFRAME,
+    LOADING_MODIFY,
+    CONFIRM_REFRAME,
+    CONFIRM_MODIFY,
+}
 
 function SmoothLevel() {
     const dispatch = useAppDispatch();
@@ -30,6 +39,40 @@ function SmoothLevel() {
         </ConfigProvider>
     )
 }
+
+const getLCS = (a: string, b: string): string => {
+    const dp: string[][] = Array(a.length + 1)
+        .fill(null)
+        .map(() => Array(b.length + 1).fill(""));
+
+    for (let i = 1; i <= a.length; i++) {
+        for (let j = 1; j <= b.length; j++) {
+            if (a[i - 1] === b[j - 1]) {
+                dp[i][j] = dp[i - 1][j - 1] + a[i - 1];
+            } else {
+                dp[i][j] = dp[i - 1][j].length > dp[i][j - 1].length ? dp[i - 1][j] : dp[i][j - 1];
+            }
+        }
+    }
+    return dp[a.length][b.length];
+};
+
+const highlightDifferences = (a: string, b: string) => {
+    const lcs = getLCS(a, b);
+    let lcsIndex = 0;
+
+    return a.split("").map((char, i) => {
+        if (lcsIndex < lcs.length && char === lcs[lcsIndex]) {
+            lcsIndex++;
+            return <span key={i}>{char}</span>;
+        }
+        return (
+            <span key={i} style={{ color: "red" }}>
+                {char}
+            </span>
+        );
+    });
+};
 
 export default function DetailView() {
     const data = useAppSelector((state) => state.dataset.dataset?.data) || {};
@@ -55,14 +98,8 @@ export default function DetailView() {
         const selectSegments = segments.filter(item => {
             const { start_idx, end_idx } = item;
             const itemSpan = end_idx - start_idx;
-            if (start_idx >= start && end_idx <= end) return true;
-            if (start_idx <= start && end_idx >= start && end_idx <= end && (end_idx - start) > itemSpan / 2) return true;
-            if (start_idx >= start && start_idx <= end && (end - start_idx) > itemSpan / 2) return true;
             const overlap = Math.max(0, Math.min(end, end_idx) - Math.max(start, start_idx));
-            if (overlap > itemSpan / 2) {
-                return true;
-            }
-            return false;
+            return overlap > itemSpan / 2;
         });
         if (selectSegments.length > 0) {
             dispatch(setSelectPosition([selectSegments[0].start_idx, selectSegments[selectSegments.length - 1].end_idx]));
@@ -74,6 +111,11 @@ export default function DetailView() {
     }, [dispatch, segments]);
 
     const [checkList, setCheckList] = useState<boolean[]>(new Array(choiceMap.length).fill(false));
+    const choices = useMemo(() => checkList.reduce((acc, cur, i) => {
+        if (cur) acc.push(choiceMap[i]);
+        return acc
+    }, [] as string[]), [checkList])
+
     const handleScroll = useCallback((val: number) => {
         const delta = val;
         const range1 = Math.max(0, range[0] - delta);
@@ -87,6 +129,11 @@ export default function DetailView() {
             handleBrushEnd(range1, range2)
         }
     }, [timeValues.length, handleBrush, handleBrushEnd, range])
+    const NLQuery = useAppSelector((state) => state.states.NLQuery);
+
+    const [popoverState, setPopoverState] = useState(PopoverState.QUERY);
+    const modifyPrompts = useAppSelector((state) => state.states.modifyPrompts);
+    const querys = useAppSelector((state) => state.states.querys);
 
     return (
         <Panel className="main-view" icon={<div>D</div>} title="Main View" right={<SmoothLevel />}>
@@ -94,34 +141,65 @@ export default function DetailView() {
                 timeCol && valueCol ?
                     <>
                         <div className="bg detail"><LineChart xData={timeValues.map(date => new Date(date).getTime() / 1000)} yData={data[valueCol] as number[]} isXAxisVisible={true} isYAxisVisible={true} range={range} height={'100%'} ratio={ratio} split={split} isSplitMask={true} onScroll={handleScroll} isBrush brushPosition={selectPosition} onBrushEnd={handleBrushSelectEnd} onContextMenu={() => handleBrushSelectEnd(0, 0)}>
-                            <Popover placement="bottom" open={isPopover} content={
-                                <>
-                                    <ul className="checkbox-list">
-                                        {checkList.map((checked, index) => {
-                                            return <li key={index} className="checkbox-item"><Checkbox checked={checked} onChange={(e) => {
-                                                setCheckList(checkList.map((checked, i) => i === index ? e.target.checked : checked))
-                                            }}>{choiceMap[index]}</Checkbox></li>
-                                        })}
-                                    </ul>
-                                    <Flex gap={8}>
-                                        <Button type="primary" disabled={!checkList.some(Boolean)} onClick={() => {
-                                            setIsPopover(false)
-                                            const choices = checkList.reduce((acc, cur, i) => {
-                                                if (cur) {
-                                                    acc.push(choiceMap[i])
+                            <Popover className="query-popover" placement="bottom" open={isPopover} content={
+                                () => {
+                                    const isModify = popoverState === PopoverState.CONFIRM_MODIFY;
+                                    const prompts = isModify ? modifyPrompts : querys;
+                                    const highlightedPrompts = prompts.map((prompt, index) => {
+                                        return <span key={index}>{highlightDifferences(prompt, NLQuery)}</span>
+                                    })
+                                    switch (popoverState) {
+                                        case PopoverState.QUERY:
+                                        case PopoverState.LOADING_REFRAME:
+                                        case PopoverState.LOADING_MODIFY:
+                                            return (<>
+                                                <ul className="checkbox-list">
+                                                    {checkList.map((checked, index) => {
+                                                        return <li key={index} className="checkbox-item"><Checkbox checked={checked} onChange={(e) => {
+                                                            setCheckList(checkList.map((checked, i) => i === index ? e.target.checked : checked))
+                                                        }} disabled={popoverState !== PopoverState.QUERY}>{choiceMap[index]}</Checkbox></li>
+                                                    })}
+                                                </ul>
+                                                <Flex gap={8}>
+                                                    <Button type="primary" disabled={PopoverState.LOADING_MODIFY === popoverState || !checkList.some(Boolean)} onClick={() => {
+                                                        setPopoverState(PopoverState.LOADING_REFRAME)
+                                                        getQueryByTS(valueCol, selectedSegments, choices).then(querys => {
+                                                            dispatch(setQuerys(querys))
+                                                            setPopoverState(PopoverState.CONFIRM_REFRAME)
+                                                        }).catch(() => {
+                                                            setPopoverState(PopoverState.QUERY)
+                                                        })
+                                                    }} loading={PopoverState.LOADING_REFRAME === popoverState}>Reframe</Button>
+                                                    <Button type="primary" disabled={PopoverState.LOADING_REFRAME === popoverState || !checkList.some(Boolean) || !Object.values(queryResults).flat(1).some(item => {
+                                                        return deepEqual(item, selectedSegments)
+                                                    })} onClick={() => {
+                                                        setPopoverState(PopoverState.LOADING_MODIFY)
+                                                        getModifyPrompt(NLQuery, selectedSegments, choices).then(prompts => {
+                                                            dispatch(setModifyPrompts(prompts))
+                                                            setPopoverState(PopoverState.CONFIRM_MODIFY)
+                                                        }).catch(() => {
+                                                            setPopoverState(PopoverState.QUERY)
+                                                        })
+                                                    }} loading={PopoverState.LOADING_MODIFY === popoverState}>Modify</Button>
+                                                </Flex>
+                                            </>)
+                                        case PopoverState.CONFIRM_REFRAME:
+                                        case PopoverState.CONFIRM_MODIFY:
+                                            return <Flex gap={8} vertical className="recommendation-list">
+                                                {
+                                                    prompts.map((item, index) => {
+                                                        return <div className="pointer" key={index} onClick={() => {
+                                                            dispatch(setNLQuery(item))
+                                                            setPopoverState(PopoverState.QUERY)
+                                                            setIsPopover(false)
+                                                        }}>{highlightedPrompts[index]}</div>
+                                                    })
                                                 }
-                                                return acc
-                                            }, [] as string[])
-                                            getQueryByTS(valueCol, selectedSegments, choices).then(querys => {
-                                                dispatch(setQuerys(querys))
-                                            })
-                                        }}>Reframe</Button>
-                                        <Button type="primary" disabled={!Object.values(queryResults).flat(1).some(item => {
-                                            return JSON.stringify(item) === JSON.stringify(selectedSegments)
-                                        })}>Modify</Button>
-                                    </Flex>
-                                </>
-                            } title="Generate Query">
+                                            </Flex>
+                                        default:
+                                            return <></>
+                                    }
+                                }} title="Generate Query">
                                 <span className="pos"></span>
                             </Popover>
                         </LineChart></div>

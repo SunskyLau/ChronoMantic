@@ -97,10 +97,10 @@ export const getFragmentsBySpec = async (querySpec: QuerySpec): Promise<Approxim
   }
 }
 
-export const getQueryByTS = async (source:string, segments: Segment[], choices: string[]): Promise<string[]> => {
+export const getQueryByTS = async (source: string, segments: Segment[], choices: string[]): Promise<string[]> => {
   console.log("Sending query_by_ts request");
   try {
-    const response = await api.post(`/api/query_by_ts`, {segments, source, choices});
+    const response = await api.post(`/api/query_by_ts`, { segments, source, choices });
     console.log(response.data);
     return response.data.results;
   } catch (error) {
@@ -135,6 +135,18 @@ export const getSearchPrompt = async (query: string): Promise<string[]> => {
     throw error;
   }
 };
+
+export const getModifyPrompt = async (query: string, segments: Segment[], choices: string[]): Promise<string[]> => {
+  console.log("Sending modify_prompt request");
+  try {
+    const response = await api.post(`/api/modify_prompt`, { query, segments, choices });
+    console.log(response.data);
+    return response.data.results;
+  } catch (error) {
+    console.error("Error sending modify_prompt request:", error);
+    throw error;
+  }
+}
 
 export const getFragmentsByTimeGranularity = async (csvName: string, timeColumnName: string, valueColumnName: string, timeGranularity: TimeGranularity): Promise<FragmentList> => {
   console.log("Sending fragments request");

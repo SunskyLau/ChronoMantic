@@ -53,3 +53,4 @@ approximation_segments_containers_container = APPROXIMATION_SEGMENTS_CONTAINERS_
 system_prompt_container = SYSTEM_PROMPT_CONTAINER()
 ts_prompt_container = SYSTEM_PROMPT_CONTAINER()
 search_prompt_container = SYSTEM_PROMPT_CONTAINER()
+modify_prompt_container = SYSTEM_PROMPT_CONTAINER()

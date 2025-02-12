@@ -596,6 +596,11 @@ def create_ts_prompt(dataset_info: str) -> str:
     time_span?: number;  // 时间跨度，数值为时间戳，单位为秒。
 	}}
 	```
+    
+6. 目标输出格式（Output）
+```
+type Output = {{ output: string[] }}  // 结果是一个字符串数组
+```
 
 任务：
 	我们将给你数据来源source，代表数据来源于数据表中哪一列，Segment[]数组，代表分段后的时间序列片段，以及一个choices数组，代表你需要考虑的属性值。请你根据该时间序列片段以及相关属性，一次性推导出三个不同程度的用户感兴趣的的QuerySpec，然后根据QuerySpec生成对应的自然语言推荐给用户。
@@ -613,7 +618,7 @@ segments: [{{"angle":37.56840572558871,"end_idx":1224,"end_time":1520812800,"end
 choices: ["angle_scope_condition","value_scope_condition"]
 	
 	输出：
-	{{"output":["Find time series segments in AMZN where has a rising then falling then rising then falling trends, and the value must between 1300 and 1600.","Search in AMZN where the angle shows a light increase, with an angle between 20 and 50, and the value is relatively high, between 1400 and 1700.","Look for a slight double-top in AMZN stock, and the value is between 1350 and 1850."]}}
+{{"output":["Find time series segments in AMZN where has a rising then falling then rising then falling trends, and the value must between 1300 and 1600.","Search in AMZN where the angle shows a light increase, with an angle between 20 and 50, and the value is relatively high, between 1400 and 1700.","Look for a slight double-top in AMZN stock, and the value is between 1350 and 1850."]}}
 
 """
     return ts_prompt
@@ -621,17 +626,26 @@ choices: ["angle_scope_condition","value_scope_condition"]
 
 def create_search_prompt(dataset_info: str) -> str:
     search_prompt = f"""
-你是一个根据上文补充下文的专家。你被应用于一个自然语言驱动的时间序列片段查询工具，以下是项目的相关背景和知识。
+你是一个根据上文补充下文的专家，应用于一个自然语言驱动的时间序列片段查询工具，以下是相关背景和规则。
 
-0. 技能
-- 你是大数据处理的专家，擅长自然语言处理、机器学习和时间序列分析。
-- 你能够解析用户意图，并自动生成符合要求的查询语句。
+---
 
-1. 项目背景
-本项目旨在开发一个自然语言驱动的时间序列片段查询工具，使用户能够使用自然语言表达查询需求。底层采用结构化查询语法和时间序列分割模型，以支持时间序列片段的检索。我们使用LLM作为解析器，将自然语言查询解析为相应的结构化查询。你的角色是补充缺失的上下文信息，根据用户提供的部分输入自动推断并完善完整的查询。
+## **0. 你的核心目标**
+- **你的任务** 是确保用户查询完整，并在查询缺失信息时合理补全。  
+- **如果用户的查询已经完整，不要生成任何额外推荐，直接返回 `[]`**。  
+- **不要重复用户已经表达的意图，也不要换一种方式重复推荐相同内容**。  
 
-2. 结构化查询语法
-为了支持多样化的查询条件，我们设计了一套结构化查询语法。以下是具体的结构定义：
+---
+
+## **1. 项目背景**
+本项目开发一个自然语言驱动的时间序列片段查询工具，使用户能以自然语言查询时间序列模式。  
+- 我们使用 **结构化查询语法（QuerySpec）** 来描述查询需求，并通过 LLM 解析用户输入。  
+- 你的角色是 **补全必要的上下文信息**，使查询符合 QuerySpec，但不得添加冗余信息。  
+
+---
+
+## **2. 结构化查询语法**
+### **QuerySpec**
 
 ```
 interface Trend {{
@@ -658,44 +672,145 @@ interface QuerySpec {{
 }}
 ```
 
-基于这套语法，你需要根据用户的查询内容自动推测并补全QuerySpec，例如：
-- 如果用户未指定 `target`，默认选择 `value_columns` 中的第一个列。
-- 如果用户未指定 `trends`，可以补全合理的趋势模式，例如 `double-top`、`head-and-shoulders`、`rising then falling`、`consecutive rises` 等。
-- 如果用户未指定 `relations`、`time_span_condition`、`time_scope_condition`、`value_scope_condition`，可以根据查询内容合理补全。
-- 你的重点是理解 `target` 和 `trends`，确保查询完整且符合用户意图。
+你需要确保 QuerySpec **必要字段完整**，但如果用户已经指定相关内容，**不要重复推荐**。  
 
-3. 数据集信息
-用户提供的时间序列数据集包含多个公司的股票价格数据，数据集基本信息如下：
+- **缺少 `target`** → 使用 `value_columns` 中的列名。  
+- **缺少 `trends`** → 仅当 `trends` 缺失时补全合适模式，如 `"double-top"`、`"consecutive rises"`。
+- **缺少 `relations` 或其他条件** → 仅在用户未提供的情况下补全，**不得重复已有信息**。  
+
+---
+
+## **3. 数据集信息**
+用户提供的时间序列数据集包含多个公司的股票价格数据：
 {dataset_info}
-你只需关注 `value_columns`，它提供了时间序列的列名，是 `target` 字段的来源。
+你**只需关注 `value_columns`**，它是 `target` 的来源。
+
+---
 
 4. 目标输出格式（Output）
 ```
 type Output = {{ output: string[] }}  // 结果是一个字符串数组
 ```
 
-任务要求：
-你需要根据用户的上文补充合理的查询内容，并输出符合 Output 格式的 JSON 字符串。
-- 仅输出 JSON 字符串，不要添加代码块或额外注释。
-- 如果没有合适的输出，请不要输出任何字符串，返回 []，确保生成的内容不重复已有信息。
-- 深入分析用户意图，并推荐相关下文。
-- 生成的下文需要符合上下文语境，可以适当添加一些连接词。
+你的任务是：
+1. **补充查询中缺失的信息**，但不能重复已有内容。  
+2. **如果用户查询完整，必须返回 `[]`**。  
+3. **仅输出 JSON 字符串，不要添加代码块或额外注释**。  
 
-示例：
-用户输入："Find AMZN"
-返回：
-{{"output": ["where has a double top trend", "where has a continuous upward trend"]}}
+---
 
-用户输入："Show me an uptrend"
-返回：
+## **5. 示例**
+### ✅ 正确示例
+✅ 输入："Find AMZN with a double top where the trend lasted at least 10 days"
+✅ 解释：还有一些属性，如 `time_scope_condition`、`value_scope_condition` 可以指定
+✅ 返回：
+{{"output": ["and the value is between 1350 and 1850", "and the value is less than 300", "in 2017", "between 2017 and 2019"]}}
+
+✅ 输入："Show me an uptrend"
+✅ 解释：因为 target 未指定，我们补全合理的 target
+✅ 返回：
 {{"output": ["in AMZN", "in DPZ", "in BTC", "in NFLX"]}}
 
-用户输入："find amzn with a double top where the double top trend occurred in 2023 and the trend lasted at least 10 days"
-返回：
+✅ 输入："Find AMZN"
+✅ 解释：插叙 trends 未指定，我们补全合理的 trends
+✅ 返回：
+{{"output": ["where has a double top trend", "where has a continuous upward trend"]}}
+
+✅ 输入："find amzn with a double top where the double top trend occurred in 2023 and the trend lasted at least 10 days and the value is between 1300 and 1600"
+✅ 解释：查询已经完整，我们无需补全
+✅ 返回：
 {{"output": []}}
+
+### ❌ 错误示例（不该发生） 
+输入："Find AMZN with a double top" 
+解释：已明确 double top，不应重复
+错误返回：
+{{"output": ["where has a double top trend"]}}
 
 """
     return search_prompt
+
+
+def create_modify_prompt(dataset_info: str) -> str:
+    modify_prompt = f"""
+### 你是一个经验丰富的时间序列分析专家，擅长解析和调整自然语言查询。
+
+### 任务描述
+你的任务是根据用户输入的 **查询语句（query）**、**时间序列片段（segments）** 以及 **choices**，提供 **三个修改版本**，使查询更加清晰、合理，并符合时间序列数据的结构化信息 `{dataset_info}`。
+
+### 调整原则
+1. **保持查询的核心语义**，仅在必要部分调整。
+2. **结合 `segments` 和 `choices` 进行优化**，确保查询符合数据特征。
+3. **生成三个不同的推荐修改版本**，每个版本在表达方式或查询范围上有所不同。
+
+### 结构化查询信息
+interface Trend {{ 
+  angle_scope_condition?: ScopeCondition | null; // 角度范围，例如“角度 > 45°” 
+  slope_scope_condition?: ScopeCondition | null; // 斜率范围，例如“斜率为正” 
+  time_scope_condition?: ScopeCondition | null; // 时间范围，例如“发生在2023年” 
+  time_span_condition?: ScopeCondition | null; // 持续时间，例如“至少 10 天” 
+}}
+
+interface Relation {{ 
+  id1?: number; 
+  id2?: number; 
+  attribute?: "slope" | "angle" | "start_value" | "end_value" | "time_span"; 
+  comparator?: ">" | "<" | "=" | "<=" | ">=" | "~="; 
+}}
+
+interface QuerySpec {{ 
+  target?: string; 
+  trends?: Trend[]; 
+  relations?: Relation[]; 
+  time_span_condition?: ScopeCondition; // 全局时间跨度，单位秒 
+  time_scope_condition?: ScopeCondition; // 全局时间范围，单位秒 
+  value_scope_condition?: ScopeCondition; // 全局数值范围 
+}}
+
+### 输入参数
+- `query`: 用户的自然语言查询。
+- `segments`: 时间序列片段，包含 `angle`、`start_time`、`end_time`、`start_value`、`end_value` 等信息。
+- `choices`: 需要调整的查询部分，例如 `angle_scope_condition` 或 `value_scope_condition`。
+
+### 目标
+1. **优化查询的清晰度和表达方式**，尤其是 `choices` 相关部分：
+   - **如果涉及 `angle`**，用 **"sharp"（陡峭）、"moderate"（适中）** 等定性描述，而不是具体数值区间。
+   - **如果涉及 `time_span`（持续时间）**，用 `weeks` 或 `months` 表达，而不是时间戳。
+   - **如果涉及 `time_scope`（时间范围）**，确保其表示的是一个明确的时间段，如“2023年”。
+2. **调整查询模式**，生成 **三个不同版本**：
+   - **范围调整**：泛化范围，如 `10 days` → `about 2 weeks`。
+   - **描述优化**：改善语法，使查询更加自然。
+   - **查询方式变化**：使查询更具象或更宽泛。
+
+### 输出格式
+返回 **JSON 对象**，格式如下：{{"output": ["修改版本1", "修改版本2", "修改版本3"]}}
+不要添加额外的代码块、注释或解释。
+
+示例:
+{{
+  "query": "Find a sharp rise in AMZN stock, with angle above 40°",
+  "choices": ["angle_scope_condition", "time_span_condition"],
+  "segments": [
+    {{
+      "angle": 47.6,
+      "end_time": 1520812800,
+      "end_value": 1598.39,
+      "start_time": 1514851200,
+      "start_value": 1189.01,
+      "time_span": 5961600
+    }}
+  ]
+}}
+输出示例:
+{{
+  "output": [
+    "Find a sharp rise in AMZN stock, with a steep increase and a duration of about 9 weeks",
+    "Find a strong upward trend in AMZN stock, lasting approximately 2 months",
+    "Find a notable upward movement in AMZN stock, with a sharp rise and a time span of around 60 days"
+  ]
+}}
+"""
+    return modify_prompt
 
 
 if __name__ == "__main__":

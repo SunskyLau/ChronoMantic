@@ -57,3 +57,16 @@
     left: 50%;
     transform: translateX(-50%) translateY(-50px);
 }
+
+.recommendation-list {
+    max-width: 50vw;
+}
+
+.recommendation-list>div {
+    padding: 4px 12px;
+}
+
+.recommendation-list > div:hover {
+    border-radius: 8px;
+    background-color: #eeec;
+}
