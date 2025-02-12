@@ -13,23 +13,21 @@ export default function QueryGlyph({ className }: { className?: string }) {
     const curRelation = useAppSelector(state => state.states.curRelation);
 
     return (<div className={classnames("glyph", className)}>
-        <button type="button" className="btn" style={{ width: 'fit-content' }}>
-            <Popover rootClassName="glyph-popover" trigger={["hover"]} content={<QueryCondition></QueryCondition>}>
-                <div className="pointer flex"><Glyph onClick={(type, index) => {
-                    switch (type) {
-                        case "Trend":
-                            flushSync(() => dispatch(setCurTrend(null)))
-                            dispatch(setCurTrend(index))
-                            break;
-                        case "Relation":
-                            flushSync(() => dispatch(setCurRelation(null)))
-                            dispatch(setCurRelation(index))
-                            break;
-                        default:
-                            break;
-                    }
-                }} height={48} trends={querySpec?.trends || []} allTrends={querySpec?.trends || []} relations={querySpec?.relations || []} curTrend={curTrend ?? -1} curRelation={curRelation ?? -1}></Glyph></div>
-            </Popover>
-        </button>
+        <Popover rootClassName="glyph-popover" trigger={["hover"]} content={<QueryCondition></QueryCondition>}>
+            <div className="pointer flex" style={{ width: "100%", height: "100%" }}><Glyph onClick={(type, index) => {
+                switch (type) {
+                    case "Trend":
+                        flushSync(() => dispatch(setCurTrend(null)))
+                        dispatch(setCurTrend(index))
+                        break;
+                    case "Relation":
+                        flushSync(() => dispatch(setCurRelation(null)))
+                        dispatch(setCurRelation(index))
+                        break;
+                    default:
+                        break;
+                }
+            }} height={48} trends={querySpec?.trends || []} allTrends={querySpec?.trends || []} relations={querySpec?.relations || []} curTrend={curTrend ?? -1} curRelation={curRelation ?? -1}></Glyph></div>
+        </Popover>
     </div>)
 }

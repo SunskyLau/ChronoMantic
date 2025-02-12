@@ -2,7 +2,7 @@ import { Attribute, Comparator, Relation, Trend } from "../../../types/QuerySpec
 import * as d3 from "d3";
 import { deepClone } from "../../../utils/deepclone";
 import { getColor } from "../../../utils/color";
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 
 type ClickType = "Trend" | "Relation";
 
@@ -46,7 +46,6 @@ const Glyph = ({ trends = [], relations = [], allTrends = [], height = 32, onCli
     const paddingX = 4;
     const trendLength = height - paddingY * 1.5;
     const t = deepClone(trends).map((trends, index) => (trends.index = index, trends));
-    const svgRef = useRef<SVGSVGElement>(null);
 
     const getTrend = (trend: Trend, i: number, showIndex = false) => {
         const angle = getAverageValue(trend) || 0;
@@ -66,7 +65,7 @@ const Glyph = ({ trends = [], relations = [], allTrends = [], height = 32, onCli
                 </defs>
                 <rect x={x1} y={paddingY} width={trendLength} height={height - paddingY * 2} fill={curTrend === i ? getColor(i) : "#eee0"} opacity={.5}></rect>
                 <line x1={x1} y1={y1} x2={x2} y2={y2} stroke={color} strokeWidth={1.5} markerEnd={`url(#arrow-${id}-${i})`} />
-                {showIndex && <text x={angle > 0 ? x2 - 8 - height / 16 : x1 + height / 16} y={angle > 0 ? y1 : y2} fontSize={height / 3} fill="#000c" fontWeight="bold">{i}</text>}
+                {showIndex && <text x={angle > 0 ? x2 - 8 - height / 16 : x1 + height / 16} y={angle > 0 ? y1 : y2} fontSize={height / 4} fill="#000c" fontWeight="bold">{i}</text>}
             </g>
         );
     };
@@ -199,12 +198,39 @@ const Glyph = ({ trends = [], relations = [], allTrends = [], height = 32, onCli
 
     const trendLines = t.map((trend, i) => getTrend(trend, i, true));
 
-    const width = t.length * trendLength + paddingX * 2;
+    const svgRef = useRef<SVGSVGElement>(null);
+    const gRef = useRef<SVGGElement>(null);
+    useEffect(() => {
+        if (!svgRef.current || !gRef.current) return;
+
+        const svg = d3.select(svgRef.current);
+        const g = d3.select(gRef.current);
+        const bbox = g.node()?.getBBox();
+        if (!bbox) return;
+
+        const width = svgRef.current.clientWidth;
+        const height = svgRef.current.clientHeight;
+
+        const scale = 1;
+        const translateX = (width - bbox.width * scale) / 2 - bbox.x * scale;
+        const translateY = (height - bbox.height * scale) / 2 - bbox.y * scale;
+
+        const zoom = d3.zoom<SVGSVGElement, unknown>()
+            .scaleExtent([1, 5])
+            .on("zoom", (event) => {
+                g.attr("transform", event.transform);
+            });
+
+        svg.call(zoom);
+        g.attr("transform", `translate(${translateX}, ${translateY}) scale(${scale})`);
+    }, [trends, relations]);
 
     return (
-        <svg width={width} height={height} ref={svgRef}>
-            {trendLines}
-            {relationLines}
+        <svg width={'100%'} height={'100%'} ref={svgRef}>
+            <g ref={gRef}>
+                {trendLines}
+                {relationLines}
+            </g>
         </svg>
     );
 };
