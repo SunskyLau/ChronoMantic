@@ -3,15 +3,14 @@ import DocumentIcon from "../../icons/Document";
 import NlqueryBox from "../NlqueryBox";
 import "./index.css";
 import { classnames } from "../../utils/classname";
-import QueryCondition from "../QueryCondition";
-import Recommendation from "../Recommendation";
+import QueryGlyph from "./QueryGlyph";
+
 
 export default function QueryPanel({ className }: { className?: string }) {
     return (
         <Panel className={classnames("query-panel", className)} icon={<DocumentIcon />} title="Query Panel">
             <NlqueryBox></NlqueryBox>
-            <Recommendation></Recommendation>
-            <QueryCondition></QueryCondition>
+            <QueryGlyph className="query-panel-glyph"></QueryGlyph>
         </Panel>
     );
 }

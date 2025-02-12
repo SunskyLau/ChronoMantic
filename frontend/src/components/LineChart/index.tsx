@@ -20,18 +20,52 @@ interface LineChartProps {
     isSplitMask?: boolean;
     isExpand?: boolean;
     isZoom?: boolean;
+    onScroll?: (delta: number) => void;
+    onContextMenu?: (event: MouseEvent) => void;
     children?: React.ReactNode;
 }
 
-function LineChart({ xData, yData, ratio, title = "", isXAxisVisible = false, isYAxisVisible = false, isBrush = false, isFill = false, onBrush, onBrushEnd, range, height, split, isSplitMask = false, brushPosition, isZoom = false, isExpand = true, isShowRange = true, children }: LineChartProps) {
+function LineChart({ xData, yData, ratio, title = "", isXAxisVisible = false, isYAxisVisible = false, isBrush = false, isFill = false, onBrush, onBrushEnd, range, height, split, isSplitMask = false, brushPosition, isZoom = false, isExpand = true, isShowRange = true, children, onScroll, onContextMenu }: LineChartProps) {
     const svgRef = useRef<SVGSVGElement>(null);
     const id = useId();
+
+    const handleScroll = useCallback((event: WheelEvent) => {
+        event.preventDefault();
+        const total = range ? range?.[1] - range?.[0] : xData.length;
+        const step = Math.max(1, Math.round(total / 10));
+        onScroll?.(event.deltaY > 0 ? step : -step);
+    }, [onScroll, range, xData.length]);
+
+    useEffect(() => {
+        if (!svgRef.current) return;
+        const svg = svgRef.current;
+        svg.addEventListener('wheel', handleScroll);
+        return () => {
+            svg?.removeEventListener('wheel', handleScroll);
+        }
+    }, [handleScroll])
+
+    const handleContextMenu = useCallback((event: MouseEvent) => {
+        event.preventDefault();
+        onContextMenu?.(event);
+    }, [onContextMenu]);
+
+    useEffect(() => {
+        if (!svgRef.current) return;
+        const svg = svgRef.current;
+        svg.addEventListener('contextmenu', handleContextMenu);
+        return () => {
+            svg?.removeEventListener('contextmenu', handleContextMenu);
+        }
+    }, [handleContextMenu])
 
     const draw = useCallback(() => {
         if (!svgRef.current || xData.length === 0 || yData.length === 0) return;
 
-        let timeStampData = range ? xData.slice(range?.[0], range?.[1] + 1).map((d) => d * 1000) : xData.map((d) => d * 1000);
-        let valueData = range ? yData.slice(range?.[0], range?.[1] + 1) : yData;
+        let start = range?.[0] ?? 0;
+        let end = range?.[1] ? range[1] + 1 : xData.length;
+        let timeStampData = range ? xData.slice(start, end).map((d) => d * 1000) : xData.map((d) => d * 1000);
+        let valueData = range ? yData.slice(start, end) : yData;
         let data = timeStampData.map((x, i) => [x, valueData[i]] as [number, number]);
 
         const margin = { top: isXAxisVisible ? 20 : 0, right: isYAxisVisible ? 40 : 0, bottom: isXAxisVisible ? 30 : 0, left: isYAxisVisible ? 40 : 0 };
@@ -70,6 +104,8 @@ function LineChart({ xData, yData, ratio, title = "", isXAxisVisible = false, is
                     timeStampData = extentData.map((v) => v[0]);
                     valueData = extentData.map((v) => yData[v[1]]);
                     data = timeStampData.map((x, i) => [x, valueData[i]] as [number, number]);
+                    start = Math.max(0, Math.min(...extentData.map((v) => v[1])));
+                    end = Math.min(xData.length, Math.max(...extentData.map((v) => v[1])) + 1);
                 }
             }
             innerHeight = iHeight;
@@ -200,8 +236,8 @@ function LineChart({ xData, yData, ratio, title = "", isXAxisVisible = false, is
                 const [x0, x1] = selection;
                 const [minX, maxX] = [x.invert(x0 as number), x.invert(x1 as number)];
                 const filteredIndices = getFilteredIndices([minX, maxX]);
-                highlightBrush([minX, maxX]);
-                onBrush?.(filteredIndices.at(0) || 0, filteredIndices.at(-1) || 0);
+                if (isFill) highlightBrush([minX, maxX]);
+                onBrush?.((filteredIndices.at(0) || 0) + start, (filteredIndices.at(-1) || 0) + start);
             }
 
             function getFilteredIndices(selection: [Date, Date]) {
@@ -234,7 +270,7 @@ function LineChart({ xData, yData, ratio, title = "", isXAxisVisible = false, is
                 brushG.call(brush.move!, [x(xData[brushPosition[0]] * 1000), x(xData[brushPosition[1]] * 1000)]);
                 const minX = new Date(xData[brushPosition[0]] * 1000);
                 const maxX = new Date(xData[brushPosition[1]] * 1000);
-                highlightBrush([minX, maxX]);
+                if (isFill) highlightBrush([minX, maxX]);
             }
 
             brush.on("brush", (event) => brushFn(event))
@@ -242,19 +278,20 @@ function LineChart({ xData, yData, ratio, title = "", isXAxisVisible = false, is
                     svg.select(".area").remove();
                     const selection = event.selection;
                     if (!selection) {
-                        onBrush?.(0, 0);
-                        onBrushEnd?.(0, 0);
+                        onBrush?.(start, start);
+                        onBrushEnd?.(start, start);
                         return;
                     }
                     const [x0, x1] = selection;
                     const [minX, maxX] = [x.invert(x0 as number), x.invert(x1 as number)];
                     const filteredIndices = getFilteredIndices([minX, maxX]);
-                    onBrush?.(filteredIndices.at(0) || 0, filteredIndices.at(-1) || 0);
-                    onBrushEnd?.(filteredIndices.at(0) || 0, filteredIndices.at(-1) || 0);
+                    onBrush?.(start + (filteredIndices.at(0) || 0), start + (filteredIndices.at(-1) || 0));
+                    onBrushEnd?.(start + (filteredIndices.at(0) || 0), start + (filteredIndices.at(-1) || 0));
                 });
 
             svg.select(".selection")
-                .attr("fill", "#3333")
+                .attr("fill", "#3336")
+                .attr("clip-path", `url(#clip-path-${id})`)
                 .attr("stroke", "none");
 
             return () => {

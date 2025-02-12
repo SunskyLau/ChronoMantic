@@ -7,7 +7,7 @@
 }
 
 .main-left,
-.main-right {
+.main-middle {
     flex: 1 1 var(--side-width);
     max-width: var(--side-width);
     min-width: 0;
@@ -23,15 +23,16 @@
 
 .main-right {
     margin-right: var(--gap);
-}
-
-.main-middle {
     width: var(--width);
     display: flex;
-    flex: 3 1 0;
+    flex: 2 1 0;
     flex-direction: column;
     gap: var(--gap);
     min-width: 0;
+}
+
+.main .panel {
+    flex: 1 1 0;
 }
 
 .main .panel > .panel-content {
@@ -41,6 +42,10 @@
 
 .main .nl-query-form {
     flex-shrink: 0;
+}
+
+.main .table-view {
+    flex: 2 1 0;
 }
 
 .main .main-view {

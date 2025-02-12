@@ -3,7 +3,7 @@ from flask import Blueprint
 
 from app.query import query
 from app.ai_agent.query import get_query_spec
-from ..ai_agent.constant import create_system_prompt, create_ts_prompt
+from ..ai_agent.constant import create_search_prompt, create_system_prompt, create_ts_prompt, create_modify_prompt
 from ..config import Config
 from flask import Blueprint, request, jsonify
 import numpy as np
@@ -13,7 +13,15 @@ from app.services.banking_to_45degree import find_optimal_aspect_ratio
 from ..MyTypes import DatasetInfo, QuerySpec
 from ..model import approximate_dataset
 from numpy.typing import NDArray
-from ..shared_data import dataset_info_container, dataset_container, approximation_segments_containers_container, system_prompt_container, ts_prompt_container
+from ..shared_data import (
+    dataset_info_container,
+    dataset_container,
+    approximation_segments_containers_container,
+    system_prompt_container,
+    ts_prompt_container,
+    search_prompt_container,
+    modify_prompt_container,
+)
 
 bus_bp = Blueprint("bus", __name__)
 
@@ -117,6 +125,10 @@ def process_dataset():
     system_prompt_container.set_data(system_prompt)
     ts_prompt = create_ts_prompt(dataset_info_str)
     ts_prompt_container.set_data(ts_prompt)
+    search_prompt = create_search_prompt(dataset_info_str)
+    search_prompt_container.set_data(search_prompt)
+    modify_prompt = create_modify_prompt(dataset_info_str)
+    modify_prompt_container.set_data(modify_prompt)
     dataset_info_container.set_data(dataset_info)
     dataset = dataset_container.get_data()
     approxiamation_segments_containers = approximate_dataset(dataset, dataset_info)
@@ -150,3 +162,21 @@ segments: {request.json.get("segments")}
 choices: {request.json.get("choices")}""",
     )
     return jsonify({"code": 200, "message": "Query successful", "results": ts_query})
+
+
+@bus_bp.route("/search_prompt", methods=["POST"])
+def search_prompt():
+    prompt = get_query_spec(search_prompt_container.get_data(), request.json.get("query"))
+    return jsonify({"code": 200, "message": "Query successful", "results": prompt})
+
+
+@bus_bp.route("/modify_prompt", methods=["POST"])
+def modify_prompt():
+    prompt = get_query_spec(
+        modify_prompt_container.get_data(),
+        f"""query: {request.json.get("query")}
+choices: {request.json.get("choices")}
+segments: {request.json.get("segments")}
+    """,
+    )
+    return jsonify({"code": 200, "message": "Query successful", "results": prompt})

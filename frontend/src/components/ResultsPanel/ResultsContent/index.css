@@ -6,6 +6,8 @@
   text-align: center;
   display: flex;
   flex-direction: column;
+  padding: 4px;
+  color: #808080;
 }
 
 .result-header {
@@ -13,23 +15,22 @@
   align-items: center;
   justify-content: space-between;
   height: 64px;
-  gap: 4px;
+  gap: 2px;
   margin-bottom: 4px;
   position: sticky;
   top: 0;
   background-color: #fff;
 }
 
-.result-header > div {
-  background-color: #eee;
-  border-radius: 4px;
+.result-header>div {
+  background-color: #EAEFF8;
+  border-radius: 2px;
   height: 100%;
   line-height: 64px;
 }
 
 .results-content .fix-width {
   width: 64px;
-  font-weight: 700;
 }
 
 .result-item .data-name {
@@ -38,7 +39,6 @@
 
 .results-content .flex-width {
   flex: 1 1 0;
-  font-weight: 700;
 }
 
 .result-item-list {
@@ -54,12 +54,14 @@
 .result-item {
   width: 100%;
   background: white;
-  padding-block: 8px;
-  gap: 4px;
+  padding-block: 2px;
+  gap: 2px;
   box-sizing: border-box;
   display: flex;
   align-items: center;
-  border-bottom: 1px solid #eee;
+  border-top: 1px solid #e0e0e0;
+  border-bottom: 1px solid #e0e0e0;
+  margin-bottom: -1px;
 }
 
 .result-item.active {
@@ -72,16 +74,14 @@
 
 .result-item .data-value {
   height: 100%;
-  padding: 2px;
-  color: #fff;
-  background-color: #eee;
+  color: #808080;
   border-radius: 8px;
 }
 
 .result-item .data-value .data-value__inner {
   height: 100%;
-  background-color: #9CC9EE;
-  border-radius: 4px;
+  background-color: #C5D7EF;
+  border-radius: 2px;
   white-space: nowrap;
   display: flex;
   align-items: center;

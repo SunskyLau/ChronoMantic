@@ -61,6 +61,7 @@ function SelectChart({ data, title, onBrush }: SelectChartProps) {
                 .attr('y', 15)
                 .attr('text-anchor', 'middle')
                 .attr('font-size', '14px')
+                .attr('fill', '#808080')
                 .text(title);
 
             g.append('path')

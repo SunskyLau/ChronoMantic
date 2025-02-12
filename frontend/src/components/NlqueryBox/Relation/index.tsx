@@ -2,6 +2,10 @@ import { Button, Divider, Empty, Flex, Select, Typography } from "antd";
 import { Attribute, Comparator, Relation as RelationType } from "../../../types/QuerySpec";
 import { deepClone } from "../../../utils/deepclone";
 import { MinusOutlined, PlusOutlined } from "@ant-design/icons";
+import { classnames } from "../../../utils/classname";
+import { useEffect, useRef } from "react";
+import { useAppDispatch } from "../../../app/hooks";
+import { setCurRelation } from "../../../app/slice/stateSlice";
 
 interface RelationProps {
     title?: string;
@@ -9,10 +13,20 @@ interface RelationProps {
     idLength: number;
     isEdit?: boolean;
     disabled?: boolean;
+    highlight?: number;
     onChange: (relations: RelationType[]) => void;
 }
 
-export default function Relation({ title, relations, idLength, isEdit, onChange, disabled }: RelationProps) {
+export default function Relation({ title, relations, idLength, isEdit, onChange, disabled, highlight }: RelationProps) {
+    const relationRefs = useRef<(HTMLDivElement | null)[]>([]);
+    const dispatch = useAppDispatch();
+
+    useEffect(() => {
+        if (highlight !== undefined && relationRefs.current[highlight]) {
+            relationRefs.current[highlight]?.scrollIntoView({ behavior: "smooth", block: "center" });
+        }
+    }, [highlight]);
+
     return (
         <>
             <Flex justify="space-between" align="center">
@@ -24,34 +38,36 @@ export default function Relation({ title, relations, idLength, isEdit, onChange,
                 }}></Button>}
             </Flex>
             {!relations.length ? <Empty description="no relations"></Empty> : relations.map((relation, index) => (
-                <div key={index}>
-                    <Flex gap={4}>
-                        <Select disabled={disabled} placeholder="attribute" popupMatchSelectWidth={false} options={Object.values(Attribute).map(attr => ({ value: attr, label: attr }))} value={relation.attribute} onChange={(value) => {
-                            const newRelations = deepClone(relations);
-                            newRelations[index].attribute = value;
-                            onChange(newRelations);
-                        }}></Select>
-                        <Select disabled={disabled} placeholder="id1" popupMatchSelectWidth={false} value={relation.id1} options={Array.from({ length: idLength }, (_, i) => ({ value: i }))} onChange={(value) => {
-                            const newRelations = deepClone(relations);
-                            newRelations[index].id1 = value;
-                            onChange(newRelations);
-                        }}></Select>
-                        <Select disabled={disabled} popupMatchSelectWidth={false} placeholder="comparator" options={Object.values(Comparator).map(attr => ({ value: attr, label: attr }))} value={relation.comparator} onChange={(value) => {
-                            const newRelations = deepClone(relations);
-                            newRelations[index].comparator = value;
-                            onChange(newRelations);
-                        }} />
-                        <Select disabled={disabled} placeholder="id2" popupMatchSelectWidth={false} value={relation.id2} options={Array.from({ length: idLength }, (_, i) => ({ value: i }))} onChange={(value) => {
-                            const newRelations = deepClone(relations);
-                            newRelations[index].id2 = value;
-                            onChange(newRelations);
-                        }}></Select>
-                        {isEdit && !disabled && <Button type="primary" style={{ marginLeft: 'auto' }} icon={<MinusOutlined />} danger onClick={() => {
-                            const newRelations = deepClone(relations);
-                            newRelations.splice(index, 1);
-                            onChange(newRelations);
-                        }}></Button>}
-                    </Flex>
+                <div key={index} ref={el => relationRefs.current[index] = el} onClick={()=>{dispatch(setCurRelation(index))}}>
+                    <div className={classnames("relation-item", highlight === index ? "active" : "")} >
+                        <Flex gap={4}>
+                            <Select disabled={disabled} placeholder="attribute" popupMatchSelectWidth={false} options={Object.values(Attribute).map(attr => ({ value: attr, label: attr }))} value={relation.attribute} onChange={(value) => {
+                                const newRelations = deepClone(relations);
+                                newRelations[index].attribute = value;
+                                onChange(newRelations);
+                            }}></Select>
+                            <Select disabled={disabled} placeholder="id1" popupMatchSelectWidth={false} value={relation.id1} options={Array.from({ length: idLength }, (_, i) => ({ value: i }))} onChange={(value) => {
+                                const newRelations = deepClone(relations);
+                                newRelations[index].id1 = value;
+                                onChange(newRelations);
+                            }}></Select>
+                            <Select disabled={disabled} popupMatchSelectWidth={false} placeholder="comparator" options={Object.values(Comparator).map(attr => ({ value: attr, label: attr }))} value={relation.comparator} onChange={(value) => {
+                                const newRelations = deepClone(relations);
+                                newRelations[index].comparator = value;
+                                onChange(newRelations);
+                            }} />
+                            <Select disabled={disabled} placeholder="id2" popupMatchSelectWidth={false} value={relation.id2} options={Array.from({ length: idLength }, (_, i) => ({ value: i }))} onChange={(value) => {
+                                const newRelations = deepClone(relations);
+                                newRelations[index].id2 = value;
+                                onChange(newRelations);
+                            }}></Select>
+                            {isEdit && !disabled && <Button type="primary" style={{ marginLeft: 'auto' }} icon={<MinusOutlined />} danger onClick={() => {
+                                const newRelations = deepClone(relations);
+                                newRelations.splice(index, 1);
+                                onChange(newRelations);
+                            }}></Button>}
+                        </Flex>
+                    </div>
                     <Divider></Divider>
                 </div>
             ))}

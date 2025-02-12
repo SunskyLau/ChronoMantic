@@ -5,7 +5,11 @@ import InclusiveSlider from "../InclusiveSlider";
 import Span from "../Span";
 import Time from "../Time";
 import { MinusOutlined, PlusOutlined } from "@ant-design/icons";
-import { ReactNode } from "react";
+import { ReactNode, useEffect, useRef } from "react";
+import { classnames } from "../../../utils/classname";
+import { getColor } from "../../../utils/color";
+import { useAppDispatch } from "../../../app/hooks";
+import { setCurTrend } from "../../../app/slice/stateSlice";
 
 interface TrendProps {
     title?: string;
@@ -15,73 +19,86 @@ interface TrendProps {
     start?: number;
     isEdit?: boolean;
     disabled?: boolean;
+    highlight?: number;
     onChange: (trends: TrendType[]) => void;
 }
 
-export default function Trend({ title, trends, minValue, maxValue, onChange, start = 0, isEdit, disabled }: TrendProps) {
+export default function Trend({ title, trends, minValue, maxValue, onChange, start = 0, isEdit, disabled, highlight }: TrendProps) {
+    const allTrends = isEdit ? deepClone(trends).map(trend => Object.assign({ time_scope_condition: {}, angle_scope_condition: {}, slope_scope_condition: {}, time_span_condition: {} }, trend)) : trends;
+    const trendRefs = useRef<(HTMLDivElement | null)[]>([]);
+    const dispatch = useAppDispatch();
+
+    useEffect(() => {
+        if (highlight !== undefined && trendRefs.current[highlight]) {
+            trendRefs.current[highlight]?.scrollIntoView({ behavior: "smooth", block: "center" });
+        }
+    }, [highlight]);
+
     return (
         <>
             <Flex justify="space-between" align="center">
                 <Typography.Title level={4} keyboard>{title ?? 'Trend'}</Typography.Title>
                 {isEdit && !disabled && <Button icon={<PlusOutlined />} onClick={() => {
-                    const newTrends = deepClone(trends);
+                    const newTrends = deepClone(allTrends);
                     newTrends.push({ time_scope_condition: {}, angle_scope_condition: {}, slope_scope_condition: {}, time_span_condition: {} });
                     onChange(newTrends);
                 }}></Button>}
             </Flex>
-            {!trends.length ? <Empty description="no trends"></Empty> : trends.map((trend, index) => (
-                <div className="trend-item" key={index}>
-                    <Flex justify="space-between" align="center">
-                        <Typography.Title level={5}>No.{trend.index ?? index + start}</Typography.Title>
-                        {isEdit && !disabled && <Button type="primary" icon={<MinusOutlined />} danger onClick={() => {
-                            const newTrends = deepClone(trends);
-                            newTrends.splice(index, 1);
-                            onChange(newTrends);
-                        }}></Button>}
-                    </Flex>
-                    {Object.keys(trend).map((key, i) => {
-                        const k = key as keyof typeof trend;
-                        if (!trend[k] || typeof trend[k] === 'number') return null;
-                        const components: ReactNode[] = [];
-                        components.push(<Typography.Paragraph key={i}>{k}</Typography.Paragraph>);
-                        switch (k) {
-                            case 'time_span_condition':
-                                components.push(<Span disabled={disabled} key={k} valueFormatter={86400} addonAfter="days" minValue={0} min={trend.time_span_condition?.min?.value || null} max={trend.time_span_condition?.max?.value || null} maxInclusive={!!trend.time_span_condition?.max?.inclusive} minInclusive={!!trend.time_span_condition?.min?.inclusive} onChange={(min, max, minInclusive, maxInclusive) => {
-                                    const newTrends = deepClone(trends);
-                                    const change = { [k]: { min: !min ? null : { value: min, inclusive: minInclusive }, max: !max ? null : { value: max, inclusive: maxInclusive } } };
-                                    newTrends[index] = { ...newTrends[index], ...change };
-                                    onChange(newTrends);
-                                }}></Span>)
-                                break;
-                            case 'angle_scope_condition':
-                                components.push(<InclusiveSlider disabled={disabled} key={k} minValue={-90} maxValue={90} min={trend[k]?.min?.value || null} max={trend[k]?.max?.value || null} minInclusive={!!trend[k]?.min?.inclusive} maxInclusive={!!trend[k]?.max?.inclusive} onChange={(min, max, minInclusive, maxInclusive) => {
-                                    const newTrends = deepClone(trends);
-                                    const change = { [k]: { min: !min ? null : { value: min, inclusive: minInclusive }, max: !max ? null : { value: max, inclusive: maxInclusive } } };
-                                    newTrends[index] = { ...newTrends[index], ...change };
-                                    onChange(newTrends);
-                                }}></InclusiveSlider>)
-                                break;
-                            case 'slope_scope_condition':
-                                components.push(<Span disabled={disabled} key={k} min={trend[k]?.min?.value || null} max={trend[k]?.max?.value || null} maxInclusive={!!trend[k]?.max?.inclusive} minInclusive={!!trend[k]?.min?.inclusive} onChange={(min, max, minInclusive, maxInclusive) => {
-                                    const newTrends = deepClone(trends);
-                                    const change = { [k]: { min: !min ? null : { value: min, inclusive: minInclusive }, max: !max ? null : { value: max, inclusive: maxInclusive } } };
-                                    newTrends[index] = { ...newTrends[index], ...change };
-                                    onChange(newTrends);
-                                }}></Span>);
-                                break;
-                            case 'time_scope_condition':
-                                components.push(<Time disabled={disabled} key={k} min={trend[k]?.min?.value || null} max={trend[k]?.max?.value || null} maxInclusive={!!trend[k]?.max?.inclusive} minInclusive={!!trend[k]?.min?.inclusive} minValue={minValue ?? null} maxValue={maxValue ?? null} onChange={(min, max, minInclusive, maxInclusive) => {
-                                    const newTrends = deepClone(trends);
-                                    const change = { [k]: { min: !min ? null : { value: min, inclusive: minInclusive }, max: !max ? null : { value: max, inclusive: maxInclusive } } };
-                                    newTrends[index] = { ...newTrends[index], ...change };
-                                    onChange(newTrends);
-                                }}></Time>)
-                                break;
-                            default:
-                                break;
-                        }
-                        return <div className="trend-item-attr" key={i}>{components}</div>
-                    })}
+            {!trends.length ? <Empty description="no trends"></Empty> : allTrends.map((trend, index) => (
+                <div key={index} ref={el => trendRefs.current[index] = el} onClick={()=>{dispatch(setCurTrend(index))}}>
+                    <div className={classnames("trend-item", highlight === index ? "active" : "")} style={{ backgroundColor: highlight === index ? getColor(index) : undefined }}>
+                        <Flex justify="space-between" align="center">
+                            <Typography.Title level={5}>No.{index + start}</Typography.Title>
+                            {isEdit && !disabled && <Button type="primary" icon={<MinusOutlined />} danger onClick={() => {
+                                const newTrends = deepClone(allTrends);
+                                newTrends.splice(index, 1);
+                                onChange(newTrends);
+                            }}></Button>}
+                        </Flex>
+                        {Object.keys(trend).map((key, i) => {
+                            const k = key as keyof typeof trend;
+                            if (!trend[k] || typeof trend[k] === 'number') return null;
+                            const components: ReactNode[] = [];
+                            components.push(<Typography.Paragraph key={i}>{k}</Typography.Paragraph>);
+                            switch (k) {
+                                case 'time_span_condition':
+                                    components.push(<Span disabled={disabled} key={k} valueFormatter={86400} addonAfter="days" minValue={0} min={trend.time_span_condition?.min?.value || null} max={trend.time_span_condition?.max?.value || null} maxInclusive={!!trend.time_span_condition?.max?.inclusive} minInclusive={!!trend.time_span_condition?.min?.inclusive} onChange={(min, max, minInclusive, maxInclusive) => {
+                                        const newTrends = deepClone(allTrends);
+                                        const change = { [k]: { min: !min && min !== 0 ? null : { value: min, inclusive: minInclusive }, max: !max && max !== 0 ? null : { value: max, inclusive: maxInclusive } } };
+                                        newTrends[index] = { ...newTrends[index], ...change };
+                                        onChange(newTrends);
+                                    }}></Span>)
+                                    break;
+                                case 'angle_scope_condition':
+                                    components.push(<InclusiveSlider disabled={disabled} key={k} minValue={-90} maxValue={90} min={trend[k]?.min?.value || null} max={trend[k]?.max?.value || null} minInclusive={!!trend[k]?.min?.inclusive} maxInclusive={!!trend[k]?.max?.inclusive} onChange={(min, max, minInclusive, maxInclusive) => {
+                                        const newTrends = deepClone(allTrends);
+                                        const change = { [k]: { min: !min && min !== 0 ? null : { value: min, inclusive: minInclusive }, max: !max && max !== 0 ? null : { value: max, inclusive: maxInclusive } } };
+                                        newTrends[index] = { ...newTrends[index], ...change };
+                                        onChange(newTrends);
+                                    }}></InclusiveSlider>)
+                                    break;
+                                case 'slope_scope_condition':
+                                    components.push(<Span disabled={disabled} key={k} min={trend[k]?.min?.value || null} max={trend[k]?.max?.value || null} maxInclusive={!!trend[k]?.max?.inclusive} minInclusive={!!trend[k]?.min?.inclusive} onChange={(min, max, minInclusive, maxInclusive) => {
+                                        const newTrends = deepClone(allTrends);
+                                        const change = { [k]: { min: !min && min !== 0 ? null : { value: min, inclusive: minInclusive }, max: !max && max !== 0 ? null : { value: max, inclusive: maxInclusive } } };
+                                        newTrends[index] = { ...newTrends[index], ...change };
+                                        onChange(newTrends);
+                                    }}></Span>);
+                                    break;
+                                case 'time_scope_condition':
+                                    components.push(<Time disabled={disabled} key={k} min={trend[k]?.min?.value || null} max={trend[k]?.max?.value || null} maxInclusive={!!trend[k]?.max?.inclusive} minInclusive={!!trend[k]?.min?.inclusive} minValue={minValue ?? null} maxValue={maxValue ?? null} onChange={(min, max, minInclusive, maxInclusive) => {
+                                        const newTrends = deepClone(allTrends);
+                                        const change = { [k]: { min: !min && min !== 0 ? null : { value: min, inclusive: minInclusive }, max: !max && max !== 0 ? null : { value: max, inclusive: maxInclusive } } };
+                                        newTrends[index] = { ...newTrends[index], ...change };
+                                        onChange(newTrends);
+                                    }}></Time>)
+                                    break;
+                                default:
+                                    break;
+                            }
+                            return <div className="trend-item-attr" key={i}>{components}</div>
+                        })}
+                    </div>
                     <Divider></Divider>
                 </div>
             ))}
