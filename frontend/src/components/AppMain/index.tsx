@@ -2,11 +2,10 @@ import { useAppSelector } from "../../app/hooks";
 import ResultsPanel from "../../components/ResultsPanel";
 import { classnames } from "../../utils/classname";
 import DetailView from "../DetailView";
-import NlqueryBox from "../NlqueryBox";
 import Setting from "../Setting";
 import TableView from "../TableView";
 import "./index.css";
-import Recommendation from "../Recommendation";
+import QueryPanel from "../QueryPanel";
 
 export default function AppMain() {
     const isSettingShow = useAppSelector(state => state.states.isSettingShow);
@@ -15,15 +14,14 @@ export default function AppMain() {
         <>
             <main className="main">
                 <section className="main-left">
+                    <QueryPanel></QueryPanel>
                     <TableView></TableView>
-                    <ResultsPanel className="main-results" />
                 </section>
                 <section className="main-middle">
-                    <NlqueryBox></NlqueryBox>
-                    <Recommendation></Recommendation>
-                    <DetailView></DetailView>
+                    <ResultsPanel className="main-results" />
                 </section>
-                <section className={classnames("main-right", "hide")}>
+                <section className={classnames("main-right")}>
+                    <DetailView></DetailView>
                 </section>
             </main>
             {isSettingShow && <Setting></Setting>}

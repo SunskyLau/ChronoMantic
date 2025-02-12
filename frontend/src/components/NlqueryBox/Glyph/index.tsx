@@ -2,6 +2,7 @@ import { Attribute, Comparator, Relation, Trend } from "../../../types/QuerySpec
 import * as d3 from "d3";
 import { deepClone } from "../../../utils/deepclone";
 import { getColor } from "../../../utils/color";
+import { useRef } from "react";
 
 type ClickType = "Trend" | "Relation";
 
@@ -45,6 +46,7 @@ const Glyph = ({ trends = [], relations = [], allTrends = [], height = 32, onCli
     const paddingX = 4;
     const trendLength = height - paddingY * 1.5;
     const t = deepClone(trends).map((trends, index) => (trends.index = index, trends));
+    const svgRef = useRef<SVGSVGElement>(null);
 
     const getTrend = (trend: Trend, i: number, showIndex = false) => {
         const angle = getAverageValue(trend) || 0;
@@ -200,7 +202,7 @@ const Glyph = ({ trends = [], relations = [], allTrends = [], height = 32, onCli
     const width = t.length * trendLength + paddingX * 2;
 
     return (
-        <svg width={width} height={height}>
+        <svg width={width} height={height} ref={svgRef}>
             {trendLines}
             {relationLines}
         </svg>

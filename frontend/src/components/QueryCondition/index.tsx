@@ -69,7 +69,7 @@ export default function QueryCondition() {
                 <Divider></Divider>
             </section>
             <section>
-                <Scope key={memoizedQuerySpec.time_scope_condition?.min?.value || memoizedQuerySpec.time_span_condition?.max?.value} title="Time Scope Condition" min={memoizedQuerySpec.time_scope_condition?.min?.value || null} max={memoizedQuerySpec.time_scope_condition?.max?.value || null} minInclusive={!!memoizedQuerySpec.time_scope_condition?.min?.inclusive} maxInclusive={!!memoizedQuerySpec.time_scope_condition?.max?.inclusive} onChange={(min, max, minInclusive, maxInclusive) => {
+                <Scope key={memoizedQuerySpec.time_scope_condition?.min?.value || memoizedQuerySpec.time_span_condition?.max?.value} title="Time Scope Condition" min={memoizedQuerySpec.time_scope_condition?.min?.value || null} minValue={minDate} max={memoizedQuerySpec.time_scope_condition?.max?.value || null} maxValue={maxDate} minInclusive={!!memoizedQuerySpec.time_scope_condition?.min?.inclusive} maxInclusive={!!memoizedQuerySpec.time_scope_condition?.max?.inclusive} onChange={(min, max, minInclusive, maxInclusive) => {
                     const newQuerySpec = deepClone(memoizedQuerySpec);
                     newQuerySpec.time_scope_condition = {
                         min: !min ? null : { value: min, inclusive: minInclusive },

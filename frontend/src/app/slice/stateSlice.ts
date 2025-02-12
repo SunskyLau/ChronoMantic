@@ -17,6 +17,7 @@ export type States = {
   aspectRatio: number;
   isDrawer: boolean;
   querys: string[];
+  modifyPrompts: string[];
   curTrend: number | null,
   curRelation: number | null,
 };
@@ -39,6 +40,7 @@ const initialState: States = {
   querys: [],
   curRelation: null,
   curTrend: null,
+  modifyPrompts: []
 };
 
 const stateSlice = createSlice({
@@ -145,16 +147,20 @@ const stateSlice = createSlice({
     setQuerySpec: (state, action: PayloadAction<QuerySpec | null>) => {
       state.querySpec = action.payload;
     },
-    setCurTrend: (state, action: PayloadAction<number|null>) => {
+    setCurTrend: (state, action: PayloadAction<number | null>) => {
       state.curTrend = action.payload;
       return state;
     },
-    setCurRelation: (state, action: PayloadAction<number|null>) => {
+    setCurRelation: (state, action: PayloadAction<number | null>) => {
       state.curRelation = action.payload;
       return state;
-    }
+    },
+    setModifyPrompts: (state, action: PayloadAction<string[]>) => {
+      state.modifyPrompts = action.payload;
+      return state;
+    },
   },
 });
 
-export const { setNLQuery, setQuery, setQuerySpec, addFragments, addQuerySpec, setFragmentsIndex, setQuerySpecIndex, insertTreeData, setIsSettingShow, setTimeStampUnit, setValueUnit, setAspectRatio, setIsDrawer, setQuerys, setCurRelation, setCurTrend } = stateSlice.actions;
+export const { setNLQuery, setQuery, setQuerySpec, addFragments, addQuerySpec, setFragmentsIndex, setQuerySpecIndex, insertTreeData, setIsSettingShow, setTimeStampUnit, setValueUnit, setAspectRatio, setIsDrawer, setQuerys, setModifyPrompts, setCurRelation, setCurTrend } = stateSlice.actions;
 export default stateSlice.reducer;

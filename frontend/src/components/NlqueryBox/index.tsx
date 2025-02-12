@@ -1,20 +1,16 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../../app/hooks";
 import "./index.css";
-import { addQuerySpec, setCurRelation, setCurTrend, setNLQuery, setQuery, setQuerySpec } from "../../app/slice/stateSlice";
+import { addQuerySpec, setNLQuery, setQuery, setQuerySpec } from "../../app/slice/stateSlice";
 import QueryIcon from "../../icons/Query";
 import SubmitIcon from "../../icons/Submit";
 import { flushSync } from "react-dom";
 import { AudioFilled, LoadingOutlined } from "@ant-design/icons";
 import { classnames } from "../../utils/classname";
 import type { SpeechRecognitionType } from "../../types";
-import { Dropdown, Popover } from "antd";
-import { abortRequest, getFragmentsBySpec, getQuerySpecRequest, getSearchPrompt } from "../../api";
+import { getFragmentsBySpec, getQuerySpecRequest } from "../../api";
 import { setQueryResults } from "../../app/slice/approximation";
-import Glyph from "./Glyph";
 import { setIsRequesting } from "../../app/slice/resultsSlice";
-import { debounce } from "../../utils/debounce";
-import QueryCondition from "../QueryCondition";
 
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition || window.mozSpeechRecognition || window.msSpeechRecognition;
 SpeechRecognition.lang = 'en-US';
@@ -32,27 +28,26 @@ export default function NlqueryBox() {
   const [isEdit, setIsEdit] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const recognition = useRef<SpeechRecognitionType>(new SpeechRecognition());
-  const [promptList, setPromptList] = useState<string[]>([]);
-  const [isDropdownVisible, setIsDropdownVisible] = useState(false);
-  const [editPos, setEditPos] = useState<{ x: number, y: number, width: number }>({ x: 0, y: 0, width: 0 });
-  const curTrend = useAppSelector((state) => state.states.curTrend);
-  const curRelation = useAppSelector((state) => state.states.curRelation);
+  // const [promptList, setPromptList] = useState<string[]>([]);
+  // const [isDropdownVisible, setIsDropdownVisible] = useState(false);
+  // const [editPos, setEditPos] = useState<{ x: number, y: number, width: number }>({ x: 0, y: 0, width: 0 });
+  // const modifyPrompt = useAppSelector((state) => state.states.modifyPrompts);
 
-  function adjustPos() {
-    const dom = textareaRef.current || textRef.current;
-    if (!dom) return;
-    const rect = dom.getBoundingClientRect();
-    setEditPos({ x: rect.left, y: rect.top + rect.height, width: rect.width });
-  }
+  // function adjustPos() {
+  //   const dom = textareaRef.current || textRef.current;
+  //   if (!dom) return;
+  //   const rect = dom.getBoundingClientRect();
+  //   setEditPos({ x: rect.left, y: rect.top + rect.height, width: rect.width });
+  // }
 
-  const fetchPrompt = useCallback(debounce((query: string) => {
-    setPromptList([]);
-    getSearchPrompt(query).then(res => {
-      setIsDropdownVisible(true);
-      setPromptList(res);
-      adjustPos();
-    })
-  }, 1000), [])
+  // const fetchPrompt = useCallback(debounce((query: string) => {
+  //   setPromptList([]);
+  //   getSearchPrompt(query).then(res => {
+  //     setIsDropdownVisible(true);
+  //     setPromptList(res);
+  //     adjustPos();
+  //   })
+  // }, 1000), [])
 
   useEffect(() => {
     if (textareaRef.current) {
@@ -62,12 +57,12 @@ export default function NlqueryBox() {
     }
   }, [NLQuery, isEdit]);
 
-  useEffect(() => {
-    abortRequest();
-    setIsDropdownVisible(false);
-    setPromptList([]);
-    adjustPos();
-  }, [NLQuery]);
+  // useEffect(() => {
+  //   abortRequest();
+  //   setIsDropdownVisible(false);
+  //   setPromptList([]);
+  //   adjustPos();
+  // }, [NLQuery]);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -122,7 +117,7 @@ export default function NlqueryBox() {
           }}
           onChange={(e) => {
             dispatch(setNLQuery(e.target.value));
-            fetchPrompt(e.target.value)
+            // fetchPrompt(e.target.value)
           }}
           className="nl-query"
           value={NLQuery}
@@ -143,24 +138,6 @@ export default function NlqueryBox() {
           style={{ color: !NLQuery ? "gray" : "#000", cursor: isRequesting ? "not-allowed" : "text" }}
         >{NLQuery || PLACEHOLDER}{isRequesting && <LoadingOutlined style={{ marginLeft: 8 }} />}</div>
       )}
-      <button type="button" className="btn" style={{ width: 'fit-content' }}>
-        <Popover trigger={["hover"]} content={<QueryCondition></QueryCondition>}>
-          <div className="pointer flex"><Glyph onClick={(type, index) => {
-            switch (type) {
-              case "Trend":
-                flushSync(() => dispatch(setCurTrend(null)))
-                dispatch(setCurTrend(index))
-                break;
-              case "Relation":
-                flushSync(() => dispatch(setCurRelation(null)))
-                dispatch(setCurRelation(index))
-                break;
-              default:
-                break;
-            }
-          }} height={48} trends={querySpec?.trends || []} allTrends={querySpec?.trends || []} relations={querySpec?.relations || []} curTrend={curTrend ?? -1} curRelation={curRelation ?? -1}></Glyph></div>
-        </Popover>
-      </button>
       <button onClick={() => {
         if (!SpeechRecognition) {
           console.error("SpeechRecognition is not supported!");
@@ -187,7 +164,7 @@ export default function NlqueryBox() {
       <button className="btn send" type="submit" disabled={!NLQuery || isRequesting}>
         <SubmitIcon></SubmitIcon>
       </button>
-      <Dropdown overlayStyle={{ position: 'absolute', top: `${editPos.y}px`, left: `${editPos.x}px`, width: `${editPos.width}px` }} open={isEdit && isDropdownVisible} menu={{
+      {/* <Dropdown overlayStyle={{ position: 'absolute', top: `${editPos.y}px`, left: `${editPos.x}px`, width: `${editPos.width}px` }} open={isEdit && isDropdownVisible} menu={{
         items: promptList.map((prompt) => ({ key: prompt, label: prompt })), onClick: (info) => {
           const value = NLQuery + (NLQuery[NLQuery.length - 1] === ' ' ? '' : ' ') + info.key;
           dispatch(setNLQuery(value));
@@ -203,6 +180,15 @@ export default function NlqueryBox() {
       }}>
         <span style={{ visibility: 'hidden' }}> </span>
       </Dropdown>
+      <Dropdown overlayStyle={{ position: 'absolute', top: `${editPos.y}px`, left: `${editPos.x}px`, width: `${editPos.width}px` }} open={!!modifyPrompt.length} menu={{
+        items: modifyPrompt.map((prompt) => ({ key: prompt, label: prompt })), onClick: (info) => {
+          const value = info.key;
+          dispatch(setNLQuery(value));
+          dispatch(setModifyPrompts([]));
+        }
+      }}>
+        <span style={{ visibility: 'hidden' }}> </span>
+      </Dropdown> */}
     </form>
   );
 }

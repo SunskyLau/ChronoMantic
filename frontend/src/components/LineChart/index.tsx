@@ -291,6 +291,7 @@ function LineChart({ xData, yData, ratio, title = "", isXAxisVisible = false, is
 
             svg.select(".selection")
                 .attr("fill", "#3336")
+                .attr("clip-path", `url(#clip-path-${id})`)
                 .attr("stroke", "none");
 
             return () => {

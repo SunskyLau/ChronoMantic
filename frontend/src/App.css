@@ -42,8 +42,8 @@ h4:first-child {
     margin-top: 0;
 }
 
-.ant-popover-inner-content {
-    max-height: 80vh;
+.glyph-popover .ant-popover-inner-content {
+    max-height: 50vh;
     overflow-y: auto;
     padding-right: 12px !important;
 }
