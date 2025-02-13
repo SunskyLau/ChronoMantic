@@ -26,7 +26,7 @@ class Segment(DictMixin):
     start_time: Optional[float] = None
     end_time: Optional[float] = None
     delta_percentage: Optional[float] = None
-    slope_percentage_in_all_slopes: Optional[float] = None
+    abs_slope_percentage: Optional[float] = None
     time_span: Optional[int] = None
 
 
@@ -64,7 +64,7 @@ class Trend(DictMixin):
     slope_scope_condition: Optional[ScopeCondition] = None  # 斜率的范围条件
     delta_percentage_scope_condition: Optional[ScopeCondition] = None  # 变化率的范围条件
     average_delta_percentage_scope_condition: Optional[ScopeCondition] = None  # 平均变化率的范围条件
-    slope_percentage_in_all_slopes_scope_condition: Optional[ScopeCondition] = None  # 斜率在所有斜率中的占比范围条件
+    abs_slope_percentage_scope_condition: Optional[ScopeCondition] = None  # 斜率在所有斜率中的占比范围条件
     time_span_condition: Optional[ScopeCondition] = None  # 时间跨度的范围条件
 
 

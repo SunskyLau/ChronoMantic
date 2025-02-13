@@ -17,27 +17,31 @@ def approximate_dataset(dataset: pd.DataFrame, dataset_info: DatasetInfo, k: int
     for vc in value_columns:
         y = dataset[vc].values
         approxiamation_segments_container = bottom_up_merge(vc, x, y, k)
-        # approxiamation_segments_container = update_approximation_segments_container_with_angle(
-        #     approxiamation_segments_container, dataset_info.column_ratio_dict[vc]
-        # )
+        approxiamation_segments_container = update_abs_slope_percentage(approxiamation_segments_container)
         approxiamation_segments_containers.append(approxiamation_segments_container)
 
     return approxiamation_segments_containers
 
 
-# TODO: 缺乏对于slope_percentage_in_all_slopes的计算
+@typechecked
+def update_abs_slope_percentage(approximation_segments_container: ApproximationSegmentsContainer):
+    """更新每个segment的abs_slope_percentage"""
+    # 只找level为0的segments
+    level_0_segments = next((segments for segments in approximation_segments_container.approximation_segments_list if segments.approximation_level == 0), None)
 
-# @typechecked
-# def calculate_segment_angle(ratio: float, segment: Segment):
-#     return np.arctan(segment.slope / ratio) / np.pi * 180
+    if level_0_segments:
+        # 计算level 0的segments的abs_slope的最大值
+        max_abs_slope = max(abs(segment.slope) for segment in level_0_segments.segments)
 
+        # 更新所有level的segments的abs_slope_percentage
+        for approximation_segments in approximation_segments_container.approximation_segments_list:
+            for segment in approximation_segments.segments:
+                if max_abs_slope > 0:  # 避免除以0
+                    segment.abs_slope_percentage = abs(segment.slope) / max_abs_slope
+                else:
+                    segment.abs_slope_percentage = 0
 
-# @typechecked
-# def update_approximation_segments_container_with_angle(approximation_segments_container: ApproximationSegmentsContainer, ratio: float):
-#     for approximation_segments in approximation_segments_container.approximation_segments_list:
-#         for segment in approximation_segments.segments:
-#             segment.angle = calculate_segment_angle(ratio, segment)
-#     return approximation_segments_container
+    return approximation_segments_container
 
 
 if __name__ == "__main__":

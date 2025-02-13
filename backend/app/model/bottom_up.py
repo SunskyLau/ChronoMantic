@@ -112,6 +112,7 @@ def bottom_up_merge(value_column: str, x: np.ndarray, y: np.ndarray, k: int):
             end_time=x[seg2.end_idx],
             time_span=x[seg2.end_idx] - x[seg1.start_idx],
             delta_percentage=((seg2.end_value - seg1.start_value) / seg1.start_value) * 100 if seg1.start_value > 0 else None,
+            abs_slope_percentage=None,
         )
         segments.pop(j)
 

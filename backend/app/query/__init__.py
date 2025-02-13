@@ -141,11 +141,11 @@ def match_single_trend(segment: Segment, trend: Trend) -> bool:
             return False
 
     # 检查斜率在所有斜率中所处比率的范围条件
-    if trend.slope_percentage_in_all_slopes_scope_condition and segment.slope_percentage_in_all_slopes is not None:
+    if trend.abs_slope_percentage_scope_condition and segment.abs_slope_percentage is not None:
         if not check_single_threshold_condition(
-            segment.slope_percentage_in_all_slopes,
-            trend.slope_percentage_in_all_slopes_scope_condition.min,
-            trend.slope_percentage_in_all_slopes_scope_condition.max,
+            segment.abs_slope_percentage,
+            trend.abs_slope_percentage_scope_condition.min,
+            trend.abs_slope_percentage_scope_condition.max,
         ):
             return False
 
@@ -156,7 +156,7 @@ def match_single_trend(segment: Segment, trend: Trend) -> bool:
         ):
             return False
 
-    # 检查平均变化率的范围条件
+    # 检查平均变化率的范围条件 TODO: 需要修改
     if trend.average_delta_percentage_scope_condition and segment.delta_percentage is not None:
         avg_delta = segment.delta_percentage / (segment.end_time - segment.start_time)
         if not check_single_threshold_condition(
@@ -164,7 +164,7 @@ def match_single_trend(segment: Segment, trend: Trend) -> bool:
         ):
             return False
 
-    # 检查时间跨度条件 TODO: 需要修改
+    # 检查时间跨度条件
     if trend.time_span_condition and segment.time_span is not None:
         if not check_single_threshold_condition(segment.time_span, trend.time_span_condition.min, trend.time_span_condition.max):
             return False

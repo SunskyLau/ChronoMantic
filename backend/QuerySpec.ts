@@ -18,7 +18,8 @@ export interface Segment {
   min_value: number;
   start_time?: number;
   end_time?: number;
-  angle?: number;
+  delta_percentage?: number;
+  abs_slope_percentage?: number;
   time_span?: number;
 }
 
@@ -50,7 +51,8 @@ export interface Trend {
   category: string; // "flat","up","down"
   slope_scope_condition?: ScopeCondition; // 斜率的范围条件
   delta_percentage_scope_condition?: ScopeCondition; // 变化率的范围条件
-  slope_percentage_in_all_slopes_scope_condition?: ScopeCondition; // 斜率在所有斜率中所处比率的范围条件
+  average_delta_percentage_scope_condition?: ScopeCondition; // 平均变化率的范围条件
+  abs_slope_percentage_scope_condition?: ScopeCondition; // 斜率在所有斜率中的占比范围条件
   time_span_condition?: ScopeCondition; // 时间跨度的范围条件
 }
 
@@ -87,7 +89,7 @@ export interface QuerySpec {
   target: string; // 查询的目标时间序列名
   trends: Trend[]; // 趋势列表
   relations: Relation[]; // 不同趋势之间的属性比较关系列表
-  trend_time_span_composition_conditions: TrendTimeSpanCompositionCondition[]; // 趋势时间跨度组合条件列表
+  trend_time_span_composition_conditions: TrendTimeSpanCompositionCondition[] | ScopeCondition; // 趋势时间跨度组合条件列表，如果为ScopeCondition，则表示所有趋势的总体时间跨度
   time_scope_condition?: ScopeCondition; // 搜索时间的范围条件
   max_value_scope_condition?: ScopeCondition; // 最大值的范围条件
   min_value_scope_condition?: ScopeCondition; // 最小值的范围条件
