@@ -1,6 +1,6 @@
 from dataclasses import dataclass, asdict, fields
 from enum import Enum
-from typing import Dict, List, Optional, Union, get_type_hints
+from typing import Dict, List, Optional, Tuple, Union, get_type_hints
 from .DictMixin import DictMixin
 
 
@@ -47,78 +47,62 @@ class ApproximationSegmentsContainer(DictMixin):
 
 @dataclass
 class ThresholdCondition(DictMixin):
-    value: float
+    value: float  # 阈值
     inclusive: bool  # 是否包含该值
 
 
 @dataclass
-class SlopeScopeCondition(DictMixin):
-    max: Optional[ThresholdCondition] = None
-    min: Optional[ThresholdCondition] = None
-
-
-@dataclass
-class AngleScopeCondition(DictMixin):
-    max: Optional[ThresholdCondition] = None
-    min: Optional[ThresholdCondition] = None
-
-
-@dataclass
-class ValueScopeCondition(DictMixin):
-    max: Optional[ThresholdCondition] = None
-    min: Optional[ThresholdCondition] = None
-
-
-@dataclass
-class TimeScopeCondition(DictMixin):
-    max: Optional[ThresholdCondition] = None
-    min: Optional[ThresholdCondition] = None
-
-
-@dataclass
-class TimeSpanCondition(DictMixin):
-    max: Optional[ThresholdCondition] = None
-    min: Optional[ThresholdCondition] = None
+class ScopeCondition(DictMixin):
+    max: Optional[ThresholdCondition] = None  # 最大值
+    min: Optional[ThresholdCondition] = None  # 最小值
 
 
 @dataclass
 class Trend(DictMixin):
-    slope_scope_condition: Optional[SlopeScopeCondition] = None  # 斜率的范围条件
-    angle_scope_condition: Optional[AngleScopeCondition] = None  # 角度的范围条件
-    time_scope_condition: Optional[TimeScopeCondition] = None  # 时间的范围条件
-    time_span_condition: Optional[TimeSpanCondition] = None  # 时间跨度的范围条件
+    category: str  # "flat","up","down"
+    slope_scope_condition: Optional[ScopeCondition] = None  # 斜率的范围条件
+    delta_percentage_scope_condition: Optional[ScopeCondition] = None  # 变化率的范围条件
+    slope_percentage_in_all_slopes_scope_condition: Optional[ScopeCondition] = None  # 斜率在所有斜率中的占比范围条件
+    time_span_condition: Optional[ScopeCondition] = None  # 时间跨度的范围条件
 
 
 class Attribute(Enum):
-    SLOPE = "slope"
-    ANGLE = "angle"
-    START_VALUE = "start_value"
-    END_VALUE = "end_value"
-    TIME_SPAN = "time_span"
+    SLOPE = "slope"  # 斜率
+    START_VALUE = "start_value"  # 起始值
+    END_VALUE = "end_value"  # 结束值
+    TIME_SPAN = "time_span"  # 时间跨度
 
 
 class Comparator(Enum):
-    GREATER = ">"
-    LESS = "<"
-    EQUAL = "="
-    NO_GREATER = "<="
-    NO_LESS = ">="
-    APPROXIMATELY_EQUAL_TO = "~="
+    GREATER = ">"  # 大于
+    LESS = "<"  # 小于
+    EQUAL = "="  # 等于
+    NO_GREATER = "<="  # 小于等于
+    NO_LESS = ">="  # 大于等于
+    APPROXIMATELY_EQUAL_TO = "~="  # 近似等于
 
 
 @dataclass
-class Relation(DictMixin):  # 不同trend之间的关系
-    id1: int
-    id2: int
-    attribute: Attribute
-    comparator: Comparator
+class Relation(DictMixin):  # 不同trend之间的属性比较关系
+    id1: int  # 趋势1的id
+    id2: int  # 趋势2的id
+    attribute: Attribute  # 比较的属性
+    comparator: Comparator  # 比较关系
+
+
+@dataclass
+class TrendTimeSpanCompositionCondition(DictMixin):  # 趋势时间跨度组合条件
+    id1: int  # 趋势1的id，其中id1应该小于id2
+    id2: int  # 趋势2的id，其中id1应该小于id2
+    time_span_condition: ScopeCondition  # 代表从id1到id2的之间(包括id1和id2)所有趋势的总体时间跨度
 
 
 @dataclass
 class QuerySpec(DictMixin):
-    target: str
-    trends: Optional[List[Trend]] = None
-    relations: Optional[List[Relation]] = None
-    time_span_condition: Optional[TimeSpanCondition] = None
-    time_scope_condition: Optional[TimeScopeCondition] = None
-    value_scope_condition: Optional[ValueScopeCondition] = None
+    target: str  # 查询的目标时间序列名
+    trends: List[Trend]  # 趋势列表
+    relations: List[Relation]  # 不同趋势之间的属性比较关系列表
+    trend_time_span_composition_conditions: List[TrendTimeSpanCompositionCondition]  # 趋势时间跨度组合条件列表
+    time_scope_condition: Optional[ScopeCondition] = None  # 搜索时间的范围条件
+    max_value_scope_condition: Optional[ScopeCondition] = None  # 最大值的范围条件
+    min_value_scope_condition: Optional[ScopeCondition] = None  # 最小值的范围条件
