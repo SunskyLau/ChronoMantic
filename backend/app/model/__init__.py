@@ -17,25 +17,25 @@ def approximate_dataset(dataset: pd.DataFrame, dataset_info: DatasetInfo, k: int
     for vc in value_columns:
         y = dataset[vc].values
         approxiamation_segments_container = bottom_up_merge(vc, x, y, k)
-        approxiamation_segments_container = update_approximation_segments_container_with_angle(
-            approxiamation_segments_container, dataset_info.column_ratio_dict[vc]
-        )
+        # approxiamation_segments_container = update_approximation_segments_container_with_angle(
+        #     approxiamation_segments_container, dataset_info.column_ratio_dict[vc]
+        # )
         approxiamation_segments_containers.append(approxiamation_segments_container)
 
     return approxiamation_segments_containers
 
 
-@typechecked
-def calculate_segment_angle(ratio: float, segment: Segment):
-    return np.arctan(segment.slope / ratio) / np.pi * 180
+# @typechecked
+# def calculate_segment_angle(ratio: float, segment: Segment):
+#     return np.arctan(segment.slope / ratio) / np.pi * 180
 
 
-@typechecked
-def update_approximation_segments_container_with_angle(approximation_segments_container: ApproximationSegmentsContainer, ratio: float):
-    for approximation_segments in approximation_segments_container.approximation_segments_list:
-        for segment in approximation_segments.segments:
-            segment.angle = calculate_segment_angle(ratio, segment)
-    return approximation_segments_container
+# @typechecked
+# def update_approximation_segments_container_with_angle(approximation_segments_container: ApproximationSegmentsContainer, ratio: float):
+#     for approximation_segments in approximation_segments_container.approximation_segments_list:
+#         for segment in approximation_segments.segments:
+#             segment.angle = calculate_segment_angle(ratio, segment)
+#     return approximation_segments_container
 
 
 if __name__ == "__main__":

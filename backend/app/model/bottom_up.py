@@ -67,6 +67,7 @@ def bottom_up_merge(value_column: str, x: np.ndarray, y: np.ndarray, k: int):
             start_time=x[i],
             end_time=x[i + 1],
             time_span=x[i + 1] - x[i],
+            delta_percentage=((y[i + 1] - y[i]) / y[i]) * 100 if y[i] > 0 else None,
         )
         for i in range(n - 1)
     ]
@@ -110,6 +111,7 @@ def bottom_up_merge(value_column: str, x: np.ndarray, y: np.ndarray, k: int):
             start_time=x[seg1.start_idx],
             end_time=x[seg2.end_idx],
             time_span=x[seg2.end_idx] - x[seg1.start_idx],
+            delta_percentage=((seg2.end_value - seg1.start_value) / seg1.start_value) * 100 if seg1.start_value > 0 else None,
         )
         segments.pop(j)
 
