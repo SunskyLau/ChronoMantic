@@ -1,9 +1,9 @@
-from typing import List, Optional
+from typing import List, Optional, Dict
 import numpy
 import pandas as pd
 from typeguard import typechecked
 
-from ..MyTypes import ApproximationSegmentsContainer, QuerySpec, Segment, ThresholdCondition
+from ..MyTypes import ApproximationSegmentsContainer, QuerySpec, Segment, ThresholdCondition, ScopeCondition
 
 
 @typechecked
@@ -49,23 +49,33 @@ def check_single_threshold_condition(value: float | numpy.int64, min_thresh: Opt
     return True
 
 
-def query_by_no_trends(query_spec: QuerySpec, approximation_segments_container: ApproximationSegmentsContainer, df: pd.DataFrame) -> List[Segment]:
+@typechecked
+def query_by_no_trends(
+    query_spec: QuerySpec, approximation_segments_container: ApproximationSegmentsContainer, df: pd.DataFrame
+) -> Dict[int, List[List[Segment]]]:
     """根据无趋势的查询规范查询数据集"""
-    time_span_condtion = query_spec.time_span_condition
+    time_span_condition = query_spec.trend_time_span_composition_conditions
     time_scope_condition = query_spec.time_scope_condition
-    value_scope_condition = query_spec.value_scope_condition
+    max_value_scope_condition = query_spec.max_value_scope_condition
+    min_value_scope_condition = query_spec.min_value_scope_condition
 
     segments = approximation_segments_container.approximation_segments_list[0].segments
 
     filtered_results = []
 
-    if value_scope_condition:
+    if max_value_scope_condition or min_value_scope_condition:
         filtered_results = [
             segment
             for segment in segments
-            if check_double_threshold_condition(segment.min_value, segment.max_value, value_scope_condition.min, value_scope_condition.max)
+            if (
+                not max_value_scope_condition
+                or check_single_threshold_condition(segment.max_value, max_value_scope_condition.min, max_value_scope_condition.max)
+            )
+            and (
+                not min_value_scope_condition
+                or check_single_threshold_condition(segment.min_value, min_value_scope_condition.min, min_value_scope_condition.max)
+            )
         ]
-
     else:
         filtered_results = segments
 
@@ -94,11 +104,20 @@ def query_by_no_trends(query_spec: QuerySpec, approximation_segments_container: 
         results.append(current_result)
 
     # 过滤时间跨度
-    if time_span_condtion:
-        results = [
-            result
-            for result in results
-            if check_single_threshold_condition(result[-1].end_time - result[0].start_time, time_span_condtion.min, time_span_condtion.max)
-        ]
+    if time_span_condition:
+        if isinstance(time_span_condition, ScopeCondition):
+            results = [
+                result
+                for result in results
+                if check_single_threshold_condition(result[-1].end_time - result[0].start_time, time_span_condition.min, time_span_condition.max)
+            ]
+        else:
+            results = [
+                result
+                for result in results
+                if check_single_threshold_condition(
+                    result[-1].end_time - result[0].start_time, time_span_condition[0].time_span_condition.min, time_span_condition[0].time_span_condition.max
+                )
+            ]
 
     return {0: results}

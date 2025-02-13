@@ -25,8 +25,8 @@ class Segment(DictMixin):
     min_value: float
     start_time: Optional[float] = None
     end_time: Optional[float] = None
-    # angle: Optional[float] = None
     delta_percentage: Optional[float] = None
+    slope_percentage_in_all_slopes: Optional[float] = None
     time_span: Optional[int] = None
 
 
@@ -104,7 +104,9 @@ class QuerySpec(DictMixin):
     target: str  # 查询的目标时间序列名
     trends: List[Trend]  # 趋势列表
     relations: List[Relation]  # 不同趋势之间的属性比较关系列表
-    trend_time_span_composition_conditions: List[TrendTimeSpanCompositionCondition]  # 趋势时间跨度组合条件列表
+    trend_time_span_composition_conditions: (
+        List[TrendTimeSpanCompositionCondition] | ScopeCondition
+    )  # 趋势时间跨度组合条件列表，如果为ScopeCondition，则表示所有趋势的总体时间跨度
     time_scope_condition: Optional[ScopeCondition] = None  # 搜索时间的范围条件
     max_value_scope_condition: Optional[ScopeCondition] = None  # 最大值的范围条件
     min_value_scope_condition: Optional[ScopeCondition] = None  # 最小值的范围条件

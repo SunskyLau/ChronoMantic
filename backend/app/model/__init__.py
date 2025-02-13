@@ -25,6 +25,8 @@ def approximate_dataset(dataset: pd.DataFrame, dataset_info: DatasetInfo, k: int
     return approxiamation_segments_containers
 
 
+# TODO: 缺乏对于slope_percentage_in_all_slopes的计算
+
 # @typechecked
 # def calculate_segment_angle(ratio: float, segment: Segment):
 #     return np.arctan(segment.slope / ratio) / np.pi * 180

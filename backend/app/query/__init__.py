@@ -9,12 +9,13 @@ from ..MyTypes import (
     QuerySpec,
     ApproximationSegmentsContainer,
     Segment,
-    SlopeScopeCondition,
+    ScopeCondition,
     ThresholdCondition,
     Trend,
     Relation,
     Comparator,
     Attribute,
+    TrendTimeSpanCompositionCondition,
 )
 
 
@@ -27,7 +28,7 @@ def query(query_spec: QuerySpec, approximation_segments_containers: List[Approxi
     container = next((c for c in approximation_segments_containers if c.source == query_spec.target), None)
     if not container:
         return {}
-
+    # 如果query_spec没有趋势，则使用query_by_no_trends查询
     if not query_spec.trends:
         return query_by_no_trends(query_spec, container, df)
 
@@ -73,6 +74,12 @@ def satisfies_all_conditions(sequence: List[Segment], query_spec: QuerySpec, df_
     if query_spec.relations and not satisfies_relations(sequence, query_spec.relations):
         return False
 
+    # 检查趋势时间跨度组合条件
+    if query_spec.trend_time_span_composition_conditions and not satisfies_trend_time_span_compositions(
+        sequence, query_spec.trend_time_span_composition_conditions
+    ):
+        return False
+
     return True
 
 
@@ -86,25 +93,19 @@ def satisfies_global_conditions(sequence: List[Segment], query_spec: QuerySpec, 
     max_value = df_column[start_idx:end_idx].max()
 
     # 检查全局最大最小值条件
-    if query_spec.value_scope_condition:
-        max_thresh = query_spec.value_scope_condition.max
-        min_thresh = query_spec.value_scope_condition.min
-        if not check_double_threshold_condition(min_value, max_value, min_thresh, max_thresh):
+    if query_spec.max_value_scope_condition:
+        if not check_single_threshold_condition(max_value, query_spec.max_value_scope_condition.min, query_spec.max_value_scope_condition.max):
+            return False
+
+    if query_spec.min_value_scope_condition:
+        if not check_single_threshold_condition(min_value, query_spec.min_value_scope_condition.min, query_spec.min_value_scope_condition.max):
             return False
 
     # 检查起止时间条件
     if query_spec.time_scope_condition:
         start_time = sequence[0].start_time
         end_time = sequence[-1].end_time
-        start_thresh = query_spec.time_scope_condition.min
-        end_thresh = query_spec.time_scope_condition.max
-        if not check_double_threshold_condition(start_time, end_time, start_thresh, end_thresh):
-            return False
-
-    # 检查时间跨度条件
-    if query_spec.time_span_condition:
-        time_span = sequence[-1].end_time - sequence[0].start_time
-        if not check_single_threshold_condition(time_span, query_spec.time_span_condition.min, query_spec.time_span_condition.max):
+        if not check_double_threshold_condition(start_time, end_time, query_spec.time_scope_condition.min, query_spec.time_scope_condition.max):
             return False
 
     return True
@@ -126,23 +127,44 @@ def match_trend_sequence(segments: List[Segment], trends: List[Trend]) -> bool:
 @typechecked
 def match_single_trend(segment: Segment, trend: Trend) -> bool:
     """检查单个段是否匹配趋势模式"""
+    # 检查趋势类型 TODO: 需要修改
+    if trend.category == "flat" and abs(segment.slope) > 0.001:
+        return False
+    elif trend.category == "up" and segment.slope <= 0:
+        return False
+    elif trend.category == "down" and segment.slope >= 0:
+        return False
 
     # 检查斜率条件
     if trend.slope_scope_condition:
         if not check_single_threshold_condition(segment.slope, trend.slope_scope_condition.min, trend.slope_scope_condition.max):
             return False
 
-    # 检查角度条件
-    if trend.angle_scope_condition and segment.angle is not None:
-        if not check_single_threshold_condition(segment.angle, trend.angle_scope_condition.min, trend.angle_scope_condition.max):
+    # 检查斜率在所有斜率中所处比率的范围条件
+    if trend.slope_percentage_in_all_slopes_scope_condition and segment.slope_percentage_in_all_slopes is not None:
+        if not check_single_threshold_condition(
+            segment.slope_percentage_in_all_slopes,
+            trend.slope_percentage_in_all_slopes_scope_condition.min,
+            trend.slope_percentage_in_all_slopes_scope_condition.max,
+        ):
             return False
 
-    # 检查起止时间条件
-    if trend.time_scope_condition:
-        if not check_double_threshold_condition(segment.start_time, segment.end_time, trend.time_scope_condition.min, trend.time_scope_condition.max):
+    # 检查变化率的范围条件
+    if trend.delta_percentage_scope_condition and segment.delta_percentage is not None:
+        if not check_single_threshold_condition(
+            segment.delta_percentage, trend.delta_percentage_scope_condition.min, trend.delta_percentage_scope_condition.max
+        ):
             return False
 
-    # 检查时间跨度条件
+    # 检查平均变化率的范围条件
+    if trend.average_delta_percentage_scope_condition and segment.delta_percentage is not None:
+        avg_delta = segment.delta_percentage / (segment.end_time - segment.start_time)
+        if not check_single_threshold_condition(
+            avg_delta, trend.average_delta_percentage_scope_condition.min, trend.average_delta_percentage_scope_condition.max
+        ):
+            return False
+
+    # 检查时间跨度条件 TODO: 需要修改
     if trend.time_span_condition and segment.time_span is not None:
         if not check_single_threshold_condition(segment.time_span, trend.time_span_condition.min, trend.time_span_condition.max):
             return False
@@ -193,12 +215,30 @@ def satisfy_single_relation(segments: List[Segment], relation: Relation):
 
 
 @typechecked
+def satisfies_trend_time_span_compositions(segments: List[Segment], conditions: List[TrendTimeSpanCompositionCondition] | ScopeCondition) -> bool:
+    """检查段序列是否满足趋势时间跨度组合条件"""
+    if isinstance(conditions, ScopeCondition):
+        total_time_span = segments[-1].end_time - segments[0].start_time
+        return check_single_threshold_condition(total_time_span, conditions.min, conditions.max)
+
+    for condition in conditions:
+        if condition.id1 >= len(segments) or condition.id2 >= len(segments) or condition.id1 >= condition.id2:
+            return False
+
+        # 计算从id1到id2的总时间跨度
+        total_time_span = segments[condition.id2].end_time - segments[condition.id1].start_time
+
+        if not check_single_threshold_condition(total_time_span, condition.time_span_condition.min, condition.time_span_condition.max):
+            return False
+
+    return True
+
+
+@typechecked
 def get_attribute_value(segment: Segment, attribute: Attribute) -> Optional[float]:
     """从段中获取特定属性的值"""
     if attribute == Attribute.SLOPE:
         return segment.slope
-    elif attribute == Attribute.ANGLE:
-        return segment.angle
     elif attribute == Attribute.START_VALUE:
         return segment.start_value
     elif attribute == Attribute.END_VALUE:
@@ -217,10 +257,11 @@ if __name__ == "__main__":
     query_spec1 = QuerySpec(
         target="AMZN",
         trends=[
-            Trend(slope_scope_condition=SlopeScopeCondition(min=ThresholdCondition(value=0.0001, inclusive=True))),
-            Trend(slope_scope_condition=SlopeScopeCondition(min=ThresholdCondition(value=0.0001, inclusive=True))),
+            Trend(category="up", slope_scope_condition=ScopeCondition(min=ThresholdCondition(value=0.0001, inclusive=True))),
+            Trend(category="up", slope_scope_condition=ScopeCondition(min=ThresholdCondition(value=0.0001, inclusive=True))),
         ],
-        relations=[Relation(comparator=Comparator.GREATER, id1=0, id2=1, attribute=Attribute.END_VALUE)],
+        relations=[Relation(comparator=Comparator.LESS, id1=0, id2=1, attribute=Attribute.END_VALUE)],
+        trend_time_span_composition_conditions=ScopeCondition(min=ThresholdCondition(value=10, inclusive=True)),
     )
     results_dict = query(query_spec1, approximation_segments_containers, df)
     print(results_dict)
