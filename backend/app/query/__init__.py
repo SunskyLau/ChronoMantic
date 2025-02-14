@@ -130,20 +130,25 @@ def match_trend_sequence(segments: List[Segment], trends: List[Trend]) -> bool:
 def match_single_trend(segment: Segment, trend: Trend) -> bool:
     """检查单个段是否匹配趋势模式"""
     if trend.category == "flat":
-        return segment.abs_slope_percentage <= FLAT_THRESHOLD
+        if not segment.abs_slope_percentage <= FLAT_THRESHOLD:
+            return False
     elif trend.category == "up":
-        return segment.slope > 0 and segment.abs_slope_percentage > FLAT_THRESHOLD
+        if not (segment.slope > 0 and segment.abs_slope_percentage > FLAT_THRESHOLD):
+            return False
     elif trend.category == "down":
-        return segment.slope < 0 and segment.abs_slope_percentage > FLAT_THRESHOLD
+        if not (segment.slope < 0 and segment.abs_slope_percentage > FLAT_THRESHOLD):
+            return False
+    else:
+        return False
 
     # 检查斜率条件
     if trend.slope_scope_condition:
-        if not check_single_threshold_condition(segment.slope, trend.slope_scope_condition.min, trend.slope_scope_condition.max):
+        if segment.slope is None or not check_single_threshold_condition(segment.slope, trend.slope_scope_condition.min, trend.slope_scope_condition.max):
             return False
 
     # 检查斜率在所有斜率中所处比率的范围条件
-    if trend.abs_slope_percentage_scope_condition and segment.abs_slope_percentage is not None:
-        if not check_single_threshold_condition(
+    if trend.abs_slope_percentage_scope_condition:
+        if segment.abs_slope_percentage is None or not check_single_threshold_condition(
             segment.abs_slope_percentage,
             trend.abs_slope_percentage_scope_condition.min,
             trend.abs_slope_percentage_scope_condition.max,
@@ -151,15 +156,15 @@ def match_single_trend(segment: Segment, trend: Trend) -> bool:
             return False
 
     # 检查变化率的范围条件
-    if trend.delta_percentage_scope_condition and segment.delta_percentage is not None:
-        if not check_single_threshold_condition(
+    if trend.delta_percentage_scope_condition:
+        if segment.delta_percentage is None or not check_single_threshold_condition(
             segment.delta_percentage, trend.delta_percentage_scope_condition.min, trend.delta_percentage_scope_condition.max
         ):
             return False
 
     # 检查日几何平均变化率的范围条件
-    if trend.daily_average_delta_percentage_scope_condition and segment.daily_average_delta_percentage is not None:
-        if not check_single_threshold_condition(
+    if trend.daily_average_delta_percentage_scope_condition:
+        if segment.daily_average_delta_percentage is None or not check_single_threshold_condition(
             segment.daily_average_delta_percentage,
             trend.daily_average_delta_percentage_scope_condition.min,
             trend.daily_average_delta_percentage_scope_condition.max,
@@ -167,8 +172,8 @@ def match_single_trend(segment: Segment, trend: Trend) -> bool:
             return False
 
     # 检查时间跨度条件
-    if trend.time_span_condition and segment.time_span is not None:
-        if not check_single_threshold_condition(segment.time_span, trend.time_span_condition.min, trend.time_span_condition.max):
+    if trend.time_span_condition:
+        if segment.time_span is None or not check_single_threshold_condition(segment.time_span, trend.time_span_condition.min, trend.time_span_condition.max):
             return False
 
     return True
