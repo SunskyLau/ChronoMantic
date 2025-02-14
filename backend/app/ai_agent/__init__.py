@@ -12,6 +12,7 @@ from .constant import (
     SiliconFlow,
     Qwen,
     Platforms,
+    Tencent,
 )
 from .debugger import debugger
 
@@ -34,6 +35,8 @@ class myAIClient:
             self.client = OpenAI(api_key=SiliconFlow.API_KEY, base_url=SiliconFlow.BASE_URL)
         elif platform == Platforms.QWEN:
             self.client = OpenAI(api_key=Qwen.API_KEY, base_url=Qwen.BASE_URL)
+        elif platform == Platforms.TENCENT:
+            self.client = OpenAI(api_key=Tencent.API_KEY, base_url=Tencent.BASE_URL)
         else:
             raise ValueError("Invalid platform")
 
@@ -59,7 +62,7 @@ class myAIClient:
                 temperature=0.3,
                 max_tokens=4096,
                 top_p=1,
-                frequency_penalty=0.2,
+                frequency_penalty=0.1,
                 presence_penalty=0.1,
                 stop=None,
                 response_format={"type": "json_object"} if if_json_format else None,
@@ -89,11 +92,12 @@ def get_query_spec(system_prompt: str, query: str) -> Dict:
 
 if __name__ == "__main__":
     # client = myAIClient(model=Qwen.MODELS.QWEN_MAX, platform=Platforms.QWEN)
-    client = myAIClient(model=Azure.MODELS.GPT_4O, platform=Platforms.AZURE)
+    # client = myAIClient(model=Azure.MODELS.GPT_4O, platform=Platforms.AZURE)
     # client = myAIClient(model=SiliconFlow.MODELS.DEEPSEEK_V3, platform=Platforms.SILIICONFLOW)
+    client = myAIClient(model=Tencent.MODELS.DEEPSEEK_V3, platform=Platforms.TENCENT)
 
     dataset_info = """{"time_column": "Date", "value_columns": ["AMZN", "DPZ", "BTC", "NFLX"]}"""
     system_prompt = create_parse_nl_prompt(dataset_info)
     print(system_prompt)
     nl_query = "Find periods in DPZ when price first rose sharply then fell gradually"
-    response = client.send_prompt(system_prompt, nl_query)
+    response = client.send_prompt(system_prompt, nl_query, False)

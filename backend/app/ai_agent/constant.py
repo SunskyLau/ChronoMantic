@@ -6,6 +6,7 @@ class Platforms:
     DEEPSEEK = "deepseek"
     SILIICONFLOW = "siliconflow"
     QWEN = "qwen"
+    TENCENT = "tencent"
 
 
 class Azure:
@@ -41,6 +42,14 @@ class Qwen:
 
     class MODELS:
         QWEN_MAX = "qwen-max-2025-01-25"
+
+
+class Tencent:
+    API_KEY = "sk-bWgXpqCRfyC108ugmWMAV8c8mlc9FORV4x7jszWforXf5RPJ"
+    BASE_URL = "https://api.lkeap.cloud.tencent.com/v1"
+
+    class MODELS:
+        DEEPSEEK_V3 = "deepseek-v3"
 
 
 PROMPT_SPLITTER = "\n\n"

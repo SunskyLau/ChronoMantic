@@ -163,61 +163,61 @@ class ParseNL_Cases:
 
 输出：
 {
-  original_text: "Find periods in AMZN when price first rose sharply then fell gradually",
-  target: {
-    target: "AMZN",
-    text_source: {
-      text: "AMZN",
-      start: 15,
-      end: 19
+  "original_text": "Find periods in AMZN when price first rose sharply then fell gradually",
+  "target": {
+    "target": "AMZN",
+    "text_source": {
+      "text": "AMZN", 
+      "start": 15,
+      "end": 19
     }
   },
-  trends: [
+  "trends": [
     {
-      category: {
-        category: "up",
-        text_source: {
-          text: "rose",
-          start: 30,
-          end: 34
+      "category": {
+        "category": "up",
+        "text_source": {
+          "text": "rose",
+          "start": 30,
+          "end": 34
         }
       },
-      abs_slope_percentage_scope_condition: {
-        min: {
-          value: 0.7,  // Representing "sharply" - high slope percentage
-          inclusive: true,
-          text_source: {
-            text: "sharply",
-            start: 35,
-            end: 41
+      "abs_slope_percentage_scope_condition": {
+        "min": {
+          "value": 0.7,
+          "inclusive": true,
+          "text_source": {
+            "text": "sharply",
+            "start": 35,
+            "end": 41
           }
         }
       }
     },
     {
-      category: {
-        category: "down",
-        text_source: {
-          text: "fell",
-          start: 47,
-          end: 51
+      "category": {
+        "category": "down",
+        "text_source": {
+          "text": "fell",
+          "start": 47,
+          "end": 51
         }
       },
-      abs_slope_percentage_scope_condition: {
-        max: {
-          value: 0.3,  // Representing "gradually" - low slope percentage
-          inclusive: true,
-          text_source: {
-            text: "gradually",
-            start: 52,
-            end: 60
+      "abs_slope_percentage_scope_condition": {
+        "max": {
+          "value": 0.3,
+          "inclusive": true,
+          "text_source": {
+            "text": "gradually",
+            "start": 52,
+            "end": 60
           }
         }
       }
     }
   ],
-  relations: [],
-  trend_time_span_composition_conditions: []
+  "relations": [],
+  "trend_time_span_composition_conditions": []
 }
 """
     case2 = """
@@ -390,6 +390,7 @@ def create_parse_nl_prompt(dataset_info: str) -> str:
 要求:
     1. 准确遵循QuerySpecWithSource的结构化查询语法，不要出现非法输出，输出前请检查
     2. TextSource的text只能是来源original_text的子文本
+    3. 有且仅输出json字典，不要添加代码块或者```，也不要添加注释。
 
 # 示例1
 {ParseNL_Cases.case1}
