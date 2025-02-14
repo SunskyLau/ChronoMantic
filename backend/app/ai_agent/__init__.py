@@ -1,15 +1,15 @@
+import json
 import os
 from typeguard import typechecked
 from openai import OpenAI, AzureOpenAI
 from openai.types.chat import ChatCompletion
 from typing import List, Dict, Optional
 from .constant import (
-    AZURE_OPENAI_KEY,
-    OPENAI,
-    AZURE,
-    GPT_4O,
-    GPT_4O_REALTIME,
-    SYSTEM_PROMPT,
+    Azure,
+    DeepSeek,
+    SiliconFlow,
+    Qwen,
+    Platforms,
 )
 from .debugger import debugger
 
@@ -19,25 +19,29 @@ class myAIClient:
     def __init__(self, model: str, platform: str):
         self.model: str = model
         self.chatHistory: List[Dict[str, str]] = []
-        if platform == OPENAI:
-            self.client = OpenAI(api_key="c1812815d31d45aa9b450a22fc875845")
-        elif platform == AZURE:
+
+        if platform == Platforms.AZURE:
             self.client = AzureOpenAI(
-                api_key=AZURE_OPENAI_KEY,
-                # api_version="2024-09-01-preview",
-                api_version="2024-11-01-preview",
-                azure_endpoint="https://idg-oai.openai.azure.com/",
+                api_key=Azure.API_KEY,
+                api_version=Azure.API_VERSION,
+                azure_endpoint=Azure.ENDPOINT,
             )
+        elif platform == Platforms.DEEPSEEK:
+            self.client = OpenAI(api_key=DeepSeek.API_KEY, base_url=DeepSeek.BASE_URL)
+        elif platform == Platforms.SILIICONFLOW:
+            self.client = OpenAI(api_key=SiliconFlow.API_KEY, base_url=SiliconFlow.BASE_URL)
+        elif platform == Platforms.QWEN:
+            self.client = OpenAI(api_key=Qwen.API_KEY, base_url=Qwen.BASE_URL)
         else:
             raise ValueError("Invalid platform")
 
-    def sendPrompt(self, system_prompt: str, user_prompt: str, keepHistory: bool, if_response_format: bool = True) -> str:
+    def send_prompt(self, system_prompt: str, user_prompt: str, keep_history: bool = False, if_json_format: bool = False) -> str:
         debugger.info("--------send prompt---------\n" + user_prompt)
 
         if self.client is None:
             raise RuntimeError("No client")
 
-        if keepHistory:
+        if keep_history:
             self.chatHistory.append({"role": "user", "content": user_prompt})
         else:
             self.chatHistory = [
@@ -47,20 +51,17 @@ class myAIClient:
 
         response: Optional[ChatCompletion] = None
         try:
-            if self.model == [GPT_4O, GPT_4O_REALTIME]:
-                response = self.client.chat.completions.create(
-                    messages=self.chatHistory,
-                    model=self.model,
-                    temperature=0.3,
-                    max_tokens=4096,
-                    top_p=1,
-                    frequency_penalty=0,
-                    presence_penalty=0,
-                    stop=None,
-                    response_format={"type": "json_object"} if if_response_format else None,
-                )
-            else:
-                response = self.client.chat.completions.create(messages=self.chatHistory, model=self.model)
+            response = self.client.chat.completions.create(
+                messages=self.chatHistory,
+                model=self.model,
+                temperature=0.5,
+                max_tokens=4096,
+                top_p=1,
+                frequency_penalty=0,
+                presence_penalty=0,
+                stop=None,
+                response_format={"type": "json_object"} if if_json_format else None,
+            )
         except Exception as e:
             debugger.error(f"[sendPrompt] {e}")
             return ""
@@ -69,7 +70,7 @@ class myAIClient:
         if text is None:
             raise RuntimeError("No text provided")
 
-        if keepHistory:
+        if keep_history:
             self.chatHistory.append({"role": "assistant", "content": text})
 
         debugger.info("--------response--------\n" + text)
@@ -78,8 +79,12 @@ class myAIClient:
         return text
 
 
+def get_query_spec(system_prompt: str, query: str) -> Dict:
+    client = myAIClient(model=Qwen.MODELS.QWEN_MAX, platform=Platforms.QWEN)
+    response = client.send_prompt(system_prompt, query, keep_history=False, if_json_format=True)
+    return json.loads(response)["output"]
+
+
 if __name__ == "__main__":
-    client = myAIClient(GPT_4O, AZURE)
-    response = client.sendPrompt(
-        SYSTEM_PROMPT, "Show me   periods when    price appear   a head-and-shoulder shape", keepHistory=False, if_response_format=False
-    )
+    client = myAIClient(model=Qwen.MODELS.QWEN_MAX, platform=Platforms.QWEN)
+    response = client.send_prompt("You are a helpful assistant!", "你是谁？")

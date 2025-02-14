@@ -2,7 +2,7 @@ import json
 from flask import Blueprint
 
 from app.query import query
-from app.ai_agent.query import get_query_spec
+from app.ai_agent import get_query_spec
 from ..ai_agent.constant import create_search_prompt, create_system_prompt, create_ts_prompt, create_modify_prompt
 from ..config import Config
 from flask import Blueprint, request, jsonify
