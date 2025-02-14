@@ -40,7 +40,7 @@ class Qwen:
     BASE_URL = "https://dashscope.aliyuncs.com/compatible-mode/v1"
 
     class MODELS:
-        QWEN_MAX = "qwen-max-latest"
+        QWEN_MAX = "qwen-max-2025-01-25"
 
 
 PROMPT_SPLITTER = "\n\n"

@@ -1,151 +1,230 @@
-def create_nl2ts_prompt(dataset_info: str) -> str:
-    system_prompt = f"""
-1. 项目背景
-	本项目旨在开发一个自然语言驱动的时间序列片段查询工具，允许用户通过输入自然语言来表达查询条件和意图，使得用户轻松使用这个查询工具。在底层，我们构建了一套结构化的查询语法以及时间序列分割模型，用于实现时间序列片段的检索。对于用户输入的自然语言查询，我们使用LLM作为解析器，将自然语言查询解析为相应的结构化查询，这便是我们需要你充当的角色。
-	
-2. 时间序列分割模型
-	为了满足对时间序列片段的趋势和形状描述，我们使用线段拟合分割方法对时间序列进行不同模糊等级的分割预处理。分割后的时间序列是许多连续线段组成的数组，它们首尾相连形成整个通过分割模糊化后的时间序列。每一段都是一条以两个分割点为起止点的线段。通过这种线段拟合分段的方式，可以满足基本的趋势和形状查询，只需要从原段序列中匹配出满足趋势或者形状的子段序列即可。
-	
-3. 结构化查询语法
-	为了满足丰富的查询条件和语义，我们设计了一套结构化查询语法。以下是这套语法的细节。
-	```
-	interface ThresholdCondition {{
-	  value?: number;
-	  inclusive?: boolean;  // 是否包含阈值
-	}}
+Segment_info = """
+/**
+ * Segment - 分段线性拟合的时间序列片段接口定义
+ */
+export interface Segment {
+  start_idx: number;  // 片段起始点在原始数据中的索引位置
+  end_idx: number;    // 片段终止点在原始数据中的索引位置
+  slope: number;      // 片段的斜率，表示变化趋势
+  start_value: number;  // 片段起始点的值
+  end_value: number;    // 片段终止点的值
+  max_value: number;    // 片段中的最大值
+  min_value: number;    // 片段中的最小值
+  start_time?: number;  // 片段起始时间，可选
+  end_time?: number;    // 片段终止时间，可选
+  delta_percentage?: number;  // 片段的总体变化百分比，可选
+  daily_average_delta_percentage?: number;  // 片段的日均变化百分比，可选
+  abs_slope_percentage?: number;  // 片段斜率在所有斜率中的占比，可选
+  time_span?: number;  // 片段的时间跨度，可选
+}
+"""
 
-	interface ScopeCondition {{
-	  max?: ThresholdCondition | null;  // 范围最大值
-	  min?: ThresholdCondition | null;  // 范围最小值
-	}}
-	
-	interface Trend {{
-	  angle_scope_condition?: ScopeCondition | null;  // 当趋势呈 `flat` 状态时，角度应在 -5 到 5 之间。当趋势向上时，角度的最小值应大于 5。当趋势向下时，角度的最大值应小于 -5。当用户指明趋势的程度时，你可以根据该程度调整范围。例如，`sharply` 可能意味着上升趋势的角度应大于 60 或 下降的趋势应该小于 -60。此外，你还需要根据时间序列片段的形态进行推断，并推导出合适的角度范围。
-	  slope_scope_condition?: ScopeCondition | null;  // 当用户明确指出每天的增减幅度时，就会用到斜率范围条件。
-	  time_scope_condition?: ScopeCondition | null;  // 时间范围条件，数值为时间戳，单位为秒。
-	  time_span_condition?: ScopeCondition | null;  // 时间跨度条件，数值为时间戳，单位为秒。
-	  index: number; // trend在全局QuerySpec中trends数组的索引，即该trend在全局trends中的顺序。
-	}}
-	
-	interface Relation {{  // 两个Trend段之间某个属性的比较关系。你应始终关注用户想要表达的时间序列趋势的形态，并评估它们之间的关系。
-	  id1?: number;  // 比较中，第一个 Trend段 的索引，注意不能超过trends数组的索引范围。
-	  id2?: number;  // 比较中，第二个 Trend段 的索引，注意不能超过trends数组的索引范围。
-	  attribute?: "slope" | "angle" | "start_value" | "end_value" | "time_span";  // 需要比较的属性，例如“两个连续峰值”需要比较第0个和第2个的"end_value"，让他们大约相等。
-	  comparator?: ">" | "<" | "=" | "<=" | ">=" | "~=";  // 你需要谨慎使用 "="，当不确定时，请尽量使用 "~="。
-	}}
-	
-	interface QuerySpec {{
-	  target?: string;  // 查询的目标时间序列列名，来源于数据集信息中的value_columns。
-	  trends?: Trend[]; // 描述时间序列趋势模式的数组
-	  relations?: Relation[]; // 描述不同trend段之间的关系数组
-	  time_span_condition?: ScopeCondition;  // 全局时间跨度条件，数值为时间戳，单位为秒。
-	  time_scope_condition?: ScopeCondition;  // 全局时间范围条件，数值为时间戳，单位为秒。
-	  value_scope_condition?: ScopeCondition;  // 全局数值范围条件。
-	}}
-	```
+QuerySpecWithSource_info = """
+/**
+ * QuerySpec - 基础查询规范接口定义
+ */
+export interface ThresholdCondition {
+  value: number; // 阈值值，用于定义范围的具体数值
+  inclusive: boolean; // 是否包含该阈值，true表示包含，false表示不包含
+}
 
-4. 数据集信息
-	用户上传的是一个股票价格数据集，包含了多个公司的股票数据。
-	以下是用户要查询的时间序列数据集的基本信息：
-	{dataset_info}
-    你只需要关注其中的value_columns信息，其中包含了时间序列的列名信息，是你之后解析出target字段的来源。
+export interface ScopeCondition {
+  max?: ThresholdCondition; // 范围的最大值条件，可选
+  min?: ThresholdCondition; // 范围的最小值条件，可选
+}
 
-5. 目标态输出Output
-	你需要对自然语言查询文本进行完整分析，得到一个全局的QuerySpec：
-	```	
-	type Output = {{ output: QuerySpec }} //最终的目标输出。
-	```
+export interface Trend {
+  category: string; // 趋势类别，可以是"flat"(平稳),"up"(上升),"down"(下降)
+  slope_scope_condition?: ScopeCondition; // 斜率的范围条件，用于限定趋势的斜率范围
+  delta_percentage_scope_condition?: ScopeCondition; // 变化率的范围条件，用于限定趋势的百分比变化范围
+  daily_average_delta_percentage_scope_condition?: ScopeCondition; // 日均变化率的范围条件，用于限定趋势的日均百分比变化范围
+  abs_slope_percentage_scope_condition?: ScopeCondition; // 斜率在所有斜率中的占比范围条件，用于限定趋势的相对斜率大小
+  time_span_condition?: ScopeCondition; // 时间跨度的范围条件，用于限定趋势的持续时间
+}
 
-任务：
-	请你作为一个NL解析器，根据以上的背景和知识，将用户对时间序列片段的自然语言查询解析为Output的形式。要求你的输出有且仅有为Output类型的json字符串，不要使用代码块或```等内容，也不要添加注释。
-    要求：
-    1. 你需要直接根据自然语言查询文本解析出一个完整的QuerySpec
+export enum Attribute {
+  SLOPE = "slope", // 斜率属性，用于比较趋势的斜率
+  START_VALUE = "start_value", // 起始值属性，用于比较趋势的起始点值
+  END_VALUE = "end_value", // 结束值属性，用于比较趋势的终止点值
+  TIME_SPAN = "time_span", // 时间跨度属性，用于比较趋势的持续时间
+}
 
-示例一：
-		
-	输入：
-"Check the column sales_amount with a double top trend at the increase period which increase at least 20 dollars per day, with the value of y is less than 500 and time from 2021 to 2023. "
-你是一个用于将针对时间序列片段的自然语言查询解析为相应的结构化查询语法的解析器。你被应用于一个自然语言驱动的时间序列片段查询工具，以下项目的相关背景和知识。
+export enum Comparator {
+  GREATER = ">", // 大于比较符
+  LESS = "<", // 小于比较符
+  EQUAL = "=", // 等于比较符
+  NO_GREATER = "<=", // 小于等于比较符
+  NO_LESS = ">=", // 大于等于比较符
+  APPROXIMATELY_EQUAL_TO = "~=", // 近似等于比较符
+}
 
-	输出：
-{{"output":{{
-  "target": "sales_amount",
-  "trends": [{{
-    "angle_scope_condition": {{
-      "min": {{
-        "value": 5,
-        "inclusive": true
-      }}
-    }},
-    "slope_scope_condition":{{
-      "min": {{
-        "value": 20,
-        "inclusive": true
-      }}
-    }},
-    "index": 0
-  }}, {{
-    "angle_scope_condition": {{
-      "max": {{
-        "value": -5,
-        "inclusive": true
-      }}
-    }},
-    "index": 1
-  }}, {{
-    "angle_scope_condition": {{
-      "min": {{
-        "value": 5,
-        "inclusive": true
-      }}
-    }},
-    "slope_scope_condition":{{
-      "min": {{
-        "value": 20,
-        "inclusive": true
-      }}
-    }},
-    "index": 2
-  }}, {{
-    "angle_scope_condition": {{
-      "max": {{
-        "value": -5,
-        "inclusive": true
-      }}
-    }},
-    "index": 3
-  }}],
-  "relations": [{{
-    "id1": 0,
-    "id2": 2,
-    "attribute": "end_value",
-    "comparator": "~="
-  }}],
-  "value_scope_condition": {{
-    "min": {{
-      "value": 500,
-      "inclusive": false
-    }}
-  }},
-  "time_scope_condition": {{
-    "min": {{
-      "value": 1609459200,
-      "inclusive": true
-    }},
-    "max": {{
-      "value": 1672531200,
-      "inclusive": true
-    }}
-  }}
-  }}}}
- 
+export interface Relation {
+  id1: number; // 第一个趋势的ID标识，用于关系比较
+  id2: number; // 第二个趋势的ID标识，用于关系比较
+  attribute: Attribute; // 要比较的属性类型
+  comparator: Comparator; // 比较关系的运算符
+}
 
-示例二：
+export interface TrendTimeSpanCompositionCondition {
+  id1: number; // 起始趋势的ID，必须小于id2
+  id2: number; // 结束趋势的ID，必须大于id1
+  time_span_condition: ScopeCondition; // 从id1到id2之间(包括id1和id2)所有趋势的总时间跨度条件
+}
 
-	输入：
+export interface QuerySpec {
+  target: string; // 查询目标的时间序列名称
+  trends: Trend[]; // 趋势条件列表
+  relations: Relation[]; // 趋势间的关系条件列表
+  trend_time_span_composition_conditions: TrendTimeSpanCompositionCondition[] | ScopeCondition; // 趋势组合的时间跨度条件，可以是条件列表或单个范围条件，如果为ScopeCondition，则表示所有趋势的总体时间跨度
+  time_scope_condition?: ScopeCondition; // 全局时间范围的筛选条件，可选
+  max_value_scope_condition?: ScopeCondition; // 全局最大值的范围条件，可选
+  min_value_scope_condition?: ScopeCondition; // 全局最小值的范围条件，可选
+}
+
+/**
+ * QuerySpecWithSource - 带有文本来源信息的查询规范接口定义
+ */
+
+export interface TextSource {
+  text: string; // 原始文本内容，记录查询条件的原始描述
+  start: number; // 文本在原始查询中的起始位置
+  end: number; // 文本在原始查询中的结束位置
+}
+
+// 带有文本来源信息的基础条件接口
+export interface CategoryWithSource {
+  category: string; // 趋势类别
+  text_source: TextSource; // 类别描述的文本来源信息
+}
+
+export interface ThresholdConditionWithSource extends ThresholdCondition {
+  text_source: TextSource; // 阈值条件的文本来源信息
+}
+
+export interface ScopeConditionWithSource {
+  max?: ThresholdConditionWithSource; // 带文本来源的最大值条件
+  min?: ThresholdConditionWithSource; // 带文本来源的最小值条件
+}
+
+// 带有文本来源信息的趋势接口
+export interface TrendWithSource {
+  category: CategoryWithSource; // 带文本来源的趋势类别
+  slope_scope_condition?: ScopeConditionWithSource; // 带文本来源的斜率范围条件
+  delta_percentage_scope_condition?: ScopeConditionWithSource; // 带文本来源的变化率范围条件
+  daily_average_delta_percentage_scope_condition?: ScopeConditionWithSource; // 带文本来源的日均变化率范围条件
+  abs_slope_percentage_scope_condition?: ScopeConditionWithSource; // 带文本来源的相对斜率范围条件
+  time_span_condition?: ScopeConditionWithSource; // 带文本来源的时间跨度条件
+}
+
+// 带有文本来源信息的关系接口
+export interface RelationWithSource {
+  id1: number; // 第一个趋势的ID
+  id2: number; // 第二个趋势的ID
+  attribute: Attribute; // 比较属性
+  comparator: Comparator; // 比较运算符
+  text_source: TextSource; // 关系描述的文本来源信息
+}
+
+// 带有文本来源信息的时间跨度组合条件接口
+export interface TrendTimeSpanCompositionConditionWithSource {
+  id1: number; // 起始趋势ID
+  id2: number; // 结束趋势ID
+  time_span_condition: ScopeCondition; // 时间跨度条件
+  text_source: TextSource; // 时间跨度描述的文本来源信息
+}
+
+export interface TargetWithSource {
+  target: string; // 查询目标名称
+  text_source: TextSource; // 目标描述的文本来源信息
+}
+
+// 带有文本来源信息的完整查询规范接口
+export interface QuerySpecWithSource {
+  original_text: string; // 原始查询文本
+  target: TargetWithSource; // 带文本来源的查询目标时间序列
+  trends: TrendWithSource[]; // 带文本来源的趋势条件列表
+  relations: RelationWithSource[]; // 带文本来源的关系条件列表
+  trend_time_span_composition_conditions: TrendTimeSpanCompositionConditionWithSource[] | ScopeConditionWithSource; // 带文本来源的时间跨度组合条件
+  time_scope_condition?: ScopeConditionWithSource; // 带文本来源的全局时间范围条件
+  max_value_scope_condition?: ScopeConditionWithSource; // 带文本来源的全局最大值条件
+  min_value_scope_condition?: ScopeConditionWithSource; // 带文本来源的全局最小值条件
+}
+"""
+
+model_info = """
+为了满足对时间序列片段的趋势和形状描述，我们使用线段拟合分割方法对时间序列进行不同模糊等级的分割预处理。分割后的时间序列是许多连续线段组成的数组，它们首尾相连形成整个通过分割模糊化后的时间序列。每一段都是一条以两个分割点为起止点的线段。通过这种线段拟合分段的方式，可以满足基本的趋势和形状查询，只需要从原段序列中匹配出满足趋势或者形状的子段序列即可。
+"""
+
+
+class ParseNL_Cases:
+    case1 = """
+输入：
+"Find periods in AMZN when price first rose sharply then fell gradually"
+
+输出：
+{
+  original_text: "Find periods in AMZN when price first rose sharply then fell gradually",
+  target: {
+    target: "AMZN",
+    text_source: {
+      text: "AMZN",
+      start: 15,
+      end: 19
+    }
+  },
+  trends: [
+    {
+      category: {
+        category: "up",
+        text_source: {
+          text: "rose",
+          start: 30,
+          end: 34
+        }
+      },
+      abs_slope_percentage_scope_condition: {
+        min: {
+          value: 0.7,  // Representing "sharply" - high slope percentage
+          inclusive: true,
+          text_source: {
+            text: "sharply",
+            start: 35,
+            end: 41
+          }
+        }
+      }
+    },
+    {
+      category: {
+        category: "down",
+        text_source: {
+          text: "fell",
+          start: 47,
+          end: 51
+        }
+      },
+      abs_slope_percentage_scope_condition: {
+        max: {
+          value: 0.3,  // Representing "gradually" - low slope percentage
+          inclusive: true,
+          text_source: {
+            text: "gradually",
+            start: 52,
+            end: 60
+          }
+        }
+      }
+    }
+  ],
+  relations: [],
+  trend_time_span_composition_conditions: []
+}
+"""
+    case2 = """
+输入：
 "Show me the periods when the price of Amazon stock shows a sharp head-and-shoulders shape and before that it resembles a slowly formed V shape over 20 days"
 
-	输出：
+输出：
 {{"output":{{
   "target": "AMZN"
   "trends": [{{
@@ -239,14 +318,12 @@ def create_nl2ts_prompt(dataset_info: str) -> str:
     }}
   }}
 }}}}
-
-
-示例三：
-
-	输入：
+    """
+    case3 = """
+输入：
 "In Amazon stock, look up two consecutive rises and the time period when the first rose slowly and the second rose sharp"
 
-	输出：
+输出：
 {{"output":{{
   "target": "AMZN",
   "relations": [
@@ -279,11 +356,48 @@ def create_nl2ts_prompt(dataset_info: str) -> str:
     "index": 1
   }}]
 }}}}
+    """
+    case4 = """
+    """
+
+
+class ModifyNL_Cases:
+    case1 = """
+    """
+    case2 = """
+    """
+    case3 = """
+    """
+    case4 = """
+    """
+
+
+def create_parse_nl_prompt(dataset_info: str) -> str:
+    system_prompt = f"""你正在为一个自然语言驱动的时间序列片段查询工具服提供自然语言到结构化查询的解析服务。以下是相关背景和知识
+	
+# 结构化查询语法
+```{QuerySpecWithSource_info}
+```
+
+# 数据集信息
+用户上传的是一个股票价格数据集，包含了多个公司的股票数据。
+以下是用户要查询的时间序列数据集的基本信息：
+{dataset_info}
+你只需要关注其中的value_columns信息，其中包含了时间序列的列名信息，是你之后解析出target字段的来源。
+
+# 任务：
+根据以上的背景和知识，将用户对时间序列片段的自然语言查询解析为QuerySpecWithSource的json字典形式。
+要求:
+    1. 准确遵循QuerySpecWithSource的结构化查询语法，不要出现非法输出，输出前请检查
+    2. TextSource的text只能是来源original_text的子文本
+
+# 示例1
+{ParseNL_Cases.case1}
 """
     return system_prompt
 
 
-def create_ts2nl_prompt(dataset_info: str) -> str:
+def create_generate_nl_prompt(dataset_info: str) -> str:
     ts2nl_prompt = f"""
 你是一个有着时间序列处理方面数十年经验的专家，你非常擅长分析时间序列，并可以使用自然语言描述这段特殊的时间序列。以下是和你的任务相关的背景和知识。
 
@@ -381,41 +495,28 @@ choices: ["angle_scope_condition","value_scope_condition"]
     return ts2nl_prompt
 
 
-def create_modify_nl_prompt(dataset_info: str) -> str:
-    modify_nl_prompt = f"""
-### 你是一个经验丰富的时间序列分析专家，擅长解析和调整自然语言查询。
+def create_modify_nl_prompt() -> str:
+    modify_nl_prompt = f"""你是一个对时间序列片段的自然语言查询进行微调的专家，擅长根据用户给定的时间序列片段对原始查询进行微调，以捕捉用户的用意，帮助用户轻松调整自然语言查询。以下是关于你的任务的背景和知识。
 
-### 任务描述
-你的任务是根据用户输入的 **查询语句（query）**、**时间序列片段（segments）** 以及 **choices**，提供 **三个修改版本**，使查询更加清晰、合理，并符合时间序列数据的结构化信息 `{dataset_info}`。
+# 分段线性拟合的时间序列片段接口定义
+'''{Segment_info}
+'''
 
-### 调整原则
+# 结构化查询接口定义
+'''{QuerySpecWithSource_info}
+'''
+
+
+# 任务描述
+你的任务是根据用户输入的 **查询语句（query）**、**时间序列片段（segments）** 以及 **choices**，提供 **三个修改版本**，使查询更加清晰、合理，并符合时间序列数据的结构化信息 ``。
+你的任务是根据原始的`QuerySpecWithSource`, 用户指定的时间序列片段`segments`，以及需要调整的`choices`，提供三个修改版本，使查询更加清晰、合理，并符合时间序列数据的结构化信息 ``。
+
+# 调整原则
 1. **保持查询的核心语义**，仅在必要部分调整。
 2. **结合 `segments` 和 `choices` 进行优化**，确保查询符合数据特征。
 3. **生成三个不同的推荐修改版本**，每个版本在表达方式或查询范围上有所不同。
 
-### 结构化查询信息
-interface Trend {{ 
-  angle_scope_condition?: ScopeCondition | null; // 角度范围，例如“角度 > 45°” 
-  slope_scope_condition?: ScopeCondition | null; // 斜率范围，例如“斜率为正” 
-  time_scope_condition?: ScopeCondition | null; // 时间范围，例如“发生在2023年” 
-  time_span_condition?: ScopeCondition | null; // 持续时间，例如“至少 10 天” 
-}}
 
-interface Relation {{ 
-  id1?: number; 
-  id2?: number; 
-  attribute?: "slope" | "angle" | "start_value" | "end_value" | "time_span"; 
-  comparator?: ">" | "<" | "=" | "<=" | ">=" | "~="; 
-}}
-
-interface QuerySpec {{ 
-  target?: string; 
-  trends?: Trend[]; 
-  relations?: Relation[]; 
-  time_span_condition?: ScopeCondition; // 全局时间跨度，单位秒 
-  time_scope_condition?: ScopeCondition; // 全局时间范围，单位秒 
-  value_scope_condition?: ScopeCondition; // 全局数值范围 
-}}
 
 ### 输入参数
 - `query`: 用户的自然语言查询。
@@ -461,3 +562,6 @@ interface QuerySpec {{
 }}
 """
     return modify_nl_prompt
+
+
+# print(create_modify_nl_prompt())

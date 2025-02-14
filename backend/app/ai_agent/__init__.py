@@ -4,6 +4,8 @@ from typeguard import typechecked
 from openai import OpenAI, AzureOpenAI
 from openai.types.chat import ChatCompletion
 from typing import List, Dict, Optional
+
+from .prompts import create_parse_nl_prompt
 from .constant import (
     Azure,
     DeepSeek,
@@ -35,7 +37,7 @@ class myAIClient:
         else:
             raise ValueError("Invalid platform")
 
-    def send_prompt(self, system_prompt: str, user_prompt: str, keep_history: bool = False, if_json_format: bool = False) -> str:
+    def send_prompt(self, system_prompt: str, user_prompt: str, if_json_format: bool = True, keep_history: bool = False) -> str:
         debugger.info("--------send prompt---------\n" + user_prompt)
 
         if self.client is None:
@@ -54,11 +56,11 @@ class myAIClient:
             response = self.client.chat.completions.create(
                 messages=self.chatHistory,
                 model=self.model,
-                temperature=0.5,
+                temperature=0.3,
                 max_tokens=4096,
                 top_p=1,
-                frequency_penalty=0,
-                presence_penalty=0,
+                frequency_penalty=0.2,
+                presence_penalty=0.1,
                 stop=None,
                 response_format={"type": "json_object"} if if_json_format else None,
             )
@@ -86,5 +88,12 @@ def get_query_spec(system_prompt: str, query: str) -> Dict:
 
 
 if __name__ == "__main__":
-    client = myAIClient(model=Qwen.MODELS.QWEN_MAX, platform=Platforms.QWEN)
-    response = client.send_prompt("You are a helpful assistant!", "你是谁？")
+    # client = myAIClient(model=Qwen.MODELS.QWEN_MAX, platform=Platforms.QWEN)
+    client = myAIClient(model=Azure.MODELS.GPT_4O, platform=Platforms.AZURE)
+    # client = myAIClient(model=SiliconFlow.MODELS.DEEPSEEK_V3, platform=Platforms.SILIICONFLOW)
+
+    dataset_info = """{"time_column": "Date", "value_columns": ["AMZN", "DPZ", "BTC", "NFLX"]}"""
+    system_prompt = create_parse_nl_prompt(dataset_info)
+    print(system_prompt)
+    nl_query = "Find periods in DPZ when price first rose sharply then fell gradually"
+    response = client.send_prompt(system_prompt, nl_query)
