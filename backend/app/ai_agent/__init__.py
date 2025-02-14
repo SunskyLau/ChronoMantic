@@ -59,7 +59,7 @@ class myAIClient:
             response = self.client.chat.completions.create(
                 messages=self.chatHistory,
                 model=self.model,
-                temperature=0.3,
+                temperature=0.1,
                 max_tokens=4096,
                 top_p=1,
                 frequency_penalty=0.1,
@@ -91,13 +91,13 @@ def get_query_spec(system_prompt: str, query: str) -> Dict:
 
 
 if __name__ == "__main__":
-    # client = myAIClient(model=Qwen.MODELS.QWEN_MAX, platform=Platforms.QWEN)
+    client = myAIClient(model=Qwen.MODELS.QWEN_MAX, platform=Platforms.QWEN)
     # client = myAIClient(model=Azure.MODELS.GPT_4O, platform=Platforms.AZURE)
     # client = myAIClient(model=SiliconFlow.MODELS.DEEPSEEK_V3, platform=Platforms.SILIICONFLOW)
-    client = myAIClient(model=Tencent.MODELS.DEEPSEEK_V3, platform=Platforms.TENCENT)
+    # client = myAIClient(model=Tencent.MODELS.DEEPSEEK_V3, platform=Platforms.TENCENT)
 
     dataset_info = """{"time_column": "Date", "value_columns": ["AMZN", "DPZ", "BTC", "NFLX"]}"""
     system_prompt = create_parse_nl_prompt(dataset_info)
     print(system_prompt)
-    nl_query = "Find periods in DPZ when price first rose sharply then fell gradually"
+    nl_query = "Find periods in DPZ when price first rose sharply then fell gradually, and the whole duration is about 3 months"
     response = client.send_prompt(system_prompt, nl_query, False)
