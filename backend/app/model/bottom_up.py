@@ -49,28 +49,46 @@ def calculate_merge_cost(x: np.ndarray, y: np.ndarray, segment1: Segment, segmen
     return error - (error1 + error2)
 
 
+def calculate_percentage_metrics(start_value: float, end_value: float, time_span: float) -> tuple[float | None, float | None]:
+    """计算变化率相关的指标"""
+    if start_value <= 0:
+        return None, None
+
+    delta_percentage = ((end_value - start_value) / start_value) * 100
+    days = time_span / (24 * 3600)
+    daily_average_delta_percentage = (pow(1 + delta_percentage / 100, 1 / days) - 1) * 100
+
+    return delta_percentage, daily_average_delta_percentage
+
+
 def bottom_up_merge(value_column: str, x: np.ndarray, y: np.ndarray, k: int):
     """自底向上分段合并"""
     n = len(y)
     if k >= n:
         return [[i] for i in range(n)]
 
-    segments: List[Segment] = [
-        Segment(
-            start_idx=i,
-            end_idx=i + 1,
-            slope=(y[i + 1] - y[i]) / (x[i + 1] - x[i]),
-            start_value=y[i],
-            end_value=y[i + 1],
-            max_value=max(y[i], y[i + 1]),
-            min_value=min(y[i], y[i + 1]),
-            start_time=x[i],
-            end_time=x[i + 1],
-            time_span=x[i + 1] - x[i],
-            delta_percentage=((y[i + 1] - y[i]) / y[i]) * 100 if y[i] > 0 else None,
+    segments: List[Segment] = []
+    for i in range(n - 1):
+        time_span = x[i + 1] - x[i]
+        delta_percentage, daily_avg_delta_percentage = calculate_percentage_metrics(y[i], y[i + 1], time_span)
+
+        segments.append(
+            Segment(
+                start_idx=i,
+                end_idx=i + 1,
+                slope=(y[i + 1] - y[i]) / (x[i + 1] - x[i]),
+                start_value=y[i],
+                end_value=y[i + 1],
+                max_value=max(y[i], y[i + 1]),
+                min_value=min(y[i], y[i + 1]),
+                start_time=x[i],
+                end_time=x[i + 1],
+                time_span=time_span,
+                delta_percentage=delta_percentage,
+                daily_average_delta_percentage=daily_avg_delta_percentage,
+            )
         )
-        for i in range(n - 1)
-    ]
+
     cost_heap: List[CostWrapper] = []
 
     def update_costs(i: int):
@@ -100,6 +118,10 @@ def bottom_up_merge(value_column: str, x: np.ndarray, y: np.ndarray, k: int):
 
         i = segments.index(seg1)
         j = segments.index(seg2)
+
+        time_span = x[seg2.end_idx] - x[seg1.start_idx]
+        delta_percentage, daily_avg_delta_percentage = calculate_percentage_metrics(seg1.start_value, seg2.end_value, time_span)
+
         segments[i] = Segment(
             start_idx=seg1.start_idx,
             end_idx=seg2.end_idx,
@@ -110,8 +132,9 @@ def bottom_up_merge(value_column: str, x: np.ndarray, y: np.ndarray, k: int):
             min_value=min(seg1.min_value, seg2.min_value),
             start_time=x[seg1.start_idx],
             end_time=x[seg2.end_idx],
-            time_span=x[seg2.end_idx] - x[seg1.start_idx],
-            delta_percentage=((seg2.end_value - seg1.start_value) / seg1.start_value) * 100 if seg1.start_value > 0 else None,
+            time_span=time_span,
+            delta_percentage=delta_percentage,
+            daily_average_delta_percentage=daily_avg_delta_percentage,
             abs_slope_percentage=None,
         )
         segments.pop(j)

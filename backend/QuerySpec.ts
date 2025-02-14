@@ -19,6 +19,7 @@ export interface Segment {
   start_time?: number;
   end_time?: number;
   delta_percentage?: number;
+  daily_average_delta_percentage?: number;
   abs_slope_percentage?: number;
   time_span?: number;
 }
@@ -51,7 +52,7 @@ export interface Trend {
   category: string; // "flat","up","down"
   slope_scope_condition?: ScopeCondition; // 斜率的范围条件
   delta_percentage_scope_condition?: ScopeCondition; // 变化率的范围条件
-  average_delta_percentage_scope_condition?: ScopeCondition; // 平均变化率的范围条件
+  daily_average_delta_percentage_scope_condition?: ScopeCondition; // 平均变化率的范围条件
   abs_slope_percentage_scope_condition?: ScopeCondition; // 斜率在所有斜率中的占比范围条件
   time_span_condition?: ScopeCondition; // 时间跨度的范围条件
 }
@@ -125,6 +126,8 @@ export interface TrendWithSource {
   category: CategoryWithSource;
   slope_scope_condition?: ScopeConditionWithSource;
   delta_percentage_scope_condition?: ScopeConditionWithSource;
+  daily_average_delta_percentage_scope_condition?: ScopeConditionWithSource;
+  abs_slope_percentage_scope_condition?: ScopeConditionWithSource;
   time_span_condition?: ScopeConditionWithSource;
 }
 
@@ -141,7 +144,8 @@ export interface RelationWithSource {
 export interface TrendTimeSpanCompositionConditionWithSource {
   id1: number;
   id2: number;
-  time_span_condition: ScopeConditionWithSource;
+  time_span_condition: ScopeCondition;
+  text_source: TextSource;
 }
 
 export interface TargetWithSource {
@@ -155,7 +159,7 @@ export interface QuerySpecWithSource {
   target: TargetWithSource;
   trends: TrendWithSource[];
   relations: RelationWithSource[];
-  trend_time_span_composition_conditions: TrendTimeSpanCompositionConditionWithSource[];
+  trend_time_span_composition_conditions: TrendTimeSpanCompositionConditionWithSource[] | ScopeConditionWithSource;
   time_scope_condition?: ScopeConditionWithSource;
   max_value_scope_condition?: ScopeConditionWithSource;
   min_value_scope_condition?: ScopeConditionWithSource;

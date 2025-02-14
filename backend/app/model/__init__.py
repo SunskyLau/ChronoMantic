@@ -12,7 +12,7 @@ def approximate_dataset(dataset: pd.DataFrame, dataset_info: DatasetInfo, k: int
     approxiamation_segments_containers: List[ApproximationSegmentsContainer] = []
     time_column = dataset_info.time_column
     value_columns = dataset_info.value_columns
-    x = pd.to_datetime(dataset[time_column]).astype("int64") // 10**9
+    x = pd.to_datetime(dataset[time_column]).astype("int64") // 10**9  # 转换为秒
 
     for vc in value_columns:
         y = dataset[vc].values
@@ -37,7 +37,7 @@ def update_abs_slope_percentage(approximation_segments_container: ApproximationS
         for approximation_segments in approximation_segments_container.approximation_segments_list:
             for segment in approximation_segments.segments:
                 if max_abs_slope > 0:  # 避免除以0
-                    segment.abs_slope_percentage = abs(segment.slope) / max_abs_slope
+                    segment.abs_slope_percentage = abs(segment.slope) / max_abs_slope * 100
                 else:
                     segment.abs_slope_percentage = 0
 

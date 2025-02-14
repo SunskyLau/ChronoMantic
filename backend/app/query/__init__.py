@@ -1,6 +1,8 @@
 from typing import List, Optional, Dict, Set, Tuple
 import pandas as pd
 from typeguard import typechecked
+
+from .constant import FLAT_THRESHOLD
 from .utils import check_double_threshold_condition, check_single_threshold_condition, query_by_no_trends
 
 from ..model import approximate_dataset
@@ -127,13 +129,12 @@ def match_trend_sequence(segments: List[Segment], trends: List[Trend]) -> bool:
 @typechecked
 def match_single_trend(segment: Segment, trend: Trend) -> bool:
     """检查单个段是否匹配趋势模式"""
-    # 检查趋势类型 TODO: 需要修改
-    if trend.category == "flat" and abs(segment.slope) > 0.001:
-        return False
-    elif trend.category == "up" and segment.slope <= 0:
-        return False
-    elif trend.category == "down" and segment.slope >= 0:
-        return False
+    if trend.category == "flat":
+        return segment.abs_slope_percentage <= FLAT_THRESHOLD
+    elif trend.category == "up":
+        return segment.slope > 0 and segment.abs_slope_percentage > FLAT_THRESHOLD
+    elif trend.category == "down":
+        return segment.slope < 0 and segment.abs_slope_percentage > FLAT_THRESHOLD
 
     # 检查斜率条件
     if trend.slope_scope_condition:
@@ -156,11 +157,12 @@ def match_single_trend(segment: Segment, trend: Trend) -> bool:
         ):
             return False
 
-    # 检查平均变化率的范围条件 TODO: 需要修改
-    if trend.average_delta_percentage_scope_condition and segment.delta_percentage is not None:
-        avg_delta = segment.delta_percentage / (segment.end_time - segment.start_time)
+    # 检查日几何平均变化率的范围条件
+    if trend.daily_average_delta_percentage_scope_condition and segment.daily_average_delta_percentage is not None:
         if not check_single_threshold_condition(
-            avg_delta, trend.average_delta_percentage_scope_condition.min, trend.average_delta_percentage_scope_condition.max
+            segment.daily_average_delta_percentage,
+            trend.daily_average_delta_percentage_scope_condition.min,
+            trend.daily_average_delta_percentage_scope_condition.max,
         ):
             return False
 
@@ -178,7 +180,6 @@ def satisfies_relations(segments: List[Segment], relations: List[Relation]) -> b
     for relation in relations:
         if not satisfy_single_relation(segments, relation):
             return False
-
     return True
 
 
