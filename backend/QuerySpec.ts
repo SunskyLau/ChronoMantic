@@ -24,7 +24,7 @@ export interface Segment {
   time_span?: number;
 }
 
-export interface ApproximationSegments {
+export interface ApproximationSegments { // 近似的连续分段
   segments: Segment[];
   approximation_level: number;
 }
@@ -51,17 +51,17 @@ export interface ScopeCondition {
 export interface Trend {
   category: string; // "flat","up","down"
   slope_scope_condition?: ScopeCondition; // 斜率的范围条件
-  delta_percentage_scope_condition?: ScopeCondition; // 变化率的范围条件
-  daily_average_delta_percentage_scope_condition?: ScopeCondition; // 平均变化率的范围条件
-  abs_slope_percentage_scope_condition?: ScopeCondition; // 斜率在所有斜率中的占比范围条件
-  time_span_condition?: ScopeCondition; // 时间跨度的范围条件
+  delta_percentage_scope_condition?: ScopeCondition; // 变化率的范围条件, 单位是%，例如70就代表70%
+  daily_average_delta_percentage_scope_condition?: ScopeCondition; // 日平均变化率的范围条件, 单位是%/day，例如5就代表5%/day
+  abs_slope_percentage_scope_condition?: ScopeCondition; // 斜率在所有斜率中的占比范围条件, 单位是%，例如30就代表30%
+  time_span_condition?: ScopeCondition; // 时间跨度的范围条件, 单位是秒
 }
 
 export enum Attribute {
   SLOPE = "slope", // 斜率
   START_VALUE = "start_value", // 起始值
   END_VALUE = "end_value", // 结束值
-  TIME_SPAN = "time_span", // 时间跨度
+  TIME_SPAN = "time_span" // 时间跨度, 单位是秒
 }
 
 export enum Comparator {
@@ -70,27 +70,27 @@ export enum Comparator {
   EQUAL = "=", // 等于
   NO_GREATER = "<=", // 小于等于
   NO_LESS = ">=", // 大于等于
-  APPROXIMATELY_EQUAL_TO = "~=", // 近似等于
+  APPROXIMATELY_EQUAL_TO = "~=" // 近似等于
 }
 
-export interface Relation {
+export interface Relation { // 不同trend之间的属性比较关系
   id1: number; // 趋势1的id
   id2: number; // 趋势2的id
   attribute: Attribute; // 比较的属性
   comparator: Comparator; // 比较关系
 }
 
-export interface TrendTimeSpanCompositionCondition {
+export interface TrendTimeSpanCompositionCondition { // 趋势时间跨度组合条件
   id1: number; // 趋势1的id，其中id1应该小于id2
   id2: number; // 趋势2的id，其中id1应该小于id2
-  time_span_condition: ScopeCondition; // 代表从id1到id2的之间(包括id1和id2)所有趋势的总体时间跨度
+  time_span_condition: ScopeCondition; // 代表从id1到id2的之间(包括id1和id2)所有趋势的总体时间跨度, 单位是秒
 }
 
 export interface QuerySpec {
   target: string; // 查询的目标时间序列名
   trends: Trend[]; // 趋势列表
   relations: Relation[]; // 不同趋势之间的属性比较关系列表
-  trend_time_span_composition_conditions: TrendTimeSpanCompositionCondition[] | ScopeCondition; // 趋势时间跨度组合条件列表，如果为ScopeCondition，则表示所有趋势的总体时间跨度
+  trend_time_span_composition_conditions: TrendTimeSpanCompositionCondition[] | ScopeCondition; // 趋势时间跨度组合条件列表，如果为ScopeCondition，则表示所有趋势的总体时间跨度, 单位是秒
   time_scope_condition?: ScopeCondition; // 搜索时间的范围条件
   max_value_scope_condition?: ScopeCondition; // 最大值的范围条件
   min_value_scope_condition?: ScopeCondition; // 最小值的范围条件

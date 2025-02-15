@@ -63,17 +63,17 @@ class ScopeCondition(DictMixin):
 class Trend(DictMixin):
     category: str  # "flat","up","down"
     slope_scope_condition: Optional[ScopeCondition] = None  # 斜率的范围条件
-    delta_percentage_scope_condition: Optional[ScopeCondition] = None  # 变化率的范围条件
-    daily_average_delta_percentage_scope_condition: Optional[ScopeCondition] = None  # 平均变化率的范围条件
-    abs_slope_percentage_scope_condition: Optional[ScopeCondition] = None  # 斜率在所有斜率中的占比范围条件
-    time_span_condition: Optional[ScopeCondition] = None  # 时间跨度的范围条件
+    delta_percentage_scope_condition: Optional[ScopeCondition] = None  # 变化率的范围条件, 单位是%, 例如70就代表70%
+    daily_average_delta_percentage_scope_condition: Optional[ScopeCondition] = None  # 日平均变化率的范围条件, 单位是%/day，例如5就代表5%/day
+    abs_slope_percentage_scope_condition: Optional[ScopeCondition] = None  # 斜率在所有斜率中的占比范围条件, 单位是%，例如30就代表30%
+    time_span_condition: Optional[ScopeCondition] = None  # 时间跨度的范围条件, 单位是秒，例如3600就代表1小时
 
 
 class Attribute(Enum):
     SLOPE = "slope"  # 斜率
     START_VALUE = "start_value"  # 起始值
     END_VALUE = "end_value"  # 结束值
-    TIME_SPAN = "time_span"  # 时间跨度
+    TIME_SPAN = "time_span"  # 时间跨度, 单位是秒
 
 
 class Comparator(Enum):
@@ -97,7 +97,7 @@ class Relation(DictMixin):  # 不同trend之间的属性比较关系
 class TrendTimeSpanCompositionCondition(DictMixin):  # 趋势时间跨度组合条件
     id1: int  # 趋势1的id，其中id1应该小于id2
     id2: int  # 趋势2的id，其中id1应该小于id2
-    time_span_condition: ScopeCondition  # 代表从id1到id2的之间(包括id1和id2)所有趋势的总体时间跨度
+    time_span_condition: ScopeCondition  # 代表从id1到id2的之间(包括id1和id2)所有趋势的总体时间跨度, 单位是秒
 
 
 @dataclass
@@ -107,7 +107,7 @@ class QuerySpec(DictMixin):
     relations: List[Relation]  # 不同趋势之间的属性比较关系列表
     trend_time_span_composition_conditions: (
         List[TrendTimeSpanCompositionCondition] | ScopeCondition
-    )  # 趋势时间跨度组合条件列表，如果为ScopeCondition，则表示所有趋势的总体时间跨度
+    )  # 趋势时间跨度组合条件列表，如果为ScopeCondition，则表示所有趋势的总体时间跨度, 单位是秒
     time_scope_condition: Optional[ScopeCondition] = None  # 搜索时间的范围条件
     max_value_scope_condition: Optional[ScopeCondition] = None  # 最大值的范围条件
     min_value_scope_condition: Optional[ScopeCondition] = None  # 最小值的范围条件
