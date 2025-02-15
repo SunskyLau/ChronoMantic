@@ -24,7 +24,8 @@ export interface Segment {
   time_span?: number;
 }
 
-export interface ApproximationSegments { // 近似的连续分段
+export interface ApproximationSegments {
+  // 近似的连续分段
   segments: Segment[];
   approximation_level: number;
 }
@@ -61,7 +62,7 @@ export enum Attribute {
   SLOPE = "slope", // 斜率
   START_VALUE = "start_value", // 起始值
   END_VALUE = "end_value", // 结束值
-  TIME_SPAN = "time_span" // 时间跨度, 单位是秒
+  TIME_SPAN = "time_span", // 时间跨度, 单位是秒
 }
 
 export enum Comparator {
@@ -70,17 +71,19 @@ export enum Comparator {
   EQUAL = "=", // 等于
   NO_GREATER = "<=", // 小于等于
   NO_LESS = ">=", // 大于等于
-  APPROXIMATELY_EQUAL_TO = "~=" // 近似等于
+  APPROXIMATELY_EQUAL_TO = "~=", // 近似等于
 }
 
-export interface Relation { // 不同trend之间的属性比较关系
+export interface Relation {
+  // 不同trend之间的属性比较关系
   id1: number; // 趋势1的id
   id2: number; // 趋势2的id
   attribute: Attribute; // 比较的属性
   comparator: Comparator; // 比较关系
 }
 
-export interface TrendTimeSpanCompositionCondition { // 趋势时间跨度组合条件
+export interface TrendTimeSpanCompositionCondition {
+  // 趋势时间跨度组合条件
   id1: number; // 趋势1的id，其中id1应该小于id2
   id2: number; // 趋势2的id，其中id1应该小于id2
   time_span_condition: ScopeCondition; // 代表从id1到id2的之间(包括id1和id2)所有趋势的总体时间跨度, 单位是秒
@@ -102,8 +105,7 @@ export interface QuerySpec {
 
 export interface TextSource {
   text: string; // 原始文本片段
-  start: number; // 在原文中的起始位置
-  end: number; // 在原文中的结束位置
+  index: number; // 用于区分text相同但是在原文中位置不同的文本片段，index=0表示第一个，index=1表示第二个，以此类推
 }
 
 // 基础条件的 WithSource 版本

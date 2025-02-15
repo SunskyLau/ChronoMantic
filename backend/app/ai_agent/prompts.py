@@ -1,5 +1,5 @@
 from .parse_nl_cases import ParseNL_Cases
-from .shared_info import QuerySpecWithSource_info, parse_logic_info, Segment_info
+from .shared_info import QuerySpecWithSource_info, parse_nl_logic_info, Segment_info
 
 
 def create_parse_nl_prompt(dataset_info: str) -> str:
@@ -16,7 +16,7 @@ def create_parse_nl_prompt(dataset_info: str) -> str:
 你只需要关注其中的value_columns信息，其中包含了时间序列的列名信息，是你之后解析出target字段的来源。
 
 # 自然语言解析逻辑
-{parse_logic_info}
+{parse_nl_logic_info}
 
 # 任务：
 根据以上的背景和知识，将用户对时间序列片段的自然语言查询解析为QuerySpecWithSource的json字典形式。
@@ -26,6 +26,12 @@ def create_parse_nl_prompt(dataset_info: str) -> str:
 
 # 示例1
 {ParseNL_Cases.case1}
+
+# 示例2
+{ParseNL_Cases.case2}
+
+# 示例3
+{ParseNL_Cases.case3}
 """
     return system_prompt
 

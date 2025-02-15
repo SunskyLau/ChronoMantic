@@ -10,8 +10,7 @@ class ParseNL_Cases:
     "target": "AMZN",
     "text_source": {
       "text": "AMZN", 
-      "start": 16,
-      "end": 20
+      "index": 0
     }
   },
   "trends": [
@@ -20,8 +19,7 @@ class ParseNL_Cases:
         "category": "up",
         "text_source": {
           "text": "rose",
-          "start": 38,
-          "end": 42
+          "index": 0
         }
       },
       "daily_average_delta_percentage_scope_condition": {
@@ -30,8 +28,7 @@ class ParseNL_Cases:
           "inclusive": true,
           "text_source": {
             "text": "sharply",
-            "start": 43,
-            "end": 50
+            "index": 0
           }
         }
       }
@@ -41,18 +38,16 @@ class ParseNL_Cases:
         "category": "down",
         "text_source": {
           "text": "fell",
-          "start": 56,
-          "end": 60
+          "index": 0
         }
       },
       "daily_average_delta_percentage_scope_condition": {
-        "max": {
+        "min": {
           "value": -1,
           "inclusive": true,
           "text_source": {
             "text": "gradually",
-            "start": 61,
-            "end": 70
+            "index": 0
           }
         }
       }
@@ -74,8 +69,7 @@ class ParseNL_Cases:
     "target": "DPZ",
     "text_source": {
       "text": "DPZ",
-      "start": 16,
-      "end": 19
+      "index": 0  
     }
   },
   "trends": [
@@ -84,8 +78,7 @@ class ParseNL_Cases:
         "category": "up",
         "text_source": {
           "text": "rose",
-          "start": 37,
-          "end": 41
+          "index": 0
         }
       },
       "daily_average_delta_percentage_scope_condition": {
@@ -94,8 +87,7 @@ class ParseNL_Cases:
           "inclusive": true,
           "text_source": {
             "text": "sharply",
-            "start": 42,
-            "end": 49
+            "index": 0
           }
         }
       }
@@ -105,8 +97,7 @@ class ParseNL_Cases:
         "category": "down",
         "text_source": {
           "text": "fell",
-          "start": 55,
-          "end": 59
+          "index": 0
         }
       },
       "daily_average_delta_percentage_scope_condition": {
@@ -115,8 +106,7 @@ class ParseNL_Cases:
           "inclusive": true,
           "text_source": {
             "text": "gradually",
-            "start": 60,
-            "end": 69
+            "index": 0
           }
         }
       }
@@ -129,8 +119,7 @@ class ParseNL_Cases:
       "inclusive": true,
       "text_source": {
         "text": "about 3 months",
-        "start": 84,
-        "end": 98
+        "index": 0
       }
     },
     "max": {
@@ -138,8 +127,7 @@ class ParseNL_Cases:
       "inclusive": true,
       "text_source": {
         "text": "about 3 months",
-        "start": 84,
-        "end": 98
+        "index": 0
       }
     }
   }
@@ -147,10 +135,70 @@ class ParseNL_Cases:
     """
     case3 = """
 输入：
-"Show me the periods when the price of Amazon stock shows a sharp head-and-shoulders shape and before that it resembles a slowly formed V shape over 20 days"
+"Find periods in AMZN when price presented a double-bottom shape"
 
 输出：
-
+{
+  "original_text": "Find periods in AMZN when price presented a double-bottom shape",
+  "target": {
+    "target": "AMZN",
+    "text_source": {
+      "text": "AMZN",
+      "index": 0
+    }
+  },
+  "trends": [
+    {
+      "category": {
+        "category": "down",
+        "text_source": {
+          "text": "double-bottom",
+          "index": 0
+        }
+      }
+    },
+    {
+      "category": {
+        "category": "up",
+        "text_source": {
+          "text": "double-bottom",
+          "index": 0
+        }
+      }
+    },
+    {
+      "category": {
+        "category": "down",
+        "text_source": {
+          "text": "double-bottom",
+          "index": 0
+        }
+      }
+    },
+    {
+      "category": {
+        "category": "up",
+        "text_source": {
+          "text": "double-bottom",
+          "index": 0
+        }
+      }
+    }
+  ],
+  "relations": [
+    {
+      "id1": 0,
+      "id2": 2,
+      "attribute": "END_VALUE",
+      "comparator": "APPROXIMATELY_EQUAL_TO",
+      "text_source": {
+        "text": "double-bottom",
+        "index": 0
+      }
+    }
+  ],
+  "trend_time_span_composition_conditions": []
+}
     """
     case4 = """
 输入：
