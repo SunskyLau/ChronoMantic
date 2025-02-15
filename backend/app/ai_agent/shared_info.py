@@ -162,7 +162,7 @@ parse_nl_logic_info = """
 5. TextSource的text只能是来源original_text的子文本，并且TextSource不可以和其他TextSource重叠
 6. 你需要识别出自然语言中对于relation的描述，这种描述也可以分为隐式的和显式的。隐式的relation描述通常隐藏在形状的描述中，例如，"head-and-shoulders"中，中间的"head"应该要高于左右两个shoulders，这就意味着第二次上升趋势(trend_id=2)的end_value应该要大于第一次和第三次上升趋势(trend_id=0和trend_id=4)的end_value，这里relation就应该被解析出来。显式的relation描述通常是直接描述的，例如，"连续的两次上升，左边的上升速度比右边的上升速度更快"，这意味着第一次上升趋势(trend_id=0)的slope应该要大于第二次上升趋势(trend_id=1)的slope，这里relation就应该被解析出来。
 """
-# 8. 有关trend_time_span_composition_conditions和time_span_condition
+# TODO 7. 有关trend_time_span_composition_conditions和time_span_condition
 
 modify_nl_logic_info = """
 
