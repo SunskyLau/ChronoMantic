@@ -59,7 +59,7 @@ class myAIClient:
             response = self.client.chat.completions.create(
                 messages=self.chatHistory,
                 model=self.model,
-                temperature=0.1,
+                temperature=0,
                 max_tokens=4096,
                 top_p=1,
                 frequency_penalty=0.1,
@@ -99,11 +99,12 @@ if __name__ == "__main__":
     dataset_info = """{"time_column": "Date", "value_columns": ["AMZN", "DPZ", "BTC", "NFLX"]}"""
     system_prompt = create_parse_nl_prompt(dataset_info)
     print(system_prompt)
-    # nl_query = "Find periods in DPZ when price first rose sharply then fell gradually, and the whole duration is about 3 months"
+    nl_query = "Find periods in DPZ when price first rose sharply then fell gradually, and the whole duration is about 3 months"
     # nl_query = "Find periods in AMZN when price presented a head-and-shoulders shape"
     # nl_query = "Find periods in DPZ when price presented a triple-tops shape"
     # nl_query = "Find the time periods in Amazon stock when the price showed three consecutive peaks and the peaks got higher and higher"
-    nl_query = "Find periods in Amazon stock where prices rose slowly, then rose quickly"
+    # nl_query = "Find periods in Amazon stock where prices rose slowly, then rose quickly"
+    nl_query = "Find periods in AMZN when price first fell sharply with a duration of about 3 days and then presented a double-bottom shape with a duration of about a week."
 
 
 

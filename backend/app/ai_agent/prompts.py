@@ -6,7 +6,7 @@ from .shared_info import QuerySpecWithSource_info, parse_nl_logic_info, Segment_
 def create_parse_nl_prompt(dataset_info: str) -> str:
     system_prompt = f"""你正在为一个自然语言驱动的时间序列片段查询工具服提供自然语言到结构化查询的解析服务。以下是相关背景和知识
 	
-# 带文本来源的结构化查询语法
+# 带文本来源的结构化查询接口
 ```{QuerySpecWithSource_info}
 ```
 
@@ -22,7 +22,7 @@ def create_parse_nl_prompt(dataset_info: str) -> str:
 # 任务：
 根据以上的背景和知识，将用户对时间序列片段的自然语言查询解析为QuerySpecWithSource的json字典形式。
 要求:
-    1. 准确遵循QuerySpecWithSource的结构化查询语法，不要出现非法输出，输出前请检查
+    1. 准确严格地遵循QuerySpecWithSource的结构化查询接口定义，不要出现非法输出，输出前请检查
     2. 有且仅输出json字典，不要添加代码块或者```，也不要添加注释。
 
 # 示例1
