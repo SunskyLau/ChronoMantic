@@ -122,7 +122,7 @@ class ParseNL_Cases:
     {
       "id1": 0,
       "id2": 2,
-      "attribute": "END_VALUE",
+      "attribute": "end_value",
       "comparator": "~=",
       "text_source": {
         "text": "double-bottom",
@@ -207,7 +207,7 @@ class ParseNL_Cases:
     {
       "id1": 0,
       "id2": 2,
-      "attribute": "END_VALUE",
+      "attribute": "end_value",
       "comparator": "<",
       "text_source": {
         "text": "the peaks got higher and higher",
@@ -217,7 +217,7 @@ class ParseNL_Cases:
     {
       "id1": 2,
       "id2": 4,
-      "attribute": "END_VALUE",
+      "attribute": "end_value",
       "comparator": ">",
       "text_source": {
         "text": "the peaks got higher and higher",
@@ -302,7 +302,7 @@ class ParseNL_Cases:
     {
       "id1": 0,
       "id2": 2,
-      "attribute": "END_VALUE",
+      "attribute": "end_value",
       "comparator": "<",
       "text_source": {
         "text": "head-and-shoulders",
@@ -312,7 +312,7 @@ class ParseNL_Cases:
     {
       "id1": 2,
       "id2": 4,
-      "attribute": "END_VALUE",
+      "attribute": "end_value",
       "comparator": ">",
       "text_source": {
         "text": "head-and-shoulders",
@@ -322,7 +322,7 @@ class ParseNL_Cases:
     {
       "id1": 4,
       "id2": 0,
-      "attribute": "END_VALUE",
+      "attribute": "end_value",
       "comparator": "~=",
       "text_source": {
         "text": "head-and-shoulders",
@@ -427,7 +427,7 @@ class ParseNL_Cases:
     {
       "id1": 1,
       "id2": 3,
-      "attribute": "END_VALUE",
+      "attribute": "end_value",
       "comparator": "~=",
       "text_source": {
         "text": "double-bottom",
