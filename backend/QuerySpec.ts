@@ -166,3 +166,48 @@ export interface QuerySpecWithSource {
   max_value_scope_condition?: ScopeConditionWithSource;
   min_value_scope_condition?: ScopeConditionWithSource;
 }
+
+/**
+ * Intentions
+ */
+
+export enum SingleChoice {
+  SLOPE = "slope",
+  DELTA_PERCENTAGE = "delta_percentage",
+  DAILY_AVERAGE_DELTA_PERCENTAGE = "daily_average_delta_percentage",
+  ABS_SLOPE_PERCENTAGE = "abs_slope_percentage",
+  TIME_SPAN = "time_span",
+}
+
+export enum GroupChoice {
+  TREND_TIME_SPAN_COMPOSITION_CONDITION = "trend_time_span_composition_condition",
+}
+
+export interface SingleIntention {
+  id: number;
+  single_choices: SingleChoice[];
+}
+
+export interface GroupIntention {
+  ids: number[];
+  group_choice: GroupChoice;
+}
+
+export enum RelationChoice {
+  SLOPE = "slope",
+  START_VALUE = "start_value",
+  END_VALUE = "end_value",
+  TIME_SPAN = "time_span",
+}
+
+export interface RelationIntention {
+  id1: number;
+  id2: number;
+  relation_choice: RelationChoice;
+}
+
+export interface Intentions {
+  single_intentions: SingleIntention[];
+  group_intentions: GroupIntention[];
+  relation_intentions: RelationIntention[];
+}

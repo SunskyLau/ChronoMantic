@@ -100,11 +100,19 @@ intentions:
 [
   {
     "id": 0,
-    "choices":["delta_percentage", "daily_average_delta_percentage", "abs_slope_percentage"]
+    "choices":["delta_percentage", "daily_average_delta_percentage", "abs_slope_percentage", "time_span"]
   },
   {
     "id": 1,
-    "choices":["delta_percentage", "daily_average_delta_percentage", "abs_slope_percentage"]
+    "choices":["delta_percentage", "daily_average_delta_percentage", "abs_slope_percentage", "time_span"]
+  },
+  {
+    "ids": [2, 4],
+    "choices":["trend_time_span_composition_condition"]
+  },
+  {
+    "ids": [0, 1],
+    "choices":["relation"]
   }
 ]
 ```
