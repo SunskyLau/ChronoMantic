@@ -165,5 +165,13 @@ parse_nl_logic_info = """
 """
 
 modify_nl_logic_info = """
+输入参数
+- `QuerySpecWithSource`：原始的查询规范，包含查询目标、趋势、关系、时间跨度组合条件、时间范围条件、最大值范围条件、最小值范围条件。
+- `segments`：时间序列片段，包含 `angle`、`start_time`、`end_time`、`start_value`、`end_value` 等信息。
+- `choices`：需要调整的查询部分，例如 `angle_scope_condition` 或 `value_scope_condition`。
+输出参数
+- `QuerySpecWithSource`：调整后的查询规范，包含查询目标、趋势、关系、时间跨度组合条件、时间范围条件、最大值范围条件、最小值范围条件。
+
+1. 
 
 """
