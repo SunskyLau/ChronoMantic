@@ -36,8 +36,8 @@ export interface ScopeCondition {
 export interface Trend {
   category: string; // 趋势类别，可以是"flat"(平稳),"up"(上升),"down"(下降)
   slope_scope_condition?: ScopeCondition; // 斜率的范围条件，用于限定趋势的斜率范围
-  delta_percentage_scope_condition?: ScopeCondition; // 变化率的范围条件，用于限定趋势的百分比变化范围，单位是%，例如70就代表70%
-  daily_average_delta_percentage_scope_condition?: ScopeCondition; // 日平均变化率的范围条件，用于限定趋势的日均百分比变化范围，单位是%/day，例如5就代表5%/day
+  delta_percentage_scope_condition?: ScopeCondition; // 变化率的范围条件，用于限定趋势的百分比变化范围，单位是%，例如70就代表70%,可以是负数
+  daily_average_delta_percentage_scope_condition?: ScopeCondition; // 日平均变化率的范围条件，用于限定趋势的日均百分比变化范围，单位是%/day，例如5就代表5%/day，可以是负数
   abs_slope_percentage_scope_condition?: ScopeCondition; // 斜率在所有斜率中的占比范围条件，用于限定趋势的相对斜率大小，单位是%，例如30就代表30%
   time_span_condition?: ScopeCondition; // 时间跨度的范围条件，用于限定趋势的持续时间，单位是秒，例如3600就代表1小时，1天是86400秒
 }
@@ -159,8 +159,8 @@ parse_nl_logic_info = """
 2. 自然语言中对于趋势和形状的描述，需要解析成TrendWithSource，其中category需要解析成趋势的类别，text_source需要解析成趋势的描述来源。比如，"rise"需要解析成"up"，"fall"需要解析成"down"，"constant"需要解析成"flat"。另外，形状的描述通常是趋势的组合，比如"two-tops"需要解析成["up","down","up","down"]的组合，"head-and-shoulders"需要解析成["up","down","up","down","up","down"]的组合。通常来讲，一个top或者peak的描述，对应一组["up","down"]的组合，一个bottom或者valley的描述，对应一组["down","up"]的组合。
 3. 自然语言中如果是确切的描述，如"a duration of 20~30days"，需要解析成time_span_condition，其中min和max需要解析成相应的数值。例如"Rising at an average rate of 7% per day"，需要解析成daily_average_delta_percentage_scope_condition，其中min和max需要解析成相应的数值。诸如此类，需要精准识别应该解析为什么condition。
 4. 如果是金融相关数据集，如自然语言中对于趋势程度的描述没有明确指定是abs_slope_percentage还是daily_average_delta_percentage，则默认解析为daily_average_delta_percentage，例如，"rose sharply"中的"sharply"需要解析为一个你认为较高的daily_average_delta_percentage_scope_condition。如果是非金融相关数据集，则默认解析为abs_slope_percentage，例如，"rose sharply"中的"sharply"需要解析为一个你认为较高的abs_slope_percentage_scope_condition。
-5. TextSource的text只能是来源original_text的子文本，并且TextSource不可以和其他TextSource重叠
-6. 你需要识别出自然语言中对于relation的描述，这种描述也可以分为隐式的和显式的。隐式的relation描述通常隐藏在形状的描述中，例如，"head-and-shoulders"中，中间的"head"应该要高于左右两个shoulders，这就意味着第二次上升趋势(trend_id=2)的end_value应该要大于第一次和第三次上升趋势(trend_id=0和trend_id=4)的end_value，这里relation就应该被解析出来。显式的relation描述通常是直接描述的，例如，"连续的两次上升，左边的上升速度比右边的上升速度更快"，这意味着第一次上升趋势(trend_id=0)的slope应该要大于第二次上升趋势(trend_id=1)的slope，这里relation就应该被解析出来。
+5. TextSource的text只能是来源original_text的子文本，并且TextSource不可以和其他TextSource重叠。例如，"two consecutive rises", 如果"rises"被解析为一个TextSource，那么"two consecutive rises"就不应该被解析为TextSource，因为"two consecutive rises"已经包含了"rises"，不允许出现重叠的TextSource。
+6. 你需要识别出自然语言中对于relation的描述，这种描述也可以分为隐式的和显式的。隐式的relation描述通常隐藏在形状的描述中，例如，"head-and-shoulders"中，中间的"head"应该要高于左右两个shoulders，这就意味着第二次上升趋势(trend_id=2)的end_value应该要大于第一次和第三次上升趋势(trend_id=0和trend_id=4)的end_value，这里relation就应该被解析出来。显式的relation描述通常是直接描述的，例如，"连续的两次上升，左边的上升速度比右边的上升速度更快"，这意味着第一次上升趋势(trend_id=0)的slope应该要大于第二次上升趋势(trend_id=1)的slope，这里relation就应该被解析出来。最后，你还需要避免引入无效的relation，例如，"rise sharply then rise slowly"，这里面"sharply"和"slowly"已经被解析成trend中的条件，再引入relation是多余的。
 7. 对于自然语言中存在的持续时间的描述，你需要准确判断出描述的是time_span_condition还是trend_time_span_composition_conditions。对于单个trend的持续时间描述，通常是time_span_condition，例如，"rise with a duration of 20~30days"，需要解析成time_span_condition，其中min和max需要解析成相应的数值。对于多个trend的持续时间描述，通常是trend_time_span_composition_conditions，例如，"a top with a duration of about 3 months"，需要解析成trend_time_span_composition_conditions，其中id1应该是0(代表第一个trend)，id2应该是1(代表第二个trend)，time_span_condition需要解析成相应的范围。注意,trend_time_span_composition_conditions中的time_span_condition是不带text_source的。
 """
 

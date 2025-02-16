@@ -33,6 +33,12 @@ def create_parse_nl_prompt(dataset_info: str) -> str:
 
 # 示例3
 {ParseNL_Cases.case3}
+
+# 示例4
+{ParseNL_Cases.case4}
+
+# 示例5
+{ParseNL_Cases.case5}
 """
     return system_prompt
 

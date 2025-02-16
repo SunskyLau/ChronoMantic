@@ -99,13 +99,14 @@ if __name__ == "__main__":
     dataset_info = """{"time_column": "Date", "value_columns": ["AMZN", "DPZ", "BTC", "NFLX"]}"""
     system_prompt = create_parse_nl_prompt(dataset_info)
     print(system_prompt)
-    nl_query = "Find periods in DPZ when price first rose sharply then fell gradually, and the whole duration is about 3 months"
+    # nl_query = "Find periods in AMZN when price first rose sharply then fell gradually"
+    nl_query = "Find periods in DPZ when price first fall sharply then rise gradually, and the whole duration is about 3 months"
     # nl_query = "Find periods in AMZN when price presented a head-and-shoulders shape"
     # nl_query = "Find periods in DPZ when price presented a triple-tops shape"
     # nl_query = "Find the time periods in Amazon stock when the price showed three consecutive peaks and the peaks got higher and higher"
     # nl_query = "Find periods in Amazon stock where prices rose slowly, then rose quickly"
-    nl_query = "Find periods in AMZN when price first fell sharply with a duration of about 3 days and then presented a double-bottom shape with a duration of about a week."
-
+    # nl_query = "Find periods in AMZN when price first fell sharply with a duration of about 3 days and then presented a double-bottom shape with a duration of about a week."
+    # nl_query = "In Amazon stock, look up two consecutive rises and the time period when the first rose slowly and the second rose sharply"
 
 
     response = client.send_prompt(system_prompt, nl_query, False)

@@ -42,6 +42,14 @@ class ParseNL_Cases:
         }
       },
       "daily_average_delta_percentage_scope_condition": {
+        "max": {
+          "value": 0,
+          "inclusive": false,
+          "text_source": {
+            "text": "gradually",
+            "index": 0
+          }
+        },
         "min": {
           "value": -1,
           "inclusive": true,
@@ -59,81 +67,6 @@ class ParseNL_Cases:
 """
 
     case2 = """
-输入：
-"Find periods in DPZ when price first rose sharply then fell gradually, and the whole duration is about 3 months"
-
-输出：
-{
-  "original_text": "Find periods in DPZ when price first rose sharply then fell gradually, and the whole duration is about 3 months",
-  "target": {
-    "target": "DPZ",
-    "text_source": {
-      "text": "DPZ",
-      "index": 0  
-    }
-  },
-  "trends": [
-    {
-      "category": {
-        "category": "up",
-        "text_source": {
-          "text": "rose",
-          "index": 0
-        }
-      },
-      "daily_average_delta_percentage_scope_condition": {
-        "min": {
-          "value": 5,
-          "inclusive": true,
-          "text_source": {
-            "text": "sharply",
-            "index": 0
-          }
-        }
-      }
-    },
-    {
-      "category": {
-        "category": "down",
-        "text_source": {
-          "text": "fell",
-          "index": 0
-        }
-      },
-      "daily_average_delta_percentage_scope_condition": {
-        "max": {
-          "value": -1,
-          "inclusive": true,
-          "text_source": {
-            "text": "gradually",
-            "index": 0
-          }
-        }
-      }
-    }
-  ],
-  "relations": [],
-  "trend_time_span_composition_conditions": {
-    "min": {
-      "value": 6912000,
-      "inclusive": true,
-      "text_source": {
-        "text": "about 3 months",
-        "index": 0
-      }
-    },
-    "max": {
-      "value": 8640000,
-      "inclusive": true,
-      "text_source": {
-        "text": "about 3 months",
-        "index": 0
-      }
-    }
-  }
-}
-    """
-    case3 = """
 输入：
 "Find periods in AMZN when price presented a double-bottom shape"
 
@@ -200,12 +133,327 @@ class ParseNL_Cases:
   "trend_time_span_composition_conditions": []
 }
     """
-    case4 = """
+    case3 = """
 输入：
-"In Amazon stock, look up two consecutive rises and the time period when the first rose slowly and the second rose sharp"
+"Find the time periods in Amazon stock when the price showed three consecutive peaks and the peaks got higher and higher"
 
 输出：
-
+{
+  "original_text": "Find the time periods in Amazon stock when the price showed three consecutive peaks and the peaks got higher and higher",
+  "target": {
+    "target": "AMZN",
+    "text_source": {
+      "text": "Amazon stock",
+      "index": 0
+    }
+  },
+  "trends": [
+    {
+      "category": {
+        "category": "up",
+        "text_source": {
+          "text": "three consecutive peaks",
+          "index": 0
+        }
+      }
+    },
+    {
+      "category": {
+        "category": "down",
+        "text_source": {
+          "text": "three consecutive peaks",
+          "index": 0
+        }
+      }
+    },
+    {
+      "category": {
+        "category": "up",
+        "text_source": {
+          "text": "three consecutive peaks",
+          "index": 0
+        }
+      }
+    },
+    {
+      "category": {
+        "category": "down",
+        "text_source": {
+          "text": "three consecutive peaks",
+          "index": 0
+        }
+      }
+    },
+    {
+      "category": {
+        "category": "up",
+        "text_source": {
+          "text": "three consecutive peaks",
+          "index": 0
+        }
+      }
+    },
+    {
+      "category": {
+        "category": "down",
+        "text_source": {
+          "text": "three consecutive peaks",
+          "index": 0
+        }
+      }
+    }
+  ],
+  "relations": [
+    {
+      "id1": 0,
+      "id2": 2,
+      "attribute": "END_VALUE",
+      "comparator": "LESS",
+      "text_source": {
+        "text": "the peaks got higher and higher",
+        "index": 0
+      }
+    },
+    {
+      "id1": 2,
+      "id2": 4,
+      "attribute": "END_VALUE",
+      "comparator": "LESS",
+      "text_source": {
+        "text": "the peaks got higher and higher",
+        "index": 0
+      }
+    }
+  ],
+  "trend_time_span_composition_conditions": []
+}
     """
+    case4 = """
+输入：
+"Find periods in AMZN when price presented a head-and-shoulders shape"
+
+输出：
+{
+  "original_text": "Find periods in AMZN when price presented a head-and-shoulders shape",
+  "target": {
+    "target": "AMZN",
+    "text_source": {
+      "text": "AMZN",
+      "index": 0
+    }
+  },
+  "trends": [
+    {
+      "category": {
+        "category": "up",
+        "text_source": {
+          "text": "head-and-shoulders",
+          "index": 0
+        }
+      }
+    },
+    {
+      "category": {
+        "category": "down",
+        "text_source": {
+          "text": "head-and-shoulders",
+          "index": 0
+        }
+      }
+    },
+    {
+      "category": {
+        "category": "up",
+        "text_source": {
+          "text": "head-and-shoulders",
+          "index": 0
+        }
+      }
+    },
+    {
+      "category": {
+        "category": "down",
+        "text_source": {
+          "text": "head-and-shoulders",
+          "index": 0
+        }
+      }
+    },
+    {
+      "category": {
+        "category": "up",
+        "text_source": {
+          "text": "head-and-shoulders",
+          "index": 0
+        }
+      }
+    },
+    {
+      "category": {
+        "category": "down",
+        "text_source": {
+          "text": "head-and-shoulders",
+          "index": 0
+        }
+      }
+    }
+  ],
+  "relations": [
+    {
+      "id1": 0,
+      "id2": 2,
+      "attribute": "END_VALUE",
+      "comparator": "LESS",
+      "text_source": {
+        "text": "head-and-shoulders",
+        "index": 0
+      }
+    },
+    {
+      "id1": 2,
+      "id2": 4,
+      "attribute": "END_VALUE",
+      "comparator": "GREATER",
+      "text_source": {
+        "text": "head-and-shoulders",
+        "index": 0
+      }
+    },
+    {
+      "id1": 4,
+      "id2": 0,
+      "attribute": "END_VALUE",
+      "comparator": "APPROXIMATELY_EQUAL_TO",
+      "text_source": {
+        "text": "head-and-shoulders",
+        "index": 0
+      }
+    }
+  ],
+  "trend_time_span_composition_conditions": []
+}
+	"""
+
     case5 = """
+输入：
+"Find periods in AMZN when price first rose sharply with a duration of about 3 days and then presented a double-bottom shape with a duration of about a week."
+
+输出：
+{
+  "original_text": "Find periods in AMZN when price first rose sharply with a duration of about 3 days and then presented a double-bottom shape with a duration of about a week.",       
+  "target": {
+    "target": "AMZN",
+    "text_source": {
+      "text": "AMZN",
+      "index": 0
+    }
+  },
+  "trends": [
+    {
+      "category": {
+        "category": "up",
+        "text_source": {
+          "text": "rose",
+          "index": 0
+        }
+      },
+      "daily_average_delta_percentage_scope_condition": {
+        "min": {
+          "value": 5,
+          "inclusive": true,
+          "text_source": {
+            "text": "sharply",
+            "index": 0
+          }
+        }
+      },
+      "time_span_condition": {
+        "min": {
+          "value": 259200,
+          "inclusive": true,
+          "text_source": {
+            "text": "about 3 days",
+            "index": 0
+          }
+        },
+        "max": {
+          "value": 432000,
+          "inclusive": true,
+          "text_source": {
+            "text": "about 3 days",
+            "index": 0
+          }
+        }
+      }
+    },
+    {
+      "category": {
+        "category": "down",
+        "text_source": {
+          "text": "double-bottom",
+          "index": 0
+        }
+      }
+    },
+    {
+      "category": {
+        "category": "up",
+        "text_source": {
+          "text": "double-bottom",
+          "index": 0
+        }
+      }
+    },
+    {
+      "category": {
+        "category": "down",
+        "text_source": {
+          "text": "double-bottom",
+          "index": 0
+        }
+      }
+    },
+    {
+      "category": {
+        "category": "up",
+        "text_source": {
+          "text": "double-bottom",
+          "index": 0
+        }
+      }
+    }
+  ],
+  "relations": [
+    {
+      "id1": 1,
+      "id2": 3,
+      "attribute": "END_VALUE",
+      "comparator": "APPROXIMATELY_EQUAL_TO",
+      "text_source": {
+        "text": "double-bottom",
+        "index": 0
+      }
+    }
+  ],
+  "trend_time_span_composition_conditions": [
+    {
+      "id1": 1,
+      "id2": 4,
+      "time_span_condition": {
+        "min": {
+          "value": 432000,
+          "inclusive": true
+        },
+        "max": {
+          "value": 777600,
+          "inclusive": true
+        }
+      },
+      "text_source": {
+        "text": "about a week",
+        "index": 0
+      }
+    }
+  ]
+}
     """
