@@ -3,13 +3,10 @@ Segment_info = """
  * Segment - 分段线性拟合的时间序列片段接口定义
  */
 export interface Segment {
-  start_idx: number;  // 片段起始点在原始数据中的索引位置
-  end_idx: number;    // 片段终止点在原始数据中的索引位置
+  source: string; // 片段的来源，可以是"result"或者"user",分别代表来源于查询结果和用户指定
   slope: number;      // 片段的斜率，表示变化趋势
   start_value: number;  // 片段起始点的值
   end_value: number;    // 片段终止点的值
-  max_value: number;    // 片段中的最大值
-  min_value: number;    // 片段中的最小值
   start_time?: number;  // 片段起始时间，单位是秒，可选
   end_time?: number;    // 片段终止时间，单位是秒，可选
   delta_percentage?: number;  // 片段的总体变化百分比，单位是%，可选
@@ -167,11 +164,9 @@ parse_nl_logic_info = """
 modify_nl_logic_info = """
 输入参数
 - `QuerySpecWithSource`：原始的查询规范，包含查询目标、趋势、关系、时间跨度组合条件、时间范围条件、最大值范围条件、最小值范围条件。
-- `segments`：时间序列片段，包含 `angle`、`start_time`、`end_time`、`start_value`、`end_value` 等信息。
-- `choices`：需要调整的查询部分，例如 `angle_scope_condition` 或 `value_scope_condition`。
+- `segments:Segment[]`：时间序列片段，包含 `angle`、`start_time`、`end_time`、`start_value`、`end_value` 等信息。
+- `intentions:Intention[]`：需要调整的查询部分，例如 `angle_scope_condition` 或 `value_scope_condition`。
 输出参数
 - `QuerySpecWithSource`：调整后的查询规范，包含查询目标、趋势、关系、时间跨度组合条件、时间范围条件、最大值范围条件、最小值范围条件。
-
-1. 
 
 """

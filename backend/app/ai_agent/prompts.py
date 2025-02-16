@@ -26,6 +26,9 @@ modify_nl_cases = f"""## 示例1
 
 ## 示例3
 {ModifyNL_Cases.case3}
+
+## 示例4
+{ModifyNL_Cases.case4}
 """
 
 
@@ -108,10 +111,10 @@ def create_modify_nl_prompt() -> str:
 {modify_nl_logic_info}
 
 # 任务描述
-你的任务是根据原始的`QuerySpecWithSource`, 用户指定的时间序列片段`segments`，以及需要调整的`choices`，使查询更加清晰、合理，并符合时间序列数据的结构化信息。
-
-返回 **JSON 对象**
-不要添加额外的代码块、注释或解释。
+你的任务是根据原始的`QuerySpecWithSource`, 用户指定的时间序列片段`segments:Segment[]`，以及用户的调整指定`intentions:Intention[]`，根据用户意图输出调整后的`QuerySpecWithSource`。
+要求:
+    1. 准确严格地遵循QuerySpecWithSource的结构化查询接口定义，不要出现非法输出，输出前请检查
+    2. 有且仅输出json字典，不要添加代码块或者```，也不要添加注释。
 
 # 示例
 {modify_nl_cases}
