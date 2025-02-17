@@ -10,10 +10,10 @@ const api = axios.create({
   },
 });
 
-export const getQuerySpecRequest = async (query: string): Promise<QuerySpecWithSource> => {
+export const getQuerySpecRequest = async (nl_query: string): Promise<QuerySpecWithSource> => {
   console.log("Sending query spec request");
   try {
-    const response = await api.post(`/api/parse_query`, { query });
+    const response = await api.post(`/api/parse_nl_query`, { nl_query });
     console.log(response.data);
     return response.data.results;
   } catch (error) {

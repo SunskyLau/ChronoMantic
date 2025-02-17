@@ -64,10 +64,9 @@ class DictMixin:
     def _process_field_value(cls, field_type: Type, value: Any) -> Any:
         """处理字段值"""
         # 处理 Optional/Union 类型
-        if cls._is_optional_type(field_type):
-            if value is None:
-                return None
-            field_type = cls._get_non_none_type(field_type)
+        origin = get_origin(field_type)
+        if origin is Union:
+            return cls._process_union_field(field_type, value)
 
         # 处理 List 类型
         if cls._is_list_type(field_type):
@@ -82,6 +81,39 @@ class DictMixin:
             return field_type.from_dict(value)
 
         return value
+
+    @classmethod
+    def _process_union_field(cls, field_type: Type, value: Any) -> Any:
+        """处理联合类型字段"""
+        types = get_args(field_type)
+        
+        # 如果None在类型中，先处理None的情况
+        if type(None) in types and value is None:
+            return None
+            
+        # 尝试每个可能的类型
+        errors = []
+        for t in types:
+            if t is type(None):  # 跳过None类型
+                continue
+            try:
+                # 处理List类型
+                if get_origin(t) is list and isinstance(value, list):
+                    item_type = get_args(t)[0]
+                    return [item_type.from_dict(item) if hasattr(item_type, "from_dict") else item for item in value]
+                # 处理自定义类型
+                if hasattr(t, "from_dict"):
+                    result = t.from_dict(value)
+                    if result is not None:
+                        return result
+                # 处理基本类型
+                if isinstance(value, t):
+                    return value
+            except Exception as e:
+                errors.append(f"Failed to convert to {t.__name__}: {str(e)}")
+                continue
+        
+        raise ValueError(f"Could not convert value to any of the union types. Errors: {'; '.join(errors)}")
 
     @classmethod
     def _is_optional_type(cls, field_type: Type) -> bool:

@@ -51,36 +51,6 @@ def create_parse_nl_prompt(dataset_info: str) -> str:
     return system_prompt
 
 
-def create_generate_nl_prompt(dataset_info: str) -> str:
-    ts2nl_prompt = f"""
-你是一个有着时间序列处理方面数十年经验的专家，你非常擅长分析时间序列，并可以使用自然语言描述这段特殊的时间序列。以下是和你的任务相关的背景和知识。
-
-
-# 带文本来源的结构化查询语法
-```{QuerySpecWithSource_info}
-```
-
-# 数据集信息
-用户上传的是一个股票价格数据集，包含了多个公司的股票数据。
-以下是用户要查询的时间序列数据集的基本信息：
-{dataset_info}
-你只需要关注其中的value_columns信息，其中包含了时间序列的列名信息，是你之后解析出target字段的来源。
-
-# 分段线性拟合的时间序列片段接口定义
-'''{Segment_info}
-'''
-    
-
-# 任务
-
-
-# 示例
-		
-
-"""
-    return ts2nl_prompt
-
-
 def create_modify_nl_prompt() -> str:
     modify_nl_prompt = f"""你正在为一个自然语言驱动的时间序列查询系统提供自然语言查询的自动化调整服务。以下是关于你的任务的背景和知识。
 

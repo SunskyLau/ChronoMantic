@@ -93,8 +93,8 @@ def parse_nl_query(system_prompt: str, query: str) -> Dict:
 
 def modify_nl_query(system_prompt: str, query: str) -> Dict:
     client = myAIClient(model=Qwen.MODELS.QWEN_MAX, platform=Platforms.QWEN)
-    response = client.send_prompt(system_prompt, query)
-    return json.loads(response)["output"]
+    response = client.send_prompt(system_prompt, query, False)
+    return json.loads(response)
 
 
 def test_parse_nl_query():

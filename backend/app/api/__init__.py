@@ -1,5 +1,5 @@
 import json
-from app.ai_agent.prompts import create_parse_nl_prompt
+from app.ai_agent.prompts import create_parse_nl_prompt, create_modify_nl_prompt
 from flask import Blueprint
 from app.query import query
 from app.ai_agent import parse_nl_query
@@ -18,10 +18,10 @@ from ..shared_data import (
     dataset_info_container,
     dataset_container,
     approximation_segments_containers_container,
-    system_prompt_container,
-    ts_prompt_container,
-    search_prompt_container,
-    modify_prompt_container,
+    parse_nl_system_prompt_container,
+    modify_nl_system_prompt_container,
+    parse_nl_agent,
+    modify_nl_agent,
 )
 
 bus_bp = Blueprint("bus", __name__)
@@ -121,15 +121,11 @@ def upload_csv_file():
 def process_dataset():
     dataset_info = DatasetInfo.from_dict(request.json.get("datasetInfo"))
     dataset_info_str = json.dumps(dataset_info.to_dict(), cls=CustomJSONEncoder)
-    system_prompt = create_parse_nl_prompt(dataset_info_str)
-    print(system_prompt)
-    system_prompt_container.set_data(system_prompt)
-    # ts_prompt = create_ts_prompt(dataset_info_str)
-    # ts_prompt_container.set_data(ts_prompt)
-    # search_prompt = create_search_prompt(dataset_info_str)
-    # search_prompt_container.set_data(search_prompt)
-    # modify_prompt = create_modify_prompt(dataset_info_str)
-    # modify_prompt_container.set_data(modify_prompt)
+    parse_nl_system_prompt = create_parse_nl_prompt(dataset_info_str)
+    print(parse_nl_system_prompt)
+    parse_nl_system_prompt_container.set_data(parse_nl_system_prompt)
+    modify_nl_system_prompt = create_modify_nl_prompt()
+    modify_nl_system_prompt_container.set_data(modify_nl_system_prompt)
     dataset_info_container.set_data(dataset_info)
     dataset = dataset_container.get_data()
     approxiamation_segments_containers = approximate_dataset(dataset, dataset_info)
@@ -141,43 +137,93 @@ def process_dataset():
 
 @bus_bp.route("/query_by_specification", methods=["POST"])
 def query_by_specification():
-    query_spec = QuerySpec.from_dict(request.json.get("querySpec"))
-    approximation_segments_containers = approximation_segments_containers_container.get_data()
-    df = dataset_container.get_data()
-    results_dict = query(query_spec, approximation_segments_containers, df)
-    return jsonify({"code": 200, "message": "Query successful", "results": filter_json(results_dict)})
+    """根据结构化查询规范查询时间序列片段
+
+    | 参数名 | 类型 | 说明 |
+    |--------|------|------|
+    | querySpec | QuerySpec | 结构化查询规范 |
+
+    | 返回字段 | 类型 | 说明 |
+    |----------|------|------|
+    | code | int | 状态码 |
+    | message | str | 状态信息 |
+    | results | Dict | 查询结果 |
+    """
+    try:
+        query_spec_dict = request.json.get("querySpec")
+        if not query_spec_dict:
+            return jsonify({"code": 400, "message": "QuerySpec is required"}), 400
+
+        query_spec = QuerySpec.from_dict(query_spec_dict)
+        if not query_spec:
+            return jsonify({"code": 400, "message": "Invalid QuerySpec format"}), 400
+
+        approximation_segments_containers = approximation_segments_containers_container.get_data()
+        df = dataset_container.get_data()
+        results_dict = query(query_spec, approximation_segments_containers, df)
+        return jsonify({"code": 200, "message": "Query successful", "results": filter_json(results_dict)})
+    except ValueError as e:
+        return jsonify({"code": 400, "message": str(e)}), 400
+    except Exception as e:
+        return jsonify({"code": 500, "message": f"Error processing query: {str(e)}"}), 500
 
 
-@bus_bp.route("/parse_query", methods=["POST"])
-def parse_query():
-    query_spec = parse_nl_query(system_prompt_container.get_data(), request.json.get("query"))
-    return jsonify({"code": 200, "message": "Parse successful", "results": filter_json(query_spec)})
+@bus_bp.route("/parse_nl_query", methods=["POST"])
+def parse_nl_query():
+    """将自然语言查询解析为结构化查询
+
+    | 参数名 | 类型 | 说明 |
+    |--------|------|------|
+    | nl_query | str | 自然语言查询字符串 |
+
+    | 返回字段 | 类型 | 说明 |
+    |----------|------|------|
+    | code | int | 状态码 |
+    | message | str | 状态信息 |
+    | results | QuerySpecWithSource | 解析后的结构化查询 |
+    """
+    nl_query = request.json.get("nl_query")
+    queryspec_with_source_str = parse_nl_agent.send_prompt(parse_nl_system_prompt_container.get_data(), nl_query, False)
+    # 将字符串解析为Python字典
+    queryspec_with_source = json.loads(queryspec_with_source_str)
+    return jsonify({"code": 200, "message": "Parse nl query successful", "results": filter_json(queryspec_with_source)})
 
 
-@bus_bp.route("/query_by_ts", methods=["POST"])
-def query_by_ts():
-    ts_query = get_query_spec(
-        ts_prompt_container.get_data(),
-        f"""source: {request.json.get("source")}
-segments: {request.json.get("segments")}
-choices: {request.json.get("choices")}""",
-    )
-    return jsonify({"code": 200, "message": "Query successful", "results": ts_query})
+@bus_bp.route("/modify_nl_query", methods=["POST"])
+def modify_nl_query():
+    """根据用户意图修改结构化查询
 
+    | 参数名 | 类型 | 说明 |
+    |--------|------|------|
+    | old_queryspec_with_source | QuerySpecWithSource | 原始结构化查询 |
+    | segments | List[Segment] | 用户指定的连续时间序列片段 |
+    | intentions | List[Intention] | 用户的调整意图 |
 
-@bus_bp.route("/search_prompt", methods=["POST"])
-def search_prompt():
-    prompt = get_query_spec(search_prompt_container.get_data(), request.json.get("query"))
-    return jsonify({"code": 200, "message": "Query successful", "results": prompt})
+    | 返回字段 | 类型 | 说明 |
+    |----------|------|------|
+    | code | int | 状态码 |
+    | message | str | 状态信息 |
+    | results | QuerySpecWithSource | 修改后的结构化查询 |
+    """
+    old_queryspec_with_source = request.json.get("old_queryspec_with_source")
+    segments = request.json.get("segments")
+    intentions = request.json.get("intentions")
 
+    old_queryspec_with_source_str = json.dumps(old_queryspec_with_source, indent=2)
+    segments_str = json.dumps(segments, indent=2)
+    intentions_str = json.dumps(intentions, indent=2)
 
-@bus_bp.route("/modify_prompt", methods=["POST"])
-def modify_prompt():
-    prompt = get_query_spec(
-        modify_prompt_container.get_data(),
-        f"""query: {request.json.get("query")}
-choices: {request.json.get("choices")}
-segments: {request.json.get("segments")}
-    """,
-    )
-    return jsonify({"code": 200, "message": "Query successful", "results": prompt})
+    input = f"""old_queryspec_with_source
+```{old_queryspec_with_source_str}
+```
+segments
+```{segments_str}
+```
+intentions
+```{intentions_str}
+```
+"""
+    new_queryspec_with_source_str = modify_nl_agent.send_prompt(modify_nl_system_prompt_container.get_data(), input, False)
+    # 将字符串解析为Python字典
+    new_queryspec_with_source = json.loads(new_queryspec_with_source_str)
+    return jsonify({"code": 200, "message": "Modify nl query successful", "results": filter_json(new_queryspec_with_source)})

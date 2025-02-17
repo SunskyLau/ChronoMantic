@@ -1,5 +1,8 @@
 from typing import List, Optional
 import pandas as pd
+
+from ..ai_agent import myAIClient
+from ..ai_agent.constant import Platforms, Qwen
 from ..MyTypes import ApproximationSegmentsContainer, DatasetInfo
 
 
@@ -50,7 +53,7 @@ class SYSTEM_PROMPT_CONTAINER:
 dataset_info_container = DATASET_INFO_CONTAINER()
 dataset_container = DATASET_CONTAINER()
 approximation_segments_containers_container = APPROXIMATION_SEGMENTS_CONTAINERS_CONTAINER()
-system_prompt_container = SYSTEM_PROMPT_CONTAINER()
-ts_prompt_container = SYSTEM_PROMPT_CONTAINER()
-search_prompt_container = SYSTEM_PROMPT_CONTAINER()
-modify_prompt_container = SYSTEM_PROMPT_CONTAINER()
+parse_nl_system_prompt_container = SYSTEM_PROMPT_CONTAINER()
+modify_nl_system_prompt_container = SYSTEM_PROMPT_CONTAINER()
+parse_nl_agent = myAIClient(model=Qwen.MODELS.QWEN_MAX, platform=Platforms.QWEN)
+modify_nl_agent = myAIClient(model=Qwen.MODELS.QWEN_MAX, platform=Platforms.QWEN)
