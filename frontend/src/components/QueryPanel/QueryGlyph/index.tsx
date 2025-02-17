@@ -8,13 +8,14 @@ import { setCurRelation, setCurTrend } from "../../../app/slice/stateSlice";
 
 export default function QueryGlyph({ className }: { className?: string }) {
     const dispatch = useAppDispatch();
-    const querySpec = useAppSelector(state => state.states.querySpec);
+    const query = useAppSelector(state => state.states.query);
     const curTrend = useAppSelector(state => state.states.curTrend);
     const curRelation = useAppSelector(state => state.states.curRelation);
+    const colorMap = useAppSelector(state => state.states.colorMap);
 
     return (<div className={classnames("glyph", className)}>
         <Popover rootClassName="glyph-popover" trigger={["hover"]} content={<QueryCondition></QueryCondition>}>
-            <div className="pointer flex" style={{ width: "100%", height: "100%" }}><Glyph onClick={(type, index) => {
+            <div className="pointer flex" style={{ width: "100%", height: "100%" }}><Glyph query={query} onClick={(type, index) => {
                 switch (type) {
                     case "Trend":
                         flushSync(() => dispatch(setCurTrend(null)))
@@ -27,7 +28,7 @@ export default function QueryGlyph({ className }: { className?: string }) {
                     default:
                         break;
                 }
-            }} height={48} trends={querySpec?.trends || []} allTrends={querySpec?.trends || []} relations={querySpec?.relations || []} curTrend={curTrend ?? -1} curRelation={curRelation ?? -1}></Glyph></div>
+            }} height={48} trends={query?.trends || []} allTrends={query?.trends || []} relations={query?.relations || []} curTrend={curTrend ?? -1} curRelation={curRelation ?? -1} colorMap={colorMap}></Glyph></div>
         </Popover>
     </div>)
 }

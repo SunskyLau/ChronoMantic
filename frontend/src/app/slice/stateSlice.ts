@@ -1,15 +1,16 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { Fragment, FragmentList, Query, QuerySpec } from "../../types/QuerySpec";
-import { InsertTreeNode, TreeNode } from "../../types/Tree";
+import { QuerySpec, QuerySpecWithSource } from "../../types/QuerySpec";
+import { TreeNode } from "../../types/Tree";
+import { getColor } from "../../utils/color";
 
 export type States = {
   NLQuery: string;
-  query: Query | null;
+  query: QuerySpecWithSource | null;
+  colorMap: Record<string, string>;
   querySpec: QuerySpec | null;
   querySpecIndex: number;
   querySpecList: QuerySpec[];
   fragmentsIndex: number;
-  fragmentsList: [Fragment[], Fragment[]][];
   treeData: TreeNode;
   isSettingShow: boolean;
   timeStampUnit: string;
@@ -25,10 +26,10 @@ export type States = {
 // 使用该类型定义初始 state
 const initialState: States = {
   NLQuery: "",
+  colorMap: {},
   querySpecIndex: -1,
   querySpecList: [],
   fragmentsIndex: -1,
-  fragmentsList: [],
   treeData: { name: "Source" },
   isSettingShow: false,
   timeStampUnit: "",
@@ -50,24 +51,30 @@ const stateSlice = createSlice({
     setNLQuery: (state, action: PayloadAction<string>) => {
       state.NLQuery = action.payload;
     },
-    setQuery: (state, action: PayloadAction<Query | null>) => {
+    setQuery: (state, action: PayloadAction<QuerySpecWithSource | null>) => {
       state.query = action.payload;
-      state.querySpec = action.payload ? action.payload.reduce((acc, cur) => {
-        const condition = cur.condition;
-        if (condition) {
-          for (const key in condition) {
-            const k = key as keyof QuerySpec;
-            const value = condition[k];
-            if (acc[k] && Array.isArray(acc[k]) && Array.isArray(value)) {
-              (acc as { [key: string]: QuerySpec[keyof QuerySpec] })[k] = [...acc[k], ...value].sort((a, b) => a?.index - b?.index);
-            } else {
-              (acc as { [key: string]: QuerySpec[keyof QuerySpec] })[k] = value;
+    },
+    setColorMap: (state, action: PayloadAction<QuerySpecWithSource | null>) => {
+      const colorMap: Record<string, string> = {};
+      const traverse = <T>(obj: T) => {
+        if (!obj) return;
+        for (const key in obj) {
+          if (key === 'text_source' && obj[key] && typeof obj[key] === 'object' && 'text' in obj[key]) {
+            const textSource = obj[key] as { text: string, index?: number };
+            const text = textSource.text;
+            const index = textSource.index;
+            const colorKey = index !== undefined ? `${text}-${index}` : text;
+            if (!colorMap[colorKey]) {
+              colorMap[colorKey] = getColor(Object.keys(colorMap).length);
             }
           }
-          return acc;
+          if (obj[key] && typeof obj[key] === 'object') {
+            traverse(obj[key]);
+          }
         }
-        return acc;
-      }, {} as QuerySpec) : null;
+      };
+      traverse(action.payload);
+      state.colorMap = colorMap;
     },
     addQuerySpec: (state, action: PayloadAction<QuerySpec>) => {
       state.querySpecList = [...state.querySpecList.slice(0, state.querySpecIndex + 1), action.payload];
@@ -76,55 +83,8 @@ const stateSlice = createSlice({
     setQuerySpecIndex: (state, action: PayloadAction<number>) => {
       state.querySpecIndex = action.payload;
     },
-    addFragments: (state, action: PayloadAction<[Fragment[], Fragment[]]>) => {
-      state.fragmentsList = state.fragmentsList.slice(0, state.fragmentsIndex + 1);
-      state.fragmentsList.push(action.payload);
-      state.fragmentsIndex = state.fragmentsList.length - 1;
-    },
     setFragmentsIndex: (state, action: PayloadAction<number>) => {
       state.fragmentsIndex = action.payload;
-    },
-    insertTreeData: (state, action: PayloadAction<InsertTreeNode>) => {
-      const { fragmentList, nodes } = action.payload;
-      const findAndInsert = (tree: TreeNode[], fragmentList: FragmentList): boolean => {
-        for (const node of tree) {
-          if (JSON.stringify(node.value) === JSON.stringify(fragmentList)) {
-            node.children = [];
-            const resultsNode: TreeNode = {
-              name: "Results",
-              value: nodes.results
-            }
-            const othersNode: TreeNode = {
-              name: "Others",
-              value: nodes.others
-            };
-            node.children.push(resultsNode, othersNode);
-            return true;
-          }
-          if (node.children) {
-            const success = findAndInsert(node.children, fragmentList);
-            if (success) return true;
-          }
-        }
-        return false;
-      };
-      const isFind = findAndInsert([state.treeData], fragmentList);
-      if (!isFind) {
-        state.treeData.children = [{
-          name: `${state.querySpecList[state.querySpecIndex]?.start_time}-${state.querySpecList[state.querySpecIndex]?.end_time}`,
-          value: {
-            ...nodes.results,
-            fragments: [...nodes.results.fragments || [], ...nodes.others.fragments || []],
-          },
-          children: [{
-            name: "Results",
-            value: nodes.results
-          }, {
-            name: "Others",
-            value: nodes.others
-          }]
-        }]
-      }
     },
     setIsSettingShow: (state, action: PayloadAction<boolean | undefined>) => {
       state.isSettingShow = action.payload ?? !state.isSettingShow;
@@ -162,5 +122,5 @@ const stateSlice = createSlice({
   },
 });
 
-export const { setNLQuery, setQuery, setQuerySpec, addFragments, addQuerySpec, setFragmentsIndex, setQuerySpecIndex, insertTreeData, setIsSettingShow, setTimeStampUnit, setValueUnit, setAspectRatio, setIsDrawer, setQuerys, setModifyPrompts, setCurRelation, setCurTrend } = stateSlice.actions;
+export const { setNLQuery, setQuery, setColorMap, setQuerySpec, addQuerySpec, setFragmentsIndex, setQuerySpecIndex, setIsSettingShow, setTimeStampUnit, setValueUnit, setAspectRatio, setIsDrawer, setQuerys, setModifyPrompts, setCurRelation, setCurTrend } = stateSlice.actions;
 export default stateSlice.reducer;

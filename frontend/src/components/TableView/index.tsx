@@ -6,12 +6,14 @@ import "./index.css";
 import Choose from "./Choose";
 import Exploration from "./Exploration";
 import TableViewContent from "./TableViewContent";
+import { ChartView } from "./ChartView";
 
 enum TableState {
     UPLOAD,
     CHOOSE,
     EXPLORATION,
-    TABLE
+    TABLE,
+    CHART
 }
 
 export default function TableView() {
@@ -20,7 +22,7 @@ export default function TableView() {
     // const idColumn = useAppSelector((state) => state.dataset.dataset?.idColumn);
     // const valueColumn = useAppSelector((state) => state.dataset.dataset?.valueColumn);
     // const state = !dataset ? TableState.UPLOAD : !(timeStampColumn && idColumn && valueColumn) ? TableState.CHOOSE : TableState.EXPLORATION;
-    const state = !dataset ? TableState.UPLOAD : TableState.TABLE;
+    const state = !dataset ? TableState.UPLOAD : TableState.CHART;
 
     const renderComponent = (state: TableState) => {
         switch (state) {
@@ -32,6 +34,8 @@ export default function TableView() {
                 return <div className="table-content"><Exploration></Exploration></div>;
             case TableState.TABLE:
                 return <div className="table-content"><TableViewContent></TableViewContent></div>;
+            case TableState.CHART:
+                return <div className="table-content"><ChartView></ChartView></div>;
         }
     }
 

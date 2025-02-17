@@ -1,23 +1,72 @@
-import { DatePicker } from "antd";
-import dayjs, { Dayjs } from "dayjs";
+import { SwapRightOutlined } from "@ant-design/icons";
+import { DatePicker, Flex } from "antd";
+import dayjs from "dayjs";
 
 interface TimeProps {
-    min: number | null;
-    max: number | null;
-    minInclusive: boolean;
-    maxInclusive: boolean;
-    minValue: number | null;
-    maxValue: number | null;
-    disabled?: boolean;
-    onChange: (min: number | null, max: number | null, minInclusive: boolean, maxInclusive: boolean) => void;
+	min: number | null;
+	max: number | null;
+	minInclusive: boolean;
+	maxInclusive: boolean;
+	minActiveColor?: string;
+	maxActiveColor?: string;
+	minValue: number | null;
+	maxValue: number | null;
+	disabled?: boolean;
+	onChange: (min: number | null, max: number | null, minInclusive: boolean, maxInclusive: boolean) => void;
 }
 
-export default function Time({ min, max, minInclusive, maxInclusive, maxValue, minValue, onChange, disabled }: TimeProps) {
-    const defaultValue: [Dayjs | null, Dayjs | null] | undefined = !min && !max ? undefined : [min ? dayjs(min * 1000) : null, max ? dayjs(max * 1000) : null];
-    return <DatePicker.RangePicker disabled={disabled} minDate={dayjs(minValue)} maxDate={dayjs(maxValue)} defaultValue={defaultValue} allowClear allowEmpty onChange={(dates) => {
-        if (!dates) return onChange(null, null, minInclusive, maxInclusive);
-        else if (dates[0] && dates[1]) return onChange(dates[0].valueOf() / 1000 || null, dates[1].valueOf() / 1000 || null, true, true);
-        else if (!dates[0] && dates[1]) return onChange(null, dates[1]?.valueOf() / 1000, minInclusive, true);
-        else if (!dates[1] && dates[0]) return onChange(dates[0].valueOf() / 1000, null, true, maxInclusive);
-    }}></DatePicker.RangePicker>
+export default function Time({ min, max, minInclusive, maxInclusive, maxValue, minValue, onChange, disabled, minActiveColor, maxActiveColor }: TimeProps) {
+	return (
+		<Flex gap={12} align="center">
+			<Flex 
+				style={{ 
+					backgroundColor: minActiveColor, 
+					padding: 4, 
+					borderRadius: 4 
+				}} 
+				align="center"
+			>
+				<DatePicker
+					disabled={disabled}
+					style={{
+						borderColor: minActiveColor,
+					}}
+                    value={min ? dayjs(min * 1000) : null}
+					minDate={dayjs(minValue)}
+					maxDate={dayjs(maxValue)}
+					defaultValue={min ? dayjs(min * 1000) : null}
+					allowClear
+					onChange={(date) => {
+						const maxTime = max ? max : null;
+						onChange(date ? date.valueOf() / 1000 : null, maxTime, true, maxInclusive);
+					}}
+				/>
+			</Flex>
+			<SwapRightOutlined />
+			<Flex 
+				style={{ 
+					backgroundColor: maxActiveColor, 
+					padding: 4, 
+					borderRadius: 4 
+				}} 
+				align="center"
+			>
+				<DatePicker
+					disabled={disabled}
+					style={{
+						borderColor: maxActiveColor,
+					}}
+                    value={max ? dayjs(max * 1000) : null}
+					minDate={dayjs(minValue)}
+					maxDate={dayjs(maxValue)}
+					defaultValue={max ? dayjs(max * 1000) : null}
+					allowClear
+					onChange={(date) => {
+						const minTime = min ? min : null;
+						onChange(minTime, date ? date.valueOf() / 1000 : null, minInclusive, true);
+					}}
+				/>
+			</Flex>
+		</Flex>
+	);
 }

@@ -17,10 +17,8 @@ export default function AppMain() {
                     <QueryPanel></QueryPanel>
                     <TableView></TableView>
                 </section>
-                <section className="main-middle">
-                    <ResultsPanel className="main-results" />
-                </section>
                 <section className={classnames("main-right")}>
+                    <ResultsPanel className="main-results" />
                     <DetailView></DetailView>
                 </section>
             </main>

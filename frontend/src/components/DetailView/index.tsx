@@ -77,7 +77,6 @@ const highlightDifferences = (a: string, b: string) => {
 export default function DetailView() {
     const data = useAppSelector((state) => state.dataset.dataset?.data) || {};
     const dispatch = useAppDispatch();
-    const ratio = useAppSelector((state) => state.dataset.dataset?.ratios[state.approximation.source ?? ""])
     const range = useAppSelector((state) => state.select.range);
     const timeCol = Object.keys(data).at(0);
     const timeValues = timeCol ? data[timeCol] : [];
@@ -140,7 +139,7 @@ export default function DetailView() {
             {
                 timeCol && valueCol ?
                     <>
-                        <div className="bg detail"><LineChart xData={timeValues.map(date => new Date(date).getTime() / 1000)} yData={data[valueCol] as number[]} isXAxisVisible={true} isYAxisVisible={true} range={range} height={'100%'} ratio={ratio} split={split} isSplitMask={true} onScroll={handleScroll} isBrush brushPosition={selectPosition} onBrushEnd={handleBrushSelectEnd} onContextMenu={() => handleBrushSelectEnd(0, 0)}>
+                        <div className="bg detail"><LineChart xData={timeValues as string[]} yData={data[valueCol] as number[]} isXAxisVisible={true} isYAxisVisible={true} range={range} height={'100%'} split={split} isSplitMask={true} onScroll={handleScroll} isBrush brushPosition={selectPosition} onBrushEnd={handleBrushSelectEnd} title={valueCol} isXAxisTextVisible isYAxisTextVisible onContextMenu={() => handleBrushSelectEnd(0, 0)}>
                             <Popover className="query-popover" placement="bottom" open={isPopover} content={
                                 () => {
                                     const isModify = popoverState === PopoverState.CONFIRM_MODIFY;
@@ -203,7 +202,7 @@ export default function DetailView() {
                                 <span className="pos"></span>
                             </Popover>
                         </LineChart></div>
-                        <div className="bg overview"><LineChart xData={timeValues.map(date => new Date(date).getTime() / 1000)} yData={data[valueCol] as number[]} isFill={true} isBrush={true} onBrush={handleBrush} height={'100%'} split={split} brushPosition={brushPosition} isXAxisVisible={true} isYAxisVisible={true} onBrushEnd={handleBrushEnd}></LineChart></div>
+                        <div className="bg overview"><LineChart xData={timeValues as string[]} yData={data[valueCol] as number[]} isBrush={true} onBrush={handleBrush} height={'100%'} split={split} brushPosition={brushPosition} isXAxisVisible onBrushEnd={handleBrushEnd} isXAxisTextVisible></LineChart></div>
                     </>
                     : <Empty />
             }

@@ -1,5 +1,5 @@
 import { Button, Divider, Empty, Flex, Select, Typography } from "antd";
-import { Attribute, Comparator, Relation as RelationType } from "../../../types/QuerySpec";
+import { Attribute, Comparator, RelationWithSource } from "../../../types/QuerySpec";
 import { deepClone } from "../../../utils/deepclone";
 import { MinusOutlined, PlusOutlined } from "@ant-design/icons";
 import { classnames } from "../../../utils/classname";
@@ -9,12 +9,12 @@ import { setCurRelation } from "../../../app/slice/stateSlice";
 
 interface RelationProps {
     title?: string;
-    relations: RelationType[];
+    relations: RelationWithSource[];
     idLength: number;
     isEdit?: boolean;
     disabled?: boolean;
     highlight?: number;
-    onChange: (relations: RelationType[]) => void;
+    onChange: (relations: RelationWithSource[]) => void;
 }
 
 export default function Relation({ title, relations, idLength, isEdit, onChange, disabled, highlight }: RelationProps) {
@@ -33,7 +33,7 @@ export default function Relation({ title, relations, idLength, isEdit, onChange,
                 <Typography.Title level={4} keyboard>{title ?? 'Relation'}</Typography.Title>
                 {isEdit && !disabled && <Button icon={<PlusOutlined />} onClick={() => {
                     const newRelations = deepClone(relations);
-                    newRelations.push({});
+                    newRelations.push({} as RelationWithSource);
                     onChange(newRelations);
                 }}></Button>}
             </Flex>

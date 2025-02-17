@@ -1,8 +1,9 @@
 import json
+from app.ai_agent.prompts import create_parse_nl_prompt
 from flask import Blueprint
-
 from app.query import query
-# from app.ai_agent import get_query_spec
+from app.ai_agent import parse_nl_query
+
 # from ..ai_agent.constant import create_search_prompt, create_system_prompt, create_ts_prompt, create_modify_prompt
 from ..config import Config
 from flask import Blueprint, request, jsonify
@@ -120,15 +121,15 @@ def upload_csv_file():
 def process_dataset():
     dataset_info = DatasetInfo.from_dict(request.json.get("datasetInfo"))
     dataset_info_str = json.dumps(dataset_info.to_dict(), cls=CustomJSONEncoder)
-    system_prompt = create_system_prompt(dataset_info_str)
+    system_prompt = create_parse_nl_prompt(dataset_info_str)
     print(system_prompt)
     system_prompt_container.set_data(system_prompt)
-    ts_prompt = create_ts_prompt(dataset_info_str)
-    ts_prompt_container.set_data(ts_prompt)
-    search_prompt = create_search_prompt(dataset_info_str)
-    search_prompt_container.set_data(search_prompt)
-    modify_prompt = create_modify_prompt(dataset_info_str)
-    modify_prompt_container.set_data(modify_prompt)
+    # ts_prompt = create_ts_prompt(dataset_info_str)
+    # ts_prompt_container.set_data(ts_prompt)
+    # search_prompt = create_search_prompt(dataset_info_str)
+    # search_prompt_container.set_data(search_prompt)
+    # modify_prompt = create_modify_prompt(dataset_info_str)
+    # modify_prompt_container.set_data(modify_prompt)
     dataset_info_container.set_data(dataset_info)
     dataset = dataset_container.get_data()
     approxiamation_segments_containers = approximate_dataset(dataset, dataset_info)
@@ -149,7 +150,7 @@ def query_by_specification():
 
 @bus_bp.route("/parse_query", methods=["POST"])
 def parse_query():
-    query_spec = get_query_spec(system_prompt_container.get_data(), request.json.get("query"))
+    query_spec = parse_nl_query(system_prompt_container.get_data(), request.json.get("query"))
     return jsonify({"code": 200, "message": "Parse successful", "results": filter_json(query_spec)})
 
 
