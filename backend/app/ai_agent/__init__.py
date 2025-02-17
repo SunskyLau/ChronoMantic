@@ -5,7 +5,7 @@ from openai import OpenAI, AzureOpenAI
 from openai.types.chat import ChatCompletion
 from typing import List, Dict, Optional
 
-from .prompts import create_parse_nl_prompt
+from .prompts import create_parse_nl_prompt, create_modify_nl_prompt
 from .constant import (
     Azure,
     DeepSeek,
@@ -89,21 +89,17 @@ def parse_nl_query(system_prompt: str, query: str) -> Dict:
     response = client.send_prompt(system_prompt, query)
     return json.loads(response)["output"]
 
+
 def modify_nl_query(system_prompt: str, query: str) -> Dict:
     client = myAIClient(model=Qwen.MODELS.QWEN_MAX, platform=Platforms.QWEN)
     response = client.send_prompt(system_prompt, query)
     return json.loads(response)["output"]
 
 
-if __name__ == "__main__":
+def test_parse_nl_query():
     client = myAIClient(model=Qwen.MODELS.QWEN_MAX, platform=Platforms.QWEN)
-    # client = myAIClient(model=Azure.MODELS.GPT_4O, platform=Platforms.AZURE)
-    # client = myAIClient(model=SiliconFlow.MODELS.DEEPSEEK_V3, platform=Platforms.SILIICONFLOW)
-    # client = myAIClient(model=Tencent.MODELS.DEEPSEEK_V3, platform=Platforms.TENCENT)
-
     dataset_info = """{"time_column": "Date", "value_columns": ["AMZN", "DPZ", "BTC", "NFLX"]}"""
     system_prompt = create_parse_nl_prompt(dataset_info)
-    print(system_prompt)
     # nl_query = "Find periods in AMZN when price first rose sharply then fell gradually"
     # nl_query = "Find periods in DPZ when price first fall sharply then rise gradually, and the whole duration is about 3 months"
     # nl_query = "Find periods in AMZN when price presented a head-and-shoulders shape"
@@ -112,6 +108,124 @@ if __name__ == "__main__":
     # nl_query = "Find periods in Amazon stock where prices rose slowly, then rose quickly"
     # nl_query = "Find periods in AMZN when price first fell sharply with a duration of about 3 days and then presented a double-bottom shape with a duration of about a week."
     nl_query = "In Amazon stock, look up two consecutive rises and the first rise is more gentle than the second rise"
-
-
     response = client.send_prompt(system_prompt, nl_query, False)
+    print(response)
+
+
+def test_modify_nl_query():
+    client = myAIClient(model=Qwen.MODELS.QWEN_MAX, platform=Platforms.QWEN)
+    system_prompt = create_modify_nl_prompt()
+    modify_prompt = """
+old_QuerySpecWithSource:
+```
+{
+  "original_text": "Find periods in AMZN when price first rose then fell",
+  "target": {
+    "target": "AMZN",
+    "text_source": {
+      "text": "AMZN", 
+      "index": 0
+    }
+  },
+  "trends": [
+    {
+      "category": {
+        "category": "up",
+        "text_source": {
+          "text": "rose",
+          "index": 0
+        }
+      },
+    },
+    {
+      "category": {
+        "category": "down",
+        "text_source": {
+          "text": "fell",
+          "index": 0
+        }
+      }
+    }
+  ],
+  "relations": [],
+  "trend_time_span_composition_conditions": []
+}
+```
+
+segments:
+```
+[
+  {
+    "source": "user",
+    "slope": -0.5,
+    "start_value": 150,
+    "end_value": 100,
+    "start_time": 1672444800,
+    "end_time": 1672531200,
+    "delta_percentage": -33.3,
+    "daily_average_delta_percentage": -3,
+    "abs_slope_percentage": 80,
+    "time_span": 86400
+  },
+  {
+    "source": "result",
+    "slope": 2.5,
+    "start_value": 100,
+    "end_value": 150,
+    "start_time": 1672531200,
+    "end_time": 1672617600,
+    "delta_percentage": 50,
+    "daily_average_delta_percentage": 10,
+    "abs_slope_percentage": 80,
+    "time_span": 86400
+  },
+  {
+    "source": "result", 
+    "slope": -1.2,
+    "start_value": 150,
+    "end_value": 120,
+    "start_time": 1672617600,
+    "end_time": 1672704000,
+    "delta_percentage": -20,
+    "daily_average_delta_percentage": -5,
+    "abs_slope_percentage": 40,
+    "time_span": 86400
+  }
+]
+```
+
+intentions:
+```
+{
+  "single_intentions": [
+    {
+      "id": 0,
+      "single_choices":["category"]
+    }
+    {
+      "id": 1,
+      "single_choices":["time_span"]
+    },
+    {
+      "id": 2,
+      "single_choices":["daily_average_delta_percentage"]
+    }
+  ],
+  "group_intentions": [],
+  "relation_intentions": [
+    {
+      "id1": 0,
+      "id2": 2,
+      "relation_choice": "slope"
+    }
+  ]
+}
+```
+    """
+    response = client.send_prompt(system_prompt, modify_prompt, False)
+    print(response)
+
+
+if __name__ == "__main__":
+    # test_parse_nl_query()
+    test_modify_nl_query()

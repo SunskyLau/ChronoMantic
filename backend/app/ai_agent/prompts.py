@@ -1,6 +1,6 @@
 from .modify_nl_cases import ModifyNL_Cases
 from .parse_nl_cases import ParseNL_Cases
-from .shared_info import QuerySpecWithSource_info, parse_nl_logic_info, Segment_info, modify_nl_logic_info
+from .shared_info import QuerySpecWithSource_info, parse_nl_logic_info, Segment_info, modify_nl_logic_info, intentions_info
 
 parse_nl_cases = f"""## 示例1
 {ParseNL_Cases.case1}
@@ -20,15 +20,6 @@ parse_nl_cases = f"""## 示例1
 
 modify_nl_cases = f"""## 示例1
 {ModifyNL_Cases.case1}
-
-## 示例2
-{ModifyNL_Cases.case2}
-
-## 示例3
-{ModifyNL_Cases.case3}
-
-## 示例4
-{ModifyNL_Cases.case4}
 """
 
 
@@ -101,6 +92,10 @@ def create_modify_nl_prompt() -> str:
 ```{QuerySpecWithSource_info}
 ```
 
+# 整体查询意图接口定义
+```{intentions_info}
+```
+
 # 自然语言查询的解析逻辑
 {parse_nl_logic_info}
 
@@ -111,9 +106,9 @@ def create_modify_nl_prompt() -> str:
 {modify_nl_logic_info}
 
 # 任务描述
-你的任务是根据原始的`QuerySpecWithSource`, 用户指定的时间序列片段`segments:Segment[]`，以及用户的调整指定`intentions:Intention[]`，根据用户意图输出调整后的`QuerySpecWithSource`。
+你的任务是根据原始的`old_queryspec_with_source`，用户指定的连续时间序列片段`segments`，以及用户的调整意图`intentions`，根据用户意图输出调整后的`new_queryspec_with_source`。
 要求:
-    1. 准确严格地遵循QuerySpecWithSource的结构化查询接口定义，不要出现非法输出，输出前请检查
+    1. 准确严格地遵循`new_queryspec_with_source`的数据结构定义`QuerySpecWithSource`，不要出现非法输出，输出前请检查
     2. 有且仅输出json字典，不要添加代码块或者```，也不要添加注释。
 
 # 示例

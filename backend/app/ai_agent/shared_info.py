@@ -3,7 +3,7 @@ Segment_info = """
  * Segment - 分段线性拟合的时间序列片段接口定义
  */
 export interface Segment {
-  source: string; // 片段的来源，可以是"result"或者"user",分别代表来源于查询结果和用户指定
+  source: string; // 片段的来源，可以是"result"或者"user",分别代表来源于查询结果和用户指定新增的
   slope: number;      // 片段的斜率，表示变化趋势
   start_value: number;  // 片段起始点的值
   end_value: number;    // 片段终止点的值
@@ -147,6 +147,75 @@ export interface QuerySpecWithSource {
 }
 """
 
+intentions_info = """
+/**
+ * Intentions
+ */
+
+/**
+ * SingleChoice - 单个趋势的可选属性枚举
+ */
+export enum SingleChoice {
+  CATEGORY = "category", // 趋势类别
+  SLOPE = "slope", // 斜率属性
+  DELTA_PERCENTAGE = "delta_percentage", // 变化率属性,单位是%
+  DAILY_AVERAGE_DELTA_PERCENTAGE = "daily_average_delta_percentage", // 日均变化率属性,单位是%/day
+  ABS_SLOPE_PERCENTAGE = "abs_slope_percentage", // 斜率占比属性,单位是%
+  TIME_SPAN = "time_span", // 时间跨度属性,单位是秒
+}
+
+/**
+ * GroupChoice - 趋势组合的可选属性枚举
+ */
+export enum GroupChoice {
+  TREND_TIME_SPAN_COMPOSITION_CONDITION = "trend_time_span_composition_condition", // 趋势组合的时间跨度条件
+}
+
+/**
+ * SingleIntention - 单个趋势的意图接口定义
+ */
+export interface SingleIntention {
+  id: number; // 趋势的ID标识，对应于segments中的index
+  single_choices: SingleChoice[]; // 该趋势需要考虑的属性列表
+}
+
+/**
+ * GroupIntention - 趋势组合的意图接口定义
+ */
+export interface GroupIntention {
+  ids: number[]; // 组合中包含的趋势ID列表，对应于segments中的index
+  group_choice: GroupChoice; // 该组合需要考虑的属性
+}
+
+/**
+ * RelationChoice - 趋势关系的可选属性枚举
+ */
+export enum RelationChoice {
+  SLOPE = "slope", // 斜率关系
+  START_VALUE = "start_value", // 起始值关系
+  END_VALUE = "end_value", // 结束值关系
+  TIME_SPAN = "time_span", // 时间跨度关系
+}
+
+/**
+ * RelationIntention - 趋势关系的意图接口定义
+ */
+export interface RelationIntention {
+  id1: number; // 第一个趋势的ID，对应于segments中的index
+  id2: number; // 第二个趋势的ID，对应于segments中的index
+  relation_choice: RelationChoice; // 需要比较的关系属性
+}
+
+/**
+ * Intentions - 整体查询意图的接口定义
+ */
+export interface Intentions {
+  single_intentions: SingleIntention[]; // 单个趋势的意图列表
+  group_intentions: GroupIntention[]; // 趋势组合的意图列表
+  relation_intentions: RelationIntention[]; // 趋势关系的意图列表
+}
+"""
+
 model_info = """
 为了满足对时间序列片段的趋势和形状描述，我们使用线段拟合分割方法对时间序列进行不同模糊等级的分割预处理。分割后的时间序列是许多连续线段组成的数组，它们首尾相连形成整个通过分割模糊化后的时间序列。每一段都是一条以两个分割点为起止点的线段。通过这种线段拟合分段的方式，可以满足基本的趋势和形状查询，只需要从原段序列中匹配出满足趋势或者形状的子段序列即可。
 """
@@ -163,10 +232,15 @@ parse_nl_logic_info = """
 
 modify_nl_logic_info = """
 输入参数
-- `QuerySpecWithSource`：原始的查询规范，包含查询目标、趋势、关系、时间跨度组合条件、时间范围条件、最大值范围条件、最小值范围条件。
-- `segments:Segment[]`：时间序列片段，包含 `angle`、`start_time`、`end_time`、`start_value`、`end_value` 等信息。
-- `intentions:Intention[]`：需要调整的查询部分，例如 `angle_scope_condition` 或 `value_scope_condition`。
+- `old_queryspec_with_source: QuerySpecWithSource`：原始的查询规范
+- `segments:Segment[]`：用户选择的连续时间序列片段
+- `intentions:Intention[]`：用户对于查询调整的意图
 输出参数
-- `QuerySpecWithSource`：调整后的查询规范，包含查询目标、趋势、关系、时间跨度组合条件、时间范围条件、最大值范围条件、最小值范围条件。
+- `new_queryspec_with_source: QuerySpecWithSource`：调整后的查询规范
 
+1. 总体来说，你需要根据以上输入参数，输出调整后的`new_queryspec_with_source`，需要进行调整的地方依据`intentions`，具体如何调整依据`segments`中涉及的属性数值，根据相应的数值提供一定的范围性条件。
+2. 调整需要同时体现在original_text和QuerySpec的修改需要有严格的对应关系。新增的条件应该也对应到text中描述的新增，修改的条件应该也对应到text中描述的修改，删除的条件应该也对应到text中描述的删除。
+3. 不涉及调整意图的condition字段，要正确保留不要发生调整。最后，尽可能保证调整后的original_text和调整前不发生太大变化。
+4. `new_queryspec_with_source`中的text_source也要保证是来自于original_text的连续子文本，并且text_source不可以和其他text_source重叠。
+5. 对于`relation_intention`中，需要根据具体的relation_choice，选择`segments`中对应的属性进行精确比较，然后对QuerySpecWithSource进行调整， 同时符合相应的语义。
 """

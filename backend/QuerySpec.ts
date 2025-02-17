@@ -171,43 +171,65 @@ export interface QuerySpecWithSource {
  * Intentions
  */
 
+/**
+ * SingleChoice - 单个趋势的可选属性枚举
+ */
 export enum SingleChoice {
-  SLOPE = "slope",
-  DELTA_PERCENTAGE = "delta_percentage",
-  DAILY_AVERAGE_DELTA_PERCENTAGE = "daily_average_delta_percentage",
-  ABS_SLOPE_PERCENTAGE = "abs_slope_percentage",
-  TIME_SPAN = "time_span",
+  CATEGORY = "category", // 趋势类别
+  SLOPE = "slope", // 斜率属性
+  DELTA_PERCENTAGE = "delta_percentage", // 变化率属性,单位是%
+  DAILY_AVERAGE_DELTA_PERCENTAGE = "daily_average_delta_percentage", // 日均变化率属性,单位是%/day
+  ABS_SLOPE_PERCENTAGE = "abs_slope_percentage", // 斜率占比属性,单位是%
+  TIME_SPAN = "time_span", // 时间跨度属性,单位是秒
 }
 
+/**
+ * GroupChoice - 趋势组合的可选属性枚举
+ */
 export enum GroupChoice {
-  TREND_TIME_SPAN_COMPOSITION_CONDITION = "trend_time_span_composition_condition",
+  TREND_TIME_SPAN_COMPOSITION_CONDITION = "trend_time_span_composition_condition", // 趋势组合的时间跨度条件
 }
 
+/**
+ * SingleIntention - 单个趋势的意图接口定义
+ */
 export interface SingleIntention {
-  id: number;
-  single_choices: SingleChoice[];
+  id: number; // 趋势的ID标识
+  single_choices: SingleChoice[]; // 该趋势需要考虑的属性列表
 }
 
+/**
+ * GroupIntention - 趋势组合的意图接口定义
+ */
 export interface GroupIntention {
-  ids: number[];
-  group_choice: GroupChoice;
+  ids: number[]; // 组合中包含的趋势ID列表
+  group_choice: GroupChoice; // 该组合需要考虑的属性
 }
 
+/**
+ * RelationChoice - 趋势关系的可选属性枚举
+ */
 export enum RelationChoice {
-  SLOPE = "slope",
-  START_VALUE = "start_value",
-  END_VALUE = "end_value",
-  TIME_SPAN = "time_span",
+  SLOPE = "slope", // 斜率关系
+  START_VALUE = "start_value", // 起始值关系
+  END_VALUE = "end_value", // 结束值关系
+  TIME_SPAN = "time_span", // 时间跨度关系
 }
 
+/**
+ * RelationIntention - 趋势关系的意图接口定义
+ */
 export interface RelationIntention {
-  id1: number;
-  id2: number;
-  relation_choice: RelationChoice;
+  id1: number; // 第一个趋势的ID
+  id2: number; // 第二个趋势的ID
+  relation_choice: RelationChoice; // 需要比较的关系属性
 }
 
+/**
+ * Intentions - 整体查询意图的接口定义
+ */
 export interface Intentions {
-  single_intentions: SingleIntention[];
-  group_intentions: GroupIntention[];
-  relation_intentions: RelationIntention[];
+  single_intentions: SingleIntention[]; // 单个趋势的意图列表
+  group_intentions: GroupIntention[]; // 趋势组合的意图列表
+  relation_intentions: RelationIntention[]; // 趋势关系的意图列表
 }
