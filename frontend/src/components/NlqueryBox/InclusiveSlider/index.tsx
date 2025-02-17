@@ -7,6 +7,8 @@ interface InclusiveSliderProps {
     maxInclusive: boolean;
     minValue: number;
     maxValue: number;
+    minActiveColor?: string;
+    maxActiveColor?: string;
     disabled?: boolean;
     onChange: (min: number | null, max: number | null, minInclusive: boolean, maxInclusive: boolean) => void;
 }

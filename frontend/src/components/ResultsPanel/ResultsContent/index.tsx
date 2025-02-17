@@ -25,8 +25,7 @@ export type ApproximationLevelResults = ApproximationLevelResult[]
 
 export default function ResultsContent() {
     const data = useAppSelector((state) => state.dataset.dataset?.data) || {};
-    const x = useAppSelector((state) => (data[state.dataset.dataset?.timeStampColumn ?? ""])) || [];
-    const xData = x.map((x) => new Date(x).getTime() / 1000);
+    const x = useAppSelector((state) => (data[state.dataset.dataset?.timeStampColumn ?? ""])) as string[];
     const queryResultsMap = useAppSelector(state => state.approximation.queryResults) || {};
     const queryLevelResults: ApproximationLevelResults = Object.entries(queryResultsMap).map(([key, value]: [string, Segment[][]]) => {
         return value.map(segments => ({ level: Number(key), segments }))
@@ -124,7 +123,7 @@ export default function ResultsContent() {
                                 }} >
                                     <div className="data-name">{source}</div>
                                     <div className="data-name flex">
-                                        <LineChart xData={xData} range={[start, end]} yData={data?.[source] as number[]} ratio={ratio} height={50} split={[...new Set(segments.map(segment => [segment.start_idx, segment.end_idx]).flat())]} isShowRange={false} isExpand={false}></LineChart>
+                                        <LineChart xData={x} range={[start, end]} yData={data?.[source] as number[]} ratio={ratio} height={50} split={[...new Set(segments.map(segment => [segment.start_idx, segment.end_idx]).flat())]} isShowRange={false} isExpand={false}></LineChart>
                                     </div>
                                     <div className="flex-width data-value">
                                         <div className="data-value__inner" style={{ width: `${(timeSpans[index]) / maxTimeSpan * 100}%` }} >

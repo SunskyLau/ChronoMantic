@@ -1,14 +1,17 @@
 import { memo, useCallback, useEffect, useId, useRef } from 'react';
 import * as d3 from 'd3';
+import { deepEqual } from '../../utils/deepclone';
 
 interface LineChartProps {
-    xData: number[];
+    xData: number[] | string[];
     yData: number[];
     ratio?: number;
     height?: number | string;
     title?: string;
     isXAxisVisible?: boolean;
     isYAxisVisible?: boolean;
+    isXAxisTextVisible?: boolean;
+    isYAxisTextVisible?: boolean;
     isBrush?: boolean;
     onBrush?: (start: number, end: number) => void;
     onBrushEnd?: (start: number, end: number) => void;
@@ -20,20 +23,28 @@ interface LineChartProps {
     isSplitMask?: boolean;
     isExpand?: boolean;
     isZoom?: boolean;
+    isActive?: boolean;
     onScroll?: (delta: number) => void;
     onContextMenu?: (event: MouseEvent) => void;
     children?: React.ReactNode;
+    xAxisColor?: string;
+    yAxisColor?: string;
+    lineColor?: string;
+    textColor?: string;
+    xAxisFormatter?: (date: Date) => string;
+    brushColor?: string;
 }
 
-function LineChart({ xData, yData, ratio, title = "", isXAxisVisible = false, isYAxisVisible = false, isBrush = false, isFill = false, onBrush, onBrushEnd, range, height, split, isSplitMask = false, brushPosition, isZoom = false, isExpand = true, isShowRange = true, children, onScroll, onContextMenu }: LineChartProps) {
+function LineChart({ xData, yData, ratio, title = "", isXAxisVisible = false, isYAxisVisible = false, isXAxisTextVisible = false, isYAxisTextVisible = false, isBrush = false, isFill = false, onBrush, onBrushEnd, range, height, split, isSplitMask = false, brushPosition, isZoom = false, isExpand = true, isShowRange = true, isActive, children, onScroll, onContextMenu, xAxisColor = '#C5C5C5', yAxisColor = '#C5C5C5', lineColor = '#A6A6A6', textColor = '#C5C5C5', xAxisFormatter = (date: Date) => date.getFullYear().toString(), brushColor = '#546BB61A' }: LineChartProps) {
     const svgRef = useRef<SVGSVGElement>(null);
     const id = useId();
 
     const handleScroll = useCallback((event: WheelEvent) => {
+        if (!onScroll) return;
         event.preventDefault();
         const total = range ? range?.[1] - range?.[0] : xData.length;
         const step = Math.max(1, Math.round(total / 10));
-        onScroll?.(event.deltaY > 0 ? step : -step);
+        onScroll(event.deltaY > 0 ? step : -step);
     }, [onScroll, range, xData.length]);
 
     useEffect(() => {
@@ -64,19 +75,21 @@ function LineChart({ xData, yData, ratio, title = "", isXAxisVisible = false, is
 
         let start = range?.[0] ?? 0;
         let end = range?.[1] ? range[1] + 1 : xData.length;
-        let timeStampData = range ? xData.slice(start, end).map((d) => d * 1000) : xData.map((d) => d * 1000);
-        let valueData = range ? yData.slice(start, end) : yData;
-        let data = timeStampData.map((x, i) => [x, valueData[i]] as [number, number]);
+        const timeStampData = xData.every(x => typeof x === 'string') ? xData.map((d) => new Date(d).getTime()) : xData.slice();
+        let keyData = range ? timeStampData.slice(start, end) : timeStampData.slice();
+        let valueData = range ? yData.slice(start, end) : yData.slice();
+        let data = keyData.map((x, i) => [x, valueData[i]] as [number, number]);
 
-        const margin = { top: isXAxisVisible ? 20 : 0, right: isYAxisVisible ? 40 : 0, bottom: isXAxisVisible ? 30 : 0, left: isYAxisVisible ? 40 : 0 };
+        const isMargin = isXAxisTextVisible || isYAxisTextVisible;
+        const margin = { top: isMargin ? 30 : 20, right: isMargin ? 40 : 25, bottom: isMargin ? 30 : 20, left: isMargin ? 40 : 25 };
         const svg = d3.select(svgRef.current);
         svg.attr('width', '100%');
         svg.attr('height', '100%');
         const width = Math.max(10, svgRef.current.clientWidth - margin.left - margin.right);
         let iHeight: number = typeof height === 'string' ? svgRef.current.clientHeight * parseFloat(height) / 100 : height ?? 200;
         iHeight -= margin.top + margin.bottom;
-        const xMin = d3.min(timeStampData)!;
-        const xMax = d3.max(timeStampData)!;
+        const xMin = d3.min(keyData)!;
+        const xMax = d3.max(keyData)!;
         const yMin = d3.min(valueData)!;
         const yMax = d3.max(valueData)!;
         const xRange = Math.max(1, xMax - xMin);
@@ -100,10 +113,10 @@ function LineChart({ xData, yData, ratio, title = "", isXAxisVisible = false, is
                 xScale[0] -= delta / 2;
                 xScale[1] += delta / 2;
                 if (isExpand) {
-                    const extentData = xData.map((d, i) => [d * 1000, i]).filter((v) => v[0] >= xScale[0] && v[0] <= xScale[1]);
-                    timeStampData = extentData.map((v) => v[0]);
+                    const extentData = timeStampData.map((d, i) => [d, i]).filter((v) => v[0] >= xScale[0] && v[0] <= xScale[1]);
+                    keyData = extentData.map((v) => v[0]);
                     valueData = extentData.map((v) => yData[v[1]]);
-                    data = timeStampData.map((x, i) => [x, valueData[i]] as [number, number]);
+                    data = keyData.map((x, i) => [x, valueData[i]] as [number, number]);
                     start = Math.max(0, Math.min(...extentData.map((v) => v[1])));
                     end = Math.min(xData.length, Math.max(...extentData.map((v) => v[1])) + 1);
                 }
@@ -155,44 +168,109 @@ function LineChart({ xData, yData, ratio, title = "", isXAxisVisible = false, is
             g.call(zoom);
         }
 
+        if (isActive) {
+            svg.append('rect')
+                .attr('x', 0)
+                .attr('y', 0)
+                .attr('width', outerWidth)
+                .attr('height', outerHeight)
+                .attr('fill', '#82C4FF33')
+        }
+
         g.append('text')
-            .attr('x', 10)
-            .attr('y', 10)
-            .attr('text-anchor', 'start')
+            .attr('x', 20)
+            .attr('text-anchor', 'end')
             .attr('font-size', '16px')
-            .attr('font-weight', 'bold')
+            .attr('fill', textColor)
+            .attr('writing-mode', 'sideways-lr')
             .text(title);
 
+        svg.append("defs")
+            .append("marker")
+            .attr("id", `arrow-${id}`)
+            .attr("viewBox", "0 -5 10 10")
+            .attr("refX", 8)
+            .attr("refY", 0)
+            .attr("markerWidth", 6)
+            .attr("markerHeight", 6)
+            .attr("orient", "auto")
+            .append("path")
+            .attr("d", "M0,-5L10,0L0,5")
+            .attr("fill", xAxisColor);
+
         if (isXAxisVisible) {
-            const xAxis = d3.axisBottom(x).tickValues([...new Set([xMin, xMax, ...xScale])]).tickFormat((d) => new Date(d as number).toLocaleDateString());
-            g.append('g')
+            const xAxis = d3.axisBottom(x)
+                .tickValues([...new Set([xMin, xMax, ...xScale])])
+                .tickFormat((d) => xAxisFormatter(new Date(d as number)))
+                .tickSize(isXAxisTextVisible ? 6 : 0);
+            
+            const xAxisG = g.append('g')
                 .attr('transform', `translate(0,${innerHeight})`)
-                .call(xAxis);
+                .call(xAxis)
+                .call(g => {
+                    g.selectAll('path, line')
+                        .attr('stroke', xAxisColor);
+                    g.selectAll('text')
+                        .attr('fill', xAxisColor)
+                        .style('display', isXAxisTextVisible ? 'block' : 'none');
+                });
+
+            xAxisG.append('line')
+                .attr('x1', innerWidth)
+                .attr('y1', 0)
+                .attr('x2', innerWidth + 10)
+                .attr('y2', 0)
+                .attr('stroke', xAxisColor)
+                .attr('marker-end', `url(#arrow-${id})`);
         }
 
         if (isYAxisVisible) {
-            const yAxis = d3.axisLeft(y).tickValues([...new Set([yMin, yMax, ...yScale])]);
-            g.append('g').call(yAxis);
+            const yAxis = d3.axisLeft(y)
+                .tickValues([...new Set([yMin, yMax, ...yScale])])
+                .tickSize(isYAxisTextVisible ? 6 : 0);
+            
+            const yAxisG = g.append('g')
+                .call(yAxis)
+                .call(g => {
+                    g.selectAll('path, line')
+                        .attr('stroke', yAxisColor);
+                    g.selectAll('text')
+                        .attr('fill', yAxisColor)
+                        .style('display', isYAxisTextVisible ? 'block' : 'none');
+                });
+
+            yAxisG.append('line')
+                .attr('x1', 0)
+                .attr('y1', 0)
+                .attr('x2', 0)
+                .attr('y2', -10)
+                .attr('stroke', yAxisColor)
+                .attr('marker-end', `url(#arrow-${id})`);
         }
 
         if (range && range[0] !== range[1] || !range) {
             g.append('path')
-                .datum(timeStampData.map((t, i) => [t, valueData[i]] as [number, number]))
+                .datum(keyData.map((t, i) => [t, valueData[i]] as [number, number]))
                 .attr('d', lineGenerator)
                 .attr('fill', 'none')
-                .attr('stroke', '#82C4FF')
+                .attr('stroke', lineColor)
+                .attr('stroke-opacity', '0.7')
                 .attr("clip-path", `url(#clip-path-${id})`)
                 .attr('stroke-width', 1);
         }
 
-        if (split && timeStampData.length > 2) {
+        if (split && keyData.length > 2) {
             const splitG = g.append('g').attr('class', 'split-line');
             if (isSplitMask) {
                 splitG.attr("clip-path", `url(#clip-path-${id})`)
             }
+
+            const color = d3.color(lineColor);
+            const darkerColor = color ? d3.hsl(color).darker(10).toString() : lineColor;
+
             for (let i = 0; i < split.length - 1; i++) {
-                const x1 = x(xData[split[i]] * 1000)
-                const x2 = x(xData[split[i + 1]] * 1000)
+                const x1 = x(timeStampData[split[i]])
+                const x2 = x(timeStampData[split[i + 1]])
                 const y1 = y(yData[split[i]])
                 const y2 = y(yData[split[i + 1]]);
                 splitG.append('line')
@@ -201,7 +279,7 @@ function LineChart({ xData, yData, ratio, title = "", isXAxisVisible = false, is
                     .attr('x2', x2)
                     .attr('y1', y1)
                     .attr('y2', y2)
-                    .attr('stroke', y1 > y2 ? 'red' : 'green')
+                    .attr('stroke', darkerColor)
                     .attr('stroke-opacity', '0.5')
                     .attr('stroke-width', 1);
             }
@@ -267,9 +345,9 @@ function LineChart({ xData, yData, ratio, title = "", isXAxisVisible = false, is
                 .call(brush);
 
             if (brushPosition) {
-                brushG.call(brush.move!, [x(xData[brushPosition[0]] * 1000), x(xData[brushPosition[1]] * 1000)]);
-                const minX = new Date(xData[brushPosition[0]] * 1000);
-                const maxX = new Date(xData[brushPosition[1]] * 1000);
+                brushG.call(brush.move!, [x(timeStampData[brushPosition[0]]), x(timeStampData[brushPosition[1]])]);
+                const minX = new Date(timeStampData[brushPosition[0]]);
+                const maxX = new Date(timeStampData[brushPosition[1]]);
                 if (isFill) highlightBrush([minX, maxX]);
             }
 
@@ -290,7 +368,7 @@ function LineChart({ xData, yData, ratio, title = "", isXAxisVisible = false, is
                 });
 
             svg.select(".selection")
-                .attr("fill", "#3336")
+                .attr("fill", brushColor)
                 .attr("clip-path", `url(#clip-path-${id})`)
                 .attr("stroke", "none");
 
@@ -299,7 +377,7 @@ function LineChart({ xData, yData, ratio, title = "", isXAxisVisible = false, is
                 svg.selectAll('*').remove();
             };
         }
-    }, [xData, yData, ratio, title, isXAxisVisible, isYAxisVisible, isBrush, onBrush, isFill, range, height, split, isSplitMask, brushPosition, isZoom, isExpand, isShowRange, id, onBrushEnd]);
+    }, [xData, yData, ratio, title, isXAxisVisible, isYAxisVisible, isXAxisTextVisible, isYAxisTextVisible, isBrush, onBrush, isFill, range, height, split, isSplitMask, brushPosition, isZoom, isExpand, isShowRange, id, onBrushEnd, isActive, xAxisColor, yAxisColor, lineColor, textColor, xAxisFormatter, brushColor]);
 
     useEffect(() => {
         const cancle = draw();
@@ -322,7 +400,6 @@ export default memo(LineChart, (prevProps, nextProps) => {
     return Object.keys(prevProps).every((key) => {
         const k = key as keyof LineChartProps;
         if (k === 'children') return false;
-        if (typeof prevProps[k] === 'object') return JSON.stringify(prevProps[k]) === JSON.stringify(nextProps[k]);
-        return prevProps[k] === nextProps[k];
+        return deepEqual(prevProps[k], nextProps[k]);
     })
 });

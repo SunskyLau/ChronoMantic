@@ -86,8 +86,9 @@ class myAIClient:
 
 def parse_nl_query(system_prompt: str, query: str) -> Dict:
     client = myAIClient(model=Qwen.MODELS.QWEN_MAX, platform=Platforms.QWEN)
-    response = client.send_prompt(system_prompt, query)
-    return json.loads(response)["output"]
+    response = client.send_prompt(system_prompt, query, False)
+    return json.loads(response)
+
 
 def modify_nl_query(system_prompt: str, query: str) -> Dict:
     client = myAIClient(model=Qwen.MODELS.QWEN_MAX, platform=Platforms.QWEN)
@@ -112,6 +113,5 @@ if __name__ == "__main__":
     # nl_query = "Find periods in Amazon stock where prices rose slowly, then rose quickly"
     nl_query = "Find periods in AMZN when price first fell sharply with a duration of about 3 days and then presented a double-bottom shape with a duration of about a week."
     # nl_query = "In Amazon stock, look up two consecutive rises and the time period when the first rose slowly and the second rose sharply"
-
 
     response = client.send_prompt(system_prompt, nl_query, False)

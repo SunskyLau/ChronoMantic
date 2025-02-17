@@ -1,6 +1,5 @@
 import axios from "axios";
-import type { Results } from "./app/slice/resultsSlice";
-import { Fragment, FragmentList, QuerySpec, Segment, TimeGranularity } from "./types/QuerySpec";
+import { QuerySpec, QuerySpecWithSource, Segment } from "./types/QuerySpec";
 import { DatasetInfo, ApproximationSegmentsContainers, ApproximationResults } from "./types";
 
 const api = axios.create({
@@ -11,7 +10,7 @@ const api = axios.create({
   },
 });
 
-export const getQuerySpecRequest = async (query: string): Promise<QuerySpec> => {
+export const getQuerySpecRequest = async (query: string): Promise<QuerySpecWithSource> => {
   console.log("Sending query spec request");
   try {
     const response = await api.post(`/api/parse_query`, { query });
@@ -144,49 +143,6 @@ export const getModifyPrompt = async (query: string, segments: Segment[], choice
     return response.data.results;
   } catch (error) {
     console.error("Error sending modify_prompt request:", error);
-    throw error;
-  }
-}
-
-export const getFragmentsByTimeGranularity = async (csvName: string, timeColumnName: string, valueColumnName: string, timeGranularity: TimeGranularity): Promise<FragmentList> => {
-  console.log("Sending fragments request");
-  try {
-    const response = await api.post(`/api/get_fragments_by_time_granularity`, { csvName, timeColumnName, valueColumnName, timeGranularity });
-    console.log(response.data);
-    return response.data;
-  } catch (error) {
-    console.error("Error sending fragments request:", error);
-    throw error;
-  }
-}
-
-export const getQueryResult = async (querySpec: QuerySpec, fragmentList: FragmentList, optimalRatio: number): Promise<Results> => {
-  console.log("Sending query result request");
-  try {
-    const { ...resQuerySpec } = querySpec;
-    const response = await api.post(`/api/request_for_query`, { querySpec: resQuerySpec, fragmentList, optimalRatio });
-    console.log(response.data);
-    return response.data;
-  } catch (error) {
-    console.error("Error sending query result request:", error);
-    throw error;
-  }
-}
-
-
-interface QueryInFragmentsResponse {
-  result_fragments: Fragment[];
-  keeped_after_prune_fragments: Fragment[];
-}
-
-export const queryInFragments = async (querySpec: QuerySpec, fragments: Fragment[], optimalRatio: number): Promise<QueryInFragmentsResponse> => {
-  console.log("Sending query in fragments request");
-  try {
-    const response = await api.post(`/api/query_in_fragments`, { querySpec, fragments, optimalRatio });
-    console.log(response.data);
-    return response.data;
-  } catch (error) {
-    console.error("Error sending query in fragments request:", error);
     throw error;
   }
 }
