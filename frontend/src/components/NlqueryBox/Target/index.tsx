@@ -23,7 +23,7 @@ export default function Target({ disabled, title, value, options, onChange, colo
 			>
 				{title ?? "Target"}
 			</Typography.Title>
-			<Flex style={{ padding: 4, borderRadius: 4, backgroundColor: color }}>
+			<Flex style={{ backgroundColor: color }} className="active-component">
 				<Select
 					disabled={disabled}
 					allowClear

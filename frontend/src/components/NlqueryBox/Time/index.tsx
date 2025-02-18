@@ -7,6 +7,7 @@ interface TimeProps {
 	max: number | null;
 	minInclusive: boolean;
 	maxInclusive: boolean;
+	activeColor?: string;
 	minActiveColor?: string;
 	maxActiveColor?: string;
 	minValue: number | null;
@@ -15,23 +16,24 @@ interface TimeProps {
 	onChange: (min: number | null, max: number | null, minInclusive: boolean, maxInclusive: boolean) => void;
 }
 
-export default function Time({ min, max, minInclusive, maxInclusive, maxValue, minValue, onChange, disabled, minActiveColor, maxActiveColor }: TimeProps) {
+export default function Time({ min, max, minInclusive, maxInclusive, maxValue, minValue, onChange, disabled, minActiveColor, maxActiveColor, activeColor }: TimeProps) {
 	return (
-		<Flex gap={12} align="center">
-			<Flex 
-				style={{ 
-					backgroundColor: minActiveColor, 
-					padding: 4, 
-					borderRadius: 4 
-				}} 
+		<Flex
+			gap={12}
+			align="center"
+			className="active-component"
+			style={{ backgroundColor: activeColor }}
+		>
+			<Flex
+				className="active-component"
+				style={{
+					backgroundColor: minActiveColor,
+				}}
 				align="center"
 			>
 				<DatePicker
 					disabled={disabled}
-					style={{
-						borderColor: minActiveColor,
-					}}
-                    value={min ? dayjs(min * 1000) : null}
+					value={min ? dayjs(min * 1000) : null}
 					minDate={dayjs(minValue)}
 					maxDate={dayjs(maxValue)}
 					defaultValue={min ? dayjs(min * 1000) : null}
@@ -43,20 +45,16 @@ export default function Time({ min, max, minInclusive, maxInclusive, maxValue, m
 				/>
 			</Flex>
 			<SwapRightOutlined />
-			<Flex 
-				style={{ 
-					backgroundColor: maxActiveColor, 
-					padding: 4, 
-					borderRadius: 4 
-				}} 
+			<Flex
+				className="active-component"
+				style={{
+					backgroundColor: maxActiveColor,
+				}}
 				align="center"
 			>
 				<DatePicker
 					disabled={disabled}
-					style={{
-						borderColor: maxActiveColor,
-					}}
-                    value={max ? dayjs(max * 1000) : null}
+					value={max ? dayjs(max * 1000) : null}
 					minDate={dayjs(minValue)}
 					maxDate={dayjs(maxValue)}
 					defaultValue={max ? dayjs(max * 1000) : null}

@@ -9,6 +9,7 @@ interface SpanProps {
 	maxInclusive: boolean;
 	minValue?: number;
 	maxValue?: number;
+	activeColor?: string;
 	minActiveColor?: string;
 	maxActiveColor?: string;
 	addonBefore?: [ReactNode, ReactNode];
@@ -18,14 +19,16 @@ interface SpanProps {
 	onChange: (min: number | null, max: number | null, minInclusive: boolean, maxInclusive: boolean) => void;
 }
 
-export default function Span({ min, max, minValue, maxValue, minInclusive, addonBefore, addonAfter, valueFormatter = 1, maxInclusive, onChange, disabled, minActiveColor, maxActiveColor }: SpanProps) {
+export default function Span({ min, max, minValue, maxValue, minInclusive, addonBefore, addonAfter, valueFormatter = 1, maxInclusive, onChange, disabled, minActiveColor, maxActiveColor, activeColor }: SpanProps) {
 	return (
 		<>
 			<Flex
 				gap={12}
 				align="center"
+				className="active-component"
+				style={{ backgroundColor: activeColor }}
 			>
-				<Flex style={{ backgroundColor: minActiveColor, padding: 4, borderRadius: 4 }} align="center" gap={12}>
+				<Flex style={{ backgroundColor: minActiveColor }} className="active-component" align="center" gap={12}>
 					<Checkbox
 						checked={minInclusive}
 						disabled={disabled || !min}
@@ -46,7 +49,7 @@ export default function Span({ min, max, minValue, maxValue, minInclusive, addon
 					/>
 				</Flex>
 				<SwapRightOutlined />
-				<Flex style={{ backgroundColor: maxActiveColor, padding: 4, borderRadius: 4 }} align="center" gap={12}>
+				<Flex style={{ backgroundColor: maxActiveColor }} className="active-component" align="center" gap={12}>
 					<InputNumber
 						disabled={disabled}
 						addonBefore={addonBefore?.[1]}

@@ -53,24 +53,13 @@ const TextSourceChecker = {
 		}
 
 		// 检查关系
-		if (query.relations?.some(relation => TextSourceChecker.checkSource(relation, matchText, targetIndex))) return true;
-
-		// 检查时间跨度组合条件
-		if (query.trend_time_span_composition_conditions) {
-			if (Array.isArray(query.trend_time_span_composition_conditions)) {
-				for (const condition of query.trend_time_span_composition_conditions) {
-					if (TextSourceChecker.checkSource(condition, matchText, targetIndex)) return true;
-					if (TextSourceChecker.checkScope(condition.time_span_condition, matchText, targetIndex)) return true;
-				}
-			} else {
-				if (TextSourceChecker.checkScope(query.trend_time_span_composition_conditions, matchText, targetIndex)) return true;
-			}
-		}
+		if (query.single_relations?.some(relation => TextSourceChecker.checkSource(relation, matchText, targetIndex))) return true;
 
 		// 检查其他范围条件
-		return TextSourceChecker.checkScope(query.time_scope_condition, matchText, targetIndex) ||
-			   TextSourceChecker.checkScope(query.max_value_scope_condition, matchText, targetIndex) ||
-			   TextSourceChecker.checkScope(query.min_value_scope_condition, matchText, targetIndex) || false;
+		return TextSourceChecker.checkScope(query.time_span_condition, matchText, targetIndex) ||
+			TextSourceChecker.checkScope(query.time_scope_condition, matchText, targetIndex) ||
+			TextSourceChecker.checkScope(query.max_value_scope_condition, matchText, targetIndex) ||
+			TextSourceChecker.checkScope(query.min_value_scope_condition, matchText, targetIndex) || false;
 	}
 };
 
@@ -104,23 +93,12 @@ const TextSourceToggler = {
 		});
 
 		// 切换关系
-		query.relations?.forEach(relation => {
+		query.single_relations?.forEach(relation => {
 			TextSourceToggler.toggleSource(relation, text, index);
 		});
 
-		// 切换时间跨度组合条件
-		if (query.trend_time_span_composition_conditions) {
-			if (Array.isArray(query.trend_time_span_composition_conditions)) {
-				query.trend_time_span_composition_conditions.forEach(condition => {
-					TextSourceToggler.toggleSource(condition, text, index);
-					TextSourceToggler.toggleScope(condition.time_span_condition, text, index);
-				});
-			} else {
-				TextSourceToggler.toggleScope(query.trend_time_span_composition_conditions, text, index);
-			}
-		}
-
 		// 切换其他范围条件
+		TextSourceToggler.toggleScope(query.time_span_condition, text, index);
 		TextSourceToggler.toggleScope(query.time_scope_condition, text, index);
 		TextSourceToggler.toggleScope(query.max_value_scope_condition, text, index);
 		TextSourceToggler.toggleScope(query.min_value_scope_condition, text, index);
