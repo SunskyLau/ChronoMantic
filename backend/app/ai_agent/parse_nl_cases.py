@@ -220,7 +220,7 @@ class ParseNL_Cases:
       "id1": 2,
       "id2": 4,
       "attribute": "end_value",
-      "comparator": ">",
+      "comparator": "<",
       "text_source": {
         "text": "the peaks got higher and higher",
         "index": 0
@@ -373,7 +373,7 @@ class ParseNL_Cases:
       },
       "time_span_condition": {
         "min": {
-          "value": 259200,
+          "value": 172800,
           "inclusive": true,
           "text_source": {
             "text": "about 3 days",
@@ -381,7 +381,7 @@ class ParseNL_Cases:
           }
         },
         "max": {
-          "value": 432000,
+          "value": 345600,
           "inclusive": true,
           "text_source": {
             "text": "about 3 days",
