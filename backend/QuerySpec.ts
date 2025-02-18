@@ -19,6 +19,19 @@ export interface Segment {
   time_span?: number; // 时间跨度,单位是秒
 }
 
+export interface SimplifiedSegment {
+  source: string; // 片段的来源，可以是"result"或者"user",分别代表来源于查询结果和用户指定新增的
+  slope: number;      // 片段的斜率，表示变化趋势
+  start_value: number;  // 片段起始点的值
+  end_value: number;    // 片段终止点的值
+  start_time?: number;  // 片段起始时间，单位是秒，可选
+  end_time?: number;    // 片段终止时间，单位是秒，可选
+  delta_percentage?: number;  // 片段的总体变化百分比，单位是%，可选
+  daily_average_delta_percentage?: number;  // 片段的日均变化百分比，单位是%，可选
+  abs_slope_percentage?: number;  // 片段斜率在所有斜率中的占比，单位是%，可选
+  time_span?: number;  // 片段的时间跨度，单位是秒，可选
+}
+
 // 趋势组合
 export interface SegmentGroup {
   ids: [number, number]; // 组内趋势的id列表,ids[1]>=ids[0]

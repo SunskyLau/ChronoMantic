@@ -1,4 +1,5 @@
 import json
+from typing import List, Tuple
 from app.ai_agent.prompts import create_parse_nl_prompt, create_modify_nl_prompt
 from flask import Blueprint
 from app.query import query
@@ -11,7 +12,7 @@ import numpy as np
 import pandas as pd
 from app.utils import process_csv_file
 from app.services.banking_to_45degree import find_optimal_aspect_ratio
-from ..MyTypes import DatasetInfo, QuerySpec
+from ..MyTypes import DatasetInfo, QuerySpec, Segment, SegmentGroup
 from ..model import approximate_dataset
 from numpy.typing import NDArray
 from ..shared_data import (
@@ -196,7 +197,7 @@ def modify_nl_query():
     | 参数名 | 类型 | 说明 |
     |--------|------|------|
     | old_queryspec_with_source | QuerySpecWithSource | 原始结构化查询 |
-    | segments | List[Segment] | 用户指定的连续时间序列片段 |
+    | segments | List[SimplifiedSegment] | 用户指定的连续时间序列片段 |
     | intentions | List[Intention] | 用户的调整意图 |
 
     | 返回字段 | 类型 | 说明 |
@@ -227,3 +228,43 @@ intentions
     # 将字符串解析为Python字典
     new_queryspec_with_source = json.loads(new_queryspec_with_source_str)
     return jsonify({"code": 200, "message": "Modify nl query successful", "results": filter_json(new_queryspec_with_source)})
+
+
+@bus_bp.route("/get_segment_group_info", methods=["POST"])
+def get_segment_group_info():
+    """获取连续时间序列片段的组信息
+
+    | 参数名 | 类型 | 说明 |
+    |--------|------|------|
+    | segments | List[Segment] | 用户指定的连续时间序列片段 |
+    | trend_groups | List[Tuple[int, int] | 用户指定的趋势组 |
+
+    | 返回字段 | 类型 | 说明 |
+    |----------|------|------|
+    | code | int | 状态码 |
+    | message | str | 状态信息 |
+    | results | List[SegmentGroup] | 连续时间序列片段的组信息 |
+    """
+    segments = [Segment.from_dict(segment) for segment in request.json.get("segments")]
+    trend_groups = [(group[0], group[1]) for group in request.json.get("trend_groups")]
+    segment_groups = calculate_segment_groups(segments, trend_groups)
+    return jsonify({"code": 200, "message": "Get segment group info successful", "results": filter_json(segment_groups)})
+
+
+def calculate_segment_groups(segments: List[Segment], trend_groups: List[Tuple[int, int]]) -> List[SegmentGroup]:
+    """计算连续时间序列片段的组信息
+
+    | 参数名 | 类型 | 说明 |
+    |--------|------|------|
+    | segments | List[Segment] | 用户指定的连续时间序列片段 |
+    | trend_groups | List[Tuple[int, int]] | 用户指定的趋势组 |
+
+    | 返回字段 | 类型 | 说明 |
+    |----------|------|------|
+    | segment_groups | List[SegmentGroup] | 连续时间序列片段的组信息 |
+    """
+    segment_groups = []
+    for trend_group in trend_groups:
+        segment_group = SegmentGroup(ids=trend_group, time_span=segments[trend_group[1]].end_time - segments[trend_group[0]].start_time)
+        segment_groups.append(segment_group)
+    return segment_groups
