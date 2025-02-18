@@ -55,8 +55,8 @@ class ThresholdCondition(DictMixin):
 
 @dataclass
 class ScopeCondition(DictMixin):
-    max: Optional[ThresholdCondition] = None  # 最大值
-    min: Optional[ThresholdCondition] = None  # 最小值
+    max: Optional[ThresholdCondition] = None  # 最大值条件
+    min: Optional[ThresholdCondition] = None  # 最小值条件
 
 
 @dataclass
@@ -69,11 +69,18 @@ class Trend(DictMixin):
     time_span_condition: Optional[ScopeCondition] = None  # 时间跨度的范围条件, 单位是秒，例如3600就代表1小时
 
 
-class Attribute(Enum):
+class SingleAttribute(Enum):
     SLOPE = "slope"  # 斜率
     START_VALUE = "start_value"  # 起始值
     END_VALUE = "end_value"  # 结束值
-    TIME_SPAN = "time_span"  # 时间跨度, 单位是秒
+    TIME_SPAN = "time_span"  # 时间跨度,单位是秒
+    DELTA_PERCENTAGE = "delta_percentage"  # 变化率,单位是%
+    DAILY_AVERAGE_DELTA_PERCENTAGE = "daily_average_delta_percentage"  # 日均变化率,单位是%/day
+    ABS_SLOPE_PERCENTAGE = "abs_slope_percentage"  # 斜率占比,单位是%
+
+
+class GroupAttribute(Enum):
+    TIME_SPAN = "time_span"  # 时间跨度,单位是秒
 
 
 class Comparator(Enum):
@@ -86,28 +93,35 @@ class Comparator(Enum):
 
 
 @dataclass
-class Relation(DictMixin):  # 不同trend之间的属性比较关系
+class SingleRelation(DictMixin):  # 两个单趋势之间的比较关系
     id1: int  # 趋势1的id
     id2: int  # 趋势2的id
-    attribute: Attribute  # 比较的属性
+    attribute: SingleAttribute  # 比较的属性
     comparator: Comparator  # 比较关系
 
 
 @dataclass
-class TrendTimeSpanCompositionCondition(DictMixin):  # 趋势时间跨度组合条件
-    id1: int  # 趋势1的id，其中id1应该小于id2
-    id2: int  # 趋势2的id，其中id1应该小于id2
-    time_span_condition: ScopeCondition  # 代表从id1到id2的之间(包括id1和id2)所有趋势的总体时间跨度, 单位是秒
+class TrendGroup(DictMixin):  # 趋势组合
+    ids: Tuple[int, int]  # 组内趋势的id列表，ids[1]>=ids[0]
+    time_span_condition: Optional[ScopeCondition] = None  # 该组的时间跨度条件
+
+
+@dataclass
+class GroupRelation(DictMixin):
+    group1: Tuple[int, int]  # 第一个组合的趋势id列表
+    group2: Tuple[int, int]  # 第二个组合的趋势id列表
+    comparator: Comparator  # 比较关系
+    attribute: GroupAttribute  # 比较的属性
 
 
 @dataclass
 class QuerySpec(DictMixin):
     target: str  # 查询的目标时间序列名
     trends: List[Trend]  # 趋势列表
-    relations: List[Relation]  # 不同趋势之间的属性比较关系列表
-    trend_time_span_composition_conditions: (
-        List[TrendTimeSpanCompositionCondition] | ScopeCondition
-    )  # 趋势时间跨度组合条件列表，如果为ScopeCondition，则表示所有趋势的总体时间跨度, 单位是秒
-    time_scope_condition: Optional[ScopeCondition] = None  # 搜索时间的范围条件
+    single_relations: List[SingleRelation]  # 不同趋势之间的属性比较关系列表
+    trend_groups: List[TrendGroup]  # 趋势组合列表
+    group_relations: List[GroupRelation]  # 组合之间的关系列表
+    time_span_condition: Optional[ScopeCondition] = None  # 总时间跨度的范围条件
+    time_scope_condition: Optional[ScopeCondition] = None  # 时间范围的范围条件
     max_value_scope_condition: Optional[ScopeCondition] = None  # 最大值的范围条件
     min_value_scope_condition: Optional[ScopeCondition] = None  # 最小值的范围条件
