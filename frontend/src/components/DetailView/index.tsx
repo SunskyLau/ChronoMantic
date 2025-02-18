@@ -9,6 +9,7 @@ import { setLevel } from "../../app/slice/approximation";
 import { getModifyPrompt, getQueryByTS } from "../../api";
 import { setModifyPrompts, setNLQuery, setQuerys } from "../../app/slice/stateSlice";
 import { deepEqual } from "../../utils/deepclone";
+import { getColorFromMap } from "../../utils/color";
 
 const choiceMap = ["angle_scope_condition", "slope_scope_condition", "time_scope_condition", "time_span_condition", "value_scope_condition", "relations"]
 
@@ -87,6 +88,8 @@ export default function DetailView() {
     const current = useMemo(() => results?.find(result => result.source === valueCol)?.approximation_segments_list.find(item => item.approximation_level === level), [level, results, valueCol]);
     const segments = useMemo(() => current?.segments || [], [current]);
     const split = [...new Set([...segments.map(s => s.start_idx), ...segments.map(s => s.end_idx)])];
+    const query = useAppSelector((state) => state.states.query);
+    const colorMap = useAppSelector((state) => state.states.colorMap);
     const brushPosition = useAppSelector((state) => state.select.brushPosition);
     const selectPosition = useAppSelector((state) => state.select.selectPosition);
     const selectedSegments = segments.filter(item => item.start_idx >= selectPosition[0] && item.end_idx <= selectPosition[1])
@@ -139,7 +142,7 @@ export default function DetailView() {
             {
                 timeCol && valueCol ?
                     <>
-                        <div className="bg detail"><LineChart xData={timeValues as string[]} yData={data[valueCol] as number[]} isXAxisVisible={true} isYAxisVisible={true} range={range} height={'100%'} split={split} isSplitMask={true} onScroll={handleScroll} isBrush brushPosition={selectPosition} onBrushEnd={handleBrushSelectEnd} title={valueCol} isXAxisTextVisible isYAxisTextVisible onContextMenu={() => handleBrushSelectEnd(0, 0)}>
+                        <div className="bg detail"><LineChart isShowRange={false} xData={timeValues as string[]} yData={data[valueCol] as number[]} resultsSplit={{colors: query?.trends.map(trend=>getColorFromMap(colorMap, trend.category.text_source)) || [], segments: query && queryResults[level]?.map(segments=>(segments.map(segment=>[segment.start_idx, segment.end_idx]))) || []}} isXAxisVisible={true} isYAxisVisible={true} range={range} height={'100%'} split={split} isSplitMask={true} onScroll={handleScroll} isBrush brushPosition={selectPosition} onBrushEnd={handleBrushSelectEnd} title={valueCol} isXAxisTextVisible isYAxisTextVisible onContextMenu={() => handleBrushSelectEnd(0, 0)}>
                             <Popover className="query-popover" placement="bottom" open={isPopover} content={
                                 () => {
                                     const isModify = popoverState === PopoverState.CONFIRM_MODIFY;

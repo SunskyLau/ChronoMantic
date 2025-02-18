@@ -11,7 +11,6 @@ from .DictMixin import DictMixin
 class DatasetInfo(DictMixin):
     time_column: str
     value_columns: List[str]
-    column_ratio_dict: Dict[str, float]
 
 
 @dataclass

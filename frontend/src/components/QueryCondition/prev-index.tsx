@@ -132,8 +132,8 @@ export default function QueryCondition() {
                     <DatePicker.RangePicker allowClear allowEmpty onChange={(dates) => {
                         if (!dates) return;
                         const newQueryCondition = deepClone(queryCondition);
-                        newQueryCondition.start_time = dates[0]?.toISOString() || null;
-                        newQueryCondition.end_time = dates[1]?.toISOString() || null;
+                        newQueryCondition.start_time = dates[0]?.toISOString();
+                        newQueryCondition.end_time = dates[1]?.toISOString();
                         setQueryCondition({ ...newQueryCondition });
                     }}></DatePicker.RangePicker>
                 </section>

@@ -1,5 +1,5 @@
 import axios from "axios";
-import { QuerySpec, QuerySpecWithSource, Segment } from "./types/QuerySpec";
+import { Intentions, QuerySpec, QuerySpecWithSource, Segment } from "./types/QuerySpec";
 import { DatasetInfo, ApproximationSegmentsContainers, ApproximationResults } from "./types";
 
 const api = axios.create({
@@ -135,10 +135,10 @@ export const getSearchPrompt = async (query: string): Promise<string[]> => {
   }
 };
 
-export const getModifyPrompt = async (query: string, segments: Segment[], choices: string[]): Promise<string[]> => {
-  console.log("Sending modify_prompt request");
+export const getModifyPrompt = async (old_queryspec_with_source: QuerySpecWithSource, segments: Segment[], intentions: Intentions[]): Promise<string[]> => {
+  console.log("Sending modify_nl_query request");
   try {
-    const response = await api.post(`/api/modify_prompt`, { query, segments, choices });
+    const response = await api.post(`/api/modify_nl_query`, { old_queryspec_with_source, segments, intentions });
     console.log(response.data);
     return response.data.results;
   } catch (error) {

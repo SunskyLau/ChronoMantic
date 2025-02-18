@@ -30,8 +30,7 @@ export default function ResultsContent() {
     const queryLevelResults: ApproximationLevelResults = Object.entries(queryResultsMap).map(([key, value]: [string, Segment[][]]) => {
         return value.map(segments => ({ level: Number(key), segments }))
     }).flat(1).map((item, index) => ({ ...item, index }));
-    const source = useAppSelector((state) => state.states.querySpecList[state.states.querySpecIndex]?.target) || "";
-    const ratio = useAppSelector((state) => state.dataset.dataset?.ratios[source]);
+    const source = useAppSelector((state) => state.states.querySpec?.target) || "";
     const timeSpans = queryLevelResults.map(({ segments }) => (segments.at(-1)?.end_time || 0) - (segments.at(0)?.start_time || 0)).map((x) => x / 86400)
     const dispatch = useAppDispatch();
     const current = useAppSelector((state) => state.approximation.current);
@@ -107,7 +106,7 @@ export default function ResultsContent() {
                     </div>
                 </div>
                 <div className="result-item-list">
-                    {sortedResults.length === 0 ?
+                    {sortedResults.length === 0 || !source ?
                         <Empty></Empty> :
                         sortedResults.slice(0, count).map((result) => {
                             const { level, index, segments } = result;
@@ -123,7 +122,7 @@ export default function ResultsContent() {
                                 }} >
                                     <div className="data-name">{source}</div>
                                     <div className="data-name flex">
-                                        <LineChart xData={x} range={[start, end]} yData={data?.[source] as number[]} ratio={ratio} height={50} split={[...new Set(segments.map(segment => [segment.start_idx, segment.end_idx]).flat())]} isShowRange={false} isExpand={false}></LineChart>
+                                        <LineChart xData={x} range={[start, end]} yData={data?.[source] as number[]} height={50} split={[...new Set(segments.map(segment => [segment.start_idx, segment.end_idx]).flat())]} isShowRange={false} isExpand={false}></LineChart>
                                     </div>
                                     <div className="flex-width data-value">
                                         <div className="data-value__inner" style={{ width: `${(timeSpans[index]) / maxTimeSpan * 100}%` }} >

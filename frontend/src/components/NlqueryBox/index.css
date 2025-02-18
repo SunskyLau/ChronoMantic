@@ -110,9 +110,19 @@
 
 @keyframes dashFlow {
   from {
-      stroke-dashoffset: 0;
+    stroke-dashoffset: 0;
   }
+
   to {
-      stroke-dashoffset: -8; /* 让虚线向左流动 */
+    stroke-dashoffset: -8;
+    /* 让虚线向左流动 */
   }
+}
+
+.trend-item-attr .ant-select-multiple .ant-select-selection-overflow {
+  display: none;
+}
+
+.trend-item-attr .ant-select-selector {
+  padding-left: 12px;
 }

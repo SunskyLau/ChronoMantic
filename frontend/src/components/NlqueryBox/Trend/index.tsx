@@ -19,19 +19,20 @@ interface TrendProps {
 }
 
 export default function Trend({ title, trends, onChange, start = 0, isEdit, disabled }: TrendProps) {
-	const allTrends = isEdit
-		? deepClone(trends).map((trend) => ({
-				category: trend.category,
-				slope_scope_condition: trend.slope_scope_condition || {},
-				delta_percentage_scope_condition: trend.delta_percentage_scope_condition || {},
-				daily_average_delta_percentage_scope_condition: trend.daily_average_delta_percentage_scope_condition || {},
-				abs_slope_percentage_scope_condition: trend.abs_slope_percentage_scope_condition || {},
-				time_span_condition: trend.time_span_condition || {},
-		  }))
-		: trends;
+	const allTrends = isEdit ? deepClone(trends) : trends;
 	const trendRefs = useRef<(HTMLDivElement | null)[]>([]);
 	const dispatch = useAppDispatch();
 	const colorMap = useAppSelector((state) => state.states.colorMap);
+
+	const getAvailableOptions = () => {
+		return [
+			{ label: "Slope Scope", value: "slope_scope_condition" },
+			{ label: "Delta Percentage", value: "delta_percentage_scope_condition" },
+			{ label: "Daily Average Delta", value: "daily_average_delta_percentage_scope_condition" },
+			{ label: "Abs Slope Percentage", value: "abs_slope_percentage_scope_condition" },
+			{ label: "Time Span", value: "time_span_condition" }
+		];
+	};
 
 	return (
 		<>
@@ -54,11 +55,6 @@ export default function Trend({ title, trends, onChange, start = 0, isEdit, disa
 								category: {
 									category: "",
 								},
-								slope_scope_condition: {},
-								delta_percentage_scope_condition: {},
-								daily_average_delta_percentage_scope_condition: {},
-								abs_slope_percentage_scope_condition: {},
-								time_span_condition: {},
 							});
 							onChange(newTrends);
 						}}
@@ -84,16 +80,43 @@ export default function Trend({ title, trends, onChange, start = 0, isEdit, disa
 								>
 									<Typography.Title level={5}>No.{index + start}</Typography.Title>
 									{isEdit && !disabled && (
-										<Button
-											type="primary"
-											icon={<MinusOutlined />}
-											danger
-											onClick={() => {
-												const newTrends = deepClone(allTrends);
-												newTrends.splice(index, 1);
-												onChange(newTrends);
-											}}
-										></Button>
+										<Flex gap={4} className="trend-item-attr">
+											<Select
+												mode="multiple"
+												options={getAvailableOptions()}
+												popupMatchSelectWidth={false}
+												value={Object.keys(trend).filter(key => key !== 'category')}
+												onChange={(values) => {
+													const newTrends = deepClone(allTrends);
+													newTrends[index] = {
+														category: trend.category
+													};
+													values.forEach(value => {
+														const k = value as keyof TrendWithSource;
+														if (k === 'category') return;
+														if (!newTrends[index][k]) {
+															newTrends[index][k] = {
+																max: undefined,
+																min: undefined,
+															};
+														} else {
+															newTrends[index][k] = trend[k];
+														}
+													});
+													onChange(newTrends);
+												}}
+											></Select>
+											<Button
+												type="primary"
+												icon={<MinusOutlined />}
+												danger
+												onClick={() => {
+													const newTrends = deepClone(allTrends);
+													newTrends.splice(index, 1);
+													onChange(newTrends);
+												}}
+											></Button>
+										</Flex>
 									)}
 								</Flex>
 								{Object.keys(trend).map((key, i) => {
@@ -103,29 +126,34 @@ export default function Trend({ title, trends, onChange, start = 0, isEdit, disa
 									switch (k) {
 										case "category":
 											components.push(
-												<div style={{ width: 'fit-content', padding: 4, borderRadius: 4, backgroundColor: getColorFromMap(colorMap, trend[k].text_source) }} key={k}><Select
-													popupMatchSelectWidth={false}
-													value={trend[k].category}
-													options={[
-														{
-															label: "flat",
-															value: "flat",
-														},
-														{
-															label: "up",
-															value: "up",
-														},
-														{
-															label: "down",
-															value: "down",
-														},
-													]}
-													onChange={(value) => {
-														const newTrends = deepClone(allTrends);
-														newTrends[index][k].category = value;
-														onChange(newTrends);
-													}}
-												></Select></div>
+												<div
+													style={{ width: "fit-content", padding: 4, borderRadius: 4, backgroundColor: getColorFromMap(colorMap, trend[k].text_source) }}
+													key={k}
+												>
+													<Select
+														popupMatchSelectWidth={false}
+														value={trend[k].category}
+														options={[
+															{
+																label: "flat",
+																value: "flat",
+															},
+															{
+																label: "up",
+																value: "up",
+															},
+															{
+																label: "down",
+																value: "down",
+															},
+														]}
+														onChange={(value) => {
+															const newTrends = deepClone(allTrends);
+															newTrends[index][k].category = value;
+															onChange(newTrends);
+														}}
+													></Select>
+												</div>
 											);
 											break;
 										case "time_span_condition":
