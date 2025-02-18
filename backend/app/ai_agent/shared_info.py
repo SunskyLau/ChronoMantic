@@ -39,11 +39,18 @@ export interface Trend {
   time_span_condition?: ScopeCondition; // 时间跨度的范围条件，用于限定趋势的持续时间，单位是秒，例如3600就代表1小时，1天是86400秒
 }
 
-export enum Attribute {
+export enum SingleAttribute {
   SLOPE = "slope", // 斜率属性，用于比较趋势的斜率
   START_VALUE = "start_value", // 起始值属性，用于比较趋势的起始点值
   END_VALUE = "end_value", // 结束值属性，用于比较趋势的终止点值
   TIME_SPAN = "time_span", // 时间跨度属性，用于比较趋势的持续时间，单位是秒
+  DELTA_PERCENTAGE = "delta_percentage", // 变化率属性，单位是%
+  DAILY_AVERAGE_DELTA_PERCENTAGE = "daily_average_delta_percentage", // 日均变化率属性，单位是%/day
+  ABS_SLOPE_PERCENTAGE = "abs_slope_percentage" // 斜率占比属性，单位是%
+}
+
+export enum GroupAttribute {
+  TIME_SPAN = "time_span", // 时间跨度属性，单位是秒
 }
 
 export enum Comparator {
@@ -55,24 +62,32 @@ export enum Comparator {
   APPROXIMATELY_EQUAL_TO = "~=", // 近似等于比较符
 }
 
-export interface Relation {
+export interface SingleRelation {
   id1: number; // 第一个趋势的ID标识，用于关系比较
   id2: number; // 第二个趋势的ID标识，用于关系比较
-  attribute: Attribute; // 要比较的属性类型
+  attribute: SingleAttribute; // 要比较的属性类型
   comparator: Comparator; // 比较关系的运算符
 }
 
-export interface TrendTimeSpanCompositionCondition {
-  id1: number; // 起始趋势的ID，必须小于id2
-  id2: number; // 结束趋势的ID，必须大于id1
-  time_span_condition: ScopeCondition; // 从id1到id2之间(包括id1和id2)所有趋势的总时间跨度条件，单位是秒，例如3600就代表1小时，1天是86400秒
+export interface TrendGroup {
+  ids: [number, number]; // 组合中包含的趋势ID列表，ids[1]>=ids[0]
+  time_span_condition: ScopeCondition; // 时间跨度条件，单位是秒
+}
+
+export interface GroupRelation {
+  group1: [number, number]; // 第一个趋势组合的ID列表，group1[1]>=group1[0]
+  group2: [number, number]; // 第二个趋势组合的ID列表，group2[1]>=group2[0]
+  attribute: GroupAttribute; // 要比较的属性类型
+  comparator: Comparator; // 比较关系的运算符
 }
 
 export interface QuerySpec {
   target: string; // 查询目标的时间序列名称
   trends: Trend[]; // 趋势条件列表
-  relations: Relation[]; // 趋势间的关系条件列表
-  trend_time_span_composition_conditions: TrendTimeSpanCompositionCondition[] | ScopeCondition; // 趋势组合的时间跨度条件，可以是条件列表或单个范围条件，如果为ScopeCondition，则表示所有趋势的总体时间跨度，单位是秒
+  single_relations: SingleRelation[]; // 趋势间的关系条件列表
+  trend_groups: TrendGroup[]; // 趋势组合列表
+  group_relations: GroupRelation[]; // 组合关系列表
+  time_span_condition?: ScopeCondition; // 全局时间跨度条件，单位是秒，可选
   time_scope_condition?: ScopeCondition; // 全局时间范围的筛选条件，单位是秒，可选
   max_value_scope_condition?: ScopeCondition; // 全局最大值的范围条件，可选
   min_value_scope_condition?: ScopeCondition; // 全局最小值的范围条件，可选
@@ -87,22 +102,24 @@ export interface TextSource {
   index: number; // 用于区分text相同但是在原文中位置不同的文本来源片段，index=0表示第一个，index=1表示第二个，以此类推...
 }
 
-// 带有文本来源信息的基础条件接口
+// 带文本来源的趋势类别
 export interface CategoryWithSource {
   category: string; // 趋势类别
   text_source: TextSource; // 类别描述的文本来源信息
 }
 
+// 带文本来源的阈值条件
 export interface ThresholdConditionWithSource extends ThresholdCondition {
   text_source: TextSource; // 阈值条件的文本来源信息
 }
 
+// 带文本来源的范围条件
 export interface ScopeConditionWithSource {
   max?: ThresholdConditionWithSource; // 带文本来源的最大值条件
   min?: ThresholdConditionWithSource; // 带文本来源的最小值条件
 }
 
-// 带有文本来源信息的趋势接口
+// 带有文本来源的趋势接口
 export interface TrendWithSource {
   category: CategoryWithSource; // 带文本来源的趋势类别
   slope_scope_condition?: ScopeConditionWithSource; // 带文本来源的斜率范围条件
@@ -112,35 +129,36 @@ export interface TrendWithSource {
   time_span_condition?: ScopeConditionWithSource; // 带文本来源的时间跨度条件
 }
 
-// 带有文本来源信息的关系接口
-export interface RelationWithSource {
-  id1: number; // 第一个趋势的ID
-  id2: number; // 第二个趋势的ID
-  attribute: Attribute; // 比较属性
-  comparator: Comparator; // 比较运算符
+// 带文本来源的单趋势关系接口
+export interface SingleRelationWithSource extends SingleRelation {
   text_source: TextSource; // 关系描述的文本来源信息
 }
 
-// 带有文本来源信息的时间跨度组合条件接口
-export interface TrendTimeSpanCompositionConditionWithSource {
-  id1: number; // 起始趋势ID
-  id2: number; // 结束趋势ID
-  time_span_condition: ScopeCondition; // 时间跨度条件
-  text_source: TextSource; // 时间跨度描述的文本来源信息
+// 带文本来源的趋势组合接口
+export interface TrendGroupWithSource extends TrendGroup {
+  text_source: TextSource; // 组合描述的文本来源信息
 }
 
+// 带文本来源的组合关系接口
+export interface GroupRelationWithSource extends GroupRelation {
+  text_source: TextSource; // 组合关系描述的文本来源信息
+}
+
+// 带文本来源的查询目标接口
 export interface TargetWithSource {
   target: string; // 查询目标名称
   text_source: TextSource; // 目标描述的文本来源信息
 }
 
-// 带有文本来源信息的完整查询规范接口
+// 带文本来源的完整查询规范接口
 export interface QuerySpecWithSource {
   original_text: string; // 原始查询文本
   target: TargetWithSource; // 带文本来源的查询目标时间序列
   trends: TrendWithSource[]; // 带文本来源的趋势条件列表
-  relations: RelationWithSource[]; // 带文本来源的关系条件列表
-  trend_time_span_composition_conditions: TrendTimeSpanCompositionConditionWithSource[] | ScopeConditionWithSource; // 带文本来源的时间跨度组合条件
+  single_relations: SingleRelationWithSource[]; // 带文本来源的关系条件列表
+  trend_groups: TrendGroupWithSource[]; // 带文本来源的趋势组合列表
+  group_relations: GroupRelationWithSource[]; // 带文本来源的组合关系列表
+  time_span_condition?: ScopeConditionWithSource; // 带文本来源的全局时间跨度条件
   time_scope_condition?: ScopeConditionWithSource; // 带文本来源的全局时间范围条件
   max_value_scope_condition?: ScopeConditionWithSource; // 带文本来源的全局最大值条件
   min_value_scope_condition?: ScopeConditionWithSource; // 带文本来源的全局最小值条件
@@ -152,9 +170,6 @@ intentions_info = """
  * Intentions
  */
 
-/**
- * SingleChoice - 单个趋势的可选属性枚举
- */
 export enum SingleChoice {
   CATEGORY = "category", // 趋势类别
   SLOPE = "slope", // 斜率属性
@@ -164,55 +179,51 @@ export enum SingleChoice {
   TIME_SPAN = "time_span", // 时间跨度属性,单位是秒
 }
 
-/**
- * GroupChoice - 趋势组合的可选属性枚举
- */
 export enum GroupChoice {
-  TREND_TIME_SPAN_COMPOSITION_CONDITION = "trend_time_span_composition_condition", // 趋势组合的时间跨度条件
+  TIME_SPAN = "time_span", // 时间跨度属性
 }
 
-/**
- * SingleIntention - 单个趋势的意图接口定义
- */
 export interface SingleIntention {
-  id: number; // 趋势的ID标识，对应于segments中的index
+  id: number; // 趋势的ID标识
   single_choices: SingleChoice[]; // 该趋势需要考虑的属性列表
 }
 
-/**
- * GroupIntention - 趋势组合的意图接口定义
- */
 export interface GroupIntention {
-  ids: number[]; // 组合中包含的趋势ID列表，对应于segments中的index
+  ids: [number, number]; // 组合中包含的趋势ID列表
   group_choice: GroupChoice; // 该组合需要考虑的属性
 }
 
-/**
- * RelationChoice - 趋势关系的可选属性枚举
- */
-export enum RelationChoice {
+export enum SingleRelationChoice {
   SLOPE = "slope", // 斜率关系
   START_VALUE = "start_value", // 起始值关系
   END_VALUE = "end_value", // 结束值关系
   TIME_SPAN = "time_span", // 时间跨度关系
+  DELTA_PERCENTAGE = "delta_percentage", // 变化率关系
+  DAILY_AVERAGE_DELTA_PERCENTAGE = "daily_average_delta_percentage", // 日均变化率关系
+  ABS_SLOPE_PERCENTAGE = "abs_slope_percentage", // 斜率占比关系
 }
 
-/**
- * RelationIntention - 趋势关系的意图接口定义
- */
-export interface RelationIntention {
-  id1: number; // 第一个趋势的ID，对应于segments中的index
-  id2: number; // 第二个趋势的ID，对应于segments中的index
-  relation_choice: RelationChoice; // 需要比较的关系属性
+export enum GroupRelationChoice {
+  TIME_SPAN = "time_span", // 时间跨度关系
 }
 
-/**
- * Intentions - 整体查询意图的接口定义
- */
+export interface SingleChoiceRelationIntention {
+  id1: number; // 第一个趋势的ID
+  id2: number; // 第二个趋势的ID
+  relation_choice: SingleRelationChoice; // 需要比较的关系属性
+}
+
+export interface GroupChoiceRelationIntention {
+  group1: [number, number]; // 第一个趋势组合的ID列表
+  group2: [number, number]; // 第二个趋势组合的ID列表
+  relation_choice: GroupRelationChoice; // 需要比较的关系属性
+}
+
 export interface Intentions {
   single_intentions: SingleIntention[]; // 单个趋势的意图列表
   group_intentions: GroupIntention[]; // 趋势组合的意图列表
-  relation_intentions: RelationIntention[]; // 趋势关系的意图列表
+  single_relation_intentions: SingleChoiceRelationIntention[]; // 单个趋势关系的意图列表
+  group_relation_intentions: GroupChoiceRelationIntention[]; // 趋势组合关系的意图列表
 }
 """
 
@@ -227,7 +238,7 @@ parse_nl_logic_info = """
 4. 如果是金融相关数据集，如自然语言中对于趋势程度的描述没有明确指定是abs_slope_percentage还是daily_average_delta_percentage，则默认解析为daily_average_delta_percentage，例如，"rose sharply"中的"sharply"需要解析为一个你认为较高的daily_average_delta_percentage_scope_condition。如果是非金融相关数据集，则默认解析为abs_slope_percentage，例如，"rose sharply"中的"sharply"需要解析为一个你认为较高的abs_slope_percentage_scope_condition。
 5. TextSource的text只能是来源original_text的子文本，并且TextSource不可以和其他TextSource重叠。例如，"two consecutive rises", 如果"rises"被解析为一个TextSource，那么"two consecutive rises"就不应该被解析为TextSource，因为"two consecutive rises"已经包含了"rises"，不允许出现重叠的TextSource。
 6. 你需要识别出自然语言中对于relation的描述，这种描述也可以分为隐式的和显式的。隐式的relation描述通常隐藏在形状的描述中，例如，"head-and-shoulders"中，中间的"head"应该要高于左右两个shoulders，这就意味着第二次上升趋势(trend_id=2)的end_value应该要大于第一次和第三次上升趋势(trend_id=0和trend_id=4)的end_value，这里relation就应该被解析出来。显式的relation描述通常是直接描述的，例如，"连续的两次上升，左边的上升速度比右边的上升速度更快"，这意味着第一次上升趋势(trend_id=0)的slope应该要大于第二次上升趋势(trend_id=1)的slope，这里relation就应该被解析出来。最后，你还需要避免引入无效的relation，例如，"rise sharply then rise slowly"，这里面"sharply"和"slowly"已经被解析成trend中的条件，再引入relation是多余的。
-7. 对于自然语言中存在的持续时间的描述，你需要准确判断出描述的是time_span_condition还是trend_time_span_composition_conditions。对于单个trend的持续时间描述，通常是time_span_condition，例如，"rise with a duration of 20~30days"，需要解析成time_span_condition，其中min和max需要解析成相应的数值。对于多个trend的持续时间描述，通常是trend_time_span_composition_conditions，例如，"a top with a duration of about 3 months"，需要解析成trend_time_span_composition_conditions，其中id1应该是0(代表第一个trend)，id2应该是1(代表第二个trend)，time_span_condition需要解析成相应的范围。注意,trend_time_span_composition_conditions中的time_span_condition是不带text_source的。
+7. 对于自然语言中存在的持续时间描述，你需要判断使用整体的time_span_condition，还是使用trend_group中的time_span_condition，抑或是使用trend中的time_span_condition。如果是对于整体时间的描述，则使用整体time_span_condition；如果是对于组合时间的描述，则使用trend_group中的time_span_condition，如果是对于单个trend的持续时间描述，则使用trend中的time_span_condition。
 """
 
 modify_nl_logic_info = """

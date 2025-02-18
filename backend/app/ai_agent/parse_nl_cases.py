@@ -61,8 +61,9 @@ class ParseNL_Cases:
       }
     }
   ],
-  "relations": [],
-  "trend_time_span_composition_conditions": []
+  "single_relations": [],
+  "trend_groups": [],
+  "group_relations": [],
 }
 """
 
@@ -118,7 +119,7 @@ class ParseNL_Cases:
       }
     }
   ],
-  "relations": [
+  "single_relations": [
     {
       "id1": 0,
       "id2": 2,
@@ -130,7 +131,8 @@ class ParseNL_Cases:
       }
     }
   ],
-  "trend_time_span_composition_conditions": []
+  "trend_groups": [],
+  "group_relations": []
 }
     """
     case3 = """
@@ -203,7 +205,7 @@ class ParseNL_Cases:
       }
     }
   ],
-  "relations": [
+  "single_relations": [
     {
       "id1": 0,
       "id2": 2,
@@ -225,7 +227,8 @@ class ParseNL_Cases:
       }
     }
   ],
-  "trend_time_span_composition_conditions": []
+  "trend_groups": [],
+  "group_relations": []
 }
     """
     case4 = """
@@ -298,7 +301,7 @@ class ParseNL_Cases:
       }
     }
   ],
-  "relations": [
+  "single_relations": [
     {
       "id1": 0,
       "id2": 2,
@@ -330,7 +333,8 @@ class ParseNL_Cases:
       }
     }
   ],
-  "trend_time_span_composition_conditions": []
+  "trend_groups": [],
+  "group_relations": []
 }
 	"""
 
@@ -423,7 +427,7 @@ class ParseNL_Cases:
       }
     }
   ],
-  "relations": [
+  "single_relations": [
     {
       "id1": 1,
       "id2": 3,
@@ -435,10 +439,9 @@ class ParseNL_Cases:
       }
     }
   ],
-  "trend_time_span_composition_conditions": [
+  "trend_groups": [
     {
-      "id1": 1,
-      "id2": 4,
+      "ids": [1, 4],
       "time_span_condition": {
         "min": {
           "value": 432000,
@@ -454,6 +457,7 @@ class ParseNL_Cases:
         "index": 0
       }
     }
-  ]
+  ],
+  "group_relations": []
 }
     """

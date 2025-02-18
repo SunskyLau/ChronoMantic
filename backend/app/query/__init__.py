@@ -14,10 +14,12 @@ from ..MyTypes import (
     ScopeCondition,
     ThresholdCondition,
     Trend,
-    Relation,
+    SingleRelation,
+    GroupRelation,
+    SingleAttribute,
+    GroupAttribute,
     Comparator,
-    Attribute,
-    TrendTimeSpanCompositionCondition,
+    TrendGroup,
 )
 
 
@@ -72,14 +74,20 @@ def satisfies_all_conditions(sequence: List[Segment], query_spec: QuerySpec, df_
     if query_spec.trends and not match_trend_sequence(sequence, query_spec.trends):
         return False
 
-    # 检查关系约束
-    if query_spec.relations and not satisfies_relations(sequence, query_spec.relations):
+    # 检查单趋势之间的关系约束
+    if query_spec.single_relations and not satisfies_single_relations(sequence, query_spec.single_relations):
         return False
 
-    # 检查趋势时间跨度组合条件
-    if query_spec.trend_time_span_composition_conditions and not satisfies_trend_time_span_compositions(
-        sequence, query_spec.trend_time_span_composition_conditions
-    ):
+    # 检查趋势组合条件
+    if query_spec.trend_groups and not satisfies_trend_groups(sequence, query_spec.trend_groups):
+        return False
+
+    # 检查组合之间的关系
+    if query_spec.group_relations and not satisfies_group_relations(sequence, query_spec.group_relations):
+        return False
+
+    # 检查总时间跨度条件
+    if query_spec.time_span_condition and not satisfies_time_span_condition(sequence, query_spec.time_span_condition):
         return False
 
     return True
@@ -180,8 +188,8 @@ def match_single_trend(segment: Segment, trend: Trend) -> bool:
 
 
 @typechecked
-def satisfies_relations(segments: List[Segment], relations: List[Relation]) -> bool:
-    """检查段序列是否满足关系约束"""
+def satisfies_single_relations(segments: List[Segment], relations: List[SingleRelation]) -> bool:
+    """检查段序列是否满足单趋势之间的关系约束"""
     for relation in relations:
         if not satisfy_single_relation(segments, relation):
             return False
@@ -189,69 +197,114 @@ def satisfies_relations(segments: List[Segment], relations: List[Relation]) -> b
 
 
 @typechecked
-def satisfy_single_relation(segments: List[Segment], relation: Relation):
-    """检查段序列是否满足单个关系约束"""
+def satisfy_single_relation(segments: List[Segment], relation: SingleRelation) -> bool:
+    """检查段序列是否满足单个趋势关系约束"""
     if relation.id1 >= len(segments) or relation.id2 >= len(segments):
         return False
 
     seg1, seg2 = segments[relation.id1], segments[relation.id2]
 
-    # 获取对应属性的绝对值
-    val1 = abs(get_attribute_value(seg1, relation.attribute))
-    val2 = abs(get_attribute_value(seg2, relation.attribute))
+    # 获取对应属性的值
+    val1 = get_single_attribute_value(seg1, relation.attribute)
+    val2 = get_single_attribute_value(seg2, relation.attribute)
 
     if val1 is None or val2 is None:
         return False
 
     # 根据比较器进行比较
-    if relation.comparator == Comparator.GREATER:
-        return val1 > val2 and abs(val1 - val2) > abs(val2 * 0.02)
-    elif relation.comparator == Comparator.LESS:
-        return val1 < val2 and abs(val1 - val2) > abs(val1 * 0.02)
-    elif relation.comparator == Comparator.EQUAL:
-        return val1 == val2
-    elif relation.comparator == Comparator.NO_GREATER:
-        return val1 <= val2
-    elif relation.comparator == Comparator.NO_LESS:
-        return val1 >= val2
-    elif relation.comparator == Comparator.APPROXIMATELY_EQUAL_TO:
-        return abs(val1 - val2) <= abs(val1 * 0.02)  # 2%容差
-
-    return False
+    return compare_values(val1, val2, relation.comparator)
 
 
 @typechecked
-def satisfies_trend_time_span_compositions(segments: List[Segment], conditions: List[TrendTimeSpanCompositionCondition] | ScopeCondition) -> bool:
-    """检查段序列是否满足趋势时间跨度组合条件"""
-    if isinstance(conditions, ScopeCondition):
-        total_time_span = segments[-1].end_time - segments[0].start_time
-        return check_single_threshold_condition(total_time_span, conditions.min, conditions.max)
-
-    for condition in conditions:
-        if condition.id1 >= len(segments) or condition.id2 >= len(segments) or condition.id1 >= condition.id2:
+def satisfies_trend_groups(segments: List[Segment], trend_groups: List[TrendGroup]) -> bool:
+    """检查段序列是否满足趋势组合条件"""
+    for group in trend_groups:
+        id1, id2 = group.ids
+        if id1 >= len(segments) or id2 >= len(segments):
             return False
 
-        # 计算从id1到id2的总时间跨度
-        total_time_span = segments[condition.id2].end_time - segments[condition.id1].start_time
-
-        if not check_single_threshold_condition(total_time_span, condition.time_span_condition.min, condition.time_span_condition.max):
-            return False
+        if group.time_span_condition:
+            time_span = segments[id2].end_time - segments[id1].start_time
+            if not check_single_threshold_condition(time_span, group.time_span_condition.min, group.time_span_condition.max):
+                return False
 
     return True
 
 
 @typechecked
-def get_attribute_value(segment: Segment, attribute: Attribute) -> Optional[float]:
-    """从段中获取特定属性的值"""
-    if attribute == Attribute.SLOPE:
+def satisfies_group_relations(segments: List[Segment], relations: List[GroupRelation]) -> bool:
+    """检查段序列是否满足组合之间的关系"""
+    for relation in relations:
+        if not satisfy_group_relation(segments, relation):
+            return False
+    return True
+
+
+@typechecked
+def satisfy_group_relation(segments: List[Segment], relation: GroupRelation) -> bool:
+    """检查段序列是否满足单个组合关系约束"""
+    id1_1, id1_2 = relation.group1
+    id2_1, id2_2 = relation.group2
+
+    if any(idx >= len(segments) for idx in [id1_1, id1_2, id2_1, id2_2]):
+        return False
+
+    # 计算两个组的属性值
+    if relation.attribute == GroupAttribute.TIME_SPAN:
+        val1 = segments[id1_2].end_time - segments[id1_1].start_time
+        val2 = segments[id2_2].end_time - segments[id2_1].start_time
+    else:
+        return False  # 暂不支持其他组属性
+
+    if val1 is None or val2 is None:
+        return False
+
+    # 根据比较器进行比较
+    return compare_values(val1, val2, relation.comparator)
+
+
+@typechecked
+def get_single_attribute_value(segment: Segment, attribute: SingleAttribute) -> Optional[float]:
+    """从段中获取单趋势属性的值"""
+    if attribute == SingleAttribute.SLOPE:
         return segment.slope
-    elif attribute == Attribute.START_VALUE:
+    elif attribute == SingleAttribute.START_VALUE:
         return segment.start_value
-    elif attribute == Attribute.END_VALUE:
+    elif attribute == SingleAttribute.END_VALUE:
         return segment.end_value
-    elif attribute == Attribute.TIME_SPAN:
+    elif attribute == SingleAttribute.TIME_SPAN:
         return segment.time_span
+    elif attribute == SingleAttribute.DELTA_PERCENTAGE:
+        return segment.delta_percentage
+    elif attribute == SingleAttribute.DAILY_AVERAGE_DELTA_PERCENTAGE:
+        return segment.daily_average_delta_percentage
+    elif attribute == SingleAttribute.ABS_SLOPE_PERCENTAGE:
+        return segment.abs_slope_percentage
     return None
+
+
+@typechecked
+def compare_values(val1: float, val2: float, comparator: Comparator) -> bool:
+    """根据比较器比较两个值"""
+    if comparator == Comparator.GREATER:
+        return bool(val1 > val2 and abs(val1 - val2) > abs(val2 * 0.02))
+    elif comparator == Comparator.LESS:
+        return bool(val1 < val2 and abs(val1 - val2) > abs(val1 * 0.02))
+    elif comparator == Comparator.EQUAL:
+        return bool(val1 == val2)
+    elif comparator == Comparator.NO_GREATER:
+        return bool(val1 <= val2)
+    elif comparator == Comparator.NO_LESS:
+        return bool(val1 >= val2)
+    elif comparator == Comparator.APPROXIMATELY_EQUAL_TO:
+        return bool(abs(val1 - val2) <= abs(val1 * 0.02))  # 2%容差
+    return False
+
+@typechecked
+def satisfies_time_span_condition(segments: List[Segment], condition: ScopeCondition) -> bool:
+    """检查段序列是否满足总时间跨度条件"""
+    total_time_span = segments[-1].end_time - segments[0].start_time
+    return check_single_threshold_condition(total_time_span, condition.min, condition.max)
 
 
 if __name__ == "__main__":
@@ -266,8 +319,9 @@ if __name__ == "__main__":
             Trend(category="up", slope_scope_condition=ScopeCondition(min=ThresholdCondition(value=0.0001, inclusive=True))),
             Trend(category="up", slope_scope_condition=ScopeCondition(min=ThresholdCondition(value=0.0001, inclusive=True))),
         ],
-        relations=[Relation(comparator=Comparator.LESS, id1=0, id2=1, attribute=Attribute.END_VALUE)],
-        trend_time_span_composition_conditions=ScopeCondition(min=ThresholdCondition(value=10, inclusive=True)),
+        single_relations=[SingleRelation(comparator=Comparator.LESS, id1=0, id2=1, attribute=SingleAttribute.END_VALUE)],
+        trend_groups=[TrendGroup(ids=(0, 1), time_span_condition=ScopeCondition(min=ThresholdCondition(value=86400, inclusive=True)))],
+        group_relations=[],
     )
     results_dict = query(query_spec1, approximation_segments_containers, df)
     print(results_dict)
