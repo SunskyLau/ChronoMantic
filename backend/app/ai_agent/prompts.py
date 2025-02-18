@@ -20,6 +20,9 @@ parse_nl_cases = f"""## 示例1
 
 modify_nl_cases = f"""## 示例1
 {ModifyNL_Cases.case1}
+
+## 示例2
+{ModifyNL_Cases.case2}
 """
 
 

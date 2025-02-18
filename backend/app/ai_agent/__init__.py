@@ -90,7 +90,6 @@ def parse_nl_query(system_prompt: str, query: str) -> Dict:
     return json.loads(response)
 
 
-
 def modify_nl_query(system_prompt: str, query: str) -> Dict:
     client = myAIClient(model=Qwen.MODELS.QWEN_MAX, platform=Platforms.QWEN)
     response = client.send_prompt(system_prompt, query, False)
@@ -148,8 +147,9 @@ old_QuerySpecWithSource:
       }
     }
   ],
-  "relations": [],
-  "trend_time_span_composition_conditions": []
+  "single_relations": [],
+  "trend_groups": [],
+  "group_relations": [],
 }
 ```
 
@@ -213,13 +213,14 @@ intentions:
     }
   ],
   "group_intentions": [],
-  "relation_intentions": [
+  "single_relation_intentions": [
     {
       "id1": 0,
       "id2": 2,
-      "relation_choice": "slope"
+      "relation_choices": ["slope"]
     }
-  ]
+  ],
+  "group_relation_intentions": []
 }
 ```
     """
@@ -228,5 +229,5 @@ intentions:
 
 
 if __name__ == "__main__":
-    test_parse_nl_query()
-    # test_modify_nl_query()
+    # test_parse_nl_query()
+    test_modify_nl_query()

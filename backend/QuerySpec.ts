@@ -19,6 +19,12 @@ export interface Segment {
   time_span?: number; // 时间跨度,单位是秒
 }
 
+// 趋势组合
+export interface TrendGroup {
+  ids: [number, number]; // 组内趋势的id列表,ids[1]>=ids[0]
+  time_span: number; // 时间跨度,单位是秒
+}
+
 // 近似的连续分段信息
 export interface ApproximationSegments {
   segments: Segment[]; // 近似的连续分段列表
@@ -222,26 +228,26 @@ export interface SingleIntention {
 
 export interface GroupIntention {
   ids: [number, number]; // 组合中包含的趋势ID列表
-  group_choice: GroupChoice; // 该组合需要考虑的属性
+  group_choices: GroupChoice[]; // 该组合需要考虑用作自然语言查询调整的属性列表
 }
 
-export interface SingleChoiceRelationIntention {
+export interface SingleRelationIntention {
   id1: number; // 第一个趋势的ID
   id2: number; // 第二个趋势的ID
-  relation_choice: SingleRelationChoice; // 需要比较的关系属性
+  relation_choices: SingleRelationChoice[]; // 需要比较的关系属性
 }
 
 // 趋势组合关系的意图接口定义
-export interface GroupChoiceRelationIntention {
-  group1: [number, number]; // 第一个趋势组合的ID列表
-  group2: [number, number]; // 第二个趋势组合的ID列表
-  relation_choice: GroupRelationChoice; // 需要比较的关系属性
+export interface GroupRelationIntention {
+  group1: [number, number]; // 第一个趋势组合的ID列表,group1[1]>=group1[0]
+  group2: [number, number]; // 第二个趋势组合的ID列表,group2[1]>=group2[0]
+  relation_choices: GroupRelationChoice[]; // 需要比较的关系属性
 }
 
 // 整体查询意图的接口定义
 export interface Intentions {
   single_intentions: SingleIntention[]; // 单个趋势的意图列表
   group_intentions: GroupIntention[]; // 趋势组合的意图列表
-  single_relation_intentions: SingleChoiceRelationIntention[]; // 单个趋势关系的意图列表
-  group_relation_intentions: GroupChoiceRelationIntention[]; // 趋势组合关系的意图列表
+  single_relation_intentions: SingleRelationIntention[]; // 单个趋势关系的意图列表
+  group_relation_intentions: GroupRelationIntention[]; // 趋势组合关系的意图列表
 }

@@ -185,12 +185,12 @@ export enum GroupChoice {
 
 export interface SingleIntention {
   id: number; // 趋势的ID标识
-  single_choices: SingleChoice[]; // 该趋势需要考虑的属性列表
+  single_choices: SingleChoice[]; // 该趋势需要考虑用作自然语言查询调整的属性列表
 }
 
 export interface GroupIntention {
-  ids: [number, number]; // 组合中包含的趋势ID列表
-  group_choice: GroupChoice; // 该组合需要考虑的属性
+  ids: [number, number]; // 组合中包含的趋势ID列表，ids[1]>=ids[0]
+  group_choices: GroupChoice[]; // 该组合需要考虑用作自然语言查询调整的属性列表
 }
 
 export enum SingleRelationChoice {
@@ -207,23 +207,23 @@ export enum GroupRelationChoice {
   TIME_SPAN = "time_span", // 时间跨度关系
 }
 
-export interface SingleChoiceRelationIntention {
+export interface SingleRelationIntention {
   id1: number; // 第一个趋势的ID
   id2: number; // 第二个趋势的ID
-  relation_choice: SingleRelationChoice; // 需要比较的关系属性
+  relation_choices: SingleRelationChoice[]; // 考虑作为自然语言查询调整的单个趋势间比较属性
 }
 
-export interface GroupChoiceRelationIntention {
-  group1: [number, number]; // 第一个趋势组合的ID列表
-  group2: [number, number]; // 第二个趋势组合的ID列表
-  relation_choice: GroupRelationChoice; // 需要比较的关系属性
+export interface GroupRelationIntention {
+  group1: [number, number]; // 第一个趋势组合的ID列表，group1[1]>=group1[0]
+  group2: [number, number]; // 第二个趋势组合的ID列表，group2[1]>=group2[0]
+  relation_choices: GroupRelationChoice[]; // 考虑作为自然语言查询调整的组合间比较属性
 }
 
 export interface Intentions {
   single_intentions: SingleIntention[]; // 单个趋势的意图列表
   group_intentions: GroupIntention[]; // 趋势组合的意图列表
-  single_relation_intentions: SingleChoiceRelationIntention[]; // 单个趋势关系的意图列表
-  group_relation_intentions: GroupChoiceRelationIntention[]; // 趋势组合关系的意图列表
+  single_relation_intentions: SingleRelationIntention[]; // 单个趋势关系的意图列表
+  group_relation_intentions: GroupRelationIntention[]; // 趋势组合关系的意图列表
 }
 """
 
@@ -245,7 +245,7 @@ modify_nl_logic_info = """
 输入参数
 - `old_queryspec_with_source: QuerySpecWithSource`：原始的查询规范
 - `segments:Segment[]`：用户选择的连续时间序列片段
-- `intentions:Intention[]`：用户对于查询调整的意图
+- `intentions:Intentions`：用户对于查询调整的意图
 输出参数
 - `new_queryspec_with_source: QuerySpecWithSource`：调整后的查询规范
 
@@ -253,5 +253,5 @@ modify_nl_logic_info = """
 2. 调整需要同时体现在original_text和QuerySpec的修改需要有严格的对应关系。新增的条件应该也对应到text中描述的新增，修改的条件应该也对应到text中描述的修改，删除的条件应该也对应到text中描述的删除。
 3. 不涉及调整意图的condition字段，要正确保留不要发生调整。最后，尽可能保证调整后的original_text和调整前不发生太大变化。
 4. `new_queryspec_with_source`中的text_source也要保证是来自于original_text的连续子文本，并且text_source不可以和其他text_source重叠。
-5. 对于`relation_intention`中，需要根据具体的relation_choice，选择`segments`中对应的属性进行精确比较，然后对QuerySpecWithSource进行调整， 同时符合相应的语义。
+5. 对于`SingleRelationIntention`中，需要根据具体的`relation_choices`，选择相应的`segments`中对应的属性进行精确比较，然后对QuerySpecWithSource进行调整， 同时符合相应的语义。
 """

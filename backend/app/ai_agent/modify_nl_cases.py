@@ -32,8 +32,9 @@ old_queryspec_with_source:
       }
     }
   ],
-  "relations": [],
-  "trend_time_span_composition_conditions": []
+  "trend_groups": [],
+  "single_relations": [],
+  "group_relations": [],
 }
 ```
 
@@ -81,7 +82,8 @@ intentions:
     }
   ],
   "group_intentions": [],
-  "relation_intentions": []
+  "single_relation_intentions": [],
+  "group_relation_intentions": []
 }
 ```
 
@@ -143,8 +145,9 @@ intentions:
       }
     }
   ],
-  "relations": [],
-  "trend_time_span_composition_conditions": []
+  "single_relations": [],
+  "trend_groups": [],
+  "group_relations": []
 }
 
     """
@@ -181,8 +184,9 @@ old_QuerySpecWithSource:
       }
     }
   ],
-  "relations": [],
-  "trend_time_span_composition_conditions": []
+  "single_relations": [],
+  "trend_groups": [],
+  "group_relations": [],
 }
 ```
 
@@ -191,13 +195,13 @@ segments:
 [
   {
     "source": "user",
-    "slope": -5,
+    "slope": -0.5,
     "start_value": 150,
     "end_value": 100,
     "start_time": 1672444800,
     "end_time": 1672531200,
     "delta_percentage": -33.3,
-    "daily_average_delta_percentage": -9.88,
+    "daily_average_delta_percentage": -3,
     "abs_slope_percentage": 80,
     "time_span": 86400
   },
@@ -221,7 +225,7 @@ segments:
     "start_time": 1672617600,
     "end_time": 1672704000,
     "delta_percentage": -20,
-    "daily_average_delta_percentage": -2,
+    "daily_average_delta_percentage": -5,
     "abs_slope_percentage": 40,
     "time_span": 86400
   }
@@ -240,25 +244,22 @@ intentions:
       "id": 1,
       "single_choices":["time_span"]
     },
-    {
-      "id": 2,
-      "single_choices":["daily_average_delta_percentage"]
-    }
   ],
   "group_intentions": [],
-  "relation_intentions": [
+  "single_relation_intentions": [
     {
       "id1": 0,
       "id2": 2,
-      "relation_choice": "slope"
+      "relation_choices": ["slope"]
     }
-  ]
+  ],
+  "group_relation_intentions": []
 }
 ```
 
 输出:
 {
-  "original_text": "Find periods in AMZN when price first fell, then rose with a duration of about 1 day, and then fell gradually where the second fall was less steep than the initial fall",
+  "original_text": "Find periods in AMZN when price first fell then rose with a duration of about 1 day and then fell with a slope steeper than first fall",
   "target": {
     "target": "AMZN",
     "text_source": {
@@ -286,7 +287,7 @@ intentions:
       },
       "time_span_condition": {
         "min": {
-          "value": 77760,
+          "value": 86400,
           "inclusive": true,
           "text_source": {
             "text": "about 1 day",
@@ -294,7 +295,7 @@ intentions:
           }
         },
         "max": {
-          "value": 103680,
+          "value": 172800,
           "inclusive": true,
           "text_source": {
             "text": "about 1 day",
@@ -308,42 +309,25 @@ intentions:
         "category": "down",
         "text_source": {
           "text": "fell",
-          "index": 1
+          "index": 0
         }
       },
-      "daily_average_delta_percentage_scope_condition": {
-        "min": {
-          "value": -3,
-          "inclusive": true,
-          "text_source": {
-            "text": "gradually",
-            "index": 0
-          }
-        },
-        "max": {
-          "value": 0,
-          "inclusive": false,
-          "text_source": {
-            "text": "gradually",
-            "index": 0
-          }
-        }
-      }
     }
   ],
-  "relations": [
+  "single_relations": [
     {
       "id1": 0,
       "id2": 2,
       "attribute": "slope",
-      "comparator": "<",
+      "comparator": ">",
       "text_source": {
-        "text": "the second fall was less steep than the initial fall",
+        "text": "with a slope steeper than first fall",
         "index": 0
       }
     }
   ],
-  "trend_time_span_composition_conditions": []
+  "trend_groups": [],
+  "group_relations": []
 }
     """
     case3 = """
