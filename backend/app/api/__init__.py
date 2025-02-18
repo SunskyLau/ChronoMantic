@@ -230,8 +230,8 @@ intentions
     return jsonify({"code": 200, "message": "Modify nl query successful", "results": filter_json(new_queryspec_with_source)})
 
 
-@bus_bp.route("/get_segment_group_info", methods=["POST"])
-def get_segment_group_info():
+@bus_bp.route("/get_segment_groups", methods=["POST"])
+def get_segment_groups():
     """获取连续时间序列片段的组信息
 
     | 参数名 | 类型 | 说明 |
