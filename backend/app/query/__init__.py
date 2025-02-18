@@ -20,6 +20,7 @@ from ..MyTypes import (
     GroupAttribute,
     Comparator,
     TrendGroup,
+    TrendCategory,
 )
 
 
@@ -137,15 +138,17 @@ def match_trend_sequence(segments: List[Segment], trends: List[Trend]) -> bool:
 @typechecked
 def match_single_trend(segment: Segment, trend: Trend) -> bool:
     """检查单个段是否匹配趋势模式"""
-    if trend.category == "flat":
+    if trend.category == TrendCategory.FLAT:
         if not segment.abs_slope_percentage <= FLAT_THRESHOLD:
             return False
-    elif trend.category == "up":
+    elif trend.category == TrendCategory.UP:
         if not (segment.slope > 0 and segment.abs_slope_percentage > FLAT_THRESHOLD):
             return False
-    elif trend.category == "down":
+    elif trend.category == TrendCategory.DOWN:
         if not (segment.slope < 0 and segment.abs_slope_percentage > FLAT_THRESHOLD):
             return False
+    elif trend.category == TrendCategory.ARBITRARY:
+        pass  # 任意趋势，不需要检查趋势类型
     else:
         return False
 
@@ -310,18 +313,22 @@ def satisfies_time_span_condition(segments: List[Segment], condition: ScopeCondi
 if __name__ == "__main__":
     # 加载数据
     df = pd.read_csv("../portfolio_data.csv")
-    dataset_info = DatasetInfo(time_column="Date", value_columns=["AMZN", "DPZ"], column_ratio_dict={"AMZN": 1, "DPZ": 1})
+    dataset_info = DatasetInfo(time_column="Date", value_columns=["AMZN", "DPZ"])
     approximation_segments_containers = approximate_dataset(df, dataset_info)
 
     query_spec1 = QuerySpec(
         target="AMZN",
         trends=[
-            Trend(category="up", slope_scope_condition=ScopeCondition(min=ThresholdCondition(value=0.0001, inclusive=True))),
-            Trend(category="up", slope_scope_condition=ScopeCondition(min=ThresholdCondition(value=0.0001, inclusive=True))),
+            Trend(category=TrendCategory.UP, slope_scope_condition=ScopeCondition(min=ThresholdCondition(value=0.0001, inclusive=True))),
+            Trend(category=TrendCategory.UP, slope_scope_condition=ScopeCondition(min=ThresholdCondition(value=0.0001, inclusive=True))),
         ],
         single_relations=[SingleRelation(comparator=Comparator.LESS, id1=0, id2=1, attribute=SingleAttribute.END_VALUE)],
         trend_groups=[TrendGroup(ids=(0, 1), time_span_condition=ScopeCondition(min=ThresholdCondition(value=86400, inclusive=True)))],
         group_relations=[],
+        time_span_condition=None,
+        time_scope_condition=None,
+        max_value_scope_condition=None,
+        min_value_scope_condition=None,
     )
     results_dict = query(query_spec1, approximation_segments_containers, df)
     print(results_dict)

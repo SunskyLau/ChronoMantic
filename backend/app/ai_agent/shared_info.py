@@ -98,70 +98,55 @@ export interface QuerySpec {
  */
 
 export interface TextSource {
-  text: string; // 来源于原始文本的文本片段，记录查询条件的原始描述
-  index: number; // 用于区分text相同但是在原文中位置不同的文本来源片段，index=0表示第一个，index=1表示第二个，以此类推...
+  text: str; // 原始文本片段
+  index: int; // 用于区分text相同但是在原文中位置不同的文本片段，index=0表示第一个，index=1表示第二个，以此类推
 }
 
-// 带文本来源的趋势类别
-export interface CategoryWithSource {
-  category: string; // 趋势类别
-  text_source: TextSource; // 类别描述的文本来源信息
+export interface WithSource {
+  text_source: TextSource; // 对应的原始文本信息
 }
 
-// 带文本来源的阈值条件
-export interface ThresholdConditionWithSource extends ThresholdCondition {
-  text_source: TextSource; // 阈值条件的文本来源信息
+// 基础条件的 WithSource 版本
+export interface CategoryWithSource extends WithSource {
+  category: TrendCategory; // 趋势类别
 }
 
-// 带文本来源的范围条件
-export interface ScopeConditionWithSource {
-  max?: ThresholdConditionWithSource; // 带文本来源的最大值条件
-  min?: ThresholdConditionWithSource; // 带文本来源的最小值条件
-}
+export interface ScopeConditionWithSource extends WithSource, ScopeCondition {}
 
-// 带有文本来源的趋势接口
+// 单趋势的 WithSource 版本
 export interface TrendWithSource {
-  category: CategoryWithSource; // 带文本来源的趋势类别
-  slope_scope_condition?: ScopeConditionWithSource; // 带文本来源的斜率范围条件
-  delta_percentage_scope_condition?: ScopeConditionWithSource; // 带文本来源的变化率范围条件
-  daily_average_delta_percentage_scope_condition?: ScopeConditionWithSource; // 带文本来源的日均变化率范围条件
-  abs_slope_percentage_scope_condition?: ScopeConditionWithSource; // 带文本来源的相对斜率范围条件
-  time_span_condition?: ScopeConditionWithSource; // 带文本来源的时间跨度条件
+  category: CategoryWithSource; // 趋势类别
+  slope_scope_condition?: ScopeConditionWithSource; // 斜率的范围条件
+  delta_percentage_scope_condition?: ScopeConditionWithSource; // 变化率的范围条件
+  daily_average_delta_percentage_scope_condition?: ScopeConditionWithSource; // 日平均变化率的范围条件
+  abs_slope_percentage_scope_condition?: ScopeConditionWithSource; // 斜率占比的范围条件
+  time_span_condition?: ScopeConditionWithSource; // 时间跨度的范围条件
 }
 
-// 带文本来源的单趋势关系接口
-export interface SingleRelationWithSource extends SingleRelation {
-  text_source: TextSource; // 关系描述的文本来源信息
+// 单趋势关系的 WithSource 版本
+export interface SingleRelationWithSource extends SingleRelation, WithSource {}
+
+// 趋势组合的 WithSource 版本
+export interface TrendGroupWithSource extends TrendGroup, WithSource {}
+
+// 组合关系的 WithSource 版本
+export interface GroupRelationWithSource extends GroupRelation, WithSource {}
+
+export interface TargetWithSource extends WithSource {
+  target: string; // 目标时间序列名
 }
 
-// 带文本来源的趋势组合接口
-export interface TrendGroupWithSource extends TrendGroup {
-  text_source: TextSource; // 组合描述的文本来源信息
-}
-
-// 带文本来源的组合关系接口
-export interface GroupRelationWithSource extends GroupRelation {
-  text_source: TextSource; // 组合关系描述的文本来源信息
-}
-
-// 带文本来源的查询目标接口
-export interface TargetWithSource {
-  target: string; // 查询目标名称
-  text_source: TextSource; // 目标描述的文本来源信息
-}
-
-// 带文本来源的完整查询规范接口
 export interface QuerySpecWithSource {
   original_text: string; // 原始查询文本
-  target: TargetWithSource; // 带文本来源的查询目标时间序列
-  trends: TrendWithSource[]; // 带文本来源的趋势条件列表
-  single_relations: SingleRelationWithSource[]; // 带文本来源的关系条件列表
-  trend_groups: TrendGroupWithSource[]; // 带文本来源的趋势组合列表
-  group_relations: GroupRelationWithSource[]; // 带文本来源的组合关系列表
-  time_span_condition?: ScopeConditionWithSource; // 带文本来源的全局时间跨度条件
-  time_scope_condition?: ScopeConditionWithSource; // 带文本来源的全局时间范围条件
-  max_value_scope_condition?: ScopeConditionWithSource; // 带文本来源的全局最大值条件
-  min_value_scope_condition?: ScopeConditionWithSource; // 带文本来源的全局最小值条件
+  target: TargetWithSource; // 查询目标
+  trends: TrendWithSource[]; // 趋势列表
+  single_relations: SingleRelationWithSource[]; // 单趋势关系列表
+  trend_groups: TrendGroupWithSource[]; // 趋势组合列表
+  group_relations: GroupRelationWithSource[]; // 组合关系列表
+  time_span_condition?: ScopeConditionWithSource; // 总时间跨度的范围条件
+  time_scope_condition?: ScopeConditionWithSource; // 时间范围的范围条件
+  max_value_scope_condition?: ScopeConditionWithSource; // 最大值的范围条件
+  min_value_scope_condition?: ScopeConditionWithSource; // 最小值的范围条件
 }
 """
 

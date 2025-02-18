@@ -20,7 +20,7 @@ export interface Segment {
 }
 
 // 趋势组合
-export interface TrendGroup {
+export interface SegmentGroup {
   ids: [number, number]; // 组内趋势的id列表,ids[1]>=ids[0]
   time_span: number; // 时间跨度,单位是秒
 }
@@ -54,9 +54,16 @@ export interface ScopeCondition {
   min?: ThresholdCondition; // 最小值条件
 }
 
+export enum TrendCategory {
+  FLAT = "flat", // 平坦
+  UP = "up", // 上升
+  DOWN = "down", // 下降
+  ARBITRARY = "arbitrary", // 任意
+}
+
 // 趋势
 export interface Trend {
-  category: string; // 趋势类别:"flat","up","down"
+  category: TrendCategory; // 趋势类别
   slope_scope_condition?: ScopeCondition; // 斜率的范围条件
   delta_percentage_scope_condition?: ScopeCondition; // 变化率的范围条件,单位是%,例如70就代表70%
   daily_average_delta_percentage_scope_condition?: ScopeCondition; // 日平均变化率的范围条件,单位是%/day,例如5就代表5%/day
@@ -132,20 +139,16 @@ export interface TextSource {
   index: number; // 用于区分text相同但是在原文中位置不同的文本片段，index=0表示第一个，index=1表示第二个，以此类推
 }
 
+export interface WithSource {
+  text_source: TextSource; // 对应的原始文本信息
+}
+
 // 基础条件的 WithSource 版本
-export interface CategoryWithSource {
-  category: string; // 趋势类别
-  text_source: TextSource; // 对应的原始文本信息
+export interface CategoryWithSource extends WithSource {
+  category: TrendCategory; // 趋势类别
 }
 
-export interface ThresholdConditionWithSource extends ThresholdCondition {
-  text_source: TextSource; // 对应的原始文本信息
-}
-
-export interface ScopeConditionWithSource {
-  max?: ThresholdConditionWithSource; // 最大值条件
-  min?: ThresholdConditionWithSource; // 最小值条件
-}
+export interface ScopeConditionWithSource extends WithSource, ScopeCondition {}
 
 // 单趋势的 WithSource 版本
 export interface TrendWithSource {
@@ -158,23 +161,16 @@ export interface TrendWithSource {
 }
 
 // 单趋势关系的 WithSource 版本
-export interface SingleRelationWithSource extends SingleRelation {
-  text_source: TextSource; // 对应的原始文本信息
-}
+export interface SingleRelationWithSource extends SingleRelation, WithSource {}
 
 // 趋势组合的 WithSource 版本
-export interface TrendGroupWithSource extends TrendGroup {
-  text_source: TextSource; // 对应的原始文本信息
-}
+export interface TrendGroupWithSource extends TrendGroup, WithSource {}
 
 // 组合关系的 WithSource 版本
-export interface GroupRelationWithSource extends GroupRelation {
-  text_source: TextSource; // 对应的原始文本信息
-}
+export interface GroupRelationWithSource extends GroupRelation, WithSource {}
 
-export interface TargetWithSource {
+export interface TargetWithSource extends WithSource {
   target: string; // 目标时间序列名
-  text_source: TextSource; // 对应的原始文本信息
 }
 
 export interface QuerySpecWithSource {

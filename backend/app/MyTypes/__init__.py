@@ -31,16 +31,16 @@ class Segment(DictMixin):
 
 
 @dataclass
-class ApproximationSegments(DictMixin):  # 近似的连续分段
-    segments: List[Segment]
-    approximation_level: int
+class ApproximationSegments(DictMixin):
+    segments: List[Segment]  # 近似的连续分段列表
+    approximation_level: int  # 近似程度
 
 
 @dataclass
 class ApproximationSegmentsContainer(DictMixin):
-    source: str
+    source: str  # 数据来源
     approximation_segments_list: List[ApproximationSegments]  # 近似的连续分段列表
-    max_approximation_level: int
+    max_approximation_level: int  # 最大近似程度
 
 
 """QuerySpec"""
@@ -58,9 +58,16 @@ class ScopeCondition(DictMixin):
     min: Optional[ThresholdCondition] = None  # 最小值条件
 
 
+class TrendCategory(Enum):
+    FLAT = "flat"  # 平坦
+    UP = "up"  # 上升
+    DOWN = "down"  # 下降
+    ARBITRARY = "arbitrary"  # 任意
+
+
 @dataclass
 class Trend(DictMixin):
-    category: str  # "flat","up","down"
+    category: TrendCategory  # 趋势类别
     slope_scope_condition: Optional[ScopeCondition] = None  # 斜率的范围条件
     delta_percentage_scope_condition: Optional[ScopeCondition] = None  # 变化率的范围条件, 单位是%, 例如70就代表70%
     daily_average_delta_percentage_scope_condition: Optional[ScopeCondition] = None  # 日平均变化率的范围条件, 单位是%/day，例如5就代表5%/day
