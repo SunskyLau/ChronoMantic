@@ -91,8 +91,8 @@ export default function QueryCondition() {
 						<div key={index}>
 							<Scope
 								title={`Trends Time Span`}
-								min={condition.time_span_condition?.min?.value || null}
-								max={condition.time_span_condition?.max?.value || null}
+								min={condition.time_span_condition?.min?.value ?? null}
+								max={condition.time_span_condition?.max?.value ?? null}
 								minInclusive={!!condition.time_span_condition?.min?.inclusive}
 								maxInclusive={!!condition.time_span_condition?.max?.inclusive}
 								addonBefore={[`Trend ${condition.id1}`, `Trend ${condition.id2}`]}
@@ -118,8 +118,8 @@ export default function QueryCondition() {
 						<Scope
 							title="Total Time Span"
 							addonAfter="days"
-							min={memoizedQuery.trend_time_span_composition_conditions?.min?.value || null}
-							max={memoizedQuery.trend_time_span_composition_conditions?.max?.value || null}
+							min={memoizedQuery.trend_time_span_composition_conditions?.min?.value ?? null}
+							max={memoizedQuery.trend_time_span_composition_conditions?.max?.value ?? null}
 							minActiveColor={getColorFromMap(colorMap, memoizedQuery.trend_time_span_composition_conditions?.min?.text_source)}
 							maxActiveColor={getColorFromMap(colorMap, memoizedQuery.trend_time_span_composition_conditions?.max?.text_source)}
 							minInclusive={!!memoizedQuery.trend_time_span_composition_conditions?.min?.inclusive}
@@ -143,8 +143,8 @@ export default function QueryCondition() {
 			<section>
 				<Scope
 					title="Time Scope"
-					min={memoizedQuery.time_scope_condition?.min?.value || null}
-					max={memoizedQuery.time_scope_condition?.max?.value || null}
+					min={memoizedQuery.time_scope_condition?.min?.value ?? null}
+					max={memoizedQuery.time_scope_condition?.max?.value ?? null}
 					minInclusive={!!memoizedQuery.time_scope_condition?.min?.inclusive}
 					maxInclusive={!!memoizedQuery.time_scope_condition?.max?.inclusive}
 					minValue={minDate}
@@ -165,8 +165,8 @@ export default function QueryCondition() {
 			<section>
 				<Scope
 					title="Max Value Scope"
-					min={memoizedQuery.max_value_scope_condition?.min?.value || null}
-					max={memoizedQuery.max_value_scope_condition?.max?.value || null}
+					min={memoizedQuery.max_value_scope_condition?.min?.value ?? null}
+					max={memoizedQuery.max_value_scope_condition?.max?.value ?? null}
 					minValue={minValue}
 					maxValue={maxValue}
 					minActiveColor={getColorFromMap(colorMap, memoizedQuery.max_value_scope_condition?.min?.text_source)}
@@ -187,8 +187,8 @@ export default function QueryCondition() {
 			<section>
 				<Scope
 					title="Min Value Scope"
-					min={memoizedQuery.min_value_scope_condition?.min?.value || null}
-					max={memoizedQuery.min_value_scope_condition?.max?.value || null}
+					min={memoizedQuery.min_value_scope_condition?.min?.value ?? null}
+					max={memoizedQuery.min_value_scope_condition?.max?.value ?? null}
 					minValue={minValue}
 					maxValue={maxValue}
 					minActiveColor={getColorFromMap(colorMap, memoizedQuery.min_value_scope_condition?.min?.text_source)}

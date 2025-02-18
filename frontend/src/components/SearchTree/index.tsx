@@ -108,7 +108,7 @@ export default function SearchTree({ className }: { className?: string }) {
         .attr("class", "node")
         .attr("transform", (d) => `translate(${d.x},${d.y})`)
         .on("click", (_, d) => {
-          dispatch(setCurrentFragments(d.data.value || null))
+          dispatch(setCurrentFragments(d.data.value ?? null))
         });
 
       node

@@ -229,5 +229,5 @@ intentions:
 
 
 if __name__ == "__main__":
-    # test_parse_nl_query()
-    test_modify_nl_query()
+    test_parse_nl_query()
+    # test_modify_nl_query()

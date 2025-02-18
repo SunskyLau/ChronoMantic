@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../../app/hooks";
 import "./index.css";
-import { setColorMap, setNLQuery, setQuery } from "../../app/slice/stateSlice";
+import { setColorMap, setNLQuery, setQuery, setQuerySpec } from "../../app/slice/stateSlice";
 import QueryIcon from "../../icons/Query";
 import SubmitIcon from "../../icons/Submit";
 import { flushSync } from "react-dom";
@@ -263,7 +263,9 @@ export default function NlqueryBox() {
 			onSubmit={async (e) => {
 				e.preventDefault();
 				if (!NLQuery.trim() || !query) return;
-				getFragmentsBySpec(formatQuerySpec(query)).then((res) => {
+				const querySpec = formatQuerySpec(query);
+				dispatch(setQuerySpec(querySpec));
+				getFragmentsBySpec(querySpec).then((res) => {
 					dispatch(setQueryResults(res));
 				});
 			}}
