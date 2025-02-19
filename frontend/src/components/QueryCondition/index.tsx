@@ -17,22 +17,32 @@ const emptyQuerySpec: QuerySpecWithSource = {
 	original_text: "",
 	target: {
 		target: "",
+		text_source_id: -1,
 	},
+	text_sources: [],
 	trends: [],
 	single_relations: [],
 	trend_groups: [],
 	group_relations: [],
-	time_span_condition: {},
-	time_scope_condition: {},
-	max_value_scope_condition: {},
-	min_value_scope_condition: {},
+	time_span_condition: {
+		text_source_id: -1,
+	},
+	time_scope_condition: {
+		text_source_id: -1,
+	},
+	max_value_scope_condition: {
+		text_source_id: -1,
+	},
+	min_value_scope_condition: {
+		text_source_id: -1,
+	},
 };
 
 const updateScopeCondition = (condition: ScopeConditionWithSource, min: number | null, max: number | null, minInclusive: boolean, maxInclusive: boolean): ScopeConditionWithSource => {
 	return {
 		min: !min ? undefined : { value: min, inclusive: minInclusive },
 		max: !max ? undefined : { value: max, inclusive: maxInclusive },
-		text_source: condition.text_source,
+		text_source_id: condition.text_source_id,
 	};
 };
 
@@ -93,7 +103,7 @@ export default function QueryCondition() {
 			<section>
 				<Target
 					value={memoizedQuery.target.target || ""}
-					color={getColorFromMap(colorMap, memoizedQuery.target.text_source)}
+					color={getColorFromMap(colorMap, memoizedQuery.target.text_source_id)}
 					options={values}
 					onChange={(val) => {
 						const newQuery = deepClone(memoizedQuery);
@@ -164,14 +174,14 @@ export default function QueryCondition() {
 						title={title}
 						min={condition?.min?.value ?? null}
 						max={condition?.max?.value ?? null}
-						activeColor={getColorFromMap(colorMap, condition?.text_source)}
+						activeColor={getColorFromMap(colorMap, condition?.text_source_id)}
 						minInclusive={!!condition?.min?.inclusive}
 						maxInclusive={!!condition?.max?.inclusive}
 						{...props}
 						onChange={(min, max, minInclusive, maxInclusive) => {
 							const newQuery = deepClone(memoizedQuery);
 							const key = (title.toLowerCase().replace(/\s/g, "_") + "_condition") as ScopeConditionKeys;
-							newQuery[key] = updateScopeCondition(condition || {}, min, max, minInclusive, maxInclusive);
+							newQuery[key] = updateScopeCondition(condition || {} as ScopeConditionWithSource, min, max, minInclusive, maxInclusive);
 							dispatch(setQuery(newQuery));
 						}}
 					/>

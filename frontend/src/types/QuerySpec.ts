@@ -65,7 +65,7 @@ export interface ApproximationSegmentsContainer {
  */
 
 // 阈值条件
-export interface ThresholdCondition extends WithSource {
+export interface ThresholdCondition {
   value: number; // 阈值
   inclusive: boolean; // 是否包含该值
 }
@@ -163,7 +163,7 @@ export interface TextSource {
 }
 
 export interface WithSource {
-  text_source?: TextSource; // 对应的原始文本信息
+  text_source_id: number;
 }
 
 // 基础条件的 WithSource 版本
@@ -198,6 +198,7 @@ export interface TargetWithSource extends WithSource {
 
 export interface QuerySpecWithSource {
   original_text: string; // 原始查询文本
+  text_sources: TextSource[]; // QuerySpec中涉及到的所有文本来源
   target: TargetWithSource; // 查询目标
   trends: TrendWithSource[]; // 趋势列表
   single_relations: SingleRelationWithSource[]; // 单趋势关系列表
@@ -275,7 +276,7 @@ export function formatQuerySpec(query: QuerySpecWithSource): QuerySpec {
   // 格式化 ScopeCondition
   const formatScopeCondition = (scope?: ScopeConditionWithSource): ScopeCondition | undefined => {
     if (!scope) return undefined;
-    if (scope.text_source?.disabled) return undefined;
+    if (query.text_sources[scope.text_source_id]?.disabled) return undefined;
 
     return {
       max: scope.max ? {
@@ -291,7 +292,7 @@ export function formatQuerySpec(query: QuerySpecWithSource): QuerySpec {
 
   // 格式化 Trend
   const formatTrend = (trend: TrendWithSource): Trend => ({
-    category: trend.category.text_source?.disabled ? TrendCategory.ARBITRARY : trend.category.category,
+    category: query.text_sources[trend.category.text_source_id]?.disabled ? TrendCategory.ARBITRARY : trend.category.category,
     slope_scope_condition: formatScopeCondition(trend.slope_scope_condition),
     delta_percentage_scope_condition: formatScopeCondition(trend.delta_percentage_scope_condition),
     daily_average_delta_percentage_scope_condition: formatScopeCondition(trend.daily_average_delta_percentage_scope_condition),
@@ -301,7 +302,7 @@ export function formatQuerySpec(query: QuerySpecWithSource): QuerySpec {
 
   // 格式化 SingleRelation
   const formatSingleRelation = (relation: SingleRelationWithSource): SingleRelation | null => {
-    if (relation.text_source?.disabled) return null;
+    if (query.text_sources[relation.text_source_id]?.disabled) return null;
     return {
       id1: relation.id1,
       id2: relation.id2,
@@ -312,7 +313,7 @@ export function formatQuerySpec(query: QuerySpecWithSource): QuerySpec {
 
   // 格式化 TrendGroup
   const formatTrendGroup = (group: TrendGroupWithSource): TrendGroup | null => {
-    if (group.text_source?.disabled) return null;
+    if (query.text_sources[group.text_source_id]?.disabled) return null;
     return {
       ids: group.ids,
       time_span_condition: group.time_span_condition
@@ -321,7 +322,7 @@ export function formatQuerySpec(query: QuerySpecWithSource): QuerySpec {
 
   // 格式化 GroupRelation
   const formatGroupRelation = (relation: GroupRelationWithSource): GroupRelation | null => {
-    if (relation.text_source?.disabled) return null;
+    if (query.text_sources[relation.text_source_id]?.disabled) return null;
     return {
       group1: relation.group1,
       group2: relation.group2,

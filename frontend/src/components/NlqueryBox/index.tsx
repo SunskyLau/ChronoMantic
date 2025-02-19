@@ -12,7 +12,7 @@ import { getFragmentsBySpec, getQuerySpecRequest } from "../../api";
 import { setQueryResults } from "../../app/slice/approximation";
 import { setIsRequesting } from "../../app/slice/resultsSlice";
 import { getColorFromMap } from "../../utils/color";
-import { formatQuerySpec, QuerySpecWithSource, ScopeConditionWithSource, TextSource } from "../../types/QuerySpec";
+import { formatQuerySpec, QuerySpecWithSource } from "../../types/QuerySpec";
 import { deepClone } from "../../utils/deepclone";
 
 // 语音识别配置
@@ -27,127 +27,43 @@ const SpeechRecognition = initSpeechRecognition();
 
 // 文本源检查工具
 const TextSourceChecker = {
-	checkSource: (source: { text_source?: TextSource } | undefined, matchText: string, targetIndex: number) => {
-		return source?.text_source?.text === matchText && 
-			   source.text_source.index === targetIndex && 
-			   source.text_source.disabled;
-	},
-
-	checkScope: (scope: ScopeConditionWithSource | undefined, matchText: string, targetIndex: number) => {
-		if (!scope) return false;
-		return TextSourceChecker.checkSource(scope, matchText, targetIndex) || 
-			   TextSourceChecker.checkSource(scope.max, matchText, targetIndex) || 
-			   TextSourceChecker.checkSource(scope.min, matchText, targetIndex);
-	},
-
-	isTextDisabled: (query: QuerySpecWithSource, matchText: string, targetIndex: number): boolean => {
-		if (TextSourceChecker.checkSource(query.target, matchText, targetIndex)) return true;
-
-		// 检查趋势
-		for (const trend of query.trends) {
-			if (TextSourceChecker.checkSource(trend.category, matchText, targetIndex)) return true;
-			if (TextSourceChecker.checkScope(trend.slope_scope_condition, matchText, targetIndex)) return true;
-			if (TextSourceChecker.checkScope(trend.delta_percentage_scope_condition, matchText, targetIndex)) return true;
-			if (TextSourceChecker.checkScope(trend.daily_average_delta_percentage_scope_condition, matchText, targetIndex)) return true;
-			if (TextSourceChecker.checkScope(trend.abs_slope_percentage_scope_condition, matchText, targetIndex)) return true;
-			if (TextSourceChecker.checkScope(trend.time_span_condition, matchText, targetIndex)) return true;
-		}
-
-		// 检查单趋势关系
-		if (query.single_relations?.some(relation => TextSourceChecker.checkSource(relation, matchText, targetIndex))) return true;
-
-		// 检查趋势组合
-		if (query.trend_groups?.some(group => {
-			return TextSourceChecker.checkSource(group, matchText, targetIndex) ||
-				   TextSourceChecker.checkScope(group.time_span_condition, matchText, targetIndex);
-		})) return true;
-
-		// 检查组合关系
-		if (query.group_relations?.some(relation => TextSourceChecker.checkSource(relation, matchText, targetIndex))) return true;
-
-		// 检查其他范围条件
-		return TextSourceChecker.checkScope(query.time_span_condition, matchText, targetIndex) ||
-			   TextSourceChecker.checkScope(query.time_scope_condition, matchText, targetIndex) ||
-			   TextSourceChecker.checkScope(query.max_value_scope_condition, matchText, targetIndex) ||
-			   TextSourceChecker.checkScope(query.min_value_scope_condition, matchText, targetIndex) || false;
+	isTextDisabled: (query: QuerySpecWithSource, text_source_id: number): boolean => {
+		return query.text_sources[text_source_id]?.disabled || false;
 	}
 };
 
 // 文本源切换工具
 const TextSourceToggler = {
-	toggleSource: (source: { text_source?: TextSource } | undefined, text: string) => {
-		if (!source?.text_source) return;
-		if (source.text_source.text === text) {
-			source.text_source.disabled = !source.text_source.disabled;
-		}
-	},
-
-	toggleScope: (scope: ScopeConditionWithSource | undefined, text: string) => {
-		if (!scope) return;
-		TextSourceToggler.toggleSource(scope, text);
-		TextSourceToggler.toggleSource(scope.max, text);
-		TextSourceToggler.toggleSource(scope.min, text);
-	},
-
-	toggleQuerySources: (query: QuerySpecWithSource, text: string) => {
-		// 切换目标
-		TextSourceToggler.toggleSource(query.target, text);
-
-		// 切换趋势相关
-		query.trends.forEach(trend => {
-			TextSourceToggler.toggleSource(trend.category, text);
-			TextSourceToggler.toggleScope(trend.slope_scope_condition, text);
-			TextSourceToggler.toggleScope(trend.delta_percentage_scope_condition, text);
-			TextSourceToggler.toggleScope(trend.daily_average_delta_percentage_scope_condition, text);
-			TextSourceToggler.toggleScope(trend.abs_slope_percentage_scope_condition, text);
-			TextSourceToggler.toggleScope(trend.time_span_condition, text);
-		});
-
-		// 切换单趋势关系
-		query.single_relations?.forEach(relation => {
-			TextSourceToggler.toggleSource(relation, text);
-		});
-
-		// 切换趋势组合
-		query.trend_groups?.forEach(group => {
-			TextSourceToggler.toggleSource(group, text);
-			TextSourceToggler.toggleScope(group.time_span_condition, text);
-		});
-
-		// 切换组合关系
-		query.group_relations?.forEach(relation => {
-			TextSourceToggler.toggleSource(relation, text);
-		});
-
-		// 切换其他范围条件
-		TextSourceToggler.toggleScope(query.time_span_condition, text);
-		TextSourceToggler.toggleScope(query.time_scope_condition, text);
-		TextSourceToggler.toggleScope(query.max_value_scope_condition, text);
-		TextSourceToggler.toggleScope(query.min_value_scope_condition, text);
+	toggleSource: (query: QuerySpecWithSource, text_source_id: number) => {
+		if (!query.text_sources[text_source_id]) return;
+		query.text_sources[text_source_id].disabled = !query.text_sources[text_source_id].disabled;
 	}
 };
 
+// 定义高亮类型
+interface Highlight {
+	index: number;
+	length: number;
+	text: string;
+	color: string;
+	text_source_id: number;
+	disabled: boolean;
+}
+
 // 高亮文本处理工具
 const TextHighlighter = {
-	parseKey: (key: string) => {
-		const lastHyphenIndex = key.lastIndexOf("-");
-		if (lastHyphenIndex === -1 || !/^\d+$/.test(key.slice(lastHyphenIndex + 1))) {
-			return { matchText: key, targetIndex: 0 };
-		}
-		return {
-			matchText: key.slice(0, lastHyphenIndex),
-			targetIndex: parseInt(key.slice(lastHyphenIndex + 1))
-		};
-	},
+	createHighlight: (match: RegExpExecArray, text_source_id: number, query: QuerySpecWithSource | null, colorMap: Record<string, string>): Highlight | null => {
+		const textSource = query?.text_sources[text_source_id];
+		if (!textSource) return null;
 
-	createHighlight: (match: RegExpExecArray, matchText: string, targetIndex: number, query: QuerySpecWithSource | null, colorMap: Record<string, string>) => {
-		const isDisabled = query ? TextSourceChecker.isTextDisabled(query, matchText, targetIndex) : false;
+		const isDisabled = query ? TextSourceChecker.isTextDisabled(query, text_source_id) : false;
+		
 		return {
 			index: match.index,
-			length: matchText.length,
-			text: matchText,
-			color: isDisabled ? "#eee" : getColorFromMap(colorMap, { text: matchText, index: targetIndex }),
-			matchIndex: targetIndex,
+			length: textSource.text.length,
+			text: textSource.text,
+			color: isDisabled ? "#eee" : getColorFromMap(colorMap, text_source_id),
+			text_source_id,
 			disabled: isDisabled,
 		};
 	}
@@ -192,26 +108,33 @@ export default function NlqueryBox() {
 		return () => document.removeEventListener("mousedown", handleClickOutside);
 	}, []);
 
-	const toggleTextSourceDisabled = (text: string) => {
+	const toggleTextSourceDisabled = (text_source_id: number) => {
 		if (!query) return;
 		const newQuery = deepClone(query);
-		TextSourceToggler.toggleQuerySources(newQuery, text);
+		TextSourceToggler.toggleSource(newQuery, text_source_id);
 		dispatch(setQuery(newQuery));
 	};
 
 	const highlightText = (text: string) => {
-		if (!text || !colorMap) return text;
-		const highlights: Array<ReturnType<typeof TextHighlighter.createHighlight>> = [];
+		if (!text || !colorMap || !query) return text;
+		const highlights: Array<Highlight | null> = [];
 
-		Object.keys(colorMap).forEach(key => {
-			const { matchText, targetIndex } = TextHighlighter.parseKey(key);
-			const regex = new RegExp(matchText.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "g");
+		Object.entries(query.text_sources).forEach(([text_source_id, textSource]) => {
+			if (!colorMap[text_source_id]) return;
+
+			const regex = new RegExp(textSource.text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "g");
 			let match;
 			let count = 0;
 
 			while ((match = regex.exec(text)) !== null) {
-				if (count === targetIndex) {
-					highlights.push(TextHighlighter.createHighlight(match, matchText, targetIndex, query, colorMap));
+				if (count === textSource.index) {
+					const highlight = TextHighlighter.createHighlight(
+						match, 
+						parseInt(text_source_id), 
+						query, 
+						colorMap
+					);
+					highlights.push(highlight);
 					break;
 				}
 				count++;
@@ -221,18 +144,20 @@ export default function NlqueryBox() {
 		return renderHighlights(text, highlights);
 	};
 
-	const renderHighlights = (text: string, highlights: Array<ReturnType<typeof TextHighlighter.createHighlight>>) => {
-		highlights.sort((a, b) => a.index - b.index);
+	const renderHighlights = (text: string, highlights: Array<Highlight | null>) => {
+		const validHighlights = highlights.filter((h): h is Highlight => h !== null);
+		
+		validHighlights.sort((a, b) => a.index - b.index);
 		const elements: React.ReactNode[] = [];
 		let lastIndex = 0;
 
-		highlights.forEach(highlight => {
+		validHighlights.forEach(highlight => {
 			if (highlight.index > lastIndex) {
 				elements.push(text.substring(lastIndex, highlight.index));
 			}
 			elements.push(
 				<span
-					key={`${highlight.text}-${highlight.index}`}
+					key={`${highlight.text_source_id}`}
 					style={{
 						backgroundColor: highlight.color,
 						textDecoration: highlight.disabled ? "line-through" : "none",
@@ -241,7 +166,7 @@ export default function NlqueryBox() {
 					className="pointer"
 					onClick={(e) => {
 						e.stopPropagation();
-						toggleTextSourceDisabled(highlight.text);
+						toggleTextSourceDisabled(highlight.text_source_id);
 					}}
 				>
 					{highlight.text}

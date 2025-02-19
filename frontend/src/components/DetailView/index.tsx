@@ -142,7 +142,7 @@ export default function DetailView() {
             {
                 timeCol && valueCol ?
                     <>
-                        <div className="bg detail"><LineChart isShowRange={false} xData={timeValues as string[]} yData={data[valueCol] as number[]} resultsSplit={{colors: query?.trends.map(trend=>getColorFromMap(colorMap, trend.category.text_source)) || [], segments: query && queryResults[level]?.map(segments=>(segments.map(segment=>[segment.start_idx, segment.end_idx]))) || []}} isXAxisVisible={true} isYAxisVisible={true} range={range} height={'100%'} split={split} isSplitMask={true} onScroll={handleScroll} isBrush brushPosition={selectPosition} onBrushEnd={handleBrushSelectEnd} title={valueCol} isXAxisTextVisible isYAxisTextVisible onContextMenu={() => handleBrushSelectEnd(0, 0)}>
+                        <div className="bg detail"><LineChart isShowRange={false} xData={timeValues as string[]} yData={data[valueCol] as number[]} resultsSplit={{colors: query?.trends.map(trend=>getColorFromMap(colorMap, trend.category.text_source_id)) || [], segments: query && queryResults[level]?.map(segments=>(segments.map(segment=>[segment.start_idx, segment.end_idx]))) || []}} isXAxisVisible={true} isYAxisVisible={true} range={range} height={'100%'} split={split} isSplitMask={true} onScroll={handleScroll} isBrush brushPosition={selectPosition} onBrushEnd={handleBrushSelectEnd} title={valueCol} isXAxisTextVisible isYAxisTextVisible onContextMenu={() => handleBrushSelectEnd(0, 0)}>
                             <Popover className="query-popover" placement="bottom" open={isPopover} content={
                                 () => {
                                     const isModify = popoverState === PopoverState.CONFIRM_MODIFY;

@@ -4,8 +4,9 @@ import { deepClone } from "../../../utils/deepclone";
 import { MinusOutlined, PlusOutlined } from "@ant-design/icons";
 import { classnames } from "../../../utils/classname";
 import { useEffect, useRef } from "react";
-import { useAppDispatch } from "../../../app/hooks";
+import { useAppDispatch, useAppSelector } from "../../../app/hooks";
 import { setCurRelation } from "../../../app/slice/stateSlice";
+import { getColorFromMap } from "../../../utils/color";
 
 interface RelationProps {
     title?: string;
@@ -20,6 +21,7 @@ interface RelationProps {
 export default function Relation({ title, relations, idLength, isEdit, onChange, disabled, highlight }: RelationProps) {
     const relationRefs = useRef<(HTMLDivElement | null)[]>([]);
     const dispatch = useAppDispatch();
+    const colorMap = useAppSelector((state) => state.states.colorMap);
 
     useEffect(() => {
         if (highlight !== undefined && relationRefs.current[highlight]) {
@@ -38,8 +40,8 @@ export default function Relation({ title, relations, idLength, isEdit, onChange,
                 }}></Button>}
             </Flex>
             {!relations.length ? <Empty description="no relations"></Empty> : relations.map((relation, index) => (
-                <div key={index} ref={el => relationRefs.current[index] = el} onClick={()=>{dispatch(setCurRelation(index))}}>
-                    <div className={classnames("relation-item", highlight === index ? "active" : "")} >
+                <div key={index} ref={el => relationRefs.current[index] = el} onClick={()=>{dispatch(setCurRelation(index))}} className={ highlight === index ? "active" : ""}>
+                    <div className={classnames("relation-item", "active-component")} style={{ backgroundColor: getColorFromMap(colorMap, relation.text_source_id) }}>
                         <Flex gap={4}>
                             <Select disabled={disabled} placeholder="attribute" popupMatchSelectWidth={false} options={Object.values(SingleAttribute).map(attr => ({ value: attr, label: attr }))} value={relation.attribute} onChange={(value) => {
                                 const newRelations = deepClone(relations);

@@ -56,24 +56,9 @@ const stateSlice = createSlice({
     },
     setColorMap: (state, action: PayloadAction<QuerySpecWithSource | null>) => {
       const colorMap: Record<string, string> = {};
-      const traverse = <T>(obj: T) => {
-        if (!obj) return;
-        for (const key in obj) {
-          if (key === 'text_source' && obj[key] && typeof obj[key] === 'object' && 'text' in obj[key]) {
-            const textSource = obj[key] as { text: string, index?: number };
-            const text = textSource.text;
-            const index = textSource.index;
-            const colorKey = index !== undefined ? `${text}-${index}` : text;
-            if (!colorMap[colorKey]) {
-              colorMap[colorKey] = getColor(Object.keys(colorMap).length);
-            }
-          }
-          if (obj[key] && typeof obj[key] === 'object') {
-            traverse(obj[key]);
-          }
-        }
-      };
-      traverse(action.payload);
+      action.payload?.text_sources.map((_, index) => {
+        colorMap[index.toString()] = getColor(index);
+      });
       state.colorMap = colorMap;
     },
     addQuerySpec: (state, action: PayloadAction<QuerySpec>) => {

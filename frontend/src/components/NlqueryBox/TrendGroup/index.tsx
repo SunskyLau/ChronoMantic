@@ -38,6 +38,7 @@ export default function TrendGroup({ groups, idLength, onChange, isEdit, disable
 							newGroups.push({
 								ids: [0, 0],
 								time_span_condition: {},
+								text_source_id: -1,
 							});
 							onChange(newGroups);
 						}}
@@ -63,7 +64,7 @@ export default function TrendGroup({ groups, idLength, onChange, isEdit, disable
 									disabled={disabled}
 									min={group.time_span_condition?.min?.value ?? null}
 									max={group.time_span_condition?.max?.value ?? null}
-									activeColor={getColorFromMap(colorMap, group.text_source)}
+									activeColor={getColorFromMap(colorMap, group.text_source_id)}	
 									minInclusive={!!group.time_span_condition?.min?.inclusive}
 									maxInclusive={!!group.time_span_condition?.max?.inclusive}
 									addonBefore={[

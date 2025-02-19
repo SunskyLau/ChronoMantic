@@ -1,5 +1,3 @@
-import { TextSource } from "../types/QuerySpec";
-
 export function getColor(index: number) {
     const colors = [
         "#FF6B6B",
@@ -24,8 +22,7 @@ export function getColor(index: number) {
     return colors[index % colors.length];
 }
 
-export function getColorFromMap(colorMap: Record<string, string>, source?: TextSource, opacity = "66") {
-    const key = source?.text + "-" + source?.index;
-    const color = colorMap[key];
+export function getColorFromMap(colorMap: Record<string, string>, source?: number, opacity = "66") {
+    const color = colorMap[source?.toString() ?? ""];
     return color ? color + opacity : "";
 }

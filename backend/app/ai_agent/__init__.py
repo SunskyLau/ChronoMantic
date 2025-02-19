@@ -84,10 +84,10 @@ class myAIClient:
         return text
 
 
-# def parse_nl_query(system_prompt: str, query: str) -> Dict:
-#     client = myAIClient(model=Qwen.MODELS.QWEN_MAX, platform=Platforms.QWEN)
-#     response = client.send_prompt(system_prompt, query, False)
-#     return json.loads(response)
+def parse_nl_query(system_prompt: str, query: str) -> Dict:
+    client = myAIClient(model=Qwen.MODELS.QWEN_MAX, platform=Platforms.QWEN)
+    response = client.send_prompt(system_prompt, query, False)
+    return json.loads(response)
 
 
 # def modify_nl_query(system_prompt: str, query: str) -> Dict:
@@ -99,7 +99,7 @@ class myAIClient:
 def test_parse_nl_query():
     client = myAIClient(model=Qwen.MODELS.QWEN_MAX, platform=Platforms.QWEN)
     # client = myAIClient(model=Azure.MODELS.GPT_4O, platform=Platforms.AZURE)
-  
+
     dataset_info = """{"time_column": "Date", "value_columns": ["AMZN", "DPZ", "BTC", "NFLX"]}"""
     system_prompt = create_parse_nl_prompt(dataset_info)
     # nl_query = "Find periods in AMZN when price first rose sharply then fell gradually"

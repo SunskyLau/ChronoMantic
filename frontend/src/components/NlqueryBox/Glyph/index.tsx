@@ -1,4 +1,4 @@
-import { Comparator, GroupRelationWithSource, QuerySpecWithSource, SingleAttribute, SingleRelationWithSource, TargetWithSource, TextSource, TrendGroupWithSource, TrendWithSource } from "../../../types/QuerySpec";
+import { Comparator, GroupRelationWithSource, QuerySpecWithSource, SingleAttribute, SingleRelationWithSource, TargetWithSource, TrendGroupWithSource, TrendWithSource } from "../../../types/QuerySpec";
 import * as d3 from "d3";
 import { deepClone } from "../../../utils/deepclone";
 import { useEffect, useRef, useState } from "react";
@@ -82,52 +82,57 @@ const calculateOffsets = (relations: SingleRelationWithSource[]) => {
 	return offsets;
 };
 
-// 在文件顶部添加 getColorWithDisabled 函数
-const getColorWithDisabled = (colorMap: Record<string, string>, textSource?: TextSource) => {
-	if (!textSource) return "#0008";
-	if (textSource.disabled) return "#eee";
-	return getColorFromMap(colorMap, textSource);
+// 添加工具函数来获取 TextSource
+const getTextSourceFromQuery = (query: QuerySpecWithSource | null, text_source_id?: number) => {
+	if (!query || text_source_id === undefined) return undefined;
+	return query.text_sources[text_source_id];
+};
+
+// 修改 getColorWithDisabled 函数
+const getColorWithDisabled = (colorMap: Record<string, string>, query: QuerySpecWithSource | null, text_source_id?: number) => {
+	if (text_source_id === undefined) return "#0008";
+	const textSource = getTextSourceFromQuery(query, text_source_id);
+	if (!textSource || textSource.disabled) return "#eee";
+	return getColorFromMap(colorMap, text_source_id);
 };
 
 // 修改 getSlopeText 函数
-const getSlopeText = (trend: TrendWithSource, colorMap: Record<string, string>) => {
+const getSlopeText = (trend: TrendWithSource, colorMap: Record<string, string>, query: QuerySpecWithSource | null) => {
 	const condition = trend.daily_average_delta_percentage_scope_condition;
-	if (!condition || condition.text_source?.disabled) return null;
+	if (!condition || !condition.text_source_id) return null;
 
 	const { min, max } = condition;
-	const color = getColorWithDisabled(colorMap, condition.text_source);
-	const minColor = getColorFromMap(colorMap, condition.min?.text_source);
-	const maxColor = getColorFromMap(colorMap, condition.max?.text_source);
+	const color = getColorWithDisabled(colorMap, query, condition.text_source_id);
 
 	if (min && max) {
 		return {
 			leftPart: {
 				text: min.inclusive ? "[" : "(",
-				color: color || minColor,
+				color: color,
 			},
 			minValue: {
 				text: `${min.value}%/day`,
-				color: color || minColor,
+				color: color,
 			},
 			separator: ", ",
 			maxValue: {
 				text: `${max.value}%/day`,
-				color: color || maxColor,
+				color: color,
 			},
 			rightPart: {
 				text: max.inclusive ? "]" : ")",
-				color: color || maxColor,
+				color: color,
 			},
 		};
 	} else if (min) {
 		return {
 			text: `${min.inclusive ? "≥" : ">"}${min.value}%/day`,
-			color: color || minColor,
+			color: color,
 		};
 	} else if (max) {
 		return {
 			text: `${max.inclusive ? "≤" : "<"}${max.value}%/day`,
-			color: color || maxColor,
+			color: color,
 		};
 	}
 
@@ -180,9 +185,9 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 	};
 
 	const getTrend = (trend: TrendWithSource, i: number, showIndex = false) => {
+		if (!query) return null;
 		const { isUp, isDown } = getTrendInfo(trend);
-		const textSource = trend.category.text_source;
-		const color = getColorWithDisabled(colorMap, textSource);
+		const color = getColorWithDisabled(colorMap, query, trend.category.text_source_id);
 		const x1 = i * trendLength + paddingX;
 		const x2 = x1 + trendLength;
 		const y = height / 2;
@@ -191,7 +196,7 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 		const id = Math.random().toString(36).substring(2, 7);
 
 		// 获取斜率文本
-		const slopeTextInfo = getSlopeText(trend, colorMap);
+		const slopeTextInfo = getSlopeText(trend, colorMap, query);
 
 		// 修改绘制斜率指示器的函数
 		const drawSlopeIndicator = () => {
@@ -345,6 +350,7 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 	};
 
 	const relationLines = single_relations.map((relation, i) => {
+		if (!query) return null;
 		const trendIndex1 = t.findIndex((t) => t.index === relation.id1);
 		const trendIndex2 = t.findIndex((t) => t.index === relation.id2);
 
@@ -375,8 +381,7 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 			const y1 = getTrendValueY(trend1, isEnd);
 			const y2 = getTrendValueY(trend2, isEnd);
 
-			const textSource = relation.text_source;
-			const relationColor = textSource?.disabled ? "#eee" : getColorWithDisabled(colorMap, textSource) || "#0002";
+			const relationColor = getColorWithDisabled(colorMap, query, relation.text_source_id) || "#0002";
 
 			const vOffset = getVerticalOffset(i);
 			const extraOffset = y2 === height / 2 ? height / 4 : 0;
@@ -427,8 +432,7 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 				return arc({} as DefaultArcObject) || "";
 			};
 
-			const textSource = relation.text_source;
-			const relationColor = textSource?.disabled ? "#eee" : getColorWithDisabled(colorMap, textSource) || "#0002";
+			const relationColor = getColorWithDisabled(colorMap, query, relation.text_source_id) || "#0002";
 
 			return (
 				<g key={i}>
@@ -458,8 +462,7 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 			const x22 = x21 + offset;
 			const y = height - paddingY;
 
-			const textSource = relation.text_source;
-			const relationColor = textSource?.disabled ? "#eee" : getColorWithDisabled(colorMap, textSource) || "#0002";
+			const relationColor = getColorWithDisabled(colorMap, query, relation.text_source_id) || "#0002";
 
 			const vOffset = getVerticalOffset(i);
 			const baseY = height - paddingY;
@@ -477,6 +480,7 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 	});
 
 	const drawGroupRelation = (relation: GroupRelationWithSource, i: number, trendLength: number, height: number, trends: TrendWithSource[], strokeWidth: number = 0.5) => {
+		if (!query) return null;
 		const getGroupInfo = (ids: [number, number]) => {
 			if (ids[0] === undefined || ids[1] === undefined || ids[0] >= trends.length || ids[1] >= trends.length) return null;
 			const x1 = ids[0] * trendLength + paddingX;
@@ -501,8 +505,7 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 		const connectY = baseY - 8;
 		const comparatorY = baseY - 6;
 
-		const textSource = relation.text_source;
-		const relationColor = getColorWithDisabled(colorMap, textSource);
+		const relationColor = getColorWithDisabled(colorMap, query, relation.text_source_id);
 
 		return (
 			<g key={`group-${i}`}>
@@ -575,6 +578,11 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 	useEffect(() => {
 		if (!svgRef.current || !gRef.current) return;
 
+		if (!query) {
+			setLastTransform(null);
+			return;
+		}
+
 		const svg = d3.select(svgRef.current);
 		const g = d3.select(gRef.current);
 		const bbox = g.node()?.getBBox();
@@ -604,17 +612,17 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 		}
 
 		return () => {
-			svg.on(".zoom", null);
+			svg.on("zoom", null);
 		};
-	}, [trends, single_relations, group_relations, lastTransform]);
+	}, [trends, single_relations, group_relations, lastTransform, query]);
 
 	// 修改drawGlobalTimeIndicator函数
 	const drawGlobalTimeIndicator = () => {
 		if (!query?.time_span_condition) return null;
 
 		const getTimeColor = () => {
-			const textSource = query.time_span_condition?.text_source;
-			return getColorWithDisabled(colorMap, textSource);
+			const text_source_id = query.time_span_condition?.text_source_id;
+			return getColorWithDisabled(colorMap, query, text_source_id);
 		};
 
 		const timeColor = getTimeColor();
@@ -695,9 +703,9 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 	// 修改 drawTarget 函数
 	const drawTarget = (target?: TargetWithSource) => {
 		if (!target?.target) return null;
+		if (!query) return null;
 
-		const textSource = target.text_source;
-		const targetColor = getColorWithDisabled(colorMap, textSource);
+		const targetColor = getColorWithDisabled(colorMap, query, target.text_source_id);
 
 		return (
 			<g>
@@ -726,9 +734,8 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 		const lineHeight = height / 24;
 		const arrowSize = 1.5;
 		const fontSize = 3;
-
-		const textSource = group.text_source;
-		const timeColor = getColorWithDisabled(colorMap, textSource);
+		if (!query) return null;
+		const timeColor = getColorWithDisabled(colorMap, query, group.text_source_id);
 
 		// 获取时间范围文本
 		const getTimeText = () => {

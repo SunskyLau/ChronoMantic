@@ -39,6 +39,7 @@ export default function GroupRelation({ relations, trends = [], onChange, isEdit
 								group2: [0, 0],
 								comparator: Comparator.GREATER,
 								attribute: GroupAttribute.TIME_SPAN,
+								text_source_id: -1,
 							});
 							onChange(newRelations);
 						}}
@@ -55,7 +56,7 @@ export default function GroupRelation({ relations, trends = [], onChange, isEdit
 							justify="space-between"
 							align="center"
 							className="relation-item active-component"
-							style={{ backgroundColor: getColorFromMap(colorMap, relation.text_source) }}
+							style={{ backgroundColor: getColorFromMap(colorMap, relation.text_source_id) }}
 						>
 							<Flex gap={8}>
 								<Select

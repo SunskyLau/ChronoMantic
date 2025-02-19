@@ -65,6 +65,7 @@ export default function Trend({ title, trends, onChange, start = 0, isEdit, disa
 							newTrends.push({
 								category: {
 									category: TrendCategory.ARBITRARY,
+									text_source_id: -1,
 								}
 							});
 							onChange(newTrends);
@@ -106,7 +107,7 @@ export default function Trend({ title, trends, onChange, start = 0, isEdit, disa
 													newTrends[index] = {
 														category: {
 															category: trend.category.category,
-															text_source: trend.category.text_source,
+															text_source_id: trend.category.text_source_id,
 														},
 													};
 													values.forEach((value) => {
@@ -139,7 +140,7 @@ export default function Trend({ title, trends, onChange, start = 0, isEdit, disa
 											components.push(
 												<div
 													className="active-component"
-													style={{ backgroundColor: getColorFromMap(colorMap, trend[k].text_source) }}
+													style={{ backgroundColor: getColorFromMap(colorMap, trend[k].text_source_id) }}
 													key={k}
 												>
 													<Select
@@ -181,18 +182,14 @@ export default function Trend({ title, trends, onChange, start = 0, isEdit, disa
 													valueFormatter={k.includes("span") ? 86400 : undefined}
 													min={trend[k]?.min?.value ?? null}
 													max={trend[k]?.max?.value ?? null}
-													activeColor={getColorFromMap(colorMap, trend[k]?.text_source)}
+													activeColor={getColorFromMap(colorMap, trend[k]?.text_source_id)}
 													minInclusive={!!trend[k]?.min?.inclusive}
 													maxInclusive={!!trend[k]?.max?.inclusive}
 													onChange={(min, max, minInclusive, maxInclusive) => {
 														const newTrends = deepClone(allTrends);
 														const change = {
 															[k]: {
-																text_source: {
-																	text: trend[k]?.text_source?.text || "",
-																	index: trend[k]?.text_source?.index || 0,
-																	disabled: trend[k]?.text_source?.disabled || false
-																},
+																text_source_id: trend[k]?.text_source_id,
 																min: !min ? undefined : {
 																	value: min,
 																	inclusive: minInclusive
