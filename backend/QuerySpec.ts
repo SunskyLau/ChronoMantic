@@ -1,35 +1,27 @@
 /**
  * Foundamental Data
  */
+export enum Source {
+  RESULT = "result", // 来源于查询结果
+  USER = "user", // 来源于用户指定
+}
 
 // 单个分段信息
 export interface Segment {
+  source: Source; // 来源，"result"代表来源于查询结果，"user"代表来源于用户指定
   start_idx: number; // 起始索引
   end_idx: number; // 结束索引
   slope: number; // 斜率
   start_value: number; // 起始值
   end_value: number; // 结束值
-  max_value: number; // 最大值
-  min_value: number; // 最小值
+  max_value?: number; // 最大值
+  min_value?: number; // 最小值
   start_time?: number; // 起始时间,单位是秒
   end_time?: number; // 结束时间,单位是秒
   delta_percentage?: number; // 变化率,单位是%
   daily_average_delta_percentage?: number; // 日均变化率,单位是%/day
   abs_slope_percentage?: number; // 斜率在所有斜率中的占比,单位是%
   time_span?: number; // 时间跨度,单位是秒
-}
-
-export interface SimplifiedSegment {
-  source: string; // 片段的来源，可以是"result"或者"user",分别代表来源于查询结果和用户指定新增的
-  slope: number; // 片段的斜率，表示变化趋势
-  start_value: number; // 片段起始点的值
-  end_value: number; // 片段终止点的值
-  start_time?: number; // 片段起始时间，单位是秒，可选
-  end_time?: number; // 片段终止时间，单位是秒，可选
-  delta_percentage?: number; // 片段的总体变化百分比，单位是%，可选
-  daily_average_delta_percentage?: number; // 片段的日均变化百分比，单位是%，可选
-  abs_slope_percentage?: number; // 片段斜率在所有斜率中的占比，单位是%，可选
-  time_span?: number; // 片段的时间跨度，单位是秒，可选
 }
 
 // 趋势组合

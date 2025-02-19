@@ -1,7 +1,7 @@
 class ModifyNL_Cases:
     case1 = """## 示例1
 输入：
-old_queryspec_with_source:
+old_queryspec_with_source
 ```
 {
   "original_text": "Find periods in AMZN when price first fell then presented a flat trend",
@@ -28,7 +28,7 @@ old_queryspec_with_source:
       "category": {
         "category": "down",
         "text_source_id": 1
-      },
+      }
     },
     {
       "category": {
@@ -39,11 +39,11 @@ old_queryspec_with_source:
   ],
   "trend_groups": [],
   "single_relations": [],
-  "group_relations": [],
+  "group_relations": []
 }
 ```
 
-segments:
+segments
 ```
 [
   {
@@ -66,7 +66,6 @@ segments:
     "end_time": 1422489600,
     "end_value": 311.779999,
     "slope": 1.9746239413468913e-9,
-    "slope": 1.9746239413468913e-9,
     "start_time": 1397174400,
     "start_value": 311.730011,
     "time_span": 25315200
@@ -86,7 +85,12 @@ segments:
 ]
 ```
 
-intentions:
+segment_groups
+```
+[]
+```
+
+intentions
 ```
 {
   "single_segment_intentions": [
@@ -169,11 +173,11 @@ intentions:
       },
       "daily_average_delta_percentage_scope_condition": {
         "min": {
-          "value": 10,
+          "value": 5,
           "inclusive": true,
         },
         "max": {
-          "value": 20,
+          "value": 10,
           "inclusive": false,
         },
         "text_source_id": 5

@@ -87,8 +87,8 @@ class DictMixin:
         """处理联合类型字段"""
         types = get_args(field_type)
         
-        # 如果None在类型中，先处理None的情况
-        if type(None) in types and value is None:
+        # 如果值是 None 且 None 在允许的类型中，直接返回 None
+        if value is None and type(None) in types:
             return None
             
         # 尝试每个可能的类型
@@ -96,24 +96,61 @@ class DictMixin:
         for t in types:
             if t is type(None):  # 跳过None类型
                 continue
+                
             try:
+                # 处理枚举类型
+                if cls._is_enum_type(t):
+                    try:
+                        return cls._convert_to_enum_type(t, value)
+                    except ValueError as e:
+                        errors.append(f"Failed to convert to {t.__name__}: {str(e)}")
+                        continue
+                
                 # 处理List类型
-                if get_origin(t) is list and isinstance(value, list):
-                    item_type = get_args(t)[0]
-                    return [item_type.from_dict(item) if hasattr(item_type, "from_dict") else item for item in value]
+                if cls._is_list_type(t) and isinstance(value, list):
+                    try:
+                        item_type = get_args(t)[0]
+                        return [
+                            item_type.from_dict(item) if hasattr(item_type, "from_dict") 
+                            else item 
+                            for item in value
+                        ]
+                    except Exception as e:
+                        errors.append(f"Failed to convert list to {t.__name__}: {str(e)}")
+                        continue
+                
                 # 处理自定义类型
                 if hasattr(t, "from_dict"):
-                    result = t.from_dict(value)
-                    if result is not None:
-                        return result
+                    try:
+                        result = t.from_dict(value)
+                        if result is not None:
+                            return result
+                    except Exception as e:
+                        errors.append(f"Failed to convert to {t.__name__} using from_dict: {str(e)}")
+                        continue
+                
                 # 处理基本类型
-                if isinstance(value, t):
-                    return value
+                try:
+                    if isinstance(value, t):
+                        return value
+                    # 尝试类型转换
+                    converted = t(value)
+                    return converted
+                except (ValueError, TypeError) as e:
+                    errors.append(f"Failed to convert to {t.__name__}: {str(e)}")
+                    continue
+                    
             except Exception as e:
-                errors.append(f"Failed to convert to {t.__name__}: {str(e)}")
+                errors.append(f"Unexpected error converting to {t.__name__}: {str(e)}")
                 continue
         
-        raise ValueError(f"Could not convert value to any of the union types. Errors: {'; '.join(errors)}")
+        # 如果所有转换都失败，抛出详细的错误信息
+        error_msg = (
+            f"Could not convert value '{value}' (type: {type(value).__name__}) "
+            f"to any of the expected types: {[t.__name__ for t in types if t is not type(None)]}. "
+            f"Errors: {'; '.join(errors)}"
+        )
+        raise ValueError(error_msg)
 
     @classmethod
     def _is_optional_type(cls, field_type: Type) -> bool:

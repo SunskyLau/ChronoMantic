@@ -14,20 +14,28 @@ class DatasetInfo(DictMixin):
 
 
 @dataclass
+class Source(Enum):
+    RESULT = "result"  # 来源于查询结果
+    USER = "user"  # 来源于用户指定
+
+
+@dataclass
 class Segment(DictMixin):
-    start_idx: int
-    end_idx: int
     slope: float
     start_value: float
     end_value: float
-    max_value: float
-    min_value: float
+    start_idx: Optional[int] = None
+    end_idx: Optional[int] = None
+    max_value: Optional[float] = None
+    min_value: Optional[float] = None
     start_time: Optional[int] = None
     end_time: Optional[int] = None
     delta_percentage: Optional[float] = None
     daily_average_delta_percentage: Optional[float] = None
     abs_slope_percentage: Optional[float] = None
     time_span: Optional[int] = None
+    source: Optional[Source] = None
+
 
 @dataclass
 class SimplifiedSegment(DictMixin):
@@ -41,7 +49,7 @@ class SimplifiedSegment(DictMixin):
     daily_average_delta_percentage: Optional[float] = None  # 片段的日均变化百分比，单位是%
     abs_slope_percentage: Optional[float] = None  # 片段斜率在所有斜率中的占比，单位是%
     time_span: Optional[int] = None  # 片段的时间跨度，单位是秒
-    
+
 
 @dataclass
 class SegmentGroup(DictMixin):

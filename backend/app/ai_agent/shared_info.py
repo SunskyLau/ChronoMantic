@@ -2,8 +2,13 @@ Segment_info = """
 /**
  * Segment - 分段线性拟合的时间序列片段接口定义
  */
+export enum Source {
+  RESULT = "result", // 来源于查询结果
+  USER = "user", // 来源于用户指定
+}
+
 export interface Segment {
-  source: string; // 片段的来源，可以是"result"或者"user",分别代表来源于查询结果和用户指定新增的
+  source: Source; // 片段的来源，可以是"result"或者"user",分别代表来源于查询结果和用户指定新增的
   slope: number;      // 片段的斜率，表示变化趋势
   start_value: number;  // 片段起始点的值
   end_value: number;    // 片段终止点的值
@@ -237,6 +242,7 @@ parse_nl_logic_info = """
 7. 对于自然语言中存在的持续时间描述，你需要判断使用整体的time_span_condition，还是使用trend_group中的time_span_condition，抑或是使用trend中的time_span_condition。如果是对于整体时间的描述，则使用整体time_span_condition；如果是对于组合时间的描述，则使用trend_group中的time_span_condition，如果是对于单个trend的持续时间描述，则使用trend中的time_span_condition。
 8. 注意trend_group的text_source是在最外层的，而不是在time_span_condition中的。
 9. 动词和副词一般要分离为两个text_source，例如，"rose sharply"需要解析为两个text_source，分别是"rose"和"sharply"。
+10. 解析出来的text_source必须被某个字段所使用，否则不要解析出来。例如：rose sharply with a ratio higher than 5%，这里"sharply"的含义已经被"with a ratio higher than 5%"覆盖，则不需要解析出来"sharply"作为text_source
 """
 
 modify_nl_logic_info = """

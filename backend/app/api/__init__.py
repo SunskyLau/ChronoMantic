@@ -123,7 +123,7 @@ def process_dataset():
     dataset_info = DatasetInfo.from_dict(request.json.get("datasetInfo"))
     dataset_info_str = json.dumps(dataset_info.to_dict(), cls=CustomJSONEncoder)
     parse_nl_system_prompt = create_parse_nl_prompt(dataset_info_str)
-    print(parse_nl_system_prompt)
+    # print(parse_nl_system_prompt)
     parse_nl_system_prompt_container.set_data(parse_nl_system_prompt)
     modify_nl_system_prompt = create_modify_nl_prompt()
     modify_nl_system_prompt_container.set_data(modify_nl_system_prompt)
@@ -198,6 +198,7 @@ def modify_nl_query():
     |--------|------|------|
     | old_queryspec_with_source | QuerySpecWithSource | 原始结构化查询 |
     | segments | List[SimplifiedSegment] | 用户指定的连续时间序列片段 |
+    | segment_group_ids | List[Tuple[int, int]] | 用户指定的连续时间序列片段的组 |
     | intentions | List[Intention] | 用户的调整意图 |
 
     | 返回字段 | 类型 | 说明 |
@@ -208,18 +209,27 @@ def modify_nl_query():
     """
     old_queryspec_with_source = request.json.get("old_queryspec_with_source")
     segments = request.json.get("segments")
+    segment_group_ids = request.json.get("segment_group_ids")
+    segment_groups = calculate_segment_groups([Segment.from_dict(segment) for segment in segments], [(group[0], group[1]) for group in segment_group_ids])
     intentions = request.json.get("intentions")
 
     old_queryspec_with_source_str = json.dumps(old_queryspec_with_source, indent=2)
     segments_str = json.dumps(segments, indent=2)
+    segment_groups_str = json.dumps(segment_groups, indent=2)
     intentions_str = json.dumps(intentions, indent=2)
 
     input = f"""old_queryspec_with_source
 ```{old_queryspec_with_source_str}
 ```
+
 segments
 ```{segments_str}
 ```
+
+segment_groups
+```{segment_groups_str}
+```
+
 intentions
 ```{intentions_str}
 ```
@@ -228,27 +238,6 @@ intentions
     # 将字符串解析为Python字典
     new_queryspec_with_source = json.loads(new_queryspec_with_source_str)
     return jsonify({"code": 200, "message": "Modify nl query successful", "results": filter_json(new_queryspec_with_source)})
-
-
-@bus_bp.route("/get_segment_groups", methods=["POST"])
-def get_segment_groups():
-    """获取连续时间序列片段的组信息
-
-    | 参数名 | 类型 | 说明 |
-    |--------|------|------|
-    | segments | List[Segment] | 用户指定的连续时间序列片段 |
-    | trend_groups | List[Tuple[int, int] | 用户指定的趋势组 |
-
-    | 返回字段 | 类型 | 说明 |
-    |----------|------|------|
-    | code | int | 状态码 |
-    | message | str | 状态信息 |
-    | results | List[SegmentGroup] | 连续时间序列片段的组信息 |
-    """
-    segments = [Segment.from_dict(segment) for segment in request.json.get("segments")]
-    trend_groups = [(group[0], group[1]) for group in request.json.get("trend_groups")]
-    segment_groups = calculate_segment_groups(segments, trend_groups)
-    return jsonify({"code": 200, "message": "Get segment group info successful", "results": filter_json(segment_groups)})
 
 
 def calculate_segment_groups(segments: List[Segment], trend_groups: List[Tuple[int, int]]) -> List[SegmentGroup]:
