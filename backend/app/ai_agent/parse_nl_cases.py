@@ -336,11 +336,11 @@ class ParseNL_Cases:
 
     case5 = """
 输入：
-"Find periods in AMZN when price first rose sharply with a duration of about 3 days and then presented a double-bottom shape with a duration of about a week."
+"Find periods in AMZN when price first presented a double-bottom shape with a duration of about a week and then presented a double-top shape with a duration higher than the first double-bottom's duration"
 
 输出：
 {
-  "original_text": "Find periods in AMZN when price first rose sharply with a duration of about 3 days and then presented a double-bottom shape with a duration of about a week.",       
+  "original_text": "Find periods in AMZN when price first presented a double-bottom shape with a duration of about a week and then presented a double-top shape with a duration higher than the first double-bottom's duration",
   "target": {
     "target": "AMZN",
     "text_source": {
@@ -351,40 +351,6 @@ class ParseNL_Cases:
   "trends": [
     {
       "category": {
-        "category": "up",
-        "text_source": {
-          "text": "rose",
-          "index": 0
-        }
-      },
-      "daily_average_delta_percentage_scope_condition": {
-        "min": {
-          "value": 5,
-          "inclusive": true,
-        },
-        "text_source": {
-            "text": "sharply",
-            "index": 0
-          }
-        }
-      },
-      "time_span_condition": {
-        "min": {
-          "value": 172800,
-          "inclusive": true,
-        },
-        "max": {
-          "value": 345600,
-          "inclusive": true,
-        },
-        "text_source": {
-          "text": "about 3 days",
-          "index": 0
-        }
-      }
-    },
-    {
-      "category": {
         "category": "down",
         "text_source": {
           "text": "double-bottom",
@@ -415,6 +381,42 @@ class ParseNL_Cases:
         "category": "up",
         "text_source": {
           "text": "double-bottom",
+          "index": 0
+        }
+      }
+    },
+    {
+      "category": {
+        "category": "up",
+        "text_source": {
+          "text": "double-top",
+          "index": 0
+        }
+      }
+    },
+    {
+      "category": {
+        "category": "down",
+        "text_source": {
+          "text": "double-top",
+          "index": 0
+        }
+      }
+    },
+    {
+      "category": {
+        "category": "up",
+        "text_source": {
+          "text": "double-top",
+          "index": 0
+        }
+      }
+    },
+    {
+      "category": {
+        "category": "down",
+        "text_source": {
+          "text": "double-top",
           "index": 0
         }
       }
@@ -422,19 +424,29 @@ class ParseNL_Cases:
   ],
   "single_relations": [
     {
-      "id1": 1,
-      "id2": 3,
+      "id1": 0,
+      "id2": 2,
       "attribute": "end_value",
       "comparator": "~=",
       "text_source": {
         "text": "double-bottom",
         "index": 0
       }
+    },
+    {
+      "id1": 4,
+      "id2": 6,
+      "attribute": "end_value",
+      "comparator": "~=",
+      "text_source": {
+        "text": "double-top",
+        "index": 0
+      }
     }
   ],
   "trend_groups": [
     {
-      "ids": [1, 4],
+      "ids": [0, 3],
       "time_span_condition": {
         "min": {
           "value": 432000,
@@ -449,8 +461,19 @@ class ParseNL_Cases:
         "text": "about a week",
         "index": 0
       }
-    }
+    },
   ],
-  "group_relations": []
+  "group_relations": [
+    {
+      "group1": [0, 3],
+      "group2": [4, 7],
+      "attribute": "time_span",
+      "comparator": "<",
+      "text_source": {
+        "text": "higher than the first double-bottom's duration",
+        "index": 0
+      }
+    }
+  ]
 }
     """
