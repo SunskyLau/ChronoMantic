@@ -146,7 +146,7 @@ const getGlobalTimeRangeText = (query?: QuerySpecWithSource) => {
 	return `${leftBracket}${secondsToDay(min?.value || 0)}days, ${secondsToDay(max?.value || 0)}days${rightBracket}`;
 };
 
-const Glyph = ({ trends = [], single_relations = [], group_relations = [], height = 32, onClick, curTrend, curRelation, query, colorMap = {}, target }: GlyphProps) => {
+const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_relations = [], height = 32, onClick, curTrend, curRelation, query, colorMap = {}, target }: GlyphProps) => {
 	const paddingY = 10;
 	const paddingX = 4;
 	const trendLength = height - paddingY * 1.5;
@@ -327,7 +327,7 @@ const Glyph = ({ trends = [], single_relations = [], group_relations = [], heigh
 			<text
 				onClick={() => onClick?.("Relation", index)}
 				x={x}
-				y={y}
+				y={y + height / 20}
 				fontSize={height / 5}
 				fill={color}
 				fontWeight={strokeWidth < 1 ? 400 : 700}
@@ -495,11 +495,11 @@ const Glyph = ({ trends = [], single_relations = [], group_relations = [], heigh
 
 		if (!group1Info || !group2Info) return null;
 
-		// 调整位置到最下方，且避免与整体时间跨度重叠
-		const baseY = height + paddingY; // 最底部的基准位置
-		const rangeY = baseY - 10; // 范围指示器的位置
-		const connectY = baseY - 8; // 连接线的位置
-		const comparatorY = baseY - 6; // 比较符号的位置
+		const hasGlobalTimeSpan = !!query?.time_span_condition;
+		const baseY = height + paddingY - (hasGlobalTimeSpan ? 0 : 4);
+		const rangeY = baseY - 10;
+		const connectY = baseY - 8;
+		const comparatorY = baseY - 6;
 
 		const textSource = relation.text_source;
 		const relationColor = getColorWithDisabled(colorMap, textSource);
@@ -517,17 +517,17 @@ const Glyph = ({ trends = [], single_relations = [], group_relations = [], heigh
 				/>
 				<line
 					x1={group1Info.range.start}
-					y1={rangeY - 2}
+					y1={rangeY - 1}
 					x2={group1Info.range.start}
-					y2={rangeY + 2}
+					y2={rangeY + 1}
 					stroke={relationColor}
 					strokeWidth={strokeWidth}
 				/>
 				<line
 					x1={group1Info.range.end}
-					y1={rangeY - 2}
+					y1={rangeY - 1}
 					x2={group1Info.range.end}
-					y2={rangeY + 2}
+					y2={rangeY + 1}
 					stroke={relationColor}
 					strokeWidth={strokeWidth}
 				/>
@@ -543,17 +543,17 @@ const Glyph = ({ trends = [], single_relations = [], group_relations = [], heigh
 				/>
 				<line
 					x1={group2Info.range.start}
-					y1={rangeY - 2}
+					y1={rangeY - 1}
 					x2={group2Info.range.start}
-					y2={rangeY + 2}
+					y2={rangeY + 1}
 					stroke={relationColor}
 					strokeWidth={strokeWidth}
 				/>
 				<line
 					x1={group2Info.range.end}
-					y1={rangeY - 2}
+					y1={rangeY - 1}
 					x2={group2Info.range.end}
-					y2={rangeY + 2}
+					y2={rangeY + 1}
 					stroke={relationColor}
 					strokeWidth={strokeWidth}
 				/>
@@ -621,7 +621,7 @@ const Glyph = ({ trends = [], single_relations = [], group_relations = [], heigh
 		const lineHeight = height / 18;
 		const startX = paddingX;
 		const endX = (t.length - 1) * trendLength + trendLength + paddingX;
-		const textY = height - 6; // 调整整体位置，向下移动
+		const textY = height - 4; // 调整整体位置，向下移动
 		const arrowSize = 2; // 箭头大小
 
 		const timeText = getGlobalTimeRangeText(query);
@@ -716,6 +716,97 @@ const Glyph = ({ trends = [], single_relations = [], group_relations = [], heigh
 		);
 	};
 
+	// 添加 drawTrendGroupTimeIndicator 函数
+	const drawTrendGroupTimeIndicator = (group: TrendGroupWithSource, i: number) => {
+		if (!group.time_span_condition) return null;
+
+		const startX = group.ids[0] * trendLength + paddingX;
+		const endX = group.ids[1] * trendLength + trendLength + paddingX;
+		const textY = height - paddingY + 2;
+		const lineHeight = height / 24;
+		const arrowSize = 1.5;
+		const fontSize = 3;
+
+		const textSource = group.text_source;
+		const timeColor = getColorWithDisabled(colorMap, textSource);
+
+		// 获取时间范围文本
+		const getTimeText = () => {
+			const { min, max } = group.time_span_condition || {};
+			const secondsToDay = (seconds: number) => Math.round(seconds / 86400);
+			const leftBracket = min?.inclusive ? "[" : "(";
+			const rightBracket = max?.inclusive ? "]" : ")";
+			return `${leftBracket}${secondsToDay(min?.value || 0)}days, ${secondsToDay(max?.value || 0)}days${rightBracket}`;
+		};
+
+		const timeText = getTimeText();
+		const textWidth = timeText.length * 2;
+
+		return (
+			<g key={`group-time-${i}`}>
+				{/* 左侧垂直线和箭头 */}
+				<line
+					x1={startX}
+					y1={textY - lineHeight}
+					x2={startX}
+					y2={textY + lineHeight}
+					stroke={timeColor}
+					strokeWidth={0.5}
+				/>
+				<path
+					d={`M${startX},${textY} L${startX + arrowSize},${textY - arrowSize} L${startX + arrowSize},${textY + arrowSize}`}
+					fill={timeColor}
+				/>
+
+				{/* 右侧垂直线和箭头 */}
+				<line
+					x1={endX}
+					y1={textY - lineHeight}
+					x2={endX}
+					y2={textY + lineHeight}
+					stroke={timeColor}
+					strokeWidth={0.5}
+				/>
+				<path
+					d={`M${endX},${textY} L${endX - arrowSize},${textY - arrowSize} L${endX - arrowSize},${textY + arrowSize}`}
+					fill={timeColor}
+				/>
+
+				{/* 时间范围文本 */}
+				<text
+					x={(startX + endX) / 2}
+					y={textY}
+					fontSize={fontSize}
+					fill={timeColor}
+					textAnchor="middle"
+					dominantBaseline="middle"
+				>
+					{timeText}
+				</text>
+
+				{/* 左侧连接线 */}
+				<line
+					x1={startX}
+					y1={textY}
+					x2={(startX + endX) / 2 - textWidth / 2}
+					y2={textY}
+					stroke={timeColor}
+					strokeWidth={0.5}
+				/>
+
+				{/* 右侧连接线 */}
+				<line
+					x1={(startX + endX) / 2 + textWidth / 2}
+					y1={textY}
+					x2={endX}
+					y2={textY}
+					stroke={timeColor}
+					strokeWidth={0.5}
+				/>
+			</g>
+		);
+	};
+
 	return (
 		<svg
 			ref={svgRef}
@@ -726,6 +817,7 @@ const Glyph = ({ trends = [], single_relations = [], group_relations = [], heigh
 			<g ref={gRef}>
 				{trendLines}
 				{relationLines}
+				{trend_groups.map((group, i) => drawTrendGroupTimeIndicator(group, i))}
 				{groupRelationLines}
 				{drawGlobalTimeIndicator()}
 			</g>

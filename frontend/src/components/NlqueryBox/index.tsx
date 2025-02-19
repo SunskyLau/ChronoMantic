@@ -35,7 +35,8 @@ const TextSourceChecker = {
 
 	checkScope: (scope: ScopeConditionWithSource | undefined, matchText: string, targetIndex: number) => {
 		if (!scope) return false;
-		return TextSourceChecker.checkSource(scope.max, matchText, targetIndex) || 
+		return TextSourceChecker.checkSource(scope, matchText, targetIndex) || 
+			   TextSourceChecker.checkSource(scope.max, matchText, targetIndex) || 
 			   TextSourceChecker.checkSource(scope.min, matchText, targetIndex);
 	},
 
@@ -52,56 +53,77 @@ const TextSourceChecker = {
 			if (TextSourceChecker.checkScope(trend.time_span_condition, matchText, targetIndex)) return true;
 		}
 
-		// 检查关系
+		// 检查单趋势关系
 		if (query.single_relations?.some(relation => TextSourceChecker.checkSource(relation, matchText, targetIndex))) return true;
+
+		// 检查趋势组合
+		if (query.trend_groups?.some(group => {
+			return TextSourceChecker.checkSource(group, matchText, targetIndex) ||
+				   TextSourceChecker.checkScope(group.time_span_condition, matchText, targetIndex);
+		})) return true;
+
+		// 检查组合关系
+		if (query.group_relations?.some(relation => TextSourceChecker.checkSource(relation, matchText, targetIndex))) return true;
 
 		// 检查其他范围条件
 		return TextSourceChecker.checkScope(query.time_span_condition, matchText, targetIndex) ||
-			TextSourceChecker.checkScope(query.time_scope_condition, matchText, targetIndex) ||
-			TextSourceChecker.checkScope(query.max_value_scope_condition, matchText, targetIndex) ||
-			TextSourceChecker.checkScope(query.min_value_scope_condition, matchText, targetIndex) || false;
+			   TextSourceChecker.checkScope(query.time_scope_condition, matchText, targetIndex) ||
+			   TextSourceChecker.checkScope(query.max_value_scope_condition, matchText, targetIndex) ||
+			   TextSourceChecker.checkScope(query.min_value_scope_condition, matchText, targetIndex) || false;
 	}
 };
 
 // 文本源切换工具
 const TextSourceToggler = {
-	toggleSource: (source: { text_source?: TextSource } | undefined, text: string, index: number): boolean => {
-		if (source?.text_source?.text === text && source.text_source.index === index) {
+	toggleSource: (source: { text_source?: TextSource } | undefined, text: string) => {
+		if (!source?.text_source) return;
+		if (source.text_source.text === text) {
 			source.text_source.disabled = !source.text_source.disabled;
-			return true;
 		}
-		return false;
 	},
 
-	toggleScope: (scope: ScopeConditionWithSource | undefined, text: string, index: number) => {
+	toggleScope: (scope: ScopeConditionWithSource | undefined, text: string) => {
 		if (!scope) return;
-		TextSourceToggler.toggleSource(scope.max, text, index);
-		TextSourceToggler.toggleSource(scope.min, text, index);
+		TextSourceToggler.toggleSource(scope, text);
+		TextSourceToggler.toggleSource(scope.max, text);
+		TextSourceToggler.toggleSource(scope.min, text);
 	},
 
-	toggleQuerySources: (query: QuerySpecWithSource, text: string, index: number) => {
-		TextSourceToggler.toggleSource(query.target, text, index);
+	toggleQuerySources: (query: QuerySpecWithSource, text: string) => {
+		// 切换目标
+		TextSourceToggler.toggleSource(query.target, text);
 
 		// 切换趋势相关
 		query.trends.forEach(trend => {
-			TextSourceToggler.toggleSource(trend.category, text, index);
-			TextSourceToggler.toggleScope(trend.slope_scope_condition, text, index);
-			TextSourceToggler.toggleScope(trend.delta_percentage_scope_condition, text, index);
-			TextSourceToggler.toggleScope(trend.daily_average_delta_percentage_scope_condition, text, index);
-			TextSourceToggler.toggleScope(trend.abs_slope_percentage_scope_condition, text, index);
-			TextSourceToggler.toggleScope(trend.time_span_condition, text, index);
+			TextSourceToggler.toggleSource(trend.category, text);
+			TextSourceToggler.toggleScope(trend.slope_scope_condition, text);
+			TextSourceToggler.toggleScope(trend.delta_percentage_scope_condition, text);
+			TextSourceToggler.toggleScope(trend.daily_average_delta_percentage_scope_condition, text);
+			TextSourceToggler.toggleScope(trend.abs_slope_percentage_scope_condition, text);
+			TextSourceToggler.toggleScope(trend.time_span_condition, text);
 		});
 
-		// 切换关系
+		// 切换单趋势关系
 		query.single_relations?.forEach(relation => {
-			TextSourceToggler.toggleSource(relation, text, index);
+			TextSourceToggler.toggleSource(relation, text);
+		});
+
+		// 切换趋势组合
+		query.trend_groups?.forEach(group => {
+			TextSourceToggler.toggleSource(group, text);
+			TextSourceToggler.toggleScope(group.time_span_condition, text);
+		});
+
+		// 切换组合关系
+		query.group_relations?.forEach(relation => {
+			TextSourceToggler.toggleSource(relation, text);
 		});
 
 		// 切换其他范围条件
-		TextSourceToggler.toggleScope(query.time_span_condition, text, index);
-		TextSourceToggler.toggleScope(query.time_scope_condition, text, index);
-		TextSourceToggler.toggleScope(query.max_value_scope_condition, text, index);
-		TextSourceToggler.toggleScope(query.min_value_scope_condition, text, index);
+		TextSourceToggler.toggleScope(query.time_span_condition, text);
+		TextSourceToggler.toggleScope(query.time_scope_condition, text);
+		TextSourceToggler.toggleScope(query.max_value_scope_condition, text);
+		TextSourceToggler.toggleScope(query.min_value_scope_condition, text);
 	}
 };
 
@@ -170,10 +192,10 @@ export default function NlqueryBox() {
 		return () => document.removeEventListener("mousedown", handleClickOutside);
 	}, []);
 
-	const toggleTextSourceDisabled = (text: string, index: number) => {
+	const toggleTextSourceDisabled = (text: string) => {
 		if (!query) return;
 		const newQuery = deepClone(query);
-		TextSourceToggler.toggleQuerySources(newQuery, text, index);
+		TextSourceToggler.toggleQuerySources(newQuery, text);
 		dispatch(setQuery(newQuery));
 	};
 
@@ -219,7 +241,7 @@ export default function NlqueryBox() {
 					className="pointer"
 					onClick={(e) => {
 						e.stopPropagation();
-						toggleTextSourceDisabled(highlight.text, highlight.matchIndex);
+						toggleTextSourceDisabled(highlight.text);
 					}}
 				>
 					{highlight.text}

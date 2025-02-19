@@ -23,12 +23,12 @@ export default function Span({ min, max, minValue, maxValue, minInclusive, addon
 	return (
 		<>
 			<Flex
-				gap={12}
+				gap={4}
 				align="center"
 				className="active-component"
 				style={{ backgroundColor: activeColor }}
 			>
-				<Flex style={{ backgroundColor: minActiveColor }} className="active-component" align="center" gap={12}>
+				<Flex style={{ backgroundColor: minActiveColor }} className="active-component" align="center" gap={8}>
 					<Checkbox
 						checked={minInclusive}
 						disabled={disabled || !min}
@@ -49,7 +49,7 @@ export default function Span({ min, max, minValue, maxValue, minInclusive, addon
 					/>
 				</Flex>
 				<SwapRightOutlined />
-				<Flex style={{ backgroundColor: maxActiveColor }} className="active-component" align="center" gap={12}>
+				<Flex style={{ backgroundColor: maxActiveColor }} className="active-component" align="center" gap={8}>
 					<InputNumber
 						disabled={disabled}
 						addonBefore={addonBefore?.[1]}

@@ -2,6 +2,8 @@ import { Button, Divider, Empty, Flex, Select, Typography } from "antd";
 import { Comparator, GroupAttribute, GroupRelationWithSource, TrendWithSource } from "../../../types/QuerySpec";
 import { MinusOutlined, PlusOutlined, SwapRightOutlined } from "@ant-design/icons";
 import { deepClone } from "../../../utils/deepclone";
+import { getColorFromMap } from "../../../utils/color";
+import { useAppSelector } from "../../../app/hooks";
 
 interface GroupRelationProps {
 	isEdit?: boolean;
@@ -13,6 +15,7 @@ interface GroupRelationProps {
 
 export default function GroupRelation({ relations, trends = [], onChange, isEdit, disabled }: GroupRelationProps) {
 	const allRelations = isEdit ? deepClone(relations) : relations;
+	const colorMap = useAppSelector((state) => state.states.colorMap);
 
 	return (
 		<>
@@ -48,18 +51,23 @@ export default function GroupRelation({ relations, trends = [], onChange, isEdit
 			) : (
 				allRelations.map((relation, index) => (
 					<div key={index}>
-						<Flex justify="space-between" align="center" className="relation-item">
+						<Flex
+							justify="space-between"
+							align="center"
+							className="relation-item active-component"
+							style={{ backgroundColor: getColorFromMap(colorMap, relation.text_source) }}
+						>
 							<Flex gap={8}>
-                <Select
-                  options={Object.values(GroupAttribute).map(attr => ({ value: attr }))}
-                  value={relation.attribute}
-                  placeholder="attribute"
-                  onChange={(value) => {
-                    const newRelations = deepClone(allRelations);
-                    newRelations[index].attribute = value;
-                    onChange(newRelations);
-                  }}
-                ></Select>
+								<Select
+									options={Object.values(GroupAttribute).map((attr) => ({ value: attr }))}
+									value={relation.attribute}
+									placeholder="attribute"
+									onChange={(value) => {
+										const newRelations = deepClone(allRelations);
+										newRelations[index].attribute = value;
+										onChange(newRelations);
+									}}
+								></Select>
 								<Select
 									disabled={disabled}
 									value={relation.group1[0]}

@@ -19,7 +19,7 @@ interface TimeProps {
 export default function Time({ min, max, minInclusive, maxInclusive, maxValue, minValue, onChange, disabled, minActiveColor, maxActiveColor, activeColor }: TimeProps) {
 	return (
 		<Flex
-			gap={12}
+			gap={4}
 			align="center"
 			className="active-component"
 			style={{ backgroundColor: activeColor }}

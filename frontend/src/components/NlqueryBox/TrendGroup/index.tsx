@@ -89,6 +89,7 @@ export default function TrendGroup({ groups, idLength, onChange, isEdit, disable
 										/>,
 									]}
 									addonAfter="days"
+									valueFormatter={86400}
 									onChange={(min, max, minInclusive, maxInclusive) => {
 										const newGroups = deepClone(allGroups);
 										newGroups[index].time_span_condition = {
