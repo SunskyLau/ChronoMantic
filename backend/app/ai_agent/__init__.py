@@ -106,8 +106,9 @@ def test_parse_nl_query():
     # nl_query = "Find periods in DPZ when price presented a triple-tops shape"
     # nl_query = "Find the time periods in Amazon stock when the price showed three consecutive peaks and the peaks got lower and lower"
     # nl_query = "Find periods in Amazon stock where prices rose slowly, then rose quickly"
-    nl_query = "Find periods in AMZN when price first rose sharply with a duration of about 4 days and then presented a double-top shape with a duration of about a week."
+    # nl_query = "Find periods in AMZN when price first rose sharply with a duration of about 4 days and then presented a double-top shape with a duration of about a week."
     # nl_query = "In Amazon stock, look up two consecutive rises and the first rise is more gentle than the second rise"
+    nl_query = "Find periods in AMZN when price first presented a double-bottom shape with a duration of about a week and then presented a double-top shape with a duration higher than the first double-bottom's duration"
     response = client.send_prompt(system_prompt, nl_query, False)
     print(response)
 
@@ -116,10 +117,10 @@ def test_modify_nl_query():
     client = myAIClient(model=Qwen.MODELS.QWEN_MAX, platform=Platforms.QWEN)
     system_prompt = create_modify_nl_prompt()
     modify_prompt = """
-old_QuerySpecWithSource:
+old_queryspec_with_source:
 ```
 {
-  "original_text": "Find periods in AMZN when price first rose then fell",
+  "original_text": "Find periods in AMZN when price first fell then presented a flat trend",
   "target": {
     "target": "AMZN",
     "text_source": {
@@ -130,25 +131,25 @@ old_QuerySpecWithSource:
   "trends": [
     {
       "category": {
-        "category": "up",
+        "category": "down",
         "text_source": {
-          "text": "rose",
+          "text": "fell",
           "index": 0
         }
       },
     },
     {
       "category": {
-        "category": "down",
+        "category": "flat",
         "text_source": {
-          "text": "fell",
+          "text": "a flat trend",
           "index": 0
         }
       }
     }
   ],
-  "single_relations": [],
   "trend_groups": [],
+  "single_relations": [],
   "group_relations": [],
 }
 ```
@@ -157,39 +158,40 @@ segments:
 ```
 [
   {
-    "source": "user",
-    "slope": -0.5,
-    "start_value": 150,
-    "end_value": 100,
-    "start_time": 1672444800,
-    "end_time": 1672531200,
-    "delta_percentage": -33.3,
-    "daily_average_delta_percentage": -3,
-    "abs_slope_percentage": 80,
-    "time_span": 86400
+    "source": "result",
+    "abs_slope_percentage": 2.0044006295398686,
+    "daily_average_delta_percentage": -0.808347110206753,
+    "delta_percentage": -17.699390117203826,
+    "end_time": 1397174400,
+    "end_value": 311.730011,
+    "slope": -0.00003233023630401235,
+    "start_time": 1395100800,
+    "start_value": 378.769989,
+    "time_span": 2073600
   },
   {
     "source": "result",
-    "slope": 2.5,
-    "start_value": 100,
-    "end_value": 150,
-    "start_time": 1672531200,
-    "end_time": 1672617600,
-    "delta_percentage": 50,
-    "daily_average_delta_percentage": 10,
-    "abs_slope_percentage": 80,
-    "time_span": 86400
+    "abs_slope_percentage": 0.00012242216338669335,
+    "daily_average_delta_percentage": 0.000054724881026757544,
+    "delta_percentage": 0.016035671329695883,
+    "end_time": 1422489600,
+    "end_value": 311.779999,
+    "slope": 1.9746239413468913e-9,
+    "slope": 1.9746239413468913e-9,
+    "start_time": 1397174400,
+    "start_value": 311.730011,
+    "time_span": 25315200
   },
   {
-    "source": "result", 
-    "slope": -1.2,
-    "start_value": 150,
-    "end_value": 120,
-    "start_time": 1672617600,
-    "end_time": 1672704000,
-    "delta_percentage": -20,
-    "daily_average_delta_percentage": -5,
-    "abs_slope_percentage": 40,
+    "source": "user",
+    "abs_slope_percentage": 30.67595048894415,
+    "daily_average_delta_percentage": -13.711591550810166,
+    "delta_percentage": -13.711591550810159,
+    "end_time": 1422576000,
+    "end_value": 306.018299,
+    "slope": -0.0004947916666666667,
+    "start_time": 1422489600,
+    "start_value": 311.779999,
     "time_span": 86400
   }
 ]
@@ -198,28 +200,18 @@ segments:
 intentions:
 ```
 {
-  "single_intentions": [
+  "single_segment_intentions": [
     {
       "id": 0,
-      "single_choices":["category"]
-    }
-    {
-      "id": 1,
-      "single_choices":["time_span"]
+      "single_choices":["daily_average_delta_percentage"]
     },
     {
       "id": 2,
-      "single_choices":["daily_average_delta_percentage"]
+      "single_choices":["category", "daily_average_delta_percentage"]
     }
   ],
-  "group_intentions": [],
-  "single_relation_intentions": [
-    {
-      "id1": 0,
-      "id2": 2,
-      "relation_choices": ["slope"]
-    }
-  ],
+  "segment_group_intentions": [],
+  "single_relation_intentions": [],
   "group_relation_intentions": []
 }
 ```
@@ -229,5 +221,5 @@ intentions:
 
 
 if __name__ == "__main__":
-    test_parse_nl_query()
-    # test_modify_nl_query()
+    # test_parse_nl_query()
+    test_modify_nl_query()
