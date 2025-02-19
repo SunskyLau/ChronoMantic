@@ -1,5 +1,5 @@
 import { Button, Divider, Empty, Flex, Select, Typography } from "antd";
-import { Attribute, Comparator, RelationWithSource } from "../../../types/QuerySpec";
+import { Comparator, SingleAttribute, SingleRelationWithSource } from "../../../types/QuerySpec";
 import { deepClone } from "../../../utils/deepclone";
 import { MinusOutlined, PlusOutlined } from "@ant-design/icons";
 import { classnames } from "../../../utils/classname";
@@ -9,12 +9,12 @@ import { setCurRelation } from "../../../app/slice/stateSlice";
 
 interface RelationProps {
     title?: string;
-    relations: RelationWithSource[];
+    relations: SingleRelationWithSource[];
     idLength: number;
     isEdit?: boolean;
     disabled?: boolean;
     highlight?: number;
-    onChange: (relations: RelationWithSource[]) => void;
+    onChange: (relations: SingleRelationWithSource[]) => void;
 }
 
 export default function Relation({ title, relations, idLength, isEdit, onChange, disabled, highlight }: RelationProps) {
@@ -33,7 +33,7 @@ export default function Relation({ title, relations, idLength, isEdit, onChange,
                 <Typography.Title level={4} keyboard>{title ?? 'Relation'}</Typography.Title>
                 {isEdit && !disabled && <Button icon={<PlusOutlined />} onClick={() => {
                     const newRelations = deepClone(relations);
-                    newRelations.push({} as RelationWithSource);
+                    newRelations.push({} as SingleRelationWithSource);
                     onChange(newRelations);
                 }}></Button>}
             </Flex>
@@ -41,7 +41,7 @@ export default function Relation({ title, relations, idLength, isEdit, onChange,
                 <div key={index} ref={el => relationRefs.current[index] = el} onClick={()=>{dispatch(setCurRelation(index))}}>
                     <div className={classnames("relation-item", highlight === index ? "active" : "")} >
                         <Flex gap={4}>
-                            <Select disabled={disabled} placeholder="attribute" popupMatchSelectWidth={false} options={Object.values(Attribute).map(attr => ({ value: attr, label: attr }))} value={relation.attribute} onChange={(value) => {
+                            <Select disabled={disabled} placeholder="attribute" popupMatchSelectWidth={false} options={Object.values(SingleAttribute).map(attr => ({ value: attr, label: attr }))} value={relation.attribute} onChange={(value) => {
                                 const newRelations = deepClone(relations);
                                 newRelations[index].attribute = value;
                                 onChange(newRelations);

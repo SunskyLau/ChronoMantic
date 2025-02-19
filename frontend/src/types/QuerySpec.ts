@@ -7,63 +7,109 @@ export interface DatasetInfo {
   value_columns: string[];
 }
 
+/**
+ * Foundamental Data
+ */
+
+// 单个分段信息
 export interface Segment {
-  start_idx: number;
-  end_idx: number;
-  slope: number;
-  start_value: number;
-  end_value: number;
-  max_value: number;
-  min_value: number;
-  start_time?: number;
-  end_time?: number;
-  delta_percentage?: number;
-  daily_average_delta_percentage?: number;
-  abs_slope_percentage?: number;
-  time_span?: number;
+  start_idx: number; // 起始索引
+  end_idx: number; // 结束索引
+  slope: number; // 斜率
+  start_value: number; // 起始值
+  end_value: number; // 结束值
+  max_value: number; // 最大值
+  min_value: number; // 最小值
+  start_time?: number; // 起始时间,单位是秒
+  end_time?: number; // 结束时间,单位是秒
+  delta_percentage?: number; // 变化率,单位是%
+  daily_average_delta_percentage?: number; // 日均变化率,单位是%/day
+  abs_slope_percentage?: number; // 斜率在所有斜率中的占比,单位是%
+  time_span?: number; // 时间跨度,单位是秒
 }
 
+export interface SimplifiedSegment {
+  source: string; // 片段的来源，可以是"result"或者"user",分别代表来源于查询结果和用户指定新增的
+  slope: number;      // 片段的斜率，表示变化趋势
+  start_value: number;  // 片段起始点的值
+  end_value: number;    // 片段终止点的值
+  start_time?: number;  // 片段起始时间，单位是秒，可选
+  end_time?: number;    // 片段终止时间，单位是秒，可选
+  delta_percentage?: number;  // 片段的总体变化百分比，单位是%，可选
+  daily_average_delta_percentage?: number;  // 片段的日均变化百分比，单位是%，可选
+  abs_slope_percentage?: number;  // 片段斜率在所有斜率中的占比，单位是%，可选
+  time_span?: number;  // 片段的时间跨度，单位是秒，可选
+}
+
+// 趋势组合
+export interface SegmentGroup {
+  ids: [number, number]; // 组内趋势的id列表,ids[1]>=ids[0]
+  time_span: number; // 时间跨度,单位是秒
+}
+
+// 近似的连续分段信息
 export interface ApproximationSegments {
-  // 近似的连续分段
-  segments: Segment[];
-  approximation_level: number;
+  segments: Segment[]; // 近似的连续分段列表
+  approximation_level: number; // 近似程度
 }
 
+// 近似的连续分段信息容器
 export interface ApproximationSegmentsContainer {
-  source: string;
+  source: string; // 数据来源
   approximation_segments_list: ApproximationSegments[]; // 近似的连续分段列表
-  max_approximation_level: number;
+  max_approximation_level: number; // 最大近似程度
 }
 
 /**
  * QuerySpec
  */
-export interface ThresholdCondition {
+
+// 阈值条件
+export interface ThresholdCondition extends WithSource {
   value: number; // 阈值
   inclusive: boolean; // 是否包含该值
 }
 
+// 范围条件
 export interface ScopeCondition {
-  max?: ThresholdCondition; // 最大值
-  min?: ThresholdCondition; // 最小值
+  max?: ThresholdCondition; // 最大值条件
+  min?: ThresholdCondition; // 最小值条件
 }
 
+export enum TrendCategory {
+  FLAT = "flat", // 平坦
+  UP = "up", // 上升
+  DOWN = "down", // 下降
+  ARBITRARY = "arbitrary", // 任意
+}
+
+// 趋势
 export interface Trend {
-  category: string; // "flat","up","down"
+  category: TrendCategory; // 趋势类别
   slope_scope_condition?: ScopeCondition; // 斜率的范围条件
-  delta_percentage_scope_condition?: ScopeCondition; // 变化率的范围条件, 单位是%，例如70就代表70%
-  daily_average_delta_percentage_scope_condition?: ScopeCondition; // 日平均变化率的范围条件, 单位是%/day，例如5就代表5%/day
-  abs_slope_percentage_scope_condition?: ScopeCondition; // 斜率在所有斜率中的占比范围条件, 单位是%，例如30就代表30%
-  time_span_condition?: ScopeCondition; // 时间跨度的范围条件, 单位是秒
+  delta_percentage_scope_condition?: ScopeCondition; // 变化率的范围条件,单位是%,例如70就代表70%
+  daily_average_delta_percentage_scope_condition?: ScopeCondition; // 日平均变化率的范围条件,单位是%/day,例如5就代表5%/day
+  abs_slope_percentage_scope_condition?: ScopeCondition; // 斜率在所有斜率中的占比范围条件,单位是%,例如30就代表30%
+  time_span_condition?: ScopeCondition; // 时间跨度的范围条件,单位是秒
 }
 
-export enum Attribute {
+// 单趋势可比较属性
+export enum SingleAttribute {
   SLOPE = "slope", // 斜率
   START_VALUE = "start_value", // 起始值
   END_VALUE = "end_value", // 结束值
-  TIME_SPAN = "time_span", // 时间跨度, 单位是秒
+  TIME_SPAN = "time_span", // 时间跨度,单位是秒
+  DELTA_PERCENTAGE = "delta_percentage", // 变化率,单位是%
+  DAILY_AVERAGE_DELTA_PERCENTAGE = "daily_average_delta_percentage", // 日均变化率,单位是%/day
+  ABS_SLOPE_PERCENTAGE = "abs_slope_percentage", // 斜率占比,单位是%
 }
 
+// 趋势组合可比较属性
+export enum GroupAttribute {
+  TIME_SPAN = "time_span", // 时间跨度,单位是秒
+}
+
+// 比较关系
 export enum Comparator {
   GREATER = ">", // 大于
   LESS = "<", // 小于
@@ -73,27 +119,35 @@ export enum Comparator {
   APPROXIMATELY_EQUAL_TO = "~=", // 近似等于
 }
 
-export interface Relation {
-  // 不同trend之间的属性比较关系
+// 两个单趋势之间的比较关系
+export interface SingleRelation {
   id1: number; // 趋势1的id
   id2: number; // 趋势2的id
-  attribute: Attribute; // 比较的属性
+  attribute: SingleAttribute; // 比较的属性
   comparator: Comparator; // 比较关系
 }
 
-export interface TrendTimeSpanCompositionCondition {
-  // 趋势时间跨度组合条件
-  id1: number; // 趋势1的id，其中id1应该小于id2
-  id2: number; // 趋势2的id，其中id1应该小于id2
-  time_span_condition: ScopeCondition; // 代表从id1到id2的之间(包括id1和id2)所有趋势的总体时间跨度, 单位是秒
+// 趋势组合
+export interface TrendGroup {
+  ids: [number, number]; // 组内趋势的id列表,ids[1]>=ids[0]
+  time_span_condition?: ScopeCondition; // 该组的时间跨度条件
+}
+
+export interface GroupRelation {
+  group1: [number, number]; // 第一个组合的趋势id列表
+  group2: [number, number]; // 第二个组合的趋势id列表
+  comparator: Comparator; // 比较关系
+  attribute: GroupAttribute; // 比较的属性
 }
 
 export interface QuerySpec {
   target: string; // 查询的目标时间序列名
   trends: Trend[]; // 趋势列表
-  relations: Relation[]; // 不同趋势之间的属性比较关系列表
-  trend_time_span_composition_conditions: TrendTimeSpanCompositionCondition[] | ScopeCondition; // 趋势时间跨度组合条件列表，如果为ScopeCondition，则表示所有趋势的总体时间跨度, 单位是秒
-  time_scope_condition?: ScopeCondition; // 搜索时间的范围条件
+  single_relations: SingleRelation[]; // 不同趋势之间的属性比较关系列表
+  trend_groups: TrendGroup[]; // 趋势组合列表
+  group_relations: GroupRelation[]; // 组合之间的关系列表
+  time_span_condition?: ScopeCondition; // 总时间跨度的范围条件
+  time_scope_condition?: ScopeCondition; // 时间范围的范围条件
   max_value_scope_condition?: ScopeCondition; // 最大值的范围条件
   min_value_scope_condition?: ScopeCondition; // 最小值的范围条件
 }
@@ -109,140 +163,56 @@ export interface TextSource {
 }
 
 export interface WithSource {
-  text_source?: TextSource;
+  text_source?: TextSource; // 对应的原始文本信息
 }
 
 // 基础条件的 WithSource 版本
 export interface CategoryWithSource extends WithSource {
-  category: string;
+  category: TrendCategory; // 趋势类别
 }
 
-export interface ThresholdConditionWithSource extends ThresholdCondition, WithSource { }
+export interface ScopeConditionWithSource extends WithSource, ScopeCondition { }
 
-export interface ScopeConditionWithSource {
-  max?: ThresholdConditionWithSource;
-  min?: ThresholdConditionWithSource;
-}
-
-// 趋势的 WithSource 版本
+// 单趋势的 WithSource 版本
 export interface TrendWithSource {
-  category: CategoryWithSource;
-  slope_scope_condition?: ScopeConditionWithSource;
-  delta_percentage_scope_condition?: ScopeConditionWithSource;
-  daily_average_delta_percentage_scope_condition?: ScopeConditionWithSource;
-  abs_slope_percentage_scope_condition?: ScopeConditionWithSource;
-  time_span_condition?: ScopeConditionWithSource;
+  category: CategoryWithSource; // 趋势类别
+  slope_scope_condition?: ScopeConditionWithSource; // 斜率的范围条件
+  delta_percentage_scope_condition?: ScopeConditionWithSource; // 变化率的范围条件
+  daily_average_delta_percentage_scope_condition?: ScopeConditionWithSource; // 日平均变化率的范围条件
+  abs_slope_percentage_scope_condition?: ScopeConditionWithSource; // 斜率占比的范围条件
+  time_span_condition?: ScopeConditionWithSource; // 时间跨度的范围条件
 }
 
-// 关系的 WithSource 版本
-export interface RelationWithSource extends Relation, WithSource { }
+// 单趋势关系的 WithSource 版本
+export interface SingleRelationWithSource extends SingleRelation, WithSource { }
 
-// 时间跨度组合条件的 WithSource 版本
-export interface TrendTimeSpanCompositionConditionWithSource extends TrendTimeSpanCompositionCondition, WithSource { }
+// 趋势组合的 WithSource 版本
+export interface TrendGroupWithSource extends TrendGroup, WithSource { }
+
+// 组合关系的 WithSource 版本
+export interface GroupRelationWithSource extends GroupRelation, WithSource { }
 
 export interface TargetWithSource extends WithSource {
-  target: string;
+  target: string; // 目标时间序列名
 }
 
-// 查询规范的 WithSource 版本
 export interface QuerySpecWithSource {
-  original_text: string;
-  target: TargetWithSource;
-  trends: TrendWithSource[];
-  relations?: RelationWithSource[];
-  trend_time_span_composition_conditions?: TrendTimeSpanCompositionConditionWithSource[] | ScopeConditionWithSource;
-  time_scope_condition?: ScopeConditionWithSource;
-  max_value_scope_condition?: ScopeConditionWithSource;
-  min_value_scope_condition?: ScopeConditionWithSource;
-}
-
-export function formatQuerySpec(query: QuerySpecWithSource): QuerySpec {
-  // 格式化 ScopeCondition
-  const formatScopeCondition = (scope?: ScopeConditionWithSource): ScopeCondition | undefined => {
-    if (!scope) return undefined;
-    return {
-      max: scope.max && !scope.max.text_source?.disabled ? {
-        value: scope.max.value,
-        inclusive: scope.max.inclusive
-      } : undefined,
-      min: scope.min && !scope.min.text_source?.disabled ? {
-        value: scope.min.value,
-        inclusive: scope.min.inclusive
-      } : undefined
-    };
-  };
-
-  // 格式化 Trend
-  const formatTrend = (trend: TrendWithSource): Trend => ({
-    category: trend.category.category,
-    slope_scope_condition: formatScopeCondition(trend.slope_scope_condition),
-    delta_percentage_scope_condition: formatScopeCondition(trend.delta_percentage_scope_condition),
-    daily_average_delta_percentage_scope_condition: formatScopeCondition(trend.daily_average_delta_percentage_scope_condition),
-    abs_slope_percentage_scope_condition: formatScopeCondition(trend.abs_slope_percentage_scope_condition),
-    time_span_condition: formatScopeCondition(trend.time_span_condition)
-  });
-
-  // 格式化 Relation，过滤掉禁用的关系
-  const formatRelation = (relation: RelationWithSource): Relation | null => {
-    if (relation.text_source?.disabled) return null;
-    return {
-      id1: relation.id1,
-      id2: relation.id2,
-      attribute: relation.attribute,
-      comparator: relation.comparator
-    };
-  };
-
-  // 格式化 TrendTimeSpanCompositionCondition，过滤掉禁用的条件
-  const formatTimeSpanComposition = (condition: TrendTimeSpanCompositionConditionWithSource): TrendTimeSpanCompositionCondition | null => {
-    if (condition.text_source?.disabled) return null;
-    return {
-      id1: condition.id1,
-      id2: condition.id2,
-      time_span_condition: formatScopeCondition(condition.time_span_condition) || { min: undefined, max: undefined }
-    };
-  };
-
-  // 格式化 trend_time_span_composition_conditions
-  const formatTimeSpanConditions = (conditions?: TrendTimeSpanCompositionConditionWithSource[] | ScopeConditionWithSource) => {
-    if (!conditions) return undefined;
-    if (Array.isArray(conditions)) {
-      const filteredConditions = conditions
-        .map(formatTimeSpanComposition)
-        .filter((condition): condition is TrendTimeSpanCompositionCondition => condition !== null);
-      return filteredConditions;
-    }
-    return formatScopeCondition(conditions);
-  };
-
-  // 过滤掉禁用的趋势
-  const filteredTrends = query.trends
-    .filter(trend => !trend.category.text_source?.disabled)
-    .map(formatTrend);
-
-  // 过滤掉禁用的关系
-  const filteredRelations = (query.relations || [])
-    .map(formatRelation)
-    .filter((relation): relation is Relation => relation !== null);
-
-  return {
-    target: query.target.target,
-    trends: filteredTrends,
-    relations: filteredRelations,
-    trend_time_span_composition_conditions: formatTimeSpanConditions(query.trend_time_span_composition_conditions) || [],
-    time_scope_condition: formatScopeCondition(query.time_scope_condition),
-    max_value_scope_condition: formatScopeCondition(query.max_value_scope_condition),
-    min_value_scope_condition: formatScopeCondition(query.min_value_scope_condition)
-  };
+  original_text: string; // 原始查询文本
+  target: TargetWithSource; // 查询目标
+  trends: TrendWithSource[]; // 趋势列表
+  single_relations: SingleRelationWithSource[]; // 单趋势关系列表
+  trend_groups: TrendGroupWithSource[]; // 趋势组合列表
+  group_relations: GroupRelationWithSource[]; // 组合关系列表
+  time_span_condition?: ScopeConditionWithSource; // 总时间跨度的范围条件
+  time_scope_condition?: ScopeConditionWithSource; // 时间范围的范围条件
+  max_value_scope_condition?: ScopeConditionWithSource; // 最大值的范围条件
+  min_value_scope_condition?: ScopeConditionWithSource; // 最小值的范围条件
 }
 
 /**
  * Intentions
  */
 
-/**
- * SingleChoice - 单个趋势的可选属性枚举
- */
 export enum SingleChoice {
   CATEGORY = "category", // 趋势类别
   SLOPE = "slope", // 斜率属性
@@ -252,53 +222,141 @@ export enum SingleChoice {
   TIME_SPAN = "time_span", // 时间跨度属性,单位是秒
 }
 
-/**
- * GroupChoice - 趋势组合的可选属性枚举
- */
 export enum GroupChoice {
-  TREND_TIME_SPAN_COMPOSITION_CONDITION = "trend_time_span_composition_condition", // 趋势组合的时间跨度条件
+  TIME_SPAN = "time_span", // 趋势组合的时间跨度条件
 }
 
-/**
- * SingleIntention - 单个趋势的意图接口定义
- */
+export enum SingleRelationChoice {
+  SLOPE = "slope", // 斜率关系
+  START_VALUE = "start_value", // 起始值关系
+  END_VALUE = "end_value", // 结束值关系
+  TIME_SPAN = "time_span", // 时间跨度关系
+  DELTA_PERCENTAGE = "delta_percentage", // 变化率关系
+  DAILY_AVERAGE_DELTA_PERCENTAGE = "daily_average_delta_percentage", // 日均变化率关系
+  ABS_SLOPE_PERCENTAGE = "abs_slope_percentage", // 斜率占比关系
+}
+
+export enum GroupRelationChoice {
+  TIME_SPAN = "time_span", // 时间跨度关系
+}
+
 export interface SingleIntention {
   id: number; // 趋势的ID标识
   single_choices: SingleChoice[]; // 该趋势需要考虑的属性列表
 }
 
-/**
- * GroupIntention - 趋势组合的意图接口定义
- */
 export interface GroupIntention {
-  ids: number[]; // 组合中包含的趋势ID列表
-  group_choice: GroupChoice; // 该组合需要考虑的属性
+  ids: [number, number]; // 组合中包含的趋势ID列表
+  group_choices: GroupChoice[]; // 该组合需要考虑用作自然语言查询调整的属性列表
 }
 
-/**
- * RelationChoice - 趋势关系的可选属性枚举
- */
-export enum RelationChoice {
-  SLOPE = "slope", // 斜率关系
-  START_VALUE = "start_value", // 起始值关系
-  END_VALUE = "end_value", // 结束值关系
-  TIME_SPAN = "time_span", // 时间跨度关系
-}
-
-/**
- * RelationIntention - 趋势关系的意图接口定义
- */
-export interface RelationIntention {
+export interface SingleRelationIntention {
   id1: number; // 第一个趋势的ID
   id2: number; // 第二个趋势的ID
-  relation_choice: RelationChoice; // 需要比较的关系属性
+  relation_choices: SingleRelationChoice[]; // 需要比较的关系属性
 }
 
-/**
- * Intentions - 整体查询意图的接口定义
- */
+// 趋势组合关系的意图接口定义
+export interface GroupRelationIntention {
+  group1: [number, number]; // 第一个趋势组合的ID列表,group1[1]>=group1[0]
+  group2: [number, number]; // 第二个趋势组合的ID列表,group2[1]>=group2[0]
+  relation_choices: GroupRelationChoice[]; // 需要比较的关系属性
+}
+
+// 整体查询意图的接口定义
 export interface Intentions {
   single_intentions: SingleIntention[]; // 单个趋势的意图列表
   group_intentions: GroupIntention[]; // 趋势组合的意图列表
-  relation_intentions: RelationIntention[]; // 趋势关系的意图列表
+  single_relation_intentions: SingleRelationIntention[]; // 单个趋势关系的意图列表
+  group_relation_intentions: GroupRelationIntention[]; // 趋势组合关系的意图列表
+}
+
+export function formatQuerySpec(query: QuerySpecWithSource): QuerySpec {
+  // 格式化 ScopeCondition
+  const formatScopeCondition = (scope?: ScopeConditionWithSource): ScopeCondition | undefined => {
+    if (!scope) return undefined;
+    if (scope.text_source?.disabled) return undefined;
+
+    return {
+      max: scope.max ? {
+        value: scope.max.value,
+        inclusive: scope.max.inclusive
+      } : undefined,
+      min: scope.min ? {
+        value: scope.min.value,
+        inclusive: scope.min.inclusive
+      } : undefined
+    };
+  };
+
+  // 格式化 Trend
+  const formatTrend = (trend: TrendWithSource): Trend => ({
+    category: trend.category.text_source?.disabled ? TrendCategory.ARBITRARY : trend.category.category,
+    slope_scope_condition: formatScopeCondition(trend.slope_scope_condition),
+    delta_percentage_scope_condition: formatScopeCondition(trend.delta_percentage_scope_condition),
+    daily_average_delta_percentage_scope_condition: formatScopeCondition(trend.daily_average_delta_percentage_scope_condition),
+    abs_slope_percentage_scope_condition: formatScopeCondition(trend.abs_slope_percentage_scope_condition),
+    time_span_condition: formatScopeCondition(trend.time_span_condition)
+  });
+
+  // 格式化 SingleRelation
+  const formatSingleRelation = (relation: SingleRelationWithSource): SingleRelation | null => {
+    if (relation.text_source?.disabled) return null;
+    return {
+      id1: relation.id1,
+      id2: relation.id2,
+      attribute: relation.attribute,
+      comparator: relation.comparator
+    };
+  };
+
+  // 格式化 TrendGroup
+  const formatTrendGroup = (group: TrendGroupWithSource): TrendGroup | null => {
+    if (group.text_source?.disabled) return null;
+    return {
+      ids: group.ids,
+      time_span_condition: group.time_span_condition
+    };
+  };
+
+  // 格式化 GroupRelation
+  const formatGroupRelation = (relation: GroupRelationWithSource): GroupRelation | null => {
+    if (relation.text_source?.disabled) return null;
+    return {
+      group1: relation.group1,
+      group2: relation.group2,
+      attribute: relation.attribute,
+      comparator: relation.comparator
+    };
+  };
+
+  // 过滤掉禁用的趋势
+  const filteredTrends = query.trends.map(formatTrend);
+
+  // 过滤掉禁用的单趋势关系
+  const filteredSingleRelations = (query.single_relations || [])
+    .map(formatSingleRelation)
+    .filter((relation): relation is SingleRelation => relation !== null);
+
+  // 过滤掉禁用的趋势组合
+  const filteredTrendGroups = (query.trend_groups || [])
+    .map(formatTrendGroup)
+    .filter((group): group is TrendGroup => group !== null);
+
+  // 过滤掉禁用的组合关系
+  const filteredGroupRelations = (query.group_relations || [])
+    .map(formatGroupRelation)
+    .filter((relation): relation is GroupRelation => relation !== null);
+
+  return {
+    target: query.target.target,
+    trends: filteredTrends,
+    single_relations: filteredSingleRelations,
+    trend_groups: filteredTrendGroups,
+    group_relations: filteredGroupRelations,
+    time_span_condition: formatScopeCondition(query.time_span_condition),
+    time_scope_condition: formatScopeCondition(query.time_scope_condition),
+    max_value_scope_condition: formatScopeCondition(query.max_value_scope_condition),
+    min_value_scope_condition: formatScopeCondition(query.min_value_scope_condition)
+  };
 }

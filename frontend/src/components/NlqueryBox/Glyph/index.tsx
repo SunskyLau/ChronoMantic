@@ -1,4 +1,4 @@
-import { Attribute, Comparator, QuerySpecWithSource, RelationWithSource, TextSource, TrendWithSource } from "../../../types/QuerySpec";
+import { Comparator, GroupRelationWithSource, QuerySpecWithSource, SingleAttribute, SingleRelationWithSource, TargetWithSource, TextSource, TrendGroupWithSource, TrendWithSource } from "../../../types/QuerySpec";
 import * as d3 from "d3";
 import { deepClone } from "../../../utils/deepclone";
 import { useEffect, useRef, useState } from "react";
@@ -6,11 +6,14 @@ import type { DefaultArcObject } from "d3-shape";
 import { ZoomTransform } from "d3";
 import { getColorFromMap } from "../../../utils/color";
 
-type ClickType = "Trend" | "Relation";
+type ClickType = "Trend" | "Relation" | "GroupRelation";
 
 interface GlyphProps {
+	target?: TargetWithSource;
 	trends?: TrendWithSource[];
-	relations?: RelationWithSource[];
+	trend_groups?: TrendGroupWithSource[];
+	single_relations?: SingleRelationWithSource[];
+	group_relations?: GroupRelationWithSource[];
 	allTrends?: TrendWithSource[];
 	height?: number;
 	curTrend?: number;
@@ -52,14 +55,14 @@ const isOverlapping = (start1: number, end1: number, start2: number, end2: numbe
 };
 
 // 获取关系线的区间
-const getRelationRange = (relation: RelationWithSource) => {
+const getRelationRange = (relation: SingleRelationWithSource) => {
 	const start = Math.min(relation.id1, relation.id2);
 	const end = Math.max(relation.id1, relation.id2);
 	return { start, end };
 };
 
 // 计算每条关系线需要的偏移层级
-const calculateOffsets = (relations: RelationWithSource[]) => {
+const calculateOffsets = (relations: SingleRelationWithSource[]) => {
 	const offsets: number[] = new Array(relations.length).fill(0);
 
 	relations.forEach((relation1, i) => {
@@ -79,54 +82,52 @@ const calculateOffsets = (relations: RelationWithSource[]) => {
 	return offsets;
 };
 
-// 修改 getSlopeText 函数，让括号也使用对应的颜色，并处理禁用状态
+// 在文件顶部添加 getColorWithDisabled 函数
+const getColorWithDisabled = (colorMap: Record<string, string>, textSource?: TextSource) => {
+	if (!textSource) return "#0008";
+	if (textSource.disabled) return "#eee";
+	return getColorFromMap(colorMap, textSource);
+};
+
+// 修改 getSlopeText 函数
 const getSlopeText = (trend: TrendWithSource, colorMap: Record<string, string>) => {
 	const condition = trend.daily_average_delta_percentage_scope_condition;
-	if (!condition) return null;
+	if (!condition || condition.text_source?.disabled) return null;
 
 	const { min, max } = condition;
-
-	// 获取颜色，考虑禁用状态
-	const getColorWithDisabled = (textSource?: TextSource) => {
-		if (textSource?.disabled) return "#eee";
-		return getColorFromMap(colorMap, textSource, "") || "#000";
-	};
-
-	const minColor = getColorWithDisabled(min?.text_source);
-	const maxColor = getColorWithDisabled(max?.text_source);
+	const color = getColorWithDisabled(colorMap, condition.text_source);
+	const minColor = getColorFromMap(colorMap, condition.min?.text_source);
+	const maxColor = getColorFromMap(colorMap, condition.max?.text_source);
 
 	if (min && max) {
-		// 如果同时有min和max，使用区间表示
 		return {
 			leftPart: {
 				text: min.inclusive ? "[" : "(",
-				color: minColor,
+				color: color || minColor,
 			},
 			minValue: {
 				text: `${min.value}%/day`,
-				color: minColor,
+				color: color || minColor,
 			},
 			separator: ", ",
 			maxValue: {
 				text: `${max.value}%/day`,
-				color: maxColor,
+				color: color || maxColor,
 			},
 			rightPart: {
 				text: max.inclusive ? "]" : ")",
-				color: maxColor,
+				color: color || maxColor,
 			},
 		};
 	} else if (min) {
-		// 只有min
 		return {
 			text: `${min.inclusive ? "≥" : ">"}${min.value}%/day`,
-			color: minColor,
+			color: color || minColor,
 		};
 	} else if (max) {
-		// 只有max
 		return {
 			text: `${max.inclusive ? "≤" : "<"}${max.value}%/day`,
-			color: maxColor,
+			color: color || maxColor,
 		};
 	}
 
@@ -135,26 +136,17 @@ const getSlopeText = (trend: TrendWithSource, colorMap: Record<string, string>) 
 
 // 修改getGlobalTimeRangeText函数，将秒转换为天
 const getGlobalTimeRangeText = (query?: QuerySpecWithSource) => {
-	if (!query?.trend_time_span_composition_conditions) return "";
+	if (!query?.time_span_condition) return "";
 
-	const condition = query.trend_time_span_composition_conditions;
+	const { min, max } = query.time_span_condition;
 	const secondsToDay = (seconds: number) => Math.round(seconds / 86400);
 
-	if (Array.isArray(condition)) {
-		const min = condition[0].time_span_condition.min;
-		const max = condition[0].time_span_condition.max;
-		const leftBracket = min?.inclusive ? "[" : "(";
-		const rightBracket = max?.inclusive ? "]" : ")";
-		return `${leftBracket}${secondsToDay(min?.value || 0)}days, ${secondsToDay(max?.value || 0)}days${rightBracket}`;
-	} else {
-		const { min, max } = condition;
-		const leftBracket = min?.inclusive ? "[" : "(";
-		const rightBracket = max?.inclusive ? "]" : ")";
-		return `${leftBracket}${secondsToDay(min?.value || 0)}days, ${secondsToDay(max?.value || 0)}days${rightBracket}`;
-	}
+	const leftBracket = min?.inclusive ? "[" : "(";
+	const rightBracket = max?.inclusive ? "]" : ")";
+	return `${leftBracket}${secondsToDay(min?.value || 0)}days, ${secondsToDay(max?.value || 0)}days${rightBracket}`;
 };
 
-const Glyph = ({ trends = [], relations = [], height = 32, onClick, curTrend, curRelation, query, colorMap = {} }: GlyphProps) => {
+const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_relations = [], height = 32, onClick, curTrend, curRelation, query, colorMap = {}, target }: GlyphProps) => {
 	const paddingY = 10;
 	const paddingX = 4;
 	const trendLength = height - paddingY * 1.5;
@@ -190,7 +182,7 @@ const Glyph = ({ trends = [], relations = [], height = 32, onClick, curTrend, cu
 	const getTrend = (trend: TrendWithSource, i: number, showIndex = false) => {
 		const { isUp, isDown } = getTrendInfo(trend);
 		const textSource = trend.category.text_source;
-		const color = textSource?.disabled ? "#eee" : (getColorFromMap(colorMap, textSource) || "#000");
+		const color = getColorWithDisabled(colorMap, textSource);
 		const x1 = i * trendLength + paddingX;
 		const x2 = x1 + trendLength;
 		const y = height / 2;
@@ -329,16 +321,16 @@ const Glyph = ({ trends = [], relations = [], height = 32, onClick, curTrend, cu
 		);
 	};
 
-	const drawComparator = (x: number, y: number, comparator: Comparator, index: number, reverse: boolean = false, color: string = "#000") => {
+	const drawComparator = (x: number, y: number, comparator: Comparator, index: number, reverse: boolean = false, color: string = "#000", strokeWidth: number = 1) => {
 		const newComparator = reverse && comparatorMap[comparator] ? comparatorMap[comparator] : comparator;
 		return (
 			<text
 				onClick={() => onClick?.("Relation", index)}
 				x={x}
-				y={y}
+				y={y + height / 20}
 				fontSize={height / 5}
 				fill={color}
-				fontWeight={700}
+				fontWeight={strokeWidth < 1 ? 400 : 700}
 				textAnchor="middle"
 			>
 				{newComparator}
@@ -346,13 +338,13 @@ const Glyph = ({ trends = [], relations = [], height = 32, onClick, curTrend, cu
 		);
 	};
 
-	const offsets = calculateOffsets(relations);
+	const offsets = calculateOffsets(single_relations);
 	const getVerticalOffset = (relationIndex: number) => {
 		const spacing = 6; // 每条线之间的间距
 		return offsets[relationIndex] * spacing;
 	};
 
-	const relationLines = relations.map((relation, i) => {
+	const relationLines = single_relations.map((relation, i) => {
 		const trendIndex1 = t.findIndex((t) => t.index === relation.id1);
 		const trendIndex2 = t.findIndex((t) => t.index === relation.id2);
 
@@ -360,8 +352,10 @@ const Glyph = ({ trends = [], relations = [], height = 32, onClick, curTrend, cu
 		const trend2 = t[trendIndex2];
 		const isReverse = trendIndex1 > trendIndex2;
 
-		const isEnd = relation.attribute === Attribute.END_VALUE;
-		const isStart = relation.attribute === Attribute.START_VALUE;
+		const isEnd = relation.attribute === SingleAttribute.END_VALUE;
+		const isStart = relation.attribute === SingleAttribute.START_VALUE;
+		const isSlope = relation.attribute === SingleAttribute.SLOPE;
+		const isSpan = relation.attribute === SingleAttribute.TIME_SPAN;
 
 		if (isStart || isEnd) {
 			const offset = isEnd ? trendLength + paddingX : paddingX;
@@ -382,7 +376,7 @@ const Glyph = ({ trends = [], relations = [], height = 32, onClick, curTrend, cu
 			const y2 = getTrendValueY(trend2, isEnd);
 
 			const textSource = relation.text_source;
-			const relationColor = textSource?.disabled ? "#eee" : (getColorFromMap(colorMap, textSource) || "#0002");
+			const relationColor = textSource?.disabled ? "#eee" : getColorWithDisabled(colorMap, textSource) || "#0002";
 
 			const vOffset = getVerticalOffset(i);
 			const extraOffset = y2 === height / 2 ? height / 4 : 0;
@@ -397,8 +391,6 @@ const Glyph = ({ trends = [], relations = [], height = 32, onClick, curTrend, cu
 				</g>
 			);
 		}
-
-		const isSlope = relation.attribute === Attribute.SLOPE;
 
 		if (isSlope) {
 			const angle1 = getAverageValue(trend1);
@@ -436,7 +428,7 @@ const Glyph = ({ trends = [], relations = [], height = 32, onClick, curTrend, cu
 			};
 
 			const textSource = relation.text_source;
-			const relationColor = textSource?.disabled ? "#eee" : (getColorFromMap(colorMap, textSource) || "#0002");
+			const relationColor = textSource?.disabled ? "#eee" : getColorWithDisabled(colorMap, textSource) || "#0002";
 
 			return (
 				<g key={i}>
@@ -458,8 +450,6 @@ const Glyph = ({ trends = [], relations = [], height = 32, onClick, curTrend, cu
 			);
 		}
 
-		const isSpan = relation.attribute === Attribute.TIME_SPAN;
-
 		if (isSpan) {
 			const offset = trendLength;
 			const x11 = trendIndex1 * trendLength + paddingX;
@@ -469,7 +459,7 @@ const Glyph = ({ trends = [], relations = [], height = 32, onClick, curTrend, cu
 			const y = height - paddingY;
 
 			const textSource = relation.text_source;
-			const relationColor = textSource?.disabled ? "#eee" : (getColorFromMap(colorMap, textSource) || "#0002");
+			const relationColor = textSource?.disabled ? "#eee" : getColorWithDisabled(colorMap, textSource) || "#0002";
 
 			const vOffset = getVerticalOffset(i);
 			const baseY = height - paddingY;
@@ -485,6 +475,96 @@ const Glyph = ({ trends = [], relations = [], height = 32, onClick, curTrend, cu
 
 		return null;
 	});
+
+	const drawGroupRelation = (relation: GroupRelationWithSource, i: number, trendLength: number, height: number, trends: TrendWithSource[], strokeWidth: number = 0.5) => {
+		const getGroupInfo = (ids: [number, number]) => {
+			if (ids[0] === undefined || ids[1] === undefined || ids[0] >= trends.length || ids[1] >= trends.length) return null;
+			const x1 = ids[0] * trendLength + paddingX;
+			const x2 = ids[1] * trendLength + trendLength + paddingX;
+			return {
+				center: (x1 + x2) / 2,
+				range: {
+					start: x1,
+					end: x2,
+				},
+			};
+		};
+
+		const group1Info = getGroupInfo(relation.group1);
+		const group2Info = getGroupInfo(relation.group2);
+
+		if (!group1Info || !group2Info) return null;
+
+		const hasGlobalTimeSpan = !!query?.time_span_condition;
+		const baseY = height + paddingY - (hasGlobalTimeSpan ? 0 : 4);
+		const rangeY = baseY - 10;
+		const connectY = baseY - 8;
+		const comparatorY = baseY - 6;
+
+		const textSource = relation.text_source;
+		const relationColor = getColorWithDisabled(colorMap, textSource);
+
+		return (
+			<g key={`group-${i}`}>
+				{/* 绘制组合1的范围指示器 */}
+				<line
+					x1={group1Info.range.start}
+					y1={rangeY}
+					x2={group1Info.range.end}
+					y2={rangeY}
+					stroke={relationColor}
+					strokeWidth={strokeWidth}
+				/>
+				<line
+					x1={group1Info.range.start}
+					y1={rangeY - 1}
+					x2={group1Info.range.start}
+					y2={rangeY + 1}
+					stroke={relationColor}
+					strokeWidth={strokeWidth}
+				/>
+				<line
+					x1={group1Info.range.end}
+					y1={rangeY - 1}
+					x2={group1Info.range.end}
+					y2={rangeY + 1}
+					stroke={relationColor}
+					strokeWidth={strokeWidth}
+				/>
+
+				{/* 绘制组合2的范围指示器 */}
+				<line
+					x1={group2Info.range.start}
+					y1={rangeY}
+					x2={group2Info.range.end}
+					y2={rangeY}
+					stroke={relationColor}
+					strokeWidth={strokeWidth}
+				/>
+				<line
+					x1={group2Info.range.start}
+					y1={rangeY - 1}
+					x2={group2Info.range.start}
+					y2={rangeY + 1}
+					stroke={relationColor}
+					strokeWidth={strokeWidth}
+				/>
+				<line
+					x1={group2Info.range.end}
+					y1={rangeY - 1}
+					x2={group2Info.range.end}
+					y2={rangeY + 1}
+					stroke={relationColor}
+					strokeWidth={strokeWidth}
+				/>
+
+				{drawConnect(group1Info.center, connectY, group2Info.center, connectY, comparatorY, i, relationColor, strokeWidth)}
+				{drawComparator((group1Info.center + group2Info.center) / 2, comparatorY, relation.comparator, i, false, relationColor, strokeWidth)}
+			</g>
+		);
+	};
+
+	const groupRelationLines = group_relations.map((relation, i) => drawGroupRelation(relation, i, trendLength, height, trends));
 
 	const trendLines = t.map((trend, i) => getTrend(trend, i));
 
@@ -503,7 +583,7 @@ const Glyph = ({ trends = [], relations = [], height = 32, onClick, curTrend, cu
 		const width = svgRef.current.clientWidth;
 		const height = svgRef.current.clientHeight;
 
-		const scale = 1;
+		const scale = 2;
 		const x = (width - bbox.width * scale) / 2 - bbox.x * scale;
 		const y = (height - bbox.height * scale) / 2 - bbox.y * scale;
 
@@ -526,30 +606,22 @@ const Glyph = ({ trends = [], relations = [], height = 32, onClick, curTrend, cu
 		return () => {
 			svg.on(".zoom", null);
 		};
-	}, [trends, relations, lastTransform]);
+	}, [trends, single_relations, group_relations, lastTransform]);
 
 	// 修改drawGlobalTimeIndicator函数
 	const drawGlobalTimeIndicator = () => {
-		if (!query?.trend_time_span_composition_conditions) return null;
-
-		const condition = query.trend_time_span_composition_conditions;
-		if (Array.isArray(condition) && condition.length === 0) return null;
+		if (!query?.time_span_condition) return null;
 
 		const getTimeColor = () => {
-			if (Array.isArray(condition)) {
-				const textSource = condition[0].text_source;
-				return textSource?.disabled ? "#eee" : (getColorFromMap(colorMap, textSource) || "#0002");
-			} else {
-				const textSource = condition.max?.text_source || condition.min?.text_source;
-				return textSource?.disabled ? "#eee" : (getColorFromMap(colorMap, textSource) || "#0002");
-			}
+			const textSource = query.time_span_condition?.text_source;
+			return getColorWithDisabled(colorMap, textSource);
 		};
 
 		const timeColor = getTimeColor();
 		const lineHeight = height / 18;
 		const startX = paddingX;
 		const endX = (t.length - 1) * trendLength + trendLength + paddingX;
-		const textY = height - 6; // 调整整体位置，向下移动
+		const textY = height - 4; // 调整整体位置，向下移动
 		const arrowSize = 2; // 箭头大小
 
 		const timeText = getGlobalTimeRangeText(query);
@@ -620,15 +692,133 @@ const Glyph = ({ trends = [], relations = [], height = 32, onClick, curTrend, cu
 		);
 	};
 
+	// 修改 drawTarget 函数
+	const drawTarget = (target?: TargetWithSource) => {
+		if (!target?.target) return null;
+
+		const textSource = target.text_source;
+		const targetColor = getColorWithDisabled(colorMap, textSource);
+
+		return (
+			<g>
+				<text
+					x={paddingX}
+					y={paddingY}
+					fontSize={20}
+					fill={targetColor}
+					dominantBaseline="hanging"
+					textAnchor="start"
+					style={{ pointerEvents: "none" }}
+				>
+					{target.target}
+				</text>
+			</g>
+		);
+	};
+
+	// 添加 drawTrendGroupTimeIndicator 函数
+	const drawTrendGroupTimeIndicator = (group: TrendGroupWithSource, i: number) => {
+		if (!group.time_span_condition) return null;
+
+		const startX = group.ids[0] * trendLength + paddingX;
+		const endX = group.ids[1] * trendLength + trendLength + paddingX;
+		const textY = height - paddingY + 2;
+		const lineHeight = height / 24;
+		const arrowSize = 1.5;
+		const fontSize = 3;
+
+		const textSource = group.text_source;
+		const timeColor = getColorWithDisabled(colorMap, textSource);
+
+		// 获取时间范围文本
+		const getTimeText = () => {
+			const { min, max } = group.time_span_condition || {};
+			const secondsToDay = (seconds: number) => Math.round(seconds / 86400);
+			const leftBracket = min?.inclusive ? "[" : "(";
+			const rightBracket = max?.inclusive ? "]" : ")";
+			return `${leftBracket}${secondsToDay(min?.value || 0)}days, ${secondsToDay(max?.value || 0)}days${rightBracket}`;
+		};
+
+		const timeText = getTimeText();
+		const textWidth = timeText.length * 2;
+
+		return (
+			<g key={`group-time-${i}`}>
+				{/* 左侧垂直线和箭头 */}
+				<line
+					x1={startX}
+					y1={textY - lineHeight}
+					x2={startX}
+					y2={textY + lineHeight}
+					stroke={timeColor}
+					strokeWidth={0.5}
+				/>
+				<path
+					d={`M${startX},${textY} L${startX + arrowSize},${textY - arrowSize} L${startX + arrowSize},${textY + arrowSize}`}
+					fill={timeColor}
+				/>
+
+				{/* 右侧垂直线和箭头 */}
+				<line
+					x1={endX}
+					y1={textY - lineHeight}
+					x2={endX}
+					y2={textY + lineHeight}
+					stroke={timeColor}
+					strokeWidth={0.5}
+				/>
+				<path
+					d={`M${endX},${textY} L${endX - arrowSize},${textY - arrowSize} L${endX - arrowSize},${textY + arrowSize}`}
+					fill={timeColor}
+				/>
+
+				{/* 时间范围文本 */}
+				<text
+					x={(startX + endX) / 2}
+					y={textY}
+					fontSize={fontSize}
+					fill={timeColor}
+					textAnchor="middle"
+					dominantBaseline="middle"
+				>
+					{timeText}
+				</text>
+
+				{/* 左侧连接线 */}
+				<line
+					x1={startX}
+					y1={textY}
+					x2={(startX + endX) / 2 - textWidth / 2}
+					y2={textY}
+					stroke={timeColor}
+					strokeWidth={0.5}
+				/>
+
+				{/* 右侧连接线 */}
+				<line
+					x1={(startX + endX) / 2 + textWidth / 2}
+					y1={textY}
+					x2={endX}
+					y2={textY}
+					stroke={timeColor}
+					strokeWidth={0.5}
+				/>
+			</g>
+		);
+	};
+
 	return (
 		<svg
-			width={"100%"}
-			height={"100%"}
 			ref={svgRef}
+			width="100%"
+			height="100%"
 		>
+			{drawTarget(target)}
 			<g ref={gRef}>
 				{trendLines}
 				{relationLines}
+				{trend_groups.map((group, i) => drawTrendGroupTimeIndicator(group, i))}
+				{groupRelationLines}
 				{drawGlobalTimeIndicator()}
 			</g>
 		</svg>

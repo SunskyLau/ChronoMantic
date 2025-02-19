@@ -3,11 +3,12 @@ import { TrendWithSource } from "../../../types/QuerySpec";
 import { deepClone } from "../../../utils/deepclone";
 import Span from "../Span";
 import { MinusOutlined, PlusOutlined } from "@ant-design/icons";
-import { ReactNode, useRef } from "react";
+import { ReactNode, useEffect, useRef } from "react";
 import { useAppDispatch, useAppSelector } from "../../../app/hooks";
 import { setCurTrend } from "../../../app/slice/stateSlice";
 import { classnames } from "../../../utils/classname";
 import { getColorFromMap } from "../../../utils/color";
+import { TrendCategory } from "../../../types/QuerySpec";
 
 interface TrendProps {
 	title?: string;
@@ -19,18 +20,28 @@ interface TrendProps {
 }
 
 export default function Trend({ title, trends, onChange, start = 0, isEdit, disabled }: TrendProps) {
-	const allTrends = isEdit ? deepClone(trends) : trends;
+	const allTrends = trends;
 	const trendRefs = useRef<(HTMLDivElement | null)[]>([]);
 	const dispatch = useAppDispatch();
 	const colorMap = useAppSelector((state) => state.states.colorMap);
+	const curTrend = useAppSelector((state) => state.states.curTrend);
+
+	useEffect(() => {
+		if (curTrend) {
+			const trendRef = trendRefs.current[curTrend];
+			if (trendRef) {
+				trendRef.scrollIntoView({ behavior: "smooth", block: "center" });
+			}
+		}
+	}, [curTrend]);
 
 	const getAvailableOptions = () => {
 		return [
-			{ label: "Slope Scope", value: "slope_scope_condition" },
+			{ label: "Slope", value: "slope_scope_condition" },
 			{ label: "Delta Percentage", value: "delta_percentage_scope_condition" },
 			{ label: "Daily Average Delta", value: "daily_average_delta_percentage_scope_condition" },
 			{ label: "Abs Slope Percentage", value: "abs_slope_percentage_scope_condition" },
-			{ label: "Time Span", value: "time_span_condition" }
+			{ label: "Time Span", value: "time_span_condition" },
 		];
 	};
 
@@ -53,8 +64,8 @@ export default function Trend({ title, trends, onChange, start = 0, isEdit, disa
 							const newTrends = deepClone(allTrends);
 							newTrends.push({
 								category: {
-									category: "",
-								},
+									category: TrendCategory.ARBITRARY,
+								}
 							});
 							onChange(newTrends);
 						}}
@@ -72,6 +83,7 @@ export default function Trend({ title, trends, onChange, start = 0, isEdit, disa
 							onClick={() => {
 								dispatch(setCurTrend(index));
 							}}
+							style={{ backgroundColor: curTrend === index ? "#f0f0f0" : "transparent" }}
 						>
 							<div className="trend-item">
 								<Flex
@@ -80,28 +92,27 @@ export default function Trend({ title, trends, onChange, start = 0, isEdit, disa
 								>
 									<Typography.Title level={5}>No.{index + start}</Typography.Title>
 									{isEdit && !disabled && (
-										<Flex gap={4} className="trend-item-attr">
+										<Flex
+											gap={4}
+											className="trend-item-attr"
+										>
 											<Select
 												mode="multiple"
 												options={getAvailableOptions()}
 												popupMatchSelectWidth={false}
-												value={Object.keys(trend).filter(key => key !== 'category')}
+												value={Object.keys(trend).filter((key) => key !== "category")}
 												onChange={(values) => {
 													const newTrends = deepClone(allTrends);
 													newTrends[index] = {
-														category: trend.category
+														category: {
+															category: trend.category.category,
+															text_source: trend.category.text_source,
+														},
 													};
-													values.forEach(value => {
+													values.forEach((value) => {
 														const k = value as keyof TrendWithSource;
-														if (k === 'category') return;
-														if (!newTrends[index][k]) {
-															newTrends[index][k] = {
-																max: undefined,
-																min: undefined,
-															};
-														} else {
-															newTrends[index][k] = trend[k];
-														}
+														if (k === "category") return;
+														newTrends[index][k] = trend[k];
 													});
 													onChange(newTrends);
 												}}
@@ -127,7 +138,8 @@ export default function Trend({ title, trends, onChange, start = 0, isEdit, disa
 										case "category":
 											components.push(
 												<div
-													style={{ width: "fit-content", padding: 4, borderRadius: 4, backgroundColor: getColorFromMap(colorMap, trend[k].text_source) }}
+													className="active-component"
+													style={{ backgroundColor: getColorFromMap(colorMap, trend[k].text_source) }}
 													key={k}
 												>
 													<Select
@@ -165,38 +177,30 @@ export default function Trend({ title, trends, onChange, start = 0, isEdit, disa
 												<Span
 													disabled={disabled}
 													key={k}
+													addonAfter={k.includes("span") ? "days" : undefined}
+													valueFormatter={k.includes("span") ? 86400 : undefined}
 													min={trend[k]?.min?.value ?? null}
 													max={trend[k]?.max?.value ?? null}
-													minActiveColor={getColorFromMap(colorMap, trend[k]?.min?.text_source)}
-													maxActiveColor={getColorFromMap(colorMap, trend[k]?.max?.text_source)}
+													activeColor={getColorFromMap(colorMap, trend[k]?.text_source)}
 													minInclusive={!!trend[k]?.min?.inclusive}
 													maxInclusive={!!trend[k]?.max?.inclusive}
 													onChange={(min, max, minInclusive, maxInclusive) => {
 														const newTrends = deepClone(allTrends);
 														const change = {
 															[k]: {
-																min:
-																	!min && min !== 0
-																		? undefined
-																		: {
-																				value: min,
-																				inclusive: minInclusive,
-																				text_source: {
-																					text: trend[k]?.min?.text_source?.text || "",
-																					index: trend[k]?.min?.text_source?.index || 0,
-																				},
-																		  },
-																max:
-																	!max && max !== 0
-																		? undefined
-																		: {
-																				value: max,
-																				inclusive: maxInclusive,
-																				text_source: {
-																					text: trend[k]?.max?.text_source?.text || "",
-																					index: trend[k]?.max?.text_source?.index || 0,
-																				},
-																		  },
+																text_source: {
+																	text: trend[k]?.text_source?.text || "",
+																	index: trend[k]?.text_source?.index || 0,
+																	disabled: trend[k]?.text_source?.disabled || false
+																},
+																min: !min ? undefined : {
+																	value: min,
+																	inclusive: minInclusive
+																},
+																max: !max ? undefined : {
+																	value: max,
+																	inclusive: maxInclusive
+																}
 															},
 														};
 														newTrends[index] = {
