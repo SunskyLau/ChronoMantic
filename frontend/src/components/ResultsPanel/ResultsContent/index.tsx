@@ -7,7 +7,7 @@ import { Empty } from "antd";
 import { Segment } from "../../../types/QuerySpec";
 import LineChart from "../../LineChart";
 import { setCurrent, setLevel, setSource } from "../../../app/slice/approximation";
-import { setBrushPosition, setRange } from "../../../app/slice/selectSlice";
+import { setBrushPosition, setDefaultSplits, setRange, setSelectedSplits } from "../../../app/slice/selectSlice";
 import { classnames } from "../../../utils/classname";
 
 export interface DataType {
@@ -112,17 +112,20 @@ export default function ResultsContent() {
                             const { level, index, segments } = result;
                             const start = segments.at(0)?.start_idx || 0;
                             const end = segments.at(-1)?.end_idx || 0;
+                            const splits = segments.map(segment => [segment.start_idx, segment.end_idx]).flat();
                             return (
                                 <div className={classnames("result-item", JSON.stringify(current) === JSON.stringify(result) && current?.segments.at(0)?.start_idx === range[0] && current.segments.at(-1)?.end_idx === range[1] ? "active" : "")} key={`${index}-${start}-${end}`} onClick={() => {
                                     dispatch(setSource(source));
                                     dispatch(setBrushPosition([start, end]));
                                     dispatch(setRange([start, end]));
+                                    dispatch(setSelectedSplits(splits))
+                                    dispatch(setDefaultSplits(splits))
                                     dispatch(setLevel(level));
                                     dispatch(setCurrent(result));
                                 }} >
                                     <div className="data-name">{source}</div>
                                     <div className="data-name flex">
-                                        <LineChart xData={x} range={[start, end]} yData={data?.[source] as number[]} height={50} split={[...new Set(segments.map(segment => [segment.start_idx, segment.end_idx]).flat())]} isShowRange={false} isExpand={false}></LineChart>
+                                        <LineChart xData={x} range={[start, end]} yData={data?.[source] as number[]} height={50} split={splits} isShowRange={false} isExpand={false}></LineChart>
                                     </div>
                                     <div className="flex-width data-value">
                                         <div className="data-value__inner" style={{ width: `${(timeSpans[index]) / maxTimeSpan * 100}%` }} >

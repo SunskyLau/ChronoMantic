@@ -135,10 +135,10 @@ export const getSearchPrompt = async (query: string): Promise<string[]> => {
   }
 };
 
-export const getModifyPrompt = async (old_queryspec_with_source: QuerySpecWithSource, segments: Segment[], intentions: Intentions[]): Promise<string[]> => {
+export const getModifyPrompt = async (old_queryspec_with_source: QuerySpecWithSource, segments: Segment[], segment_group_ids: [number, number][], intentions: Intentions): Promise<QuerySpecWithSource> => {
   console.log("Sending modify_nl_query request");
   try {
-    const response = await api.post(`/api/modify_nl_query`, { old_queryspec_with_source, segments, intentions });
+    const response = await api.post(`/api/modify_nl_query`, { old_queryspec_with_source, segments, segment_group_ids, intentions });
     console.log(response.data);
     return response.data.results;
   } catch (error) {
