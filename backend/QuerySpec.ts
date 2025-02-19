@@ -21,15 +21,15 @@ export interface Segment {
 
 export interface SimplifiedSegment {
   source: string; // 片段的来源，可以是"result"或者"user",分别代表来源于查询结果和用户指定新增的
-  slope: number;      // 片段的斜率，表示变化趋势
-  start_value: number;  // 片段起始点的值
-  end_value: number;    // 片段终止点的值
-  start_time?: number;  // 片段起始时间，单位是秒，可选
-  end_time?: number;    // 片段终止时间，单位是秒，可选
-  delta_percentage?: number;  // 片段的总体变化百分比，单位是%，可选
-  daily_average_delta_percentage?: number;  // 片段的日均变化百分比，单位是%，可选
-  abs_slope_percentage?: number;  // 片段斜率在所有斜率中的占比，单位是%，可选
-  time_span?: number;  // 片段的时间跨度，单位是秒，可选
+  slope: number; // 片段的斜率，表示变化趋势
+  start_value: number; // 片段起始点的值
+  end_value: number; // 片段终止点的值
+  start_time?: number; // 片段起始时间，单位是秒，可选
+  end_time?: number; // 片段终止时间，单位是秒，可选
+  delta_percentage?: number; // 片段的总体变化百分比，单位是%，可选
+  daily_average_delta_percentage?: number; // 片段的日均变化百分比，单位是%，可选
+  abs_slope_percentage?: number; // 片段斜率在所有斜率中的占比，单位是%，可选
+  time_span?: number; // 片段的时间跨度，单位是秒，可选
 }
 
 // 趋势组合
@@ -153,7 +153,7 @@ export interface TextSource {
 }
 
 export interface WithSource {
-  text_source: TextSource; // 对应的原始文本信息
+  text_source_id: number; // 来源于哪个text_sources数组中的哪个TextSource
 }
 
 // 基础条件的 WithSource 版本
@@ -188,6 +188,7 @@ export interface TargetWithSource extends WithSource {
 
 export interface QuerySpecWithSource {
   original_text: string; // 原始查询文本
+  text_sources: TextSource[]; // QuerySpec中涉及到的所有文本来源
   target: TargetWithSource; // 查询目标
   trends: TrendWithSource[]; // 趋势列表
   single_relations: SingleRelationWithSource[]; // 单趋势关系列表

@@ -40,7 +40,7 @@ class myAIClient:
         else:
             raise ValueError("Invalid platform")
 
-    def send_prompt(self, system_prompt: str, user_prompt: str, if_json_format: bool = True, keep_history: bool = False) -> str:
+    def send_prompt(self, system_prompt: str, user_prompt: str, if_json_format: bool = False, keep_history: bool = False) -> str:
         debugger.info("--------send prompt---------\n" + user_prompt)
 
         if self.client is None:
@@ -84,20 +84,22 @@ class myAIClient:
         return text
 
 
-def parse_nl_query(system_prompt: str, query: str) -> Dict:
-    client = myAIClient(model=Qwen.MODELS.QWEN_MAX, platform=Platforms.QWEN)
-    response = client.send_prompt(system_prompt, query, False)
-    return json.loads(response)
+# def parse_nl_query(system_prompt: str, query: str) -> Dict:
+#     client = myAIClient(model=Qwen.MODELS.QWEN_MAX, platform=Platforms.QWEN)
+#     response = client.send_prompt(system_prompt, query, False)
+#     return json.loads(response)
 
 
-def modify_nl_query(system_prompt: str, query: str) -> Dict:
-    client = myAIClient(model=Qwen.MODELS.QWEN_MAX, platform=Platforms.QWEN)
-    response = client.send_prompt(system_prompt, query, False)
-    return json.loads(response)
+# def modify_nl_query(system_prompt: str, query: str) -> Dict:
+#     client = myAIClient(model=Qwen.MODELS.QWEN_MAX, platform=Platforms.QWEN)
+#     response = client.send_prompt(system_prompt, query, False)
+#     return json.loads(response)
 
 
 def test_parse_nl_query():
     client = myAIClient(model=Qwen.MODELS.QWEN_MAX, platform=Platforms.QWEN)
+    # client = myAIClient(model=Azure.MODELS.GPT_4O, platform=Platforms.AZURE)
+  
     dataset_info = """{"time_column": "Date", "value_columns": ["AMZN", "DPZ", "BTC", "NFLX"]}"""
     system_prompt = create_parse_nl_prompt(dataset_info)
     # nl_query = "Find periods in AMZN when price first rose sharply then fell gradually"
@@ -106,9 +108,9 @@ def test_parse_nl_query():
     # nl_query = "Find periods in DPZ when price presented a triple-tops shape"
     # nl_query = "Find the time periods in Amazon stock when the price showed three consecutive peaks and the peaks got lower and lower"
     # nl_query = "Find periods in Amazon stock where prices rose slowly, then rose quickly"
-    # nl_query = "Find periods in AMZN when price first rose sharply with a duration of about 4 days and then presented a double-top shape with a duration of about a week."
+    nl_query = "Find periods in AMZN when price first rose sharply with a duration of about 4 days and then presented a double-top shape with a duration of about a week."
     # nl_query = "In Amazon stock, look up two consecutive rises and the first rise is more gentle than the second rise"
-    nl_query = "Find periods in AMZN when price first presented a double-bottom shape with a duration of about a week and then presented a double-top shape with a duration higher than the first double-bottom's duration"
+    # nl_query = "Find periods in AMZN when price first presented a double-bottom shape with a duration of about a week and then presented a double-top shape with a duration higher than the first double-bottom's duration"
     response = client.send_prompt(system_prompt, nl_query, False)
     print(response)
 
@@ -121,30 +123,35 @@ old_queryspec_with_source:
 ```
 {
   "original_text": "Find periods in AMZN when price first fell then presented a flat trend",
-  "target": {
-    "target": "AMZN",
-    "text_source": {
-      "text": "AMZN", 
+  "text_sources": [
+    {
+      "text": "AMZN",
+      "index": 0
+    },
+    {
+      "text": "fell",
+      "index": 0
+    },
+    {
+      "text": "a flat trend",
       "index": 0
     }
+  ],
+  "target": {
+    "target": "AMZN",
+    "text_source_id": 0
   },
   "trends": [
     {
       "category": {
         "category": "down",
-        "text_source": {
-          "text": "fell",
-          "index": 0
-        }
+        "text_source_id": 1
       },
     },
     {
       "category": {
         "category": "flat",
-        "text_source": {
-          "text": "a flat trend",
-          "index": 0
-        }
+        "text_source_id": 2
       }
     }
   ],
@@ -176,7 +183,6 @@ segments:
     "delta_percentage": 0.016035671329695883,
     "end_time": 1422489600,
     "end_value": 311.779999,
-    "slope": 1.9746239413468913e-9,
     "slope": 1.9746239413468913e-9,
     "start_time": 1397174400,
     "start_value": 311.730011,
