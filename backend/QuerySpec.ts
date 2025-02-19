@@ -230,12 +230,12 @@ export enum GroupRelationChoice {
   TIME_SPAN = "time_span", // 时间跨度关系
 }
 
-export interface SingleIntention {
+export interface SingleSegmentIntention {
   id: number; // 趋势的ID标识
   single_choices: SingleChoice[]; // 该趋势需要考虑的属性列表
 }
 
-export interface GroupIntention {
+export interface SegmentGroupIntention {
   ids: [number, number]; // 组合中包含的趋势ID列表
   group_choices: GroupChoice[]; // 该组合需要考虑用作自然语言查询调整的属性列表
 }
@@ -255,8 +255,8 @@ export interface GroupRelationIntention {
 
 // 整体查询意图的接口定义
 export interface Intentions {
-  single_intentions: SingleIntention[]; // 单个趋势的意图列表
-  group_intentions: GroupIntention[]; // 趋势组合的意图列表
+  single_segment_intentions: SingleSegmentIntention[]; // 单个趋势的意图列表
+  segment_group_intentions: SegmentGroupIntention[]; // 趋势组合的意图列表
   single_relation_intentions: SingleRelationIntention[]; // 单个趋势关系的意图列表
   group_relation_intentions: GroupRelationIntention[]; // 趋势组合关系的意图列表
 }
