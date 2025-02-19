@@ -26,10 +26,10 @@ class ParseNL_Cases:
         "min": {
           "value": 5,
           "inclusive": true,
-          "text_source": {
-            "text": "sharply",
-            "index": 0
-          }
+        },
+        "text_source": {
+          "text": "sharply",
+          "index": 0
         }
       }
     },
@@ -45,18 +45,14 @@ class ParseNL_Cases:
         "max": {
           "value": 0,
           "inclusive": false,
-          "text_source": {
-            "text": "gradually",
-            "index": 0
-          }
         },
         "min": {
           "value": -1,
           "inclusive": true,
-          "text_source": {
-            "text": "gradually",
-            "index": 0
-          }
+        },
+        "text_source": {
+          "text": "gradually",
+          "index": 0
         }
       }
     }
@@ -365,7 +361,8 @@ class ParseNL_Cases:
         "min": {
           "value": 5,
           "inclusive": true,
-          "text_source": {
+        },
+        "text_source": {
             "text": "sharply",
             "index": 0
           }
@@ -375,18 +372,14 @@ class ParseNL_Cases:
         "min": {
           "value": 172800,
           "inclusive": true,
-          "text_source": {
-            "text": "about 3 days",
-            "index": 0
-          }
         },
         "max": {
           "value": 345600,
           "inclusive": true,
-          "text_source": {
-            "text": "about 3 days",
-            "index": 0
-          }
+        },
+        "text_source": {
+          "text": "about 3 days",
+          "index": 0
         }
       }
     },
