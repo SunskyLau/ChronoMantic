@@ -275,9 +275,9 @@ export interface Intentions {
 
 export function formatQuerySpec(query: QuerySpecWithSource): QuerySpec {
   // 格式化 ScopeCondition
-  const formatScopeCondition = (scope?: ScopeConditionWithSource): ScopeCondition | undefined => {
+  const formatScopeCondition = (scope?: ScopeConditionWithSource | ScopeCondition): ScopeCondition | undefined => {
     if (!scope) return undefined;
-    if (query.text_sources[scope.text_source_id]?.disabled) return undefined;
+    if ('text_source_id' in scope && query.text_sources[scope.text_source_id]?.disabled) return undefined;
 
     return {
       max: scope.max ? {
@@ -317,7 +317,7 @@ export function formatQuerySpec(query: QuerySpecWithSource): QuerySpec {
     if (query.text_sources[group.text_source_id]?.disabled) return null;
     return {
       ids: group.ids,
-      time_span_condition: group.time_span_condition
+      time_span_condition: formatScopeCondition(group.time_span_condition)
     };
   };
 
