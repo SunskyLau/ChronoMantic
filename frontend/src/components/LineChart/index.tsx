@@ -225,20 +225,33 @@ function LineChart({ xData, yData, ratio, title = "", isXAxisVisible = false, is
 
 				const left = Math.min(start, minSplit);
 				const right = Math.max(end, maxSplit);
+				if (popoverPosition && (popoverPosition.ranges[0][0] < left || popoverPosition.ranges[popoverPosition.ranges.length - 1][1] > right)) {
+					flushSync(() => setPopoverPosition(null));
+				}
 				onSplitSelect(split.filter((point) => point >= left && point <= right));
 			} else if (event.button === 2) {
 				const defaultMaxSplit = Math.max(...defaultSplits);
 				const defaultMinSplit = Math.min(...defaultSplits);
 				if (start >= defaultMaxSplit) {
-					const newSelectedSplits = selectedSplits.filter((point) => point <= start && point >= Math.min(defaultMinSplit, minSplit));
+					const left = Math.min(defaultMinSplit, minSplit);
+					const right = start;
+					const newSelectedSplits = selectedSplits.filter((point) => point <= right && point >= left);
+					if (popoverPosition && (popoverPosition.ranges[0][0] < left || popoverPosition.ranges[popoverPosition.ranges.length - 1][1] > right)) {
+						flushSync(() => setPopoverPosition(null));
+					}
 					onSplitSelect(newSelectedSplits);
 				} else if (end <= defaultMinSplit) {
-					const newSelectedSplits = selectedSplits.filter((point) => point >= end && point <= Math.max(defaultMaxSplit, maxSplit));
+					const left = end;
+					const right = Math.max(defaultMaxSplit, maxSplit);
+					const newSelectedSplits = selectedSplits.filter((point) => point >= left && point <= right);
+					if (popoverPosition && (popoverPosition.ranges[0][0] < left || popoverPosition.ranges[popoverPosition.ranges.length - 1][1] > right)) {
+						flushSync(() => setPopoverPosition(null));
+					}
 					onSplitSelect(newSelectedSplits);
 				}
 			}
 		},
-		[split, selectedSplits, defaultSplits, onSplitSelect]
+		[split, selectedSplits, defaultSplits, onSplitSelect, popoverPosition]
 	);
 
 	const handleMouseMove = useCallback(

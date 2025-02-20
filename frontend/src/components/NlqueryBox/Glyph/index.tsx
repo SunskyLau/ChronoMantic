@@ -776,7 +776,7 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 		const startX = group.ids[0] * trendLength + paddingX;
 		const endX = group.ids[1] * trendLength + trendLength + paddingX;
 		const textY = height - paddingY + 2 + level * 4;
-		const timeColor = getColorWithDisabled(colorMap, query, group.text_source_id);
+		const timeColor = getColorWithDisabled(colorMap, query, group.time_span_condition.text_source_id);
 
 		const getTimeText = () => {
 			const { min, max } = group.time_span_condition || {};
