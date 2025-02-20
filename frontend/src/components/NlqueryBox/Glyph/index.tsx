@@ -84,13 +84,13 @@ const calculateOffsets = (relations: SingleRelationWithSource[]) => {
 
 // 添加工具函数来获取 TextSource
 const getTextSourceFromQuery = (query: QuerySpecWithSource | null, text_source_id?: number) => {
-	if (!query || text_source_id === undefined) return undefined;
+	if (!query || text_source_id === undefined || text_source_id < 0) return undefined;
 	return query.text_sources[text_source_id];
 };
 
 // 修改 getColorWithDisabled 函数
 const getColorWithDisabled = (colorMap: Record<string, string>, query: QuerySpecWithSource | null, text_source_id?: number) => {
-	if (text_source_id === undefined) return "#0008";
+	if (text_source_id === undefined || text_source_id < 0) return "#0008";
 	const textSource = getTextSourceFromQuery(query, text_source_id);
 	if (!textSource || textSource.disabled) return "#eee";
 	return getColorFromMap(colorMap, text_source_id);
@@ -151,6 +151,60 @@ const getGlobalTimeRangeText = (query?: QuerySpecWithSource) => {
 	return `${leftBracket}${secondsToDay(min?.value || 0)}days, ${secondsToDay(max?.value || 0)}days${rightBracket}`;
 };
 
+// 添加一个函数来检查时间范围是否重叠
+const hasOverlap = (range1: [number, number], range2: [number, number]) => {
+	const [start1, end1] = range1;
+	const [start2, end2] = range2;
+	const minStart = Math.max(start1, start2);
+	const maxEnd = Math.min(end1, end2);
+	return minStart < maxEnd;
+};
+
+// 修改函数签名，添加必要的参数
+const calculateTimeRangeLevels = (trends: TrendWithSource[], trend_groups: TrendGroupWithSource[], trendLength: number, paddingX: number) => {
+	const timeRanges: {
+		type: "trend" | "group";
+		range: [number, number];
+		index: number;
+		level: number;
+	}[] = [];
+
+	// 收集所有时间范围
+	trends.forEach((trend, i) => {
+		if (trend.time_span_condition) {
+			timeRanges.push({
+				type: "trend",
+				range: [i * trendLength + paddingX, (i + 1) * trendLength + paddingX],
+				index: i,
+				level: 0,
+			});
+		}
+	});
+
+	trend_groups.forEach((group, i) => {
+		const startIndex = group.ids[0];
+		const endIndex = group.ids[1];
+		timeRanges.push({
+			type: "group",
+			range: [startIndex * trendLength + paddingX, (endIndex + 1) * trendLength + paddingX],
+			index: i,
+			level: 0,
+		});
+	});
+
+	// 计算每个时间范围的层级
+	timeRanges.forEach((range1, i) => {
+		for (let j = 0; j < i; j++) {
+			const range2 = timeRanges[j];
+			if (hasOverlap(range1.range, range2.range)) {
+				range1.level = Math.max(range1.level, range2.level + 1);
+			}
+		}
+	});
+
+	return timeRanges;
+};
+
 const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_relations = [], height = 32, onClick, curTrend, curRelation, query, colorMap = {}, target }: GlyphProps) => {
 	const paddingY = 10;
 	const paddingX = 4;
@@ -181,6 +235,78 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 					</>
 				)}
 			</text>
+		);
+	};
+
+	// 添加一个通用的时间指示器渲染函数
+	const drawTimeIndicator = ({ startX, endX, textY, timeColor, timeText, key }: { startX: number; endX: number; textY: number; timeColor: string; timeText: string; key?: string }) => {
+		const lineHeight = height / 24;
+		const arrowSize = 1.5;
+		const fontSize = 3;
+		const textWidth = timeText.length * 2;
+
+		return (
+			<g key={key}>
+				{/* 左侧垂直线和箭头 */}
+				<line
+					x1={startX}
+					y1={textY - lineHeight}
+					x2={startX}
+					y2={textY + lineHeight}
+					stroke={timeColor}
+					strokeWidth={0.5}
+				/>
+				<path
+					d={`M${startX},${textY} L${startX + arrowSize},${textY - arrowSize} L${startX + arrowSize},${textY + arrowSize}`}
+					fill={timeColor}
+				/>
+
+				{/* 右侧垂直线和箭头 */}
+				<line
+					x1={endX}
+					y1={textY - lineHeight}
+					x2={endX}
+					y2={textY + lineHeight}
+					stroke={timeColor}
+					strokeWidth={0.5}
+				/>
+				<path
+					d={`M${endX},${textY} L${endX - arrowSize},${textY - arrowSize} L${endX - arrowSize},${textY + arrowSize}`}
+					fill={timeColor}
+				/>
+
+				{/* 时间范围文本 */}
+				<text
+					x={(startX + endX) / 2}
+					y={textY}
+					fontSize={fontSize}
+					fill={timeColor}
+					textAnchor="middle"
+					dominantBaseline="middle"
+				>
+					{timeText}
+				</text>
+
+				{/* 左侧连接线 */}
+				<line
+					x1={startX}
+					y1={textY}
+					x2={(startX + endX) / 2 - textWidth / 2}
+					y2={textY}
+					stroke={timeColor}
+					strokeWidth={0.5}
+				/>
+
+				{/* 右侧连接线 */}
+				<line
+					x1={(startX + endX) / 2 + textWidth / 2}
+					y1={textY}
+					x2={endX}
+					y2={textY}
+					stroke={timeColor}
+					strokeWidth={0.5}
+				/>
+			</g>
 		);
 	};
 
@@ -616,89 +742,81 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 		};
 	}, [trends, single_relations, group_relations, lastTransform, query]);
 
-	// 修改drawGlobalTimeIndicator函数
-	const drawGlobalTimeIndicator = () => {
-		if (!query?.time_span_condition) return null;
+	// 修改 drawTrendTimeIndicator 函数
+	const drawTrendTimeIndicator = (trend: TrendWithSource, i: number, level: number) => {
+		if (!trend.time_span_condition || !query) return null;
 
-		const getTimeColor = () => {
-			const text_source_id = query.time_span_condition?.text_source_id;
-			return getColorWithDisabled(colorMap, query, text_source_id);
+		const startX = i * trendLength + paddingX;
+		const endX = startX + trendLength;
+		const textY = height - paddingY + 2 + level * 4;
+		const timeColor = getColorWithDisabled(colorMap, query, trend.time_span_condition.text_source_id);
+
+		const getTimeText = () => {
+			const { min, max } = trend.time_span_condition || {};
+			const secondsToDay = (seconds: number) => Math.round(seconds / 86400);
+			const leftBracket = min?.inclusive ? "[" : "(";
+			const rightBracket = max?.inclusive ? "]" : ")";
+			return `${leftBracket}${secondsToDay(min?.value || 0)}days, ${secondsToDay(max?.value || 0)}days${rightBracket}`;
 		};
 
-		const timeColor = getTimeColor();
-		const lineHeight = height / 18;
+		return drawTimeIndicator({
+			startX,
+			endX,
+			textY,
+			timeColor,
+			timeText: getTimeText(),
+			key: `trend-time-${i}`,
+		});
+	};
+
+	// 修改 drawTrendGroupTimeIndicator 函数
+	const drawTrendGroupTimeIndicator = (group: TrendGroupWithSource, i: number, level: number) => {
+		if (!group.time_span_condition || !query) return null;
+
+		const startX = group.ids[0] * trendLength + paddingX;
+		const endX = group.ids[1] * trendLength + trendLength + paddingX;
+		const textY = height - paddingY + 2 + level * 4;
+		const timeColor = getColorWithDisabled(colorMap, query, group.text_source_id);
+
+		const getTimeText = () => {
+			const { min, max } = group.time_span_condition || {};
+			const secondsToDay = (seconds: number) => Math.round(seconds / 86400);
+			const leftBracket = min?.inclusive ? "[" : "(";
+			const rightBracket = max?.inclusive ? "]" : ")";
+			return `${leftBracket}${secondsToDay(min?.value || 0)}days, ${secondsToDay(max?.value || 0)}days${rightBracket}`;
+		};
+
+		return drawTimeIndicator({
+			startX,
+			endX,
+			textY,
+			timeColor,
+			timeText: getTimeText(),
+			key: `group-time-${i}`,
+		});
+	};
+
+	// 修改 drawGlobalTimeIndicator 函数
+	const drawGlobalTimeIndicator = (maxLevel: number) => {
+		if (!query?.time_span_condition) return null;
+
 		const startX = paddingX;
 		const endX = (t.length - 1) * trendLength + trendLength + paddingX;
-		const textY = height - 4; // 调整整体位置，向下移动
-		const arrowSize = 2; // 箭头大小
+		const textY = height - paddingY + 2 + (maxLevel + 1) * 4;
+		const timeColor = getColorWithDisabled(colorMap, query, query.time_span_condition.text_source_id);
 
-		const timeText = getGlobalTimeRangeText(query);
-		const textWidth = timeText.length * 2.5;
-
-		return (
-			<g>
-				{/* 左侧垂直线和箭头（朝左） */}
-				<line
-					x1={startX}
-					y1={textY - lineHeight}
-					x2={startX}
-					y2={textY + lineHeight}
-					stroke={timeColor}
-					strokeWidth={0.5}
-				/>
-				<path
-					d={`M${startX},${textY} L${startX + arrowSize},${textY - arrowSize} L${startX + arrowSize},${textY + arrowSize}`}
-					fill={timeColor}
-				/>
-
-				{/* 右侧垂直线和箭头（朝右） */}
-				<line
-					x1={endX}
-					y1={textY - lineHeight}
-					x2={endX}
-					y2={textY + lineHeight}
-					stroke={timeColor}
-					strokeWidth={0.5}
-				/>
-				<path
-					d={`M${endX},${textY} L${endX - arrowSize},${textY - arrowSize} L${endX - arrowSize},${textY + arrowSize}`}
-					fill={timeColor}
-				/>
-
-				{/* 时间范围文本 */}
-				<text
-					x={(startX + endX) / 2}
-					y={textY}
-					fontSize={4}
-					fill={timeColor}
-					textAnchor="middle"
-					dominantBaseline="middle"
-				>
-					{timeText}
-				</text>
-
-				{/* 左侧连接线 */}
-				<line
-					x1={startX}
-					y1={textY}
-					x2={(startX + endX) / 2 - textWidth / 2}
-					y2={textY}
-					stroke={timeColor}
-					strokeWidth={0.5}
-				/>
-
-				{/* 右侧连接线 */}
-				<line
-					x1={(startX + endX) / 2 + textWidth / 2}
-					y1={textY}
-					x2={endX}
-					y2={textY}
-					stroke={timeColor}
-					strokeWidth={0.5}
-				/>
-			</g>
-		);
+		return drawTimeIndicator({
+			startX,
+			endX,
+			textY,
+			timeColor,
+			timeText: getGlobalTimeRangeText(query),
+			key: "global-time",
+		});
 	};
+
+	// 在渲染部分使用计算好的层级，传入必要的参数
+	const timeRangeLevels = calculateTimeRangeLevels(trends, trend_groups, trendLength, paddingX);
 
 	// 修改 drawTarget 函数
 	const drawTarget = (target?: TargetWithSource) => {
@@ -724,96 +842,6 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 		);
 	};
 
-	// 添加 drawTrendGroupTimeIndicator 函数
-	const drawTrendGroupTimeIndicator = (group: TrendGroupWithSource, i: number) => {
-		if (!group.time_span_condition) return null;
-
-		const startX = group.ids[0] * trendLength + paddingX;
-		const endX = group.ids[1] * trendLength + trendLength + paddingX;
-		const textY = height - paddingY + 2;
-		const lineHeight = height / 24;
-		const arrowSize = 1.5;
-		const fontSize = 3;
-		if (!query) return null;
-		const timeColor = getColorWithDisabled(colorMap, query, group.text_source_id);
-
-		// 获取时间范围文本
-		const getTimeText = () => {
-			const { min, max } = group.time_span_condition || {};
-			const secondsToDay = (seconds: number) => Math.round(seconds / 86400);
-			const leftBracket = min?.inclusive ? "[" : "(";
-			const rightBracket = max?.inclusive ? "]" : ")";
-			return `${leftBracket}${secondsToDay(min?.value || 0)}days, ${secondsToDay(max?.value || 0)}days${rightBracket}`;
-		};
-
-		const timeText = getTimeText();
-		const textWidth = timeText.length * 2;
-
-		return (
-			<g key={`group-time-${i}`}>
-				{/* 左侧垂直线和箭头 */}
-				<line
-					x1={startX}
-					y1={textY - lineHeight}
-					x2={startX}
-					y2={textY + lineHeight}
-					stroke={timeColor}
-					strokeWidth={0.5}
-				/>
-				<path
-					d={`M${startX},${textY} L${startX + arrowSize},${textY - arrowSize} L${startX + arrowSize},${textY + arrowSize}`}
-					fill={timeColor}
-				/>
-
-				{/* 右侧垂直线和箭头 */}
-				<line
-					x1={endX}
-					y1={textY - lineHeight}
-					x2={endX}
-					y2={textY + lineHeight}
-					stroke={timeColor}
-					strokeWidth={0.5}
-				/>
-				<path
-					d={`M${endX},${textY} L${endX - arrowSize},${textY - arrowSize} L${endX - arrowSize},${textY + arrowSize}`}
-					fill={timeColor}
-				/>
-
-				{/* 时间范围文本 */}
-				<text
-					x={(startX + endX) / 2}
-					y={textY}
-					fontSize={fontSize}
-					fill={timeColor}
-					textAnchor="middle"
-					dominantBaseline="middle"
-				>
-					{timeText}
-				</text>
-
-				{/* 左侧连接线 */}
-				<line
-					x1={startX}
-					y1={textY}
-					x2={(startX + endX) / 2 - textWidth / 2}
-					y2={textY}
-					stroke={timeColor}
-					strokeWidth={0.5}
-				/>
-
-				{/* 右侧连接线 */}
-				<line
-					x1={(startX + endX) / 2 + textWidth / 2}
-					y1={textY}
-					x2={endX}
-					y2={textY}
-					stroke={timeColor}
-					strokeWidth={0.5}
-				/>
-			</g>
-		);
-	};
-
 	return (
 		<svg
 			ref={svgRef}
@@ -824,9 +852,17 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 			<g ref={gRef}>
 				{trendLines}
 				{relationLines}
-				{trend_groups.map((group, i) => drawTrendGroupTimeIndicator(group, i))}
+				{timeRangeLevels
+					.sort((a, b) => b.level - a.level)
+					.map((item) => {
+						if (item.type === "trend") {
+							return drawTrendTimeIndicator(trends[item.index], item.index, item.level);
+						} else {
+							return drawTrendGroupTimeIndicator(trend_groups[item.index], item.index, item.level);
+						}
+					})}
 				{groupRelationLines}
-				{drawGlobalTimeIndicator()}
+				{drawGlobalTimeIndicator(Math.max(0, ...timeRangeLevels.map((item) => item.level)))}
 			</g>
 		</svg>
 	);
