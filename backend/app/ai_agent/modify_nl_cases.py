@@ -103,7 +103,12 @@ intentions
       "single_choices":["category", "daily_average_delta_percentage"]
     }
   ],
-  "segment_group_intentions": [],
+  "segment_group_intentions": [
+    {
+      "ids": [0, 1],
+      "group_choices":["time_span"]
+    }
+  ],
   "single_relation_intentions": [],
   "group_relation_intentions": []
 }
@@ -111,7 +116,7 @@ intentions
 
 输出：
 {
-  "original_text": "Find periods in AMZN when price first fell slightly then presented a flat trend then rose sharply",
+  "original_text": "Find periods in AMZN when price first fell slightly then presented a flat trend, with a duration about 317 days, and finally rose sharply",
   "text_sources": [
     {
       "text": "AMZN",
@@ -127,6 +132,10 @@ intentions
     },
     {
       "text": "a flat trend",
+      "index": 0
+    },
+    {
+      "text": "about 317 days",
       "index": 0
     },
     {

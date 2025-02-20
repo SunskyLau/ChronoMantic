@@ -410,9 +410,9 @@ Find periods in AMZN when price first presented a double-bottom shape with a dur
         "max": {
           "value": 777600,
           "inclusive": true
-        }
-      },
-      "text_source_id": 2
+        },
+        "text_source_id": 2
+      }
     }
   ],
   "group_relations": [

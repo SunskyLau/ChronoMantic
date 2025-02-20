@@ -142,7 +142,10 @@ export interface TrendWithSource {
 export interface SingleRelationWithSource extends SingleRelation, WithSource {}
 
 // 趋势组合的 WithSource 版本
-export interface TrendGroupWithSource extends TrendGroup, WithSource {}
+export interface TrendGroupWithSource {
+  ids: [number, number]; // 组内趋势的id列表,ids[1]>=ids[0]
+  time_span_condition?: ScopeConditionWithSource; // 该组的时间跨度条件
+}
 
 // 组合关系的 WithSource 版本
 export interface GroupRelationWithSource extends GroupRelation, WithSource {}
@@ -240,9 +243,8 @@ parse_nl_logic_info = """
 5. TextSource的text只能是来源original_text的连续子文本。text_sources数组中的元素应该严格遵循原文中的顺序，不重叠地输出。
 6. 你需要识别出自然语言中对于relation的描述，这种描述也可以分为隐式的和显式的。隐式的relation描述通常隐藏在形状的描述中，例如，"head-and-shoulders"中，中间的"head"应该要高于左右两个shoulders，这就意味着第二次上升趋势(trend_id=2)的end_value应该要大于第一次和第三次上升趋势(trend_id=0和trend_id=4)的end_value，这里relation就应该被解析出来。显式的relation描述通常是直接描述的，例如，"连续的两次上升，左边的上升速度比右边的上升速度更快"，这意味着第一次上升趋势(trend_id=0)的slope应该要大于第二次上升趋势(trend_id=1)的slope，这里relation就应该被解析出来。最后，你还需要避免引入无效的relation，例如，"rise sharply then rise slowly"，这里面"sharply"和"slowly"已经被解析成trend中的条件，再引入relation是多余的。
 7. 对于自然语言中存在的持续时间描述，你需要判断使用整体的time_span_condition，还是使用trend_group中的time_span_condition，抑或是使用trend中的time_span_condition。如果是对于整体时间的描述，则使用整体time_span_condition；如果是对于组合时间的描述，则使用trend_group中的time_span_condition，如果是对于单个trend的持续时间描述，则使用trend中的time_span_condition。
-8. 注意trend_group的text_source是在最外层的，而不是在time_span_condition中的。
-9. 动词和副词一般要分离为两个text_source，例如，"rose sharply"需要解析为两个text_source，分别是"rose"和"sharply"。
-10. 解析出来的text_source必须被某个字段所使用，否则不要解析出来。例如：rose sharply with a ratio higher than 5%，这里"sharply"的含义已经被"with a ratio higher than 5%"覆盖，则不需要解析出来"sharply"作为text_source
+8. 动词和副词一般要分离为两个text_source，例如，"rose sharply"需要解析为两个text_source，分别是"rose"和"sharply"。
+9. 解析出来的text_source必须被某个字段所使用，否则不要解析出来。例如：rose sharply with a ratio higher than 5%，这里"sharply"的含义已经被"with a ratio higher than 5%"覆盖，则不需要解析出来"sharply"作为text_source
 """
 
 modify_nl_logic_info = """
@@ -259,5 +261,4 @@ modify_nl_logic_info = """
 3. 不涉及调整意图的condition字段，要正确保留不要发生调整。最后，尽可能保证调整后的original_text和调整前不发生太大变化。
 4. `new_queryspec_with_source`中的text_sources也要保证是来自于original_text的连续子文本，并且text_sources数组中的元素应该严格遵循原文中的顺序，不重叠地输出。
 5. 对于`SingleRelationIntention`中，需要根据具体的`relation_choices`，选择相应的`segments`中对应的属性进行精确比较，然后对QuerySpecWithSource进行调整， 同时符合相应的语义。
-6. 始终注意trend_group中存在text_source字段，不要把这个字段放到trend_group的time_span_condition中。
 """

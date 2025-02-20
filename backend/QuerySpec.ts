@@ -169,7 +169,10 @@ export interface TrendWithSource {
 export interface SingleRelationWithSource extends SingleRelation, WithSource {}
 
 // 趋势组合的 WithSource 版本
-export interface TrendGroupWithSource extends TrendGroup, WithSource {}
+export interface TrendGroupWithSource {
+  ids: [number, number]; // 组内趋势的id列表,ids[1]>=ids[0]
+  time_span_condition?: ScopeConditionWithSource; // 该组的时间跨度条件
+}
 
 // 组合关系的 WithSource 版本
 export interface GroupRelationWithSource extends GroupRelation, WithSource {}
