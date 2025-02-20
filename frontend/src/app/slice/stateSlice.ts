@@ -6,6 +6,7 @@ import { getColor } from "../../utils/color";
 export type States = {
   NLQuery: string;
   query: QuerySpecWithSource | null;
+  originalQuery: QuerySpecWithSource | null;
   colorMap: Record<string, string>;
   querySpec: QuerySpec | null;
   querySpecIndex: number;
@@ -26,6 +27,7 @@ export type States = {
 // 使用该类型定义初始 state
 const initialState: States = {
   NLQuery: "",
+  originalQuery: null,
   colorMap: {},
   querySpecIndex: -1,
   querySpecList: [],
@@ -52,7 +54,16 @@ const stateSlice = createSlice({
       state.NLQuery = action.payload;
     },
     setQuery: (state, action: PayloadAction<QuerySpecWithSource | null>) => {
+      if (!state.originalQuery) {
+        state.originalQuery = action.payload;
+      }
       state.query = action.payload;
+    },
+    resetOriginalQuery: (state) => {
+      state.originalQuery = null;
+    },
+    setOriginalQuery: (state, action: PayloadAction<QuerySpecWithSource | null>) => {
+      state.originalQuery = action.payload;
     },
     setColorMap: (state, action: PayloadAction<QuerySpecWithSource | null>) => {
       const colorMap: Record<string, string> = {};
@@ -107,5 +118,5 @@ const stateSlice = createSlice({
   },
 });
 
-export const { setNLQuery, setQuery, setColorMap, setQuerySpec, addQuerySpec, setFragmentsIndex, setQuerySpecIndex, setIsSettingShow, setTimeStampUnit, setValueUnit, setAspectRatio, setIsDrawer, setQuerys, setModifyPrompts, setCurRelation, setCurTrend } = stateSlice.actions;
+export const { setNLQuery, setQuery, resetOriginalQuery, setOriginalQuery, setColorMap, setQuerySpec, addQuerySpec, setFragmentsIndex, setQuerySpecIndex, setIsSettingShow, setTimeStampUnit, setValueUnit, setAspectRatio, setIsDrawer, setQuerys, setModifyPrompts, setCurRelation, setCurTrend } = stateSlice.actions;
 export default stateSlice.reducer;

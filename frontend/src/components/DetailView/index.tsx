@@ -106,6 +106,8 @@ export default function DetailView() {
 		[dispatch]
 	);
 
+	const originalQuery = useAppSelector((state) => state.states.originalQuery);
+
 	return (
 		<Panel
 			className="main-view"
@@ -136,9 +138,9 @@ export default function DetailView() {
 							defaultSplits={defaultSplits}
 							onSplitSelect={handleSplitSelect}
 							onSubmitIntentions={(intentions) => {
-								if (query) {
+								if (originalQuery) {
 									getModifyPrompt(
-										query,
+										originalQuery,
 										segments.filter((item) => {
 											return item.start_idx >= selectedSplits[0] && item.end_idx <= selectedSplits[selectedSplits.length - 1];
 										}),
