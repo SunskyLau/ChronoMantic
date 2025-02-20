@@ -215,7 +215,7 @@ def modify_nl_query():
 
     old_queryspec_with_source_str = json.dumps(old_queryspec_with_source, indent=2)
     segments_str = json.dumps(segments, indent=2)
-    segment_groups_str = json.dumps(segment_groups, indent=2)
+    segment_groups_str = json.dumps(filter_json(segment_groups), indent=2)
     intentions_str = json.dumps(intentions, indent=2)
 
     input = f"""old_queryspec_with_source
@@ -232,8 +232,8 @@ segment_groups
 
 intentions
 ```{intentions_str}
-```
-"""
+```"""
+
     new_queryspec_with_source_str = modify_nl_agent.send_prompt(modify_nl_system_prompt_container.get_data(), input, False)
     # 将字符串解析为Python字典
     new_queryspec_with_source = json.loads(new_queryspec_with_source_str)
@@ -254,6 +254,14 @@ def calculate_segment_groups(segments: List[Segment], trend_groups: List[Tuple[i
     """
     segment_groups = []
     for trend_group in trend_groups:
-        segment_group = SegmentGroup(ids=trend_group, time_span=segments[trend_group[1]].end_time - segments[trend_group[0]].start_time)
+        if trend_group[0] >= len(segments) or trend_group[1] >= len(segments) or trend_group[0] < 0 or trend_group[1] < 0:
+            continue
+        if trend_group[0] > trend_group[1]:
+            continue
+            
+        segment_group = SegmentGroup(
+            ids=trend_group,
+            time_span=segments[trend_group[1]].end_time - segments[trend_group[0]].start_time
+        )
         segment_groups.append(segment_group)
     return segment_groups

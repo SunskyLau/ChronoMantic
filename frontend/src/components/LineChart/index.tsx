@@ -76,7 +76,7 @@ function LineChart({ xData, yData, ratio, title = "", isXAxisVisible = false, is
 		single_relation_intentions: [],
 		group_relation_intentions: [],
 	});
-	console.log(intentions);
+	// console.log(intentions);
 
 	const handleScroll = useCallback(
 		(event: WheelEvent) => {
@@ -116,13 +116,14 @@ function LineChart({ xData, yData, ratio, title = "", isXAxisVisible = false, is
 	}, [handleContextMenu]);
 
 	useEffect(() => {
+		if (!defaultSplits?.length) return;
 		setIntentions({
 			single_segment_intentions: [],
 			segment_group_intentions: [],
 			single_relation_intentions: [],
-			group_relation_intentions: [],
+			group_relation_intentions: [], 
 		});
-	}, [defaultSplits]);
+	}, [defaultSplits?.join()]);
 
 	const handleChoicesChange = useCallback((choice: SingleChoice) => {
 		setSelectedChoices((prev) => {
