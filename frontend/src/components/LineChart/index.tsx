@@ -76,7 +76,6 @@ function LineChart({ xData, yData, ratio, title = "", isXAxisVisible = false, is
 		single_relation_intentions: [],
 		group_relation_intentions: [],
 	});
-	// console.log(intentions);
 
 	const handleScroll = useCallback(
 		(event: WheelEvent) => {
@@ -121,9 +120,9 @@ function LineChart({ xData, yData, ratio, title = "", isXAxisVisible = false, is
 			single_segment_intentions: [],
 			segment_group_intentions: [],
 			single_relation_intentions: [],
-			group_relation_intentions: [], 
+			group_relation_intentions: [],
 		});
-	}, [defaultSplits?.join()]);
+	}, [defaultSplits]);
 
 	const handleChoicesChange = useCallback((choice: SingleChoice) => {
 		setSelectedChoices((prev) => {
@@ -154,7 +153,7 @@ function LineChart({ xData, yData, ratio, title = "", isXAxisVisible = false, is
 				single_choices: choices,
 			}),
 			SegmentGroup: (ranges: [number, number][], choices: GroupChoice[]) => ({
-				ids: [selectedSplits?.findIndex((split) => split === ranges[0][0]) ?? -1, selectedSplits?.findIndex((split) => split === ranges[ranges.length - 1][1]) ?? -1] as [number, number],
+				ids: [selectedSplits?.findIndex((split) => split === ranges[0][0]) ?? -1, selectedSplits?.findIndex((split) => split === ranges[ranges.length - 1][0]) ?? -1] as [number, number],
 				group_choices: choices,
 			}),
 		}),
@@ -186,7 +185,7 @@ function LineChart({ xData, yData, ratio, title = "", isXAxisVisible = false, is
 			case "SegmentGroup": {
 				if (selectedGroups.length === 0) return;
 
-				const existingIndex = newIntentions.segment_group_intentions.findIndex((intention) => deepEqual([[selectedSplits?.[intention.ids[0]], selectedSplits?.[intention.ids[1]]]], ranges));
+				const existingIndex = newIntentions.segment_group_intentions.findIndex((intention) => deepEqual([[selectedSplits?.[intention.ids[0]], selectedSplits?.[intention.ids[1] + 1]]], ranges));
 
 				if (existingIndex !== -1) {
 					newIntentions.segment_group_intentions[existingIndex] = {
@@ -333,7 +332,7 @@ function LineChart({ xData, yData, ratio, title = "", isXAxisVisible = false, is
 
 					// 检查是否存在相同范围的意图
 					const existingIntentions = intentions.single_segment_intentions.filter((intention) => ranges[0][0] === selectedSplits[intention.id] && ranges[ranges.length - 1][1] === selectedSplits[intention.id + 1]);
-					const existingGroups = intentions.segment_group_intentions.filter((intention) => ranges[0][0] === selectedSplits[intention.ids[0]] && ranges[ranges.length - 1][1] === selectedSplits[intention.ids[1]]);
+					const existingGroups = intentions.segment_group_intentions.filter((intention) => ranges[0][0] === selectedSplits[intention.ids[0]] && ranges[ranges.length - 1][0] === selectedSplits[intention.ids[1]]);
 
 					// 设置已存在的选项
 					setSelectedChoices(existingIntentions.flatMap((intention) => intention.single_choices));
@@ -370,7 +369,7 @@ function LineChart({ xData, yData, ratio, title = "", isXAxisVisible = false, is
 				break;
 			}
 			case "SegmentGroup": {
-				const existingIndex = newIntentions.segment_group_intentions.findIndex((intention) => ranges[0][0] === selectedSplits?.[intention.ids[0]] && ranges[ranges.length - 1][1] === selectedSplits?.[intention.ids[1]]);
+				const existingIndex = newIntentions.segment_group_intentions.findIndex((intention) => ranges[0][0] === selectedSplits?.[intention.ids[0]] && ranges[ranges.length - 1][0] === selectedSplits?.[intention.ids[1]]);
 				if (existingIndex !== -1) {
 					newIntentions.segment_group_intentions.splice(existingIndex, 1);
 				}
@@ -653,7 +652,7 @@ function LineChart({ xData, yData, ratio, title = "", isXAxisVisible = false, is
 
 			intentions.segment_group_intentions.forEach((intention) => {
 				const ranges: [number, number][] = [];
-				for (let i = intention.ids[0]; i < intention.ids[1]; i++) {
+				for (let i = intention.ids[0]; i <= intention.ids[1]; i++) {
 					ranges.push([selectedSplits[i], selectedSplits[i + 1]]);
 				}
 				let level = 0;
@@ -844,9 +843,7 @@ function LineChart({ xData, yData, ratio, title = "", isXAxisVisible = false, is
 	const popoverContent = useMemo(() => {
 		if (!popoverPosition) return null;
 
-		const isExisting = popoverPosition.type === "SingleSegment" ? intentions.single_segment_intentions.some((intention) => deepEqual([[selectedSplits?.[intention.id], selectedSplits?.[intention.id + 1]]], popoverPosition.ranges)) : intentions.segment_group_intentions.some((intention) => popoverPosition.ranges[0][0] === selectedSplits?.[intention.ids[0]] && popoverPosition.ranges[popoverPosition.ranges.length - 1][1] === selectedSplits?.[intention.ids[1]]);
-
-		console.log(intentions.segment_group_intentions);
+		const isExisting = popoverPosition.type === "SingleSegment" ? intentions.single_segment_intentions.some((intention) => deepEqual([[selectedSplits?.[intention.id], selectedSplits?.[intention.id + 1]]], popoverPosition.ranges)) : intentions.segment_group_intentions.some((intention) => popoverPosition.ranges[0][0] === selectedSplits?.[intention.ids[0]] && popoverPosition.ranges[popoverPosition.ranges.length - 1][0] === selectedSplits?.[intention.ids[1]]);
 
 		return popoverPosition.type === "SingleSegment" ? (
 			<IntentionPopover
