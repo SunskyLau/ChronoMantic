@@ -7,6 +7,7 @@ import Choose from "./Choose";
 import Exploration from "./Exploration";
 import TableViewContent from "./TableViewContent";
 import { ChartView } from "./ChartView";
+import LevelController from "../LevelController";
 
 enum TableState {
     UPLOAD,
@@ -40,7 +41,7 @@ export default function TableView() {
     }
 
     return (
-        <Panel className="table-view" icon={<TableIcon />} title="Data Table">
+        <Panel className="table-view" icon={<TableIcon />} title="Data Table" right={<LevelController />}>
             {renderComponent(state)}
         </Panel>
     )

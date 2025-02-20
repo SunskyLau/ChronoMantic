@@ -1,39 +1,14 @@
-import { ConfigProvider, Empty, Slider } from "antd";
+import { Empty } from "antd";
 import Panel from "../Panel";
 import "./index.css";
 import LineChart from "../LineChart";
 import { useAppDispatch, useAppSelector } from "../../app/hooks";
 import { setBrushPosition, setRange, setSelectedSplits, setSelectPosition } from "../../app/slice/selectSlice";
 import { useCallback, useMemo } from "react";
-import { setLevel } from "../../app/slice/approximation";
 import { getModifyPrompt } from "../../api";
 import { setColorMap, setNLQuery, setQuery } from "../../app/slice/stateSlice";
 import { getColorFromMap } from "../../utils/color";
-
-function SmoothLevel() {
-	const dispatch = useAppDispatch();
-	const valueCol = useAppSelector((state) => state.approximation.source);
-	const results = useAppSelector((state) => state.approximation.results);
-	const current = results?.find((result) => result.source === valueCol);
-	const level = useAppSelector((state) => state.approximation.level);
-
-	return (
-		<ConfigProvider theme={{ components: { Slider: { railSize: 10, railBg: "#E0E0E0", railHoverBg: "#E0E0E0", trackBg: "#fff", trackHoverBg: "#fff", handleColor: "#666" } } }}>
-			<div className="smooth-level">
-				<span className="smooth-level-title">Approximation Level</span>
-				<Slider
-					disabled={!current}
-					value={level}
-					max={current?.max_approximation_level}
-					onChange={(val) => {
-						dispatch(setLevel(val));
-					}}
-				></Slider>
-				<span>{level}</span>
-			</div>
-		</ConfigProvider>
-	);
-}
+import LevelController from "../LevelController";
 
 export default function DetailView() {
 	const data = useAppSelector((state) => state.dataset.dataset?.data) || {};
@@ -113,7 +88,7 @@ export default function DetailView() {
 			className="main-view"
 			icon={<div>D</div>}
 			title="Main View"
-			right={<SmoothLevel />}
+			right={<LevelController />}
 		>
 			{timeCol && valueCol ? (
 				<>

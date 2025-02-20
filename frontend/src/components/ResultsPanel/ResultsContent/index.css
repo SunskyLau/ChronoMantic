@@ -78,6 +78,10 @@
   border-radius: 8px;
 }
 
+.results-content .data-graph {
+  width: 80px;
+}
+
 .result-item .data-value .data-value__inner {
   height: 100%;
   background-color: #C5D7EF;

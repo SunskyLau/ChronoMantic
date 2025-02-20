@@ -97,7 +97,7 @@ export default function ResultsContent() {
             <div className="results-content">
                 <div className="result-header">
                     <div className="fix-width data-name">ID</div>
-                    <div className="fix-width">Graph</div>
+                    <div className="fix-width data-graph">Graph</div>
                     <div className="flex-width">
                         {queryLevelResults.length ? <SelectChart title="Time Span" data={sortedTimeSpanIter.map(([x, y]) => ({ x: Number(x), y }))} onBrush={handleDayScaleChange}></SelectChart> : "Time Span"}
                     </div>
@@ -124,8 +124,8 @@ export default function ResultsContent() {
                                     dispatch(setCurrent(result));
                                 }} >
                                     <div className="data-name">{source}</div>
-                                    <div className="data-name flex">
-                                        <LineChart xData={x} range={[start, end]} yData={data?.[source] as number[]} height={50} split={splits} isShowRange={false} isExpand={false}></LineChart>
+                                    <div className="data-name flex data-graph">
+                                        <LineChart xData={x} range={[start, end]} yData={data?.[source] as number[]} height={40} split={splits} isShowRange={false} isExpand={false}></LineChart>
                                     </div>
                                     <div className="flex-width data-value">
                                         <div className="data-value__inner" style={{ width: `${(timeSpans[index]) / maxTimeSpan * 100}%` }} >

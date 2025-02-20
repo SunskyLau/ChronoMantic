@@ -1,20 +1,3 @@
-.smooth-level {
-    display: flex;
-    align-items: center;
-    width: 100%;
-    gap: 8px;
-    margin-right: 8px;
-}
-
-.smooth-level .ant-slider {
-    width: 100px;
-}
-
-.smooth-level .ant-slider .ant-slider-rail,
-.smooth-level .ant-slider .ant-slider-track {
-    border-radius: 99px;
-}
-
 .main-view {
     flex-basis: fit-content;
     flex-grow: 0;
@@ -37,7 +20,7 @@
 }
 
 .main-view .detail {
-    flex: 3 0 0;
+    flex: 4 0 0;
     position: relative;
 }
 

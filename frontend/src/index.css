@@ -1,6 +1,6 @@
 :root {
   --width: 50%;
-  --header-height: 48px;
+  --header-height: 52px;
   --side-width: calc((100% - var(--width)) / 2);
   --height: calc(100vh - var(--header-height) - var(--gap) * 2);
   --gap: 4px;

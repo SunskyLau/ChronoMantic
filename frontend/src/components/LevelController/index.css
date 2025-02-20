@@ -1,0 +1,16 @@
+.level-controller {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    gap: 8px;
+    margin-right: 8px;
+}
+
+.level-controller .ant-slider {
+    width: 100px;
+}
+
+.level-controller .ant-slider .ant-slider-rail,
+.level-controller .ant-slider .ant-slider-track {
+    border-radius: 99px;
+}

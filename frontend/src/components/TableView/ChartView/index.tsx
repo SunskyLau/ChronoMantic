@@ -10,6 +10,6 @@ export function ChartView() {
     const dispatch = useAppDispatch();
 
     return (dataset?.valueColumns.map((col) => {
-        return <div key={col} onClick={() => { dispatch(setSource(col)) }}><LineChart isXAxisVisible isActive={source === col} isYAxisVisible title={col} xData={xData} yData={dataset.data[col] as number[]}></LineChart></div>
+        return <div key={col} onClick={() => { dispatch(setSource(col)) }}><LineChart isXAxisVisible isActive={source === col} height={80} margin={{ top: 20, right: 30, bottom: 10, left: 20 }} isYAxisVisible title={col} xData={xData} yData={dataset.data[col] as number[]}></LineChart></div>
     }))
 }
