@@ -259,4 +259,5 @@ modify_nl_logic_info = """
 3. 不涉及调整意图的condition字段，要正确保留不要发生调整。最后，尽可能保证调整后的original_text和调整前不发生太大变化。
 4. `new_queryspec_with_source`中的text_sources也要保证是来自于original_text的连续子文本，并且text_sources数组中的元素应该严格遵循原文中的顺序，不重叠地输出。
 5. 对于`SingleRelationIntention`中，需要根据具体的`relation_choices`，选择相应的`segments`中对应的属性进行精确比较，然后对QuerySpecWithSource进行调整， 同时符合相应的语义。
+6. 始终注意trend_group中存在text_source字段，不要把这个字段放到trend_group的time_span_condition中。
 """
