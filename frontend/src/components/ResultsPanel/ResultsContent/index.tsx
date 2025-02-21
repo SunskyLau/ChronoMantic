@@ -33,6 +33,7 @@ export default function ResultsContent() {
         return Object.entries(value).map(([key, segments]) => segments.map(segment => ({ level: Number(key), segments: segment, source }))).flat()
     }).flat().map((item, index) => ({ ...item, index }));
     const source = useAppSelector((state) => state.states.querySpec?.targets) || "";
+    const results = useAppSelector((state) => state.approximation.results);
     const timeSpans = queryLevelResults.map(({ segments }) => (segments.at(-1)?.end_time || 0) - (segments.at(0)?.start_time || 0)).map((x) => x / 86400)
     const dispatch = useAppDispatch();
     const current = useAppSelector((state) => state.approximation.current);
@@ -117,7 +118,11 @@ export default function ResultsContent() {
                             const splits = segments.map(segment => [segment.start_idx, segment.end_idx]).flat();
                             return (
                                 <div className={classnames("result-item", deepEqual(current, result) && current?.segments.at(0)?.start_idx === defaultSplits[0] && current.segments.at(-1)?.end_idx === defaultSplits.at(-1) ? "active" : "")} key={`${index}-${start}-${end}`} onClick={() => {
-                                    const range = [Math.max(0, start - 4), Math.min(x.length - 1, end + 4)] as [number, number];
+                                    const seg = results?.find(result => result.source === source)?.approximation_segments_list.find(list=>list.approximation_level===level)?.segments || [];
+                                    const r1 = seg.findIndex(item => deepEqual(item, segments.at(0)));
+                                    const r2 = seg.findIndex(item => deepEqual(item, segments.at(-1)));
+                                    const r = [Math.max(0, r1 - 4), Math.min(seg.length - 1, r2 + 4)];
+                                    const range = [seg[r[0]].start_idx, seg[r[1]].end_idx] as [number, number];
                                     dispatch(setSource(source));
                                     dispatch(setBrushPosition(range));
                                     dispatch(setRange(range));
