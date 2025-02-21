@@ -29,7 +29,7 @@ export default function DetailView() {
 	const query = useAppSelector((state) => state.states.query);
 	const colorMap = useAppSelector((state) => state.states.colorMap);
 	const brushPosition = useAppSelector((state) => state.select.brushPosition);
-	const isTarget = query?.targets.some(target => target.target === source)
+	const isTarget = !query?.targets.length || query?.targets.some(target => target.target === source);
 	const resultsSplit = useMemo(() => {
 		return { colors: query?.trends.map((trend) => getColorFromMap(colorMap, trend.category.text_source_id)) || [], segments: (isTarget && memoQueryResults[source]?.[level]?.map((segments) => segments.map((segment) => [segment.start_idx, segment.end_idx] as [number, number]))) || [] }
 	}, [query, colorMap, level, memoQueryResults, isTarget, source])
