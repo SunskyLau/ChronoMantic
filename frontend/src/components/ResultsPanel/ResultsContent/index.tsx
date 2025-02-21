@@ -19,7 +19,8 @@ export interface DataType {
 export interface ApproximationLevelResult {
     level: number,
     segments: Segment[],
-    index: number
+    index: number,
+    source: string
 }
 
 export type ApproximationLevelResults = ApproximationLevelResult[]
@@ -28,10 +29,10 @@ export default function ResultsContent() {
     const data = useAppSelector((state) => state.dataset.dataset?.data) || {};
     const x = useAppSelector((state) => (data[state.dataset.dataset?.timeStampColumn ?? ""])) as string[];
     const queryResultsMap = useAppSelector(state => state.approximation.queryResults) || {};
-    const queryLevelResults: ApproximationLevelResults = Object.entries(queryResultsMap).map(([key, value]: [string, Segment[][]]) => {
-        return value.map(segments => ({ level: Number(key), segments }))
-    }).flat(1).map((item, index) => ({ ...item, index }));
-    const source = useAppSelector((state) => state.states.querySpec?.target) || "";
+    const queryLevelResults: ApproximationLevelResults = Object.entries(queryResultsMap).map(([source, value]: [string, Record<number, Segment[][]>]) => {
+        return Object.entries(value).map(([key, segments]) => segments.map(segment => ({ level: Number(key), segments: segment, source }))).flat()
+    }).flat().map((item, index) => ({ ...item, index }));
+    const source = useAppSelector((state) => state.states.querySpec?.targets) || "";
     const timeSpans = queryLevelResults.map(({ segments }) => (segments.at(-1)?.end_time || 0) - (segments.at(0)?.start_time || 0)).map((x) => x / 86400)
     const dispatch = useAppDispatch();
     const current = useAppSelector((state) => state.approximation.current);
@@ -110,15 +111,16 @@ export default function ResultsContent() {
                     {sortedResults.length === 0 || !source ?
                         <Empty></Empty> :
                         sortedResults.slice(0, count).map((result) => {
-                            const { level, index, segments } = result;
+                            const { level, index, segments, source } = result;
                             const start = segments.at(0)?.start_idx || 0;
                             const end = segments.at(-1)?.end_idx || 0;
                             const splits = segments.map(segment => [segment.start_idx, segment.end_idx]).flat();
                             return (
                                 <div className={classnames("result-item", deepEqual(current, result) && current?.segments.at(0)?.start_idx === defaultSplits[0] && current.segments.at(-1)?.end_idx === defaultSplits.at(-1) ? "active" : "")} key={`${index}-${start}-${end}`} onClick={() => {
+                                    const range = [Math.max(0, start - 4), Math.min(x.length - 1, end + 4)] as [number, number];
                                     dispatch(setSource(source));
-                                    dispatch(setBrushPosition([start, end]));
-                                    dispatch(setRange([start, end]));
+                                    dispatch(setBrushPosition(range));
+                                    dispatch(setRange(range));
                                     dispatch(setSelectedSplits(splits))
                                     dispatch(setDefaultSplits(splits))
                                     dispatch(setLevel(level));

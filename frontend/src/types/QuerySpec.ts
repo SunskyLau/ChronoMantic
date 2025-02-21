@@ -141,7 +141,7 @@ export interface GroupRelation {
 }
 
 export interface QuerySpec {
-  target: string; // 查询的目标时间序列名
+  targets: string[]; // 查询的目标时间序列名
   trends: Trend[]; // 趋势列表
   single_relations: SingleRelation[]; // 不同趋势之间的属性比较关系列表
   trend_groups: TrendGroup[]; // 趋势组合列表
@@ -202,7 +202,7 @@ export interface TargetWithSource extends WithSource {
 export interface QuerySpecWithSource {
   original_text: string; // 原始查询文本
   text_sources: TextSource[]; // QuerySpec中涉及到的所有文本来源
-  target: TargetWithSource; // 查询目标
+  targets: TargetWithSource[]; // 查询目标列表
   trends: TrendWithSource[]; // 趋势列表
   single_relations: SingleRelationWithSource[]; // 单趋势关系列表
   trend_groups: TrendGroupWithSource[]; // 趋势组合列表
@@ -334,6 +334,8 @@ export function formatQuerySpec(query: QuerySpecWithSource): QuerySpec {
     };
   };
 
+  const filteredTargets = query.targets.filter(target => !query.text_sources[target.text_source_id]?.disabled).map(target => target.target);
+
   // 过滤掉禁用的趋势
   const filteredTrends = query.trends.map(formatTrend);
 
@@ -353,7 +355,7 @@ export function formatQuerySpec(query: QuerySpecWithSource): QuerySpec {
     .filter((relation): relation is GroupRelation => relation !== null);
 
   return {
-    target: query.target.target,
+    targets: filteredTargets,
     trends: filteredTrends,
     single_relations: filteredSingleRelations,
     trend_groups: filteredTrendGroups,
