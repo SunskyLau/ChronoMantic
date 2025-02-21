@@ -9,6 +9,7 @@ import LineChart from "../../LineChart";
 import { setCurrent, setLevel, setSource } from "../../../app/slice/approximation";
 import { setBrushPosition, setDefaultSplits, setRange, setSelectedSplits } from "../../../app/slice/selectSlice";
 import { classnames } from "../../../utils/classname";
+import { deepEqual } from "../../../utils/deepclone";
 
 export interface DataType {
     date: Date;
@@ -34,7 +35,7 @@ export default function ResultsContent() {
     const timeSpans = queryLevelResults.map(({ segments }) => (segments.at(-1)?.end_time || 0) - (segments.at(0)?.start_time || 0)).map((x) => x / 86400)
     const dispatch = useAppDispatch();
     const current = useAppSelector((state) => state.approximation.current);
-    const range = useAppSelector((state) => state.select.range);
+    const defaultSplits = useAppSelector((state) => state.select.defaultSplits);
 
     const maxTimeSpan = Math.max(...timeSpans);
     const maxLevel = Math.max(...queryLevelResults.map(({ level }) => level));
@@ -114,7 +115,7 @@ export default function ResultsContent() {
                             const end = segments.at(-1)?.end_idx || 0;
                             const splits = segments.map(segment => [segment.start_idx, segment.end_idx]).flat();
                             return (
-                                <div className={classnames("result-item", JSON.stringify(current) === JSON.stringify(result) && current?.segments.at(0)?.start_idx === range[0] && current.segments.at(-1)?.end_idx === range[1] ? "active" : "")} key={`${index}-${start}-${end}`} onClick={() => {
+                                <div className={classnames("result-item", deepEqual(current, result) && current?.segments.at(0)?.start_idx === defaultSplits[0] && current.segments.at(-1)?.end_idx === defaultSplits.at(-1) ? "active" : "")} key={`${index}-${start}-${end}`} onClick={() => {
                                     dispatch(setSource(source));
                                     dispatch(setBrushPosition([start, end]));
                                     dispatch(setRange([start, end]));

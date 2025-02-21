@@ -9,6 +9,9 @@ import { getModifyPrompt } from "../../api";
 import { setColorMap, setNLQuery, setQuery } from "../../app/slice/stateSlice";
 import { getColorFromMap } from "../../utils/color";
 import LevelController from "../LevelController";
+import { deepClone } from "../../utils/deepclone";
+import { setLevel } from "../../app/slice/approximation";
+import { getSplit } from "../../utils/split";
 
 export default function DetailView() {
 	const data = useAppSelector((state) => state.dataset.dataset?.data) || {};
@@ -19,67 +22,56 @@ export default function DetailView() {
 	const valueCol = useAppSelector((state) => state.approximation.source);
 	const level = useAppSelector((state) => state.approximation.level);
 	const results = useAppSelector((state) => state.approximation.results);
-	const queryResults = useAppSelector((state) => state.approximation.queryResults) ?? {};
+	const queryResults = useAppSelector((state) => state.approximation.queryResults);
+	const memoQueryResults = useMemo(() => deepClone(queryResults ?? {}), [queryResults]);
 	const current = useMemo(() => results?.find((result) => result.source === valueCol)?.approximation_segments_list.find((item) => item.approximation_level === level), [level, results, valueCol]);
 	const segments = useMemo(() => current?.segments || [], [current]);
-	const split = [...new Set([...segments.map((s) => s.start_idx), ...segments.map((s) => s.end_idx)])];
+	const split = useMemo(() => getSplit(segments), [segments]);
 	const query = useAppSelector((state) => state.states.query);
 	const colorMap = useAppSelector((state) => state.states.colorMap);
 	const brushPosition = useAppSelector((state) => state.select.brushPosition);
-	const handleBrush = useCallback(
-		(start: number, end: number) => {
-			dispatch(setRange([start, end]));
-		},
-		[dispatch]
-	);
-	const handleBrushEnd = useCallback(
-		(start: number, end: number) => {
-			dispatch(setBrushPosition([start, end]));
-		},
-		[dispatch]
-	);
-	const handleBrushSelectEnd = useCallback(
-		(start: number, end: number) => {
-			const selectSegments = segments.filter((item) => {
-				const { start_idx, end_idx } = item;
-				const itemSpan = end_idx - start_idx;
-				const overlap = Math.max(0, Math.min(end, end_idx) - Math.max(start, start_idx));
-				return overlap > itemSpan / 2;
-			});
-			if (selectSegments.length > 0) {
-				dispatch(setSelectPosition([selectSegments[0].start_idx, selectSegments[selectSegments.length - 1].end_idx]));
-			} else {
-				dispatch(setSelectPosition([0, 0]));
-			}
-		},
-		[dispatch, segments]
-	);
+	const resultsSplit = useMemo(() => {
+		return { colors: query?.trends.map((trend) => getColorFromMap(colorMap, trend.category.text_source_id)) || [], segments: (query?.target.target === valueCol && memoQueryResults[level]?.map((segments) => segments.map((segment) => [segment.start_idx, segment.end_idx] as [number, number]))) || [] }
+	}, [query, colorMap, valueCol, level, memoQueryResults])
+	const handleBrush = useCallback((start: number, end: number) => {
+		dispatch(setRange([start, end]));
+	}, [dispatch]);
+	const handleBrushEnd = useCallback((start: number, end: number) => {
+		dispatch(setBrushPosition([start, end]));
+	}, [dispatch]);
+	const handleBrushSelectEnd = useCallback((start: number, end: number) => {
+		const selectSegments = segments.filter((item) => {
+			const { start_idx, end_idx } = item;
+			const itemSpan = end_idx - start_idx;
+			const overlap = Math.max(0, Math.min(end, end_idx) - Math.max(start, start_idx));
+			return overlap > itemSpan / 2;
+		});
+		if (selectSegments.length > 0) {
+			dispatch(setSelectPosition([selectSegments[0].start_idx, selectSegments[selectSegments.length - 1].end_idx]));
+		} else {
+			dispatch(setSelectPosition([0, 0]));
+		}
+	}, [dispatch, segments]);
 
-	const handleScroll = useCallback(
-		(val: number) => {
-			const delta = val;
-			const range1 = Math.max(0, range[0] - delta);
-			const range2 = Math.min(range[1] + delta, timeValues.length - 1);
-			if (Math.abs(range1 - range2) < 2) return;
-			if (range1 > range2) {
-				handleBrush(range2, range1);
-				handleBrushEnd(range2, range1);
-			} else {
-				handleBrush(range1, range2);
-				handleBrushEnd(range1, range2);
-			}
-		},
-		[timeValues.length, handleBrush, handleBrushEnd, range]
-	);
+	const handleScroll = useCallback((val: number) => {
+		const delta = val;
+		const range1 = Math.max(0, range[0] - delta);
+		const range2 = Math.max(0, Math.min(range[1] + delta, timeValues.length - 1));
+		if (Math.abs(range1 - range2) < 2) return;
+		if (range1 > range2) {
+			handleBrush(range2, range1);
+			handleBrushEnd(range2, range1);
+		} else {
+			handleBrush(range1, range2);
+			handleBrushEnd(range1, range2);
+		}
+	}, [timeValues.length, handleBrush, handleBrushEnd, range]);
 
 	const defaultSplits = useAppSelector((state) => state.select.defaultSplits);
 	const selectedSplits = useAppSelector((state) => state.select.selectedSplits);
-	const handleSplitSelect = useCallback(
-		(splits: number[]) => {
-			dispatch(setSelectedSplits(splits));
-		},
-		[dispatch]
-	);
+	const handleSplitSelect = useCallback((splits: number[]) => {
+		dispatch(setSelectedSplits(splits));
+	}, [dispatch]);
 
 	const originalQuery = useAppSelector((state) => state.states.originalQuery);
 
@@ -88,7 +80,7 @@ export default function DetailView() {
 			className="main-view"
 			icon={<div>D</div>}
 			title="Main View"
-			right={<LevelController />}
+			right={<LevelController level={level} onChange={(level)=>dispatch(setLevel(level))} />}
 		>
 			{timeCol && valueCol ? (
 				<>
@@ -97,7 +89,7 @@ export default function DetailView() {
 							isShowRange={false}
 							xData={timeValues as string[]}
 							yData={data[valueCol] as number[]}
-							resultsSplit={{ colors: query?.trends.map((trend) => getColorFromMap(colorMap, trend.category.text_source_id)) || [], segments: (query && queryResults[level]?.map((segments) => segments.map((segment) => [segment.start_idx, segment.end_idx]))) || [] }}
+							resultsSplit={resultsSplit}
 							isXAxisVisible={true}
 							isYAxisVisible={true}
 							range={range}
@@ -109,9 +101,9 @@ export default function DetailView() {
 							isXAxisTextVisible
 							isYAxisTextVisible
 							onContextMenu={() => handleBrushSelectEnd(0, 0)}
-							selectedSplits={selectedSplits}
-							defaultSplits={defaultSplits}
-							onSplitSelect={handleSplitSelect}
+							selectedSplits={query?.target.target === valueCol ? selectedSplits : undefined}
+							defaultSplits={query?.target.target === valueCol ? defaultSplits : undefined}
+							onSplitSelect={query?.target.target === valueCol ? handleSplitSelect : undefined}
 							onSubmitIntentions={(intentions) => {
 								if (originalQuery) {
 									getModifyPrompt(
@@ -127,7 +119,7 @@ export default function DetailView() {
 											dispatch(setQuery(results));
 											dispatch(setColorMap(results));
 										})
-										.catch(() => {});
+										.catch(() => { });
 								}
 							}}
 						></LineChart>

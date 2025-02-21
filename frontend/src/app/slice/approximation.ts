@@ -34,7 +34,7 @@ export const approximationSlice = createSlice({
     setQueryResults: (state, action: PayloadAction<ApproximationResults>) => {
       state.queryResults = action.payload;
     },
-    setCurrent: (state, action: PayloadAction<ApproximationLevelResult>) => {
+    setCurrent: (state, action: PayloadAction<ApproximationLevelResult | null>) => {
       state.current = action.payload;
     },
   },

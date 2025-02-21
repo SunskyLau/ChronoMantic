@@ -1,14 +1,16 @@
-import { setLevel } from "../../app/slice/approximation";
 import { ConfigProvider, Slider } from "antd";
-import { useAppDispatch, useAppSelector } from "../../app/hooks";
+import { useAppSelector } from "../../app/hooks";
 import "./index.css";
 
-export default function LevelController() {
-	const dispatch = useAppDispatch();
+interface LevelControllerProps {
+	level: number;
+	onChange: (value: number) => void;
+}
+
+export default function LevelController({level, onChange}: LevelControllerProps) {
 	const valueCol = useAppSelector((state) => state.approximation.source);
 	const results = useAppSelector((state) => state.approximation.results);
 	const current = results?.find((result) => result.source === valueCol);
-	const level = useAppSelector((state) => state.approximation.level);
 
 	return (
 		<ConfigProvider theme={{ components: { Slider: { railSize: 10, railBg: "#E0E0E0", railHoverBg: "#E0E0E0", trackBg: "#fff", trackHoverBg: "#fff", handleColor: "#666" } } }}>
@@ -18,9 +20,7 @@ export default function LevelController() {
 					disabled={!current}
 					value={level}
 					max={current?.max_approximation_level}
-					onChange={(val) => {
-						dispatch(setLevel(val));
-					}}
+					onChange={onChange}
 				></Slider>
 				<span style={{ fontSize: "16px" }}>{level}</span>
 			</div>

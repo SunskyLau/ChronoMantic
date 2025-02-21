@@ -1,6 +1,6 @@
 import Panel from "../Panel";
 import TableIcon from "../../icons/Table";
-import { useAppSelector } from '../../app/hooks';
+import { useAppDispatch, useAppSelector } from '../../app/hooks';
 import CsvLoader from '../CsvLoader';
 import "./index.css";
 import Choose from "./Choose";
@@ -8,6 +8,7 @@ import Exploration from "./Exploration";
 import TableViewContent from "./TableViewContent";
 import { ChartView } from "./ChartView";
 import LevelController from "../LevelController";
+import { setLevel } from "../../app/slice/datasetSlice";
 
 enum TableState {
     UPLOAD,
@@ -19,6 +20,8 @@ enum TableState {
 
 export default function TableView() {
     const dataset = useAppSelector((state) => state.dataset.dataset);
+    const level = useAppSelector((state) => state.dataset.level);
+    const dispatch = useAppDispatch();
     // const timeStampColumn = useAppSelector((state) => state.dataset.dataset?.timeStampColumn);
     // const idColumn = useAppSelector((state) => state.dataset.dataset?.idColumn);
     // const valueColumn = useAppSelector((state) => state.dataset.dataset?.valueColumn);
@@ -41,7 +44,7 @@ export default function TableView() {
     }
 
     return (
-        <Panel className="table-view" icon={<TableIcon />} title="Data Table" right={<LevelController />}>
+        <Panel className="table-view" icon={<TableIcon />} title="Data Overview" right={<LevelController level={level} onChange={(level) => dispatch(setLevel(level))} />}>
             {renderComponent(state)}
         </Panel>
     )

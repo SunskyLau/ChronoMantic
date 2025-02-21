@@ -14,7 +14,7 @@ export default function QueryGlyph({ className }: { className?: string }) {
     const colorMap = useAppSelector(state => state.states.colorMap);
 
     return (<div className={classnames("glyph", className)}>
-        <Popover rootClassName="glyph-popover" trigger={["hover"]} content={<QueryCondition></QueryCondition>}>
+        <Popover rootClassName="glyph-popover" trigger={["contextMenu"]} content={<QueryCondition></QueryCondition>}>
             <div className="pointer flex" style={{ width: "100%", height: "100%" }}>
                 <Glyph 
                     query={query} 

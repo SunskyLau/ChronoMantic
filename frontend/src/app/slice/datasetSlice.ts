@@ -19,10 +19,12 @@ export interface Dataset extends DatasetColumn {
 
 interface DatasetState {
   dataset: Dataset | null;
+  level: number;
 }
 
 const initialState: DatasetState = {
   dataset: null,
+  level: 0,
 };
 
 const datasetSlice = createSlice({
@@ -57,9 +59,12 @@ const datasetSlice = createSlice({
     setRatios: (state, action: PayloadAction<Record<string, number>>) => {
       if (!state.dataset) return;
       state.dataset.ratios = action.payload;
-    }
+    },
+    setLevel: (state, action: PayloadAction<number>) => {
+      state.level = action.payload;
+    },
   },
 });
 
-export const { setDataset, setColumn, setSymbolData, removeSelectedSymbol, removeUnselectedSymbol, setRatios } = datasetSlice.actions;
+export const { setDataset, setColumn, setSymbolData, removeSelectedSymbol, removeUnselectedSymbol, setRatios, setLevel } = datasetSlice.actions;
 export default datasetSlice.reducer;
