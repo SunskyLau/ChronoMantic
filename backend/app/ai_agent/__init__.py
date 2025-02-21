@@ -112,7 +112,8 @@ def test_parse_nl_query():
     # nl_query = "Look up two consecutive rises and the first rise is more gentle than the second rise"
     # nl_query = "Find periods when price first presented a double-bottom shape with a duration of about a week and then presented a double-top shape with a duration higher than the first double-bottom's duration"
     # nl_query = "Look up a high plateau pattern"
-    nl_query = "Look up a flat basin pattern"
+    nl_query = "Look up a flat basin pattern in Amazon and Netflix"
+    # nl_query = "Look up a flat basin pattern"
     response = client.send_prompt(system_prompt, nl_query, False)
     print(response)
 
