@@ -108,9 +108,11 @@ def test_parse_nl_query():
     # nl_query = "Find periods in DPZ when price presented a triple-tops shape"
     # nl_query = "Find the time periods in Amazon stock when the price showed three consecutive peaks and the peaks got lower and lower"
     # nl_query = "Find periods in Amazon stock where prices rose slowly, then rose quickly"
-    nl_query = "Find periods in AMZN when price first rose sharply with a duration of about 4 days and then presented a double-top shape with a duration of about a week."
-    # nl_query = "In Amazon stock, look up two consecutive rises and the first rise is more gentle than the second rise"
-    # nl_query = "Find periods in AMZN when price first presented a double-bottom shape with a duration of about a week and then presented a double-top shape with a duration higher than the first double-bottom's duration"
+    # nl_query = "Find periods in AMZN when price first rose sharply with a duration of about 4 days and then presented a double-top shape with a duration of about a week."
+    # nl_query = "Look up two consecutive rises and the first rise is more gentle than the second rise"
+    # nl_query = "Find periods when price first presented a double-bottom shape with a duration of about a week and then presented a double-top shape with a duration higher than the first double-bottom's duration"
+    # nl_query = "Look up a high plateau pattern"
+    nl_query = "Look up a flat basin pattern"
     response = client.send_prompt(system_prompt, nl_query, False)
     print(response)
 

@@ -25,25 +25,64 @@ from ..MyTypes import (
 
 
 @typechecked
-def query(query_spec: QuerySpec, approximation_segments_containers: List[ApproximationSegmentsContainer], df: pd.DataFrame) -> Dict[int, List[List[Segment]]]:
+def query(
+    query_spec: QuerySpec, approximation_segments_containers: List[ApproximationSegmentsContainer], df: pd.DataFrame
+) -> Dict[str, Dict[int, List[List[Segment]]]]:
     """
     基于QuerySpec在不同近似级别上查询段
     返回Dict[approximation_level, List[连续段序列]]
     """
-    container = next((c for c in approximation_segments_containers if c.source == query_spec.target), None)
-    if not container:
+    if not query_spec.targets:
+        results_dict_key4target = {}
+        for container in approximation_segments_containers:
+            results_dict_key4level = query_for_target(query_spec, container, df)
+            results_dict_key4target[container.source] = results_dict_key4level
+        return results_dict_key4target
+
+    results_dict_key4target = {}
+    for target in query_spec.targets:
+        container = next((c for c in approximation_segments_containers if c.source == target), None)
+        results_dict_key4level = query_for_target(query_spec, container, df)
+        results_dict_key4target[target] = results_dict_key4level
+    return results_dict_key4target
+    # if not container:
+    #     return {}
+    # # 如果query_spec没有趋势，则使用query_by_no_trends查询
+    # if not query_spec.trends:
+    #     return query_by_no_trends(query_spec, container, df)
+
+    # results_dict = {}
+
+    # for approximation_segments in container.approximation_segments_list:
+    #     segments = approximation_segments.segments
+    #     approximation_level = approximation_segments.approximation_level
+
+    #     results = find_matching_sequences(segments, query_spec, df[query_spec.target])
+    #     if results:
+    #         results_dict[approximation_level] = results
+
+    # return results_dict
+
+
+@typechecked
+def query_for_target(
+    query_spec: QuerySpec, approximation_segments_container: ApproximationSegmentsContainer | None, df: pd.DataFrame
+) -> Dict[int, List[List[Segment]]]:
+    """基于query_spec在approximation_segments_container中查询target的连续段序列"""
+    if not approximation_segments_container:
         return {}
+
     # 如果query_spec没有趋势，则使用query_by_no_trends查询
     if not query_spec.trends:
-        return query_by_no_trends(query_spec, container, df)
+        return query_by_no_trends(query_spec, approximation_segments_container, df)
 
     results_dict = {}
 
-    for approximation_segments in container.approximation_segments_list:
+    for approximation_segments in approximation_segments_container.approximation_segments_list:
         segments = approximation_segments.segments
         approximation_level = approximation_segments.approximation_level
 
-        results = find_matching_sequences(segments, query_spec, df[query_spec.target])
+        results = find_matching_sequences(segments, query_spec, df[approximation_segments_container.source])
         if results:
             results_dict[approximation_level] = results
 
@@ -303,6 +342,7 @@ def compare_values(val1: float, val2: float, comparator: Comparator) -> bool:
         return bool(abs(val1 - val2) <= abs(val1 * 0.02))  # 2%容差
     return False
 
+
 @typechecked
 def satisfies_time_span_condition(segments: List[Segment], condition: ScopeCondition) -> bool:
     """检查段序列是否满足总时间跨度条件"""
@@ -317,10 +357,10 @@ if __name__ == "__main__":
     approximation_segments_containers = approximate_dataset(df, dataset_info)
 
     query_spec1 = QuerySpec(
-        target="AMZN",
+        targets=["AMZN", "DPZ"],
         trends=[
-            Trend(category=TrendCategory.UP, slope_scope_condition=ScopeCondition(min=ThresholdCondition(value=0.0001, inclusive=True))),
-            Trend(category=TrendCategory.UP, slope_scope_condition=ScopeCondition(min=ThresholdCondition(value=0.0001, inclusive=True))),
+            Trend(category=TrendCategory.UP, slope_scope_condition=ScopeCondition(min=ThresholdCondition(value=0.000001, inclusive=True))),
+            Trend(category=TrendCategory.UP, slope_scope_condition=ScopeCondition(min=ThresholdCondition(value=0.000001, inclusive=True))),
         ],
         single_relations=[SingleRelation(comparator=Comparator.LESS, id1=0, id2=1, attribute=SingleAttribute.END_VALUE)],
         trend_groups=[TrendGroup(ids=(0, 1), time_span_condition=ScopeCondition(min=ThresholdCondition(value=86400, inclusive=True)))],
@@ -330,5 +370,5 @@ if __name__ == "__main__":
         max_value_scope_condition=None,
         min_value_scope_condition=None,
     )
-    results_dict = query(query_spec1, approximation_segments_containers, df)
-    print(results_dict)
+    results = query(query_spec1, approximation_segments_containers, df)
+    print(results["DPZ"])

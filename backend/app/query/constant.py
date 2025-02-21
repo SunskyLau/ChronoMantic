@@ -1,1 +1,1 @@
-FLAT_THRESHOLD = 1  # 低于1%的斜率认为是平坦的
+FLAT_THRESHOLD = 0.1  # 低于0.1%的斜率认为是平坦的

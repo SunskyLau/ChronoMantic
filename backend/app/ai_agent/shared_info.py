@@ -97,7 +97,7 @@ export interface GroupRelation {
 }
 
 export interface QuerySpec {
-  target: string; // 查询目标的时间序列名称
+  targets: string[]; // 查询目标的时间序列名称列表
   trends: Trend[]; // 趋势条件列表
   single_relations: SingleRelation[]; // 趋势间的关系条件列表
   trend_groups: TrendGroup[]; // 趋势组合列表
@@ -157,7 +157,7 @@ export interface TargetWithSource extends WithSource {
 export interface QuerySpecWithSource {
   original_text: string; // 原始查询文本
   text_sources: TextSource[]; // QuerySpec中涉及到的所有文本来源，按照处于原文中的顺序排序
-  target: TargetWithSource; // 查询目标
+  targets: TargetWithSource[]; // 查询目标列表，查询文本中未提及明确目标时为空
   trends: TrendWithSource[]; // 趋势列表
   single_relations: SingleRelationWithSource[]; // 单趋势关系列表
   trend_groups: TrendGroupWithSource[]; // 趋势组合列表

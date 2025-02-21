@@ -149,7 +149,7 @@ class GroupRelation(DictMixin):
 
 @dataclass
 class QuerySpec(DictMixin):
-    target: str  # 查询的目标时间序列名
+    targets: List[str]  # 查询的目标时间序列名列表
     trends: List[Trend]  # 趋势列表
     single_relations: List[SingleRelation]  # 不同趋势之间的属性比较关系列表
     trend_groups: List[TrendGroup]  # 趋势组合列表

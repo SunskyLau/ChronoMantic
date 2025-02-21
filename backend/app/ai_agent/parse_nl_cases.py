@@ -28,10 +28,12 @@ Find periods in AMZN when price first rose sharply then fell gradually
       "index": 0
     }
   ],
-  "target": {
-    "target": "AMZN",
-    "text_source_id": 0
-  },
+  "targets": [
+    {
+      "target": "AMZN",
+      "text_source_id": 0
+    }
+  ],
   "trends": [
     {
       "category": {
@@ -72,14 +74,14 @@ Find periods in AMZN when price first rose sharply then fell gradually
 
     case2 = """
 输入：
-Find periods in AMZN when price presented a double-bottom shape
+Find periods in DPZ when price presented a double-bottom shape
 
 输出：
 {
-  "original_text": "Find periods in AMZN when price presented a double-bottom shape",
+  "original_text": "Find periods in DPZ when price presented a double-bottom shape",
   "text_sources": [
     {
-      "text": "AMZN",
+      "text": "DPZ",
       "index": 0
     },
     {
@@ -87,10 +89,12 @@ Find periods in AMZN when price presented a double-bottom shape
       "index": 0
     }
   ],
-  "target": {
-    "target": "AMZN",
-    "text_source_id": 0
-  },
+  "targets": [
+    {
+      "target": "DPZ",
+      "text_source_id": 0
+    }
+  ],
   "trends": [
     {
       "category": {
@@ -151,10 +155,12 @@ Find the time periods in Amazon stock when the price showed three consecutive pe
       "index": 0
     }
   ],
-  "target": {
-    "target": "AMZN",
-    "text_source_id": 0
-  },
+  "targets": [
+    {
+      "target": "AMZN",
+      "text_source_id": 0
+    }
+  ],
   "trends": [
     {
       "category": {
@@ -230,10 +236,12 @@ Find periods in AMZN when price presented a head-and-shoulders shape
       "index": 0
     }
   ],
-  "target": {
-    "target": "AMZN",
-    "text_source_id": 0
-  },
+  "targets": [
+    {
+      "target": "AMZN",
+      "text_source_id": 0
+    }
+  ],
   "trends": [
     {
       "category": {
@@ -329,10 +337,12 @@ Find periods in AMZN when price first presented a double-bottom shape with a dur
       "index": 0
     }
   ],
-  "target": {
-    "target": "AMZN",
-    "text_source_id": 0
-  },
+  "targets": [
+    {
+      "target": "AMZN",
+      "text_source_id": 0
+    }
+  ],
   "trends": [
     {
       "category": {
@@ -426,3 +436,43 @@ Find periods in AMZN when price first presented a double-bottom shape with a dur
   ]
 }
     """
+
+    case6 = """
+输入：
+Find periods when price presented a high plateau shape
+
+输出：
+{
+  "original_text": "Find periods when price presented a high plateau shape",
+  "text_sources": [
+    {
+      "text": "a high plateau shape",
+      "index": 0
+    }
+  ],
+  "targets": [],
+  "trends": [
+    {
+      "category": {
+        "category": "up",
+        "text_source_id": 0
+      }
+    },
+    {
+      "category": {
+        "category": "flat",
+        "text_source_id": 0
+      }
+    },
+    {
+      "category": {
+        "category": "down",
+        "text_source_id": 0
+      }
+    }
+  ],
+  "single_relations": [],
+  "trend_groups": [],
+  "group_relations": []
+}
+"""

@@ -19,10 +19,12 @@ old_queryspec_with_source
       "index": 0
     }
   ],
-  "target": {
-    "target": "AMZN",
-    "text_source_id": 0
-  },
+  "targets": [
+    {
+      "target": "AMZN",
+      "text_source_id": 0
+    }
+  ],
   "trends": [
     {
       "category": {
@@ -147,10 +149,12 @@ intentions
       "index": 0
     }
   ],
-  "target": {
-    "target": "AMZN",
-    "text_source_id": 0
-  },
+  "targets": [
+    {
+      "target": "AMZN",
+      "text_source_id": 0
+    }
+  ],
   "trends": [
     {
       "category": {
@@ -173,7 +177,7 @@ intentions
       "category": {
         "category": "flat",
         "text_source_id": 3
-      },
+      }
     },
     {
       "category": {
