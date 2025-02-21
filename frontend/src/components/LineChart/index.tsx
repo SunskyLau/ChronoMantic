@@ -8,7 +8,7 @@ import { formatTime } from "../../utils/time";
 import IntentionPopover from "./IntentionPopover";
 import { IntentionLine, LineChartProps, PopoverPosition } from "./types";
 
-function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVisible = false, isYAxisVisible = false, isXAxisTextVisible = false, isYAxisTextVisible = false, isBrush = false, onBrush, onBrushEnd, range, height, split, isSplitMask = false, brushPosition, isExpand = true, isShowRange = true, isActive, children, onScroll, onContextMenu, xAxisColor = "#C5C5C5", yAxisColor = "#C5C5C5", lineColor = "#A6A6A6", textColor = "#C5C5C5", xAxisFormatter = (date: Date) => formatTime(date), brushColor = "#546BB633", resultsSplit, selectedSplits, defaultSplits = [], onSplitSelect, onSubmitIntentions, margin }: LineChartProps) {
+function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVisible = false, isYAxisVisible = false, isXAxisTextVisible = false, isYAxisTextVisible = false, isBrush = false, onBrush, onBrushEnd, range, height, split, isSplitMask = false, brushPosition, isExpand = true, isShowRange = true, isActive, children, onScroll, onContextMenu, xAxisColor = "#C5C5C5", yAxisColor = "#C5C5C5", lineColor = "#A6A6A6", textColor = "#C5C5C5", xAxisFormatter = (date: Date) => formatTime(date), brushColor = "#546BB633", resultsSplit, selectedSplits, defaultSplits = [], onSplitSelect, onSubmitIntentions, margin, isHoverable = false }: LineChartProps) {
 	const m = margin;
 	const svgRef = useRef<SVGSVGElement>(null);
 	const id = useId();
@@ -614,6 +614,10 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 		if (isYAxisVisible) {
 			const yAxis = d3.axisLeft(y).tickSize(isYAxisTextVisible ? 6 : 0);
 
+			if (innerHeight < 100) {
+				yAxis.tickValues([yMin, yMax]);
+			}
+
 			const yAxisG = g
 				.append("g")
 				.call(yAxis)
@@ -627,17 +631,6 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 			yAxisG.append("line").attr("x1", 0).attr("y1", 0).attr("x2", 0).attr("y2", -10).attr("stroke", yAxisColor).attr("marker-end", `url(#arrow-${id})`);
 		}
 
-		if ((range && start !== end) || !range) {
-			g.append("path")
-				.datum(keyData.map((t, i) => [t, valueData[i]] as [number, number]))
-				.attr("d", lineGenerator)
-				.attr("fill", "none")
-				.attr("stroke", lineColor)
-				.attr("stroke-opacity", "0.7")
-				.attr("clip-path", `url(#clip-path-${id})`)
-				.attr("stroke-width", 1);
-		}
-
 		if (split && keyData.length > 2) {
 			const splitLinesG = g
 				.append("g")
@@ -648,8 +641,7 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 				.append("g")
 				.attr("class", "split-interaction")
 				.attr("clip-path", isSplitMask ? `url(#clip-path-${id})` : null)
-				.style("pointer-events", "all")
-				.raise();
+				.style("pointer-events", "all");
 
 			const color = d3.color(lineColor);
 			const darkerColor = color ? d3.hsl(color).darker(10).toString() : lineColor;
@@ -659,7 +651,7 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 				const y1 = y(yData[split[i]]);
 				const y2 = y(yData[split[i + 1]]);
 
-				splitLinesG.append("line").attr("class", "split-line").attr("x1", x1).attr("x2", x2).attr("y1", y1).attr("y2", y2).attr("stroke", darkerColor).attr("stroke-opacity", "0.5").attr("stroke-width", 2).attr("pointer-events", "none");
+				splitLinesG.append("line").attr("class", "split-line").attr("x1", x1).attr("x2", x2).attr("y1", y1).attr("y2", y2).attr("stroke", darkerColor).attr("stroke-opacity", "0.5").attr("stroke-width", 1).attr("pointer-events", "none");
 
 				if (defaultSplits && selectedSplits) {
 					splitInteractionG
@@ -678,6 +670,82 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 						.on("mousemove", handleMouseMove)
 						.on("mouseup", handleMouseUp);
 				}
+			}
+
+			if (resultsSplit && keyData.length > 2) {
+				const resultsG = g.append("g").attr("class", "results-split-line");
+
+				for (let i = 0; i < resultsSplit.segments.length; i++) {
+					for (let j = 0; j < resultsSplit.segments[i].length; j++) {
+						const x1 = x(timeStampData[resultsSplit.segments[i][j][0]]);
+						const x2 = x(timeStampData[resultsSplit.segments[i][j][1]]);
+						const y1 = y(yData[resultsSplit.segments[i][j][0]]);
+						const y2 = y(yData[resultsSplit.segments[i][j][1]]);
+						resultsG
+							.append("line")
+							.attr("class", "results-split-line")
+							.attr("x1", x1)
+							.attr("x2", x2)
+							.attr("y1", y1)
+							.attr("y2", y2)
+							.attr("clip-path", `url(#clip-path-${id})`)
+							.attr("stroke", resultsSplit.colors[j] || "#666")
+							.attr("stroke-opacity", defaultSplits.includes(resultsSplit.segments[i][j][0]) && defaultSplits.includes(resultsSplit.segments[i][j][1]) ? "1" : "0.7")
+							.attr("stroke-width", defaultSplits.includes(resultsSplit.segments[i][j][0]) && defaultSplits.includes(resultsSplit.segments[i][j][1]) ? 6 : 3);
+					}
+				}
+			}
+		}
+
+		if ((range && start !== end) || !range) {
+			const pathG = g.append("g").attr("class", "line-path").raise();
+
+			pathG.append("path")
+				.datum(keyData.map((t, i) => [t, valueData[i]] as [number, number]))
+				.attr("d", lineGenerator)
+				.attr("fill", "none")
+				.attr("stroke", lineColor)
+				.attr("stroke-opacity", "0.7")
+				.attr("clip-path", `url(#clip-path-${id})`)
+				.attr("stroke-width", 1);
+
+			if (isHoverable) {
+				const tooltip = d3.select("body").append("div")
+					.attr("class", "tooltip")
+					.style("position", "absolute")
+					.style("background", "#000a")
+					.style("color", "#fff")
+					.style("padding", "5px 10px")
+					.style("border", "1px solid #ccc")
+					.style("border-radius", "6px")
+					.style("pointer-events", "none")
+					.style("transform", "translate(-100%, -100%)")
+					.style("opacity", 0);
+
+				pathG.selectAll("circle")
+					.data(keyData.map((t, i) => [t, valueData[i]] as [number, number]))
+					.enter()
+					.append("circle")
+					.attr("cx", d => x(d[0]))
+					.attr("cy", d => y(d[1]))
+					.attr("r", 4)
+					.attr("fill", lineColor)
+					.attr("opacity", 0)
+					.on("mouseover", function (event, d) {
+						tooltip.transition()
+							.duration(200)
+							.style("opacity", .9);
+						tooltip.html(`Time: ${xAxisFormatter(new Date(d[0]))}<br>Value: ${d[1]}`)
+							.style("left", (event.pageX - 5) + "px")
+							.style("top", (event.pageY - 5) + "px");
+						d3.select(this).attr("opacity", 1);
+					})
+					.on("mouseout", function () {
+						tooltip.transition()
+							.duration(500)
+							.style("opacity", 0);
+						d3.select(this).attr("opacity", 0);
+					});
 			}
 		}
 
@@ -698,30 +766,6 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 
 		if (isFill) {
 			g.append("path").datum(data).attr("d", areaGenerator).attr("fill", "#82C4FF99");
-		}
-
-		if (resultsSplit && keyData.length > 2) {
-			const resultsG = g.append("g").attr("class", "results-split-line");
-
-			for (let i = 0; i < resultsSplit.segments.length; i++) {
-				for (let j = 0; j < resultsSplit.segments[i].length; j++) {
-					const x1 = x(timeStampData[resultsSplit.segments[i][j][0]]);
-					const x2 = x(timeStampData[resultsSplit.segments[i][j][1]]);
-					const y1 = y(yData[resultsSplit.segments[i][j][0]]);
-					const y2 = y(yData[resultsSplit.segments[i][j][1]]);
-					resultsG
-						.append("line")
-						.attr("class", "results-split-line")
-						.attr("x1", x1)
-						.attr("x2", x2)
-						.attr("y1", y1)
-						.attr("y2", y2)
-						.attr("clip-path", `url(#clip-path-${id})`)
-						.attr("stroke", resultsSplit.colors[j] || "#666")
-						.attr("stroke-opacity", "0.8")
-						.attr("stroke-width", 4);
-				}
-			}
 		}
 
 		if (split && intentions && defaultSplits && selectedSplits) {
@@ -1031,6 +1075,7 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 			return () => {
 				brush.on("brush", null).on("end", null);
 				svg.selectAll("*").remove();
+				d3.select(".tooltip").remove();
 			};
 		}
 	}, [xData, yData, ratio, title, isXAxisVisible, isYAxisVisible, isXAxisTextVisible, isYAxisTextVisible, isBrush, onBrush, isFill, range, height, split, isSplitMask, brushPosition, isExpand, isShowRange, id, onBrushEnd, isActive, xAxisColor, yAxisColor, lineColor, textColor, xAxisFormatter, brushColor, resultsSplit, handleSplitClick, selectedSplits, popoverPosition, handleMouseMove, handleMouseUp, intentions, defaultSplits, onSubmitIntentions, relationIds, m]);

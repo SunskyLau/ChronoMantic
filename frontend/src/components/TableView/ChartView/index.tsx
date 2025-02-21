@@ -25,6 +25,6 @@ export function ChartView() {
     }, [dispatch, level]);
 
     return (dataset?.valueColumns.map((col) => {
-        return <div key={col} onClick={() => { handleClick(col) }}><LineChart isXAxisVisible isActive={source === col} height={80} margin={{ top: 20, right: 30, bottom: 10, left: 20 }} isYAxisVisible title={col} xData={xData} yData={dataset.data[col] as number[]} split={getSplit(results?.find((result) => result.source === col)?.approximation_segments_list.find((item) => item.approximation_level === level)?.segments || [])}></LineChart></div>
+        return <div key={col} onClick={() => { handleClick(col) }}><LineChart isXAxisVisible isActive={source === col} height={80} margin={{ top: 20, right: 30, bottom: 10, left: 50 }} isYAxisVisible title={col} xData={xData} yData={dataset.data[col] as number[]} split={getSplit(results?.find((result) => result.source === col)?.approximation_segments_list.find((item) => item.approximation_level === level)?.segments || [])} isYAxisTextVisible></LineChart></div>
     }))
 }

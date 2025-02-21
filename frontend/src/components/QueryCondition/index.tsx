@@ -15,10 +15,7 @@ import { QuerySpecWithSource, ScopeConditionWithSource } from "../../types/Query
 
 const emptyQuerySpec: QuerySpecWithSource = {
 	original_text: "",
-	target: {
-		target: "",
-		text_source_id: -1,
-	},
+	targets: [],
 	text_sources: [],
 	trends: [],
 	single_relations: [],
@@ -53,10 +50,6 @@ export default function QueryCondition() {
 	const memoizedQuery = useMemo(() => deepClone(query) || emptyQuerySpec, [query]);
 	const values = useAppSelector((state) => state.dataset.dataset?.valueColumns) || [];
 	const dispatch = useAppDispatch();
-	const data = useAppSelector((state) => state.dataset.dataset?.data) || {};
-	const value = (data[memoizedQuery.target.target || ""] as number[]) || [];
-	const maxValue = Math.floor(Math.max(...value));
-	const minValue = Math.ceil(Math.min(...value));
 	const time = useAppSelector((state) => state.dataset.dataset?.data[state.dataset.dataset.timeStampColumn]) || [];
 	const date = time.map((t) => new Date(t).getTime());
 	const minDate = Math.min(...date);
@@ -79,15 +72,11 @@ export default function QueryCondition() {
 		},
 		{
 			title: "Max Value Scope",
-			condition: memoizedQuery.max_value_scope_condition,
-			minValue: minValue,
-			maxValue: maxValue,
+			condition: memoizedQuery.max_value_scope_condition
 		},
 		{
 			title: "Min Value Scope",
-			condition: memoizedQuery.min_value_scope_condition,
-			minValue: minValue,
-			maxValue: maxValue,
+			condition: memoizedQuery.min_value_scope_condition
 		},
 	];
 
@@ -102,12 +91,13 @@ export default function QueryCondition() {
 		>
 			<section>
 				<Target
-					value={memoizedQuery.target.target || ""}
-					color={getColorFromMap(colorMap, memoizedQuery.target.text_source_id)}
+					value={memoizedQuery.targets.map(target => target.target)}
 					options={values}
+					colorMap={colorMap}
+					sources={memoizedQuery?.targets.map(target=>target.text_source_id)}
 					onChange={(val) => {
 						const newQuery = deepClone(memoizedQuery);
-						newQuery.target.target = val;
+						newQuery.targets = val.map(target => ({ target, text_source_id: query?.targets.find(source => source.target === target)?.text_source_id ?? -1 }))
 						dispatch(setQuery(newQuery));
 					}}
 				/>

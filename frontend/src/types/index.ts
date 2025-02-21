@@ -41,7 +41,9 @@ export type ApproximationSegmentsContainers = {
 }[]
 
 export interface ApproximationResults {
-    [key: number]: Segment[][];
+    [key: string]: {
+        [key: number]: Segment[][];
+    }
 }
 
 export interface SpeechRecognitionEvent {

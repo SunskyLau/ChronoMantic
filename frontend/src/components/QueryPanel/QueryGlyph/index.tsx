@@ -33,7 +33,7 @@ export default function QueryGlyph({ className }: { className?: string }) {
                         }
                     }} 
                     height={48} 
-                    target={query?.target}
+                    targets={query?.targets || []}
                     trends={query?.trends || []} 
                     allTrends={query?.trends || []} 
                     single_relations={query?.single_relations || []} 

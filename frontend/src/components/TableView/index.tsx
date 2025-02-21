@@ -43,8 +43,10 @@ export default function TableView() {
         }
     }
 
+	const maxLevel = useAppSelector((state) => Object.values(state.approximation.results ?? {}).at(-1)?.max_approximation_level);
+
     return (
-        <Panel className="table-view" icon={<TableIcon />} title="Data Overview" right={<LevelController level={level} onChange={(level) => dispatch(setLevel(level))} />}>
+        <Panel className="table-view" icon={<TableIcon />} title="Data Overview" right={<LevelController level={level} disabled={!maxLevel} maxLevel={maxLevel ?? 0} onChange={(level) => dispatch(setLevel(level))} />}>
             {renderComponent(state)}
         </Panel>
     )

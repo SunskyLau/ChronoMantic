@@ -22,7 +22,7 @@ export function getColor(index: number) {
     return colors[index % colors.length];
 }
 
-export function getColorFromMap(colorMap: Record<string, string>, source?: number, opacity = "66") {
+export function getColorFromMap(colorMap: Record<string, string>, source?: number, opacity = "99") {
     const color = colorMap[source?.toString() ?? ""];
     return color ? color + opacity : "";
 }

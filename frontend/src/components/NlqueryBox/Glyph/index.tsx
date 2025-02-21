@@ -9,7 +9,7 @@ import { getColorFromMap } from "../../../utils/color";
 type ClickType = "Trend" | "Relation" | "GroupRelation";
 
 interface GlyphProps {
-	target?: TargetWithSource;
+	targets?: TargetWithSource[];
 	trends?: TrendWithSource[];
 	trend_groups?: TrendGroupWithSource[];
 	single_relations?: SingleRelationWithSource[];
@@ -205,7 +205,7 @@ const calculateTimeRangeLevels = (trends: TrendWithSource[], trend_groups: Trend
 	return timeRanges;
 };
 
-const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_relations = [], height = 32, onClick, curTrend, curRelation, query, colorMap = {}, target }: GlyphProps) => {
+const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_relations = [], height = 32, onClick, curTrend, curRelation, query, colorMap = {}, targets = [] }: GlyphProps) => {
 	const paddingY = 10;
 	const paddingX = 4;
 	const trendLength = height - paddingY * 1.5;
@@ -819,11 +819,16 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 	const timeRangeLevels = calculateTimeRangeLevels(trends, trend_groups, trendLength, paddingX);
 
 	// 修改 drawTarget 函数
-	const drawTarget = (target?: TargetWithSource) => {
-		if (!target?.target) return null;
+	const drawTarget = (targets: TargetWithSource[]) => {
+		if (!targets.length) return null;
 		if (!query) return null;
 
-		const targetColor = getColorWithDisabled(colorMap, query, target.text_source_id);
+		const text = targets.map((target, index) => {
+			const targetColor = getColorWithDisabled(colorMap, query, target.text_source_id);
+			return (
+				<tspan key={`${target}-${index}`} fill={targetColor}> {target.target} </tspan>
+			)
+		})
 
 		return (
 			<g>
@@ -831,12 +836,11 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 					x={paddingX}
 					y={paddingY}
 					fontSize={20}
-					fill={targetColor}
 					dominantBaseline="hanging"
 					textAnchor="start"
 					style={{ pointerEvents: "none" }}
 				>
-					{target.target}
+					{text}
 				</text>
 			</g>
 		);
@@ -848,7 +852,7 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 			width="100%"
 			height="100%"
 		>
-			{drawTarget(target)}
+			{drawTarget(targets)}
 			<g ref={gRef}>
 				{trendLines}
 				{relationLines}

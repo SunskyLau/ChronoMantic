@@ -19,20 +19,20 @@ export default function DetailView() {
 	const range = useAppSelector((state) => state.select.range);
 	const timeCol = Object.keys(data).at(0);
 	const timeValues = timeCol ? data[timeCol] : [];
-	const valueCol = useAppSelector((state) => state.approximation.source);
+	const source = useAppSelector((state) => state.approximation.source) || "";
 	const level = useAppSelector((state) => state.approximation.level);
 	const results = useAppSelector((state) => state.approximation.results);
 	const queryResults = useAppSelector((state) => state.approximation.queryResults);
 	const memoQueryResults = useMemo(() => deepClone(queryResults ?? {}), [queryResults]);
-	const current = useMemo(() => results?.find((result) => result.source === valueCol)?.approximation_segments_list.find((item) => item.approximation_level === level), [level, results, valueCol]);
-	const segments = useMemo(() => current?.segments || [], [current]);
+	const segments = useMemo(() => results?.find((result) => result.source === source)?.approximation_segments_list.find((item) => item.approximation_level === level)?.segments || [], [results, source, level]);
 	const split = useMemo(() => getSplit(segments), [segments]);
 	const query = useAppSelector((state) => state.states.query);
 	const colorMap = useAppSelector((state) => state.states.colorMap);
 	const brushPosition = useAppSelector((state) => state.select.brushPosition);
+	const isTarget = query?.targets.some(target => target.target === source)
 	const resultsSplit = useMemo(() => {
-		return { colors: query?.trends.map((trend) => getColorFromMap(colorMap, trend.category.text_source_id)) || [], segments: (query?.target.target === valueCol && memoQueryResults[level]?.map((segments) => segments.map((segment) => [segment.start_idx, segment.end_idx] as [number, number]))) || [] }
-	}, [query, colorMap, valueCol, level, memoQueryResults])
+		return { colors: query?.trends.map((trend) => getColorFromMap(colorMap, trend.category.text_source_id)) || [], segments: (isTarget && memoQueryResults[source]?.[level]?.map((segments) => segments.map((segment) => [segment.start_idx, segment.end_idx] as [number, number]))) || [] }
+	}, [query, colorMap, level, memoQueryResults, isTarget, source])
 	const handleBrush = useCallback((start: number, end: number) => {
 		dispatch(setRange([start, end]));
 	}, [dispatch]);
@@ -72,6 +72,7 @@ export default function DetailView() {
 	const handleSplitSelect = useCallback((splits: number[]) => {
 		dispatch(setSelectedSplits(splits));
 	}, [dispatch]);
+	const current = results?.find((result) => result.source === source);
 
 	const originalQuery = useAppSelector((state) => state.states.originalQuery);
 
@@ -80,30 +81,31 @@ export default function DetailView() {
 			className="main-view"
 			icon={<div>D</div>}
 			title="Main View"
-			right={<LevelController level={level} onChange={(level)=>dispatch(setLevel(level))} />}
+			right={<LevelController level={level} disabled={!current} maxLevel={current?.max_approximation_level ?? 0} onChange={(level) => dispatch(setLevel(level))} />}
 		>
-			{timeCol && valueCol ? (
+			{timeCol && source ? (
 				<>
 					<div className="bg detail">
 						<LineChart
 							isShowRange={false}
 							xData={timeValues as string[]}
-							yData={data[valueCol] as number[]}
+							yData={data[source] as number[]}
 							resultsSplit={resultsSplit}
 							isXAxisVisible={true}
 							isYAxisVisible={true}
+							isHoverable
 							range={range}
 							height={"100%"}
 							split={split}
 							isSplitMask={true}
 							onScroll={handleScroll}
-							title={valueCol}
+							title={source}
 							isXAxisTextVisible
 							isYAxisTextVisible
 							onContextMenu={() => handleBrushSelectEnd(0, 0)}
-							selectedSplits={query?.target.target === valueCol ? selectedSplits : undefined}
-							defaultSplits={query?.target.target === valueCol ? defaultSplits : undefined}
-							onSplitSelect={query?.target.target === valueCol ? handleSplitSelect : undefined}
+							selectedSplits={isTarget ? selectedSplits : undefined}
+							defaultSplits={isTarget ? defaultSplits : undefined}
+							onSplitSelect={isTarget ? handleSplitSelect : undefined}
 							onSubmitIntentions={(intentions) => {
 								if (originalQuery) {
 									getModifyPrompt(
@@ -127,7 +129,7 @@ export default function DetailView() {
 					<div className="bg overview">
 						<LineChart
 							xData={timeValues as string[]}
-							yData={data[valueCol] as number[]}
+							yData={data[source] as number[]}
 							isBrush={true}
 							onBrush={handleBrush}
 							height={"100%"}
