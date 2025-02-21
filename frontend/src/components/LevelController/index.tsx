@@ -13,7 +13,7 @@ export default function LevelController() {
 	return (
 		<ConfigProvider theme={{ components: { Slider: { railSize: 10, railBg: "#E0E0E0", railHoverBg: "#E0E0E0", trackBg: "#fff", trackHoverBg: "#fff", handleColor: "#666" } } }}>
 			<div className="level-controller">
-				<span className="level-controller-title">Approximation Level</span>
+				<span className="level-controller-title" style={{ fontSize: "16px" }}>Approximation Level</span>
 				<Slider
 					disabled={!current}
 					value={level}
@@ -22,7 +22,7 @@ export default function LevelController() {
 						dispatch(setLevel(val));
 					}}
 				></Slider>
-				<span>{level}</span>
+				<span style={{ fontSize: "16px" }}>{level}</span>
 			</div>
 		</ConfigProvider>
 	);
