@@ -2,7 +2,7 @@ from typing import List, Optional, Dict, Set, Tuple
 import pandas as pd
 from typeguard import typechecked
 
-from .constant import FLAT_THRESHOLD
+from .config import FLAT_THRESHOLD, APPROXIMATELY_EQUAL_THRESHOLD
 from .utils import check_double_threshold_condition, check_single_threshold_condition, query_by_no_trends
 
 from ..model import approximate_dataset
@@ -312,9 +312,9 @@ def get_single_attribute_value(segment: Segment, attribute: SingleAttribute) -> 
 def compare_values(val1: float, val2: float, comparator: Comparator) -> bool:
     """根据比较器比较两个值"""
     if comparator == Comparator.GREATER:
-        return bool(val1 > val2 and abs(val1 - val2) > abs(val2 * 0.02))
+        return bool(val1 > val2 and abs(val1 - val2) > abs(val2 * APPROXIMATELY_EQUAL_THRESHOLD))
     elif comparator == Comparator.LESS:
-        return bool(val1 < val2 and abs(val1 - val2) > abs(val1 * 0.02))
+        return bool(val1 < val2 and abs(val1 - val2) > abs(val1 * APPROXIMATELY_EQUAL_THRESHOLD))
     elif comparator == Comparator.EQUAL:
         return bool(val1 == val2)
     elif comparator == Comparator.NO_GREATER:
@@ -322,7 +322,7 @@ def compare_values(val1: float, val2: float, comparator: Comparator) -> bool:
     elif comparator == Comparator.NO_LESS:
         return bool(val1 >= val2)
     elif comparator == Comparator.APPROXIMATELY_EQUAL_TO:
-        return bool(abs(val1 - val2) <= abs(val1 * 0.02))  # 2%容差
+        return bool(abs(val1 - val2) <= abs(val1 * APPROXIMATELY_EQUAL_THRESHOLD))
     return False
 
 
