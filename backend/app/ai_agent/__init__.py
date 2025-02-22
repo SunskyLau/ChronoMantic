@@ -84,18 +84,6 @@ class myAIClient:
         return text
 
 
-def parse_nl_query(system_prompt: str, query: str) -> Dict:
-    client = myAIClient(model=Qwen.MODELS.QWEN_MAX, platform=Platforms.QWEN)
-    response = client.send_prompt(system_prompt, query, False)
-    return json.loads(response)
-
-
-# def modify_nl_query(system_prompt: str, query: str) -> Dict:
-#     client = myAIClient(model=Qwen.MODELS.QWEN_MAX, platform=Platforms.QWEN)
-#     response = client.send_prompt(system_prompt, query, False)
-#     return json.loads(response)
-
-
 def test_parse_nl_query():
     client = myAIClient(model=Qwen.MODELS.QWEN_MAX, platform=Platforms.QWEN)
     # client = myAIClient(model=Azure.MODELS.GPT_4O, platform=Platforms.AZURE)
@@ -114,6 +102,7 @@ def test_parse_nl_query():
     # nl_query = "Look up a high plateau pattern"
     nl_query = "Look up a flat basin pattern in Amazon and Netflix"
     # nl_query = "Look up a flat basin pattern"
+    print(system_prompt)
     response = client.send_prompt(system_prompt, nl_query, False)
     print(response)
 
