@@ -9,7 +9,6 @@ import IntentionPopover from "./IntentionPopover";
 import { IntentionLine, LineChartProps, PopoverPosition } from "./types";
 
 function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVisible = false, isYAxisVisible = false, isXAxisTextVisible = false, isYAxisTextVisible = false, isBrush = false, onBrush, onBrushEnd, range, height, split, isSplitMask = false, brushPosition, isExpand = true, isShowRange = true, isActive, children, onScroll, onContextMenu, xAxisColor = "#C5C5C5", yAxisColor = "#C5C5C5", lineColor = "#A6A6A6", textColor = "#C5C5C5", xAxisFormatter = (date: Date) => formatTime(date), brushColor = "#546BB633", resultsSplit, selectedSplits, defaultSplits = [], onSplitSelect, onSubmitIntentions, margin, isHoverable = false }: LineChartProps) {
-	const m = margin;
 	const svgRef = useRef<SVGSVGElement>(null);
 	const id = useId();
 	const [popoverPosition, setPopoverPosition] = useState<PopoverPosition | null>(null);
@@ -471,24 +470,37 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 		handlePopoverClose();
 	}, [popoverPosition, intentions, selectedSplits, handlePopoverClose]);
 
+	const isMargin = useMemo(() => isXAxisVisible || isXAxisTextVisible || isYAxisVisible || isYAxisTextVisible, [isXAxisVisible, isXAxisTextVisible, isYAxisVisible, isYAxisTextVisible]);
+	const timeStampData = useMemo(() => xData.every((x) => typeof x === "string") ? xData.map((d) => new Date(d).getTime()) : xData.slice(), [xData]);
+	const computedMargin = useMemo(() => ({ top: isMargin ? margin?.top ?? 30 : 0, right: isMargin ? margin?.right ?? 40 : 0, bottom: isMargin ? margin?.bottom ?? 30 : 0, left: isMargin ? margin?.left ?? 40 : 0 }), [isMargin, margin]);
+
 	const draw = useCallback(() => {
 		if (!svgRef.current || xData.length === 0 || yData.length === 0) return;
 
+		const tooltip = d3.select("body").append("div")
+			.attr("class", "tooltip")
+			.style("position", "absolute")
+			.style("background", "#000a")
+			.style("color", "#fff")
+			.style("padding", "5px 10px")
+			.style("border", "1px solid #ccc")
+			.style("border-radius", "6px")
+			.style("pointer-events", "none")
+			.style("transform", "translate(-50%, -100%)")
+			.style("opacity", 0);
+
 		let start = range?.[0] ?? 0;
 		let end = range?.[1] ? range[1] + 1 : xData.length;
-		const timeStampData = xData.every((x) => typeof x === "string") ? xData.map((d) => new Date(d).getTime()) : xData.slice();
 		let keyData = range ? timeStampData.slice(start, end) : timeStampData.slice();
 		let valueData = range ? yData.slice(start, end) : yData.slice();
 		let data = keyData.map((x, i) => [x, valueData[i]] as [number, number]);
 
-		const isMargin = isXAxisVisible || isXAxisTextVisible || isYAxisVisible || isYAxisTextVisible;
-		const margin = m ?? { top: isMargin ? 30 : 0, right: isMargin ? 40 : 0, bottom: isMargin ? 30 : 0, left: isMargin ? 40 : 0 };
 		const svg = d3.select(svgRef.current);
 		svg.attr("width", "100%");
 		svg.attr("height", "100%");
-		const width = Math.max(10, svgRef.current.clientWidth - margin.left - margin.right);
+		const width = Math.max(10, svgRef.current.clientWidth - computedMargin.left - computedMargin.right);
 		let iHeight: number = typeof height === "string" ? (svgRef.current.clientHeight * parseFloat(height)) / 100 : height ?? 200;
-		iHeight -= margin.top + margin.bottom;
+		iHeight -= computedMargin.top + computedMargin.bottom;
 		const xMin = d3.min(keyData)!;
 		const xMax = d3.max(keyData)!;
 		const yMin = d3.min(valueData)!;
@@ -524,7 +536,7 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 			}
 			innerHeight = iHeight;
 			innerWidth = width;
-			svg.attr("width", innerWidth + margin.left + margin.right);
+			svg.attr("width", innerWidth + computedMargin.left + computedMargin.right);
 		} else if (ratio) {
 			const xUnitPixel = width / xRange;
 			const yUnitPixel = xUnitPixel / ratio;
@@ -532,7 +544,7 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 		} else {
 			innerHeight = iHeight;
 		}
-		const outerHeight = innerHeight + margin.top + margin.bottom;
+		const outerHeight = innerHeight + computedMargin.top + computedMargin.bottom;
 
 		svg.attr("height", outerHeight);
 
@@ -552,7 +564,8 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 
 		svg.append("defs").append("clipPath").attr("id", `clip-path-${id}`).append("rect").attr("x", 0).attr("y", 0).attr("width", innerWidth).attr("height", innerHeight);
 
-		const g = svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
+		const g = svg.append("g").attr("transform", `translate(${computedMargin.left},${computedMargin.top})`);
+		g.append("rect").attr("x", 0).attr("y", 0).attr("width", innerWidth).attr("height", innerHeight).attr("fill", "transparent");
 
 		if (isActive) {
 			svg.append("rect").attr("x", 0).attr("y", 0).attr("width", outerWidth).attr("height", outerHeight).attr("fill", "#82C4FF33");
@@ -631,6 +644,68 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 			yAxisG.append("line").attr("x1", 0).attr("y1", 0).attr("x2", 0).attr("y2", -10).attr("stroke", yAxisColor).attr("marker-end", `url(#arrow-${id})`);
 		}
 
+		if ((range && start !== end) || !range) {
+			const pathG = g.append("g").attr("class", "line-path").raise();
+
+			pathG.append("path")
+				.datum(keyData.map((t, i) => [t, valueData[i]] as [number, number]))
+				.attr("d", lineGenerator)
+				.attr("fill", "none")
+				.attr("stroke", lineColor)
+				.attr("stroke-opacity", "0.7")
+				.attr("clip-path", `url(#clip-path-${id})`)
+				.attr("stroke-width", 1);
+
+			if (isHoverable) {
+				const hoverLine = pathG.append("line")
+					.attr("class", "hover-line")
+					.attr("stroke", lineColor)
+					.attr("stroke-opacity", 0.7)
+					.attr("stroke-width", 1.5)
+					.style("opacity", 0);
+
+				const hoverCircle = pathG.append("circle")
+					.attr("r", 4)
+					.attr("fill", lineColor)
+					.style("opacity", 0);
+
+				g.on("mousemove", function (event) {
+					const [mouseX] = d3.pointer(event, this);
+					const closestIndex = d3.bisectCenter(keyData, x.invert(mouseX) as unknown as number);
+					const closestData = [keyData[closestIndex], valueData[closestIndex]] as [number, number];
+					hoverLine
+						.attr("x1", x(closestData[0]))
+						.attr("x2", x(closestData[0]))
+						.attr("y1", 0)
+						.attr("y2", innerHeight)
+						.style("opacity", 1);
+					hoverCircle
+						.attr("cx", x(closestData[0]))
+						.attr("cy", y(closestData[1]))
+						.style("opacity", 1);
+					tooltip.transition().duration(100).style("opacity", 0.9);
+					const tooltipWidth = tooltip.node()?.getBoundingClientRect().width || 0;
+					const tooltipHeight = tooltip.node()?.getBoundingClientRect().height || 0;
+					const left = Math.min(Math.max(event.pageX, 0), window.innerWidth - tooltipWidth / 2 - 10);
+					const top = Math.min(Math.max(event.pageY - 10, 0), window.innerHeight - tooltipHeight);
+					tooltip.html(`Time: ${xAxisFormatter(new Date(closestData[0]))}<br>Value: ${closestData[1]}`).style("left", (left) + "px").style("top", (top) + "px");
+				}).on("mouseleave", function () {
+					hoverLine.style("opacity", 0);
+					hoverCircle.style("opacity", 0);
+					tooltip.transition().duration(500).style("opacity", 0);
+				})
+			}
+		}
+
+		if (range && isShowRange) {
+			g.append("rect")
+				.attr("x", x(xMin))
+				.attr("y", 0)
+				.attr("width", x(xMax) - x(xMin))
+				.attr("height", innerHeight)
+				.attr("fill", "#3331");
+		}
+
 		if (split && keyData.length > 2) {
 			const splitLinesG = g
 				.append("g")
@@ -648,6 +723,9 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 			for (let i = 0; i < split.length - 1; i++) {
 				const x1 = x(timeStampData[split[i]]);
 				const x2 = x(timeStampData[split[i + 1]]);
+				if (timeStampData[split[i]] > xScale[1] || timeStampData[split[i + 1]] < xScale[0]) {
+					continue;
+				}
 				const y1 = y(yData[split[i]]);
 				const y2 = y(yData[split[i + 1]]);
 
@@ -679,6 +757,9 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 					for (let j = 0; j < resultsSplit.segments[i].length; j++) {
 						const x1 = x(timeStampData[resultsSplit.segments[i][j][0]]);
 						const x2 = x(timeStampData[resultsSplit.segments[i][j][1]]);
+						if (timeStampData[resultsSplit.segments[i][j][0]] > xScale[1] || timeStampData[resultsSplit.segments[i][j][1]] < xScale[0]) {
+							continue;
+						}
 						const y1 = y(yData[resultsSplit.segments[i][j][0]]);
 						const y2 = y(yData[resultsSplit.segments[i][j][1]]);
 						resultsG
@@ -697,67 +778,6 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 			}
 		}
 
-		if ((range && start !== end) || !range) {
-			const pathG = g.append("g").attr("class", "line-path").raise();
-
-			pathG.append("path")
-				.datum(keyData.map((t, i) => [t, valueData[i]] as [number, number]))
-				.attr("d", lineGenerator)
-				.attr("fill", "none")
-				.attr("stroke", lineColor)
-				.attr("stroke-opacity", "0.7")
-				.attr("clip-path", `url(#clip-path-${id})`)
-				.attr("stroke-width", 1);
-
-			if (isHoverable) {
-				const tooltip = d3.select("body").append("div")
-					.attr("class", "tooltip")
-					.style("position", "absolute")
-					.style("background", "#000a")
-					.style("color", "#fff")
-					.style("padding", "5px 10px")
-					.style("border", "1px solid #ccc")
-					.style("border-radius", "6px")
-					.style("pointer-events", "none")
-					.style("transform", "translate(-100%, -100%)")
-					.style("opacity", 0);
-
-				pathG.selectAll("circle")
-					.data(keyData.map((t, i) => [t, valueData[i]] as [number, number]))
-					.enter()
-					.append("circle")
-					.attr("cx", d => x(d[0]))
-					.attr("cy", d => y(d[1]))
-					.attr("r", 4)
-					.attr("fill", lineColor)
-					.attr("opacity", 0)
-					.on("mouseover", function (event, d) {
-						tooltip.transition()
-							.duration(200)
-							.style("opacity", .9);
-						tooltip.html(`Time: ${xAxisFormatter(new Date(d[0]))}<br>Value: ${d[1]}`)
-							.style("left", (event.pageX - 5) + "px")
-							.style("top", (event.pageY - 5) + "px");
-						d3.select(this).attr("opacity", 1);
-					})
-					.on("mouseout", function () {
-						tooltip.transition()
-							.duration(500)
-							.style("opacity", 0);
-						d3.select(this).attr("opacity", 0);
-					});
-			}
-		}
-
-		if (range && isShowRange) {
-			g.append("rect")
-				.attr("x", x(xMin))
-				.attr("y", 0)
-				.attr("width", x(xMax) - x(xMin))
-				.attr("height", innerHeight)
-				.attr("fill", "#3331");
-		}
-
 		const areaGenerator = d3
 			.area<[number, number]>()
 			.x((d) => x(d[0]))
@@ -769,7 +789,7 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 		}
 
 		if (split && intentions && defaultSplits && selectedSplits) {
-			const intentionLinesG = svg.append("g").attr("class", "intention-lines").attr("transform", `translate(${margin.left},0)`);
+			const intentionLinesG = svg.append("g").attr("class", "intention-lines").attr("transform", `translate(${computedMargin.left},0)`);
 			const lines: Record<number, IntentionLine[]> = {};
 
 			intentions.single_segment_intentions.forEach((intention) => {
@@ -876,7 +896,7 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 			Object.values(lines)
 				.flat()
 				.forEach((intention) => {
-					const y = margin.top - intention.level * 10 - 4;
+					const y = computedMargin.top - intention.level * 10 - 4;
 					const isRelation = intention.type === "SingleRelation" || intention.type === "GroupRelation";
 					const startX1 = x(timeStampData[intention.ranges[0][0]]);
 					const endX1 = isRelation ? x(timeStampData[intention.ranges[0][1]]) : x(timeStampData[intention.ranges[intention.ranges.length - 1][1]]);
@@ -1026,7 +1046,7 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 				[innerWidth, innerHeight],
 			]);
 
-			const brushG = svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`).attr("class", "brush").call(brush);
+			const brushG = svg.append("g").attr("transform", `translate(${computedMargin.left},${computedMargin.top})`).attr("class", "brush").call(brush);
 
 			function getFilteredIndices(selection: [Date, Date]) {
 				const [minX, maxX] = selection;
@@ -1075,10 +1095,14 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 			return () => {
 				brush.on("brush", null).on("end", null);
 				svg.selectAll("*").remove();
-				d3.select(".tooltip").remove();
+				d3.selectAll(".tooltip").remove();
 			};
 		}
-	}, [xData, yData, ratio, title, isXAxisVisible, isYAxisVisible, isXAxisTextVisible, isYAxisTextVisible, isBrush, onBrush, isFill, range, height, split, isSplitMask, brushPosition, isExpand, isShowRange, id, onBrushEnd, isActive, xAxisColor, yAxisColor, lineColor, textColor, xAxisFormatter, brushColor, resultsSplit, handleSplitClick, selectedSplits, popoverPosition, handleMouseMove, handleMouseUp, intentions, defaultSplits, onSubmitIntentions, relationIds, m]);
+		return () => {
+			svg.selectAll("*").remove();
+			d3.selectAll(".tooltip").remove();
+		}
+	}, [xData, yData, ratio, title, isXAxisVisible, isYAxisVisible, isXAxisTextVisible, isYAxisTextVisible, isBrush, onBrush, isFill, range, height, split, isSplitMask, brushPosition, isExpand, isShowRange, id, onBrushEnd, isActive, xAxisColor, yAxisColor, lineColor, textColor, xAxisFormatter, brushColor, resultsSplit, handleSplitClick, selectedSplits, popoverPosition, handleMouseMove, handleMouseUp, intentions, defaultSplits, onSubmitIntentions, relationIds, computedMargin, isHoverable, timeStampData]);
 
 	useEffect(() => {
 		const cancle = draw();
