@@ -45,23 +45,6 @@ def query(
         results_dict_key4level = query_for_target(query_spec, container, df)
         results_dict_key4target[target] = results_dict_key4level
     return results_dict_key4target
-    # if not container:
-    #     return {}
-    # # 如果query_spec没有趋势，则使用query_by_no_trends查询
-    # if not query_spec.trends:
-    #     return query_by_no_trends(query_spec, container, df)
-
-    # results_dict = {}
-
-    # for approximation_segments in container.approximation_segments_list:
-    #     segments = approximation_segments.segments
-    #     approximation_level = approximation_segments.approximation_level
-
-    #     results = find_matching_sequences(segments, query_spec, df[query_spec.target])
-    #     if results:
-    #         results_dict[approximation_level] = results
-
-    # return results_dict
 
 
 @typechecked
