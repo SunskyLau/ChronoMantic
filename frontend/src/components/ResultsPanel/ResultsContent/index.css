@@ -13,7 +13,6 @@
 .result-header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   height: 64px;
   gap: 2px;
   margin-bottom: 4px;
@@ -22,37 +21,87 @@
   background-color: #fff;
 }
 
-.result-header>div {
+.result-header .result-header-item {
   background-color: #EAEFF8;
   border-radius: 2px;
   height: 100%;
   line-height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 }
 
 .results-content .fix-width {
   width: 64px;
 }
 
-.result-item .data-name {
-  width: 64px;
+.result-header .result-header-item.add-icon {
+  color: #808080;
+  font-size: 36px;
 }
 
-.results-content .flex-width {
-  flex: 1 1 0;
+.result-header .result-header-item.data-global {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  width: 360px;
+  min-width: 180px;
+}
+
+.result-header .result-header-item.data-global .result-header-title {
+  font-size: 10px;
+  line-height: 16px;
+  color: #808080;
+  border-bottom: 2px solid #fff;
+}
+
+.result-header .result-header-item.attribute-item {
+  width: 180px;
+}
+
+.result-header .result-header-item .result-header-content {
+  flex: 1 0 0;
+  min-height: 0;
+  display: flex;
+  gap: 2px;
+  line-height: 1;
+  height: 100%;
+}
+
+.result-header .result-header-item .result-header-content .flex-width {
+  flex: 1 0 0;
+  min-height: 0;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.result-item .data-name {
+  width: 64px;
+  position: sticky;
+  left: 0;
+}
+
+.results-content .global-data {
+  width: 180px;
 }
 
 .result-item-list {
   display: flex;
   flex-direction: column;
   min-width: 0;
+  min-height: 0;
+  height: 100%;
   box-sizing: border-box;
   flex: 1 0 0;
-  min-height: 0;
-  overflow: auto;
+  width: fit-content;
+  overflow-y: auto;
 }
 
 .result-item {
-  width: 100%;
+  width: fit-content;
   background: white;
   padding-block: 2px;
   gap: 2px;
@@ -89,4 +138,22 @@
   white-space: nowrap;
   display: flex;
   align-items: center;
+}
+
+.add-icon {
+    cursor: pointer;
+}
+
+.attribute-option {
+  padding: 4px 12px;
+  border-radius: 4px;
+  margin: 2px;
+}
+
+.attribute-option:hover {
+  background-color: #C5D7EF33;
+}
+
+.attribute-option.selected {
+  background-color: #C5D7EF;
 }

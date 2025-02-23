@@ -8,7 +8,7 @@ import "./index.css";
 import QueryPanel from "../QueryPanel";
 
 export default function AppMain() {
-    const isSettingShow = useAppSelector(state => state.states.isSettingShow);
+    const isSettingShow = useAppSelector(state => state.setting.isSettingShow);
 
     return (
         <>

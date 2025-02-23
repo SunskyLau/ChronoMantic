@@ -13,7 +13,6 @@ export type States = {
   querySpecList: QuerySpec[];
   fragmentsIndex: number;
   treeData: TreeNode;
-  isSettingShow: boolean;
   timeStampUnit: string;
   valueUnit: string;
   aspectRatio: number;
@@ -33,7 +32,6 @@ const initialState: States = {
   querySpecList: [],
   fragmentsIndex: -1,
   treeData: { name: "Source" },
-  isSettingShow: false,
   timeStampUnit: "",
   valueUnit: "",
   aspectRatio: 0.00001,
@@ -82,9 +80,6 @@ const stateSlice = createSlice({
     setFragmentsIndex: (state, action: PayloadAction<number>) => {
       state.fragmentsIndex = action.payload;
     },
-    setIsSettingShow: (state, action: PayloadAction<boolean | undefined>) => {
-      state.isSettingShow = action.payload ?? !state.isSettingShow;
-    },
     setTimeStampUnit: (state, action: PayloadAction<string>) => {
       state.timeStampUnit = action.payload;
     },
@@ -118,5 +113,5 @@ const stateSlice = createSlice({
   },
 });
 
-export const { setNLQuery, setQuery, resetOriginalQuery, setOriginalQuery, setColorMap, setQuerySpec, addQuerySpec, setFragmentsIndex, setQuerySpecIndex, setIsSettingShow, setTimeStampUnit, setValueUnit, setAspectRatio, setIsDrawer, setQuerys, setModifyPrompts, setCurRelation, setCurTrend } = stateSlice.actions;
+export const { setNLQuery, setQuery, resetOriginalQuery, setOriginalQuery, setColorMap, setQuerySpec, addQuerySpec, setFragmentsIndex, setQuerySpecIndex, setTimeStampUnit, setValueUnit, setAspectRatio, setIsDrawer, setQuerys, setModifyPrompts, setCurRelation, setCurTrend } = stateSlice.actions;
 export default stateSlice.reducer;

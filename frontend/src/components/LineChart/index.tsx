@@ -477,18 +477,6 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 	const draw = useCallback(() => {
 		if (!svgRef.current || xData.length === 0 || yData.length === 0) return;
 
-		const tooltip = d3.select("body").append("div")
-			.attr("class", "tooltip")
-			.style("position", "absolute")
-			.style("background", "#000a")
-			.style("color", "#fff")
-			.style("padding", "5px 10px")
-			.style("border", "1px solid #ccc")
-			.style("border-radius", "6px")
-			.style("pointer-events", "none")
-			.style("transform", "translate(-50%, -100%)")
-			.style("opacity", 0);
-
 		let start = range?.[0] ?? 0;
 		let end = range?.[1] ? range[1] + 1 : xData.length;
 		let keyData = range ? timeStampData.slice(start, end) : timeStampData.slice();
@@ -657,6 +645,18 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 				.attr("stroke-width", 1);
 
 			if (isHoverable) {
+				const tooltip = d3.select("body").append("div")
+					.attr("class", "tooltip")
+					.style("position", "absolute")
+					.style("background", "#000a")
+					.style("color", "#fff")
+					.style("padding", "5px 10px")
+					.style("border", "1px solid #ccc")
+					.style("border-radius", "6px")
+					.style("pointer-events", "none")
+					.style("transform", "translate(-50%, -100%)")
+					.style("opacity", 0);
+
 				const hoverLine = pathG.append("line")
 					.attr("class", "hover-line")
 					.attr("stroke", lineColor)
@@ -772,7 +772,7 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 							.attr("clip-path", `url(#clip-path-${id})`)
 							.attr("stroke", resultsSplit.colors[j] || "#666")
 							.attr("stroke-opacity", defaultSplits.includes(resultsSplit.segments[i][j][0]) && defaultSplits.includes(resultsSplit.segments[i][j][1]) ? "1" : "0.7")
-							.attr("stroke-width", defaultSplits.includes(resultsSplit.segments[i][j][0]) && defaultSplits.includes(resultsSplit.segments[i][j][1]) ? 6 : 3);
+							.attr("stroke-width", defaultSplits.includes(resultsSplit.segments[i][j][0]) && defaultSplits.includes(resultsSplit.segments[i][j][1]) ? 4 : 2);
 					}
 				}
 			}
@@ -896,7 +896,7 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 			Object.values(lines)
 				.flat()
 				.forEach((intention) => {
-					const y = computedMargin.top - intention.level * 10 - 4;
+					const y = computedMargin.top - intention.level * 8;
 					const isRelation = intention.type === "SingleRelation" || intention.type === "GroupRelation";
 					const startX1 = x(timeStampData[intention.ranges[0][0]]);
 					const endX1 = isRelation ? x(timeStampData[intention.ranges[0][1]]) : x(timeStampData[intention.ranges[intention.ranges.length - 1][1]]);
@@ -909,7 +909,7 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 						.attr("y1", y)
 						.attr("y2", y)
 						.attr("stroke", isRelation ? "#008000" : "#1890ff")
-						.attr("stroke-width", 4);
+						.attr("stroke-width", 2);
 
 					line.append("line")
 						.attr("x1", startX1)
@@ -936,7 +936,7 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 							.attr("y1", y)
 							.attr("y2", y)
 							.attr("stroke", isRelation ? "#008000" : "#1890ff")
-							.attr("stroke-width", 4);
+							.attr("stroke-width", 2);
 						line.append("line")
 							.attr("x1", startX2)
 							.attr("x2", endX1)

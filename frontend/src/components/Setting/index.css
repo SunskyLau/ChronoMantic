@@ -30,17 +30,13 @@
     box-sizing: border-box;
     padding: 0 15%;
     display: flex;
+    gap: 40px;
     flex-direction: column;
     justify-content: center;
     align-items: center;
 }
 
 .setting .setting-form .ant-btn {
-    padding: 10px 24px;
-    border-radius: 8px;
-    margin: 10px;
-    border: none;
-    color: #fff;
-    background-color: #567DFF;
-    outline: none;
+    padding: 12px;
+    width: 100%;
 }

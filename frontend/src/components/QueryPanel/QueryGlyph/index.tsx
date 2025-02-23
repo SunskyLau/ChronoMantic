@@ -22,11 +22,19 @@ export default function QueryGlyph({ className }: { className?: string }) {
                         switch (type) {
                             case "Trend":
                                 flushSync(() => dispatch(setCurTrend(null)))
-                                dispatch(setCurTrend(index))
+                                if (index !== curTrend) {
+                                    dispatch(setCurTrend(index))
+                                } else {
+                                    dispatch(setCurTrend(null))
+                                }
                                 break;
                             case "Relation":
                                 flushSync(() => dispatch(setCurRelation(null)))
-                                dispatch(setCurRelation(index))
+                                if (index !== curRelation) {
+                                    dispatch(setCurRelation(index))
+                                } else {
+                                    dispatch(setCurRelation(null))
+                                }
                                 break;
                             default:
                                 break;
