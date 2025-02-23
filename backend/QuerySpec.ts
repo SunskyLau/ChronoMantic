@@ -22,6 +22,7 @@ export interface Segment {
   daily_average_delta_percentage?: number; // 日均变化率,单位是%/day
   abs_slope_percentage?: number; // 斜率在所有斜率中的占比,单位是%
   time_span?: number; // 时间跨度,单位是秒
+  r2?: number; // 拟合优度,范围是[0,1]
 }
 
 // 趋势组合

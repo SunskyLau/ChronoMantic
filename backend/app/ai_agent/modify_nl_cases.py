@@ -118,7 +118,7 @@ intentions
 
 输出：
 {
-  "original_text": "Find periods in AMZN when price first fell slightly then presented a flat trend, with a duration about 317 days, and finally rose sharply",
+  "original_text": "Find periods in AMZN when price first fell with a average daily change rate of 0.8% then presented a flat trend, with a duration about 317 days, and finally rose with a average daily change rate of 13%",
   "text_sources": [
     {
       "text": "AMZN",
@@ -129,7 +129,7 @@ intentions
       "index": 0
     },
     {
-      "text": "slightly",
+      "text": "with a average daily change rate of 0.8%",
       "index": 0
     },
     {
@@ -145,7 +145,7 @@ intentions
       "index": 0
     },
     {
-      "text": "sharply",
+      "text": "with a average daily change rate of 13%",
       "index": 0
     }
   ],
@@ -182,23 +182,38 @@ intentions
     {
       "category": {
         "category": "up",
-        "text_source_id": 4
+        "text_source_id": 5
       },
       "daily_average_delta_percentage_scope_condition": {
         "min": {
-          "value": 5,
+          "value": 10,
           "inclusive": true,
         },
         "max": {
-          "value": 10,
+          "value": 16,
           "inclusive": false,
         },
-        "text_source_id": 5
+        "text_source_id": 6
       } 
     }
   ],
   "single_relations": [],
-  "trend_groups": [],
+  "trend_groups": [
+    {
+      "ids": [0, 1],
+      "time_span_condition": {
+        "min": {
+          "value": 27388800,
+          "inclusive": true
+        },
+        "max": {
+          "value": 27475200,
+          "inclusive": false
+        },
+        "text_source_id": 4
+      }
+    }
+  ],
   "group_relations": []
 }
     """

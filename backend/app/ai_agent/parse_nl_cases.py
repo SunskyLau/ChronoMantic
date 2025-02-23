@@ -40,9 +40,9 @@ Find periods in AMZN when price first rose sharply then fell gradually
         "category": "up",
         "text_source_id": 1
       },
-      "daily_average_delta_percentage_scope_condition": {
+      "abs_slope_percentage_scope_condition": {
         "min": {
-          "value": 5,
+          "value": 80,
           "inclusive": true
         },
         "text_source_id": 2
@@ -53,13 +53,9 @@ Find periods in AMZN when price first rose sharply then fell gradually
         "category": "down",
         "text_source_id": 3
       },
-      "daily_average_delta_percentage_scope_condition": {
+      "abs_slope_percentage_scope_condition": {
         "max": {
-          "value": 0,
-          "inclusive": false
-        },
-        "min": {
-          "value": -1,
+          "value": 20,
           "inclusive": true
         },
         "text_source_id": 4
@@ -293,13 +289,6 @@ Find periods in AMZN when price presented a head-and-shoulders shape
       "id2": 4,
       "attribute": "end_value",
       "comparator": ">",
-      "text_source_id": 1
-    },
-    {
-      "id1": 4,
-      "id2": 0,
-      "attribute": "end_value",
-      "comparator": "~=",
       "text_source_id": 1
     }
   ],

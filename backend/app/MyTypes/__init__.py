@@ -35,20 +35,7 @@ class Segment(DictMixin):
     abs_slope_percentage: Optional[float] = None
     time_span: Optional[int] = None
     source: Optional[Source] = None
-
-
-@dataclass
-class SimplifiedSegment(DictMixin):
-    source: str  # 片段的来源，可以是"result"或者"user"
-    slope: float  # 片段的斜率，表示变化趋势
-    start_value: float  # 片段起始点的值
-    end_value: float  # 片段终止点的值
-    start_time: Optional[int] = None  # 片段起始时间，单位是秒
-    end_time: Optional[int] = None  # 片段终止时间，单位是秒
-    delta_percentage: Optional[float] = None  # 片段的总体变化百分比，单位是%
-    daily_average_delta_percentage: Optional[float] = None  # 片段的日均变化百分比，单位是%
-    abs_slope_percentage: Optional[float] = None  # 片段斜率在所有斜率中的占比，单位是%
-    time_span: Optional[int] = None  # 片段的时间跨度，单位是秒
+    r2: Optional[float] = None  # 片段的拟合优度, 范围是[0,1]
 
 
 @dataclass

@@ -16,9 +16,6 @@ parse_nl_cases = f"""## 示例1
 
 ## 示例5
 {ParseNL_Cases.case5}
-
-## 示例6
-{ParseNL_Cases.case6}
 """
 
 modify_nl_cases = f"""## 示例1

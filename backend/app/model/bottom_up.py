@@ -19,8 +19,8 @@ class CostWrapper:
         return self.cost < other.cost
 
 
-def segment_error(x: np.ndarray, y: np.ndarray, start: int, end: int) -> float:
-    """计算线性拟合的平方误差和"""
+def segment_error(x: np.ndarray, y: np.ndarray, start: int, end: int) -> tuple[float, float]:
+    """计算线性拟合的平方误差和和R2值"""
     if end - start <= 0:
         raise ValueError("段长度必须大于0")
 
@@ -32,9 +32,16 @@ def segment_error(x: np.ndarray, y: np.ndarray, start: int, end: int) -> float:
     x_seg = x[start : end + 1]
     y_pred = m * x_seg + b
     y_actual = y[start : end + 1]
+    
+    # 计算误差
     sum_error = np.sum((y_actual - y_pred) ** 2)
+    
+    # 计算R2
+    y_mean = np.mean(y_actual)
+    ss_tot = np.sum((y_actual - y_mean) ** 2)
+    r2 = 1 - (sum_error / ss_tot) if ss_tot != 0 else 1.0
 
-    return sum_error
+    return sum_error, r2
 
 
 def calculate_merge_cost(x: np.ndarray, y: np.ndarray, segment1: Segment, segment2: Segment):
@@ -42,9 +49,9 @@ def calculate_merge_cost(x: np.ndarray, y: np.ndarray, segment1: Segment, segmen
     start1, end1 = segment1.start_idx, segment1.end_idx
     start2, end2 = segment2.start_idx, segment2.end_idx
 
-    error = segment_error(x, y, start1, end2)
-    error1 = segment_error(x, y, start1, end1)
-    error2 = segment_error(x, y, start2, end2)
+    error, _ = segment_error(x, y, start1, end2)
+    error1, _ = segment_error(x, y, start1, end1)
+    error2, _ = segment_error(x, y, start2, end2)
 
     return error - (error1 + error2)
 
@@ -65,12 +72,13 @@ def bottom_up_merge(value_column: str, x: np.ndarray, y: np.ndarray, k: int):
     """自底向上分段合并"""
     n = len(y)
     if k >= n:
-        return [[i] for i in range(n)]
+        raise ValueError("k不能大于或等于数据长度")
 
     segments: List[Segment] = []
     for i in range(n - 1):
         time_span = x[i + 1] - x[i]
         delta_percentage, daily_avg_delta_percentage = calculate_percentage_metrics(y[i], y[i + 1], time_span)
+        _, r2 = segment_error(x, y, i, i + 1)
 
         segments.append(
             Segment(
@@ -86,6 +94,7 @@ def bottom_up_merge(value_column: str, x: np.ndarray, y: np.ndarray, k: int):
                 time_span=time_span,
                 delta_percentage=delta_percentage,
                 daily_average_delta_percentage=daily_avg_delta_percentage,
+                r2=r2
             )
         )
 
@@ -121,6 +130,7 @@ def bottom_up_merge(value_column: str, x: np.ndarray, y: np.ndarray, k: int):
 
         time_span = x[seg2.end_idx] - x[seg1.start_idx]
         delta_percentage, daily_avg_delta_percentage = calculate_percentage_metrics(seg1.start_value, seg2.end_value, time_span)
+        _, r2 = segment_error(x, y, seg1.start_idx, seg2.end_idx)
 
         segments[i] = Segment(
             start_idx=seg1.start_idx,
@@ -136,6 +146,7 @@ def bottom_up_merge(value_column: str, x: np.ndarray, y: np.ndarray, k: int):
             delta_percentage=delta_percentage,
             daily_average_delta_percentage=daily_avg_delta_percentage,
             abs_slope_percentage=None,
+            r2=r2
         )
         segments.pop(j)
 

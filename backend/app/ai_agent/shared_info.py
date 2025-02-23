@@ -237,14 +237,12 @@ model_info = """
 
 parse_nl_logic_info = """
 1. 自然语言中如果出现模糊的范围表达，解析成ScopeConditionWithSource的时候需要让min和max构成一个满足模糊表达的范围，min和max不应该相等。例如，"about 2 weeks"需要解析成min对应12days，max对应16days的ScopeConditionWithSource，也就是允许一个比原数值更小的数和更大的数来组成这个模糊的范围。因此，你需要根据语义恰当地解析出一个范围。
-2. 自然语言中对于趋势和形状的描述，需要解析成TrendWithSource，其中category需要解析成趋势的类别，text_source需要解析成趋势的描述来源。比如，"rise"需要解析成"up"，"fall"需要解析成"down"，"constant"需要解析成"flat"。另外，形状的描述通常是趋势的组合，比如"two-tops"需要解析成["up","down","up","down"]的组合，"head-and-shoulders"需要解析成["up","down","up","down","up","down"]的组合。通常来讲，一个top或者peak的描述，对应一组["up","down"]的组合，一个bottom或者valley的描述，对应一组["down","up"]的组合。
+2. 自然语言中对于趋势和形状的描述，需要解析成TrendWithSource，其中category需要解析成趋势的类别，text_source需要解析成趋势的描述来源。你需要捕捉趋势和形状的特征并翻译为相应的字段。
 3. 自然语言中如果是确切的描述，如"a duration of 20~30days"，需要解析成time_span_condition，其中min和max需要解析成相应的数值。例如"Rising at an average rate of 7% per day"，需要解析成daily_average_delta_percentage_scope_condition，其中min和max需要解析成相应的数值。诸如此类，需要精准识别应该解析为什么condition。
-4. 如果是金融相关数据集，如自然语言中对于趋势程度的描述没有明确指定是abs_slope_percentage还是daily_average_delta_percentage，则默认解析为daily_average_delta_percentage，例如，"rose sharply"中的"sharply"需要解析为一个你认为较高的daily_average_delta_percentage_scope_condition。如果是非金融相关数据集，则默认解析为abs_slope_percentage，例如，"rose sharply"中的"sharply"需要解析为一个你认为较高的abs_slope_percentage_scope_condition。
-5. TextSource的text只能是来源original_text的连续子文本。text_sources数组中的元素应该严格遵循原文中的顺序，不重叠地输出。
+4. 有关趋势程度的模糊描述，根据语义解析为abs_slope_percentage_scope_condition。
+5. TextSource的text只能是来源original_text的连续子文本。text_sources数组中的元素应该严格遵循原文中的顺序，不重叠地输出。解析出来的text_source必须是被使用的，否则不应该出现在text_sources中。
 6. 你需要识别出自然语言中对于relation的描述，这种描述也可以分为隐式的和显式的。隐式的relation描述通常隐藏在形状的描述中，例如，"head-and-shoulders"中，中间的"head"应该要高于左右两个shoulders，这就意味着第二次上升趋势(trend_id=2)的end_value应该要大于第一次和第三次上升趋势(trend_id=0和trend_id=4)的end_value，这里relation就应该被解析出来。显式的relation描述通常是直接描述的，例如，"连续的两次上升，左边的上升速度比右边的上升速度更快"，这意味着第一次上升趋势(trend_id=0)的slope应该要大于第二次上升趋势(trend_id=1)的slope，这里relation就应该被解析出来。最后，你还需要避免引入无效的relation，例如，"rise sharply then rise slowly"，这里面"sharply"和"slowly"已经被解析成trend中的条件，再引入relation是多余的。
-7. 对于自然语言中存在的持续时间描述，你需要判断使用整体的time_span_condition，还是使用trend_group中的time_span_condition，抑或是使用trend中的time_span_condition。如果是对于整体时间的描述，则使用整体time_span_condition；如果是对于组合时间的描述，则使用trend_group中的time_span_condition，如果是对于单个trend的持续时间描述，则使用trend中的time_span_condition。
-8. 动词和副词一般要分离为两个text_source，例如，"rose sharply"需要解析为两个text_source，分别是"rose"和"sharply"。
-9. 解析出来的text_source必须被某个字段所使用，否则不要解析出来。例如：rose sharply with a ratio higher than 5%，这里"sharply"的含义已经被"with a ratio higher than 5%"覆盖，则不需要解析出来"sharply"作为text_source
+7. 对于自然语言中存在的持续时间描述，你需要判断使用整体的time_span_condition，还是使用trend_group中的time_span_condition，抑或是使用trend中的time_span_condition。如果是对于整体时间的描述，则使用整体time_span_condition；如果是对于组合时间的描述，则使用trend_group中的time_span_condition，如果是对于单个trend的持续时间描述，则使用trend中的time_span_condition。 
 """
 
 modify_nl_logic_info = """
@@ -257,8 +255,9 @@ modify_nl_logic_info = """
 - `new_queryspec_with_source: QuerySpecWithSource`：调整后的查询规范
 
 1. 总体来说，你需要根据以上输入参数，输出调整后的`new_queryspec_with_source`，需要进行调整的地方依据`intentions`，具体如何调整依据`segments`中涉及的属性数值，根据相应的数值提供一定的范围性条件。
-2. 调整需要同时体现在original_text和QuerySpec的修改需要有严格的对应关系。新增的条件应该也对应到text中描述的新增，修改的条件应该也对应到text中描述的修改，删除的条件应该也对应到text中描述的删除。
-3. 不涉及调整意图的condition字段，要正确保留不要发生调整。最后，尽可能保证调整后的original_text和调整前不发生太大变化。
-4. `new_queryspec_with_source`中的text_sources也要保证是来自于original_text的连续子文本，并且text_sources数组中的元素应该严格遵循原文中的顺序，不重叠地输出。
-5. 对于`SingleRelationIntention`中，需要根据具体的`relation_choices`，选择相应的`segments`中对应的属性进行精确比较，然后对QuerySpecWithSource进行调整， 同时符合相应的语义。
+2. TextSource的text只能是来源original_text的连续子文本。text_sources数组中的元素应该严格遵循原文中的顺序，不重叠地输出。解析出来的text_source必须是被使用的，否则不应该出现在text_sources中。
+3. 调整需要同时体现在original_text和QuerySpec的修改需要有严格的对应关系。新增的条件应该也对应到text中描述的新增，修改的条件应该也对应到text中描述的修改，删除的条件应该也对应到text中描述的删除。
+4. 不涉及调整意图的condition字段，要正确保留不要发生调整。最后，尽可能保证调整后的original_text和调整前不发生太大变化。
+5. `new_queryspec_with_source`中的text_sources也要保证是来自于original_text的连续子文本，并且text_sources数组中的元素应该严格遵循原文中的顺序，不重叠地输出。
+6. 对于`SingleRelationIntention`中，需要根据具体的`relation_choices`，选择相应的`segments`中对应的属性进行精确比较，然后对QuerySpecWithSource进行调整， 同时符合相应的语义。
 """
