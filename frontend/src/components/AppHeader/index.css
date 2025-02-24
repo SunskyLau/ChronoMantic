@@ -23,13 +23,13 @@
 
 .header .header-left,
 .header .header-right {
-  min-width: 100px;
+  min-width: 90px;
+  padding: 0 12px;
   height: 100%;
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: space-between;
   font-size: 32px;
-  gap: 10px;
 }
 
 .header .header-right .icon {

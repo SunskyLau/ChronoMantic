@@ -40,6 +40,7 @@ function CsvLoader() {
 
 					result.data.forEach((row) => {
 						for (const [key, value] of Object.entries(row)) {
+							if (!key || !value) continue;
 							if (!dataset.data[key]) {
 								dataset.data[key] = [];
 								if (typeof value === "number") {

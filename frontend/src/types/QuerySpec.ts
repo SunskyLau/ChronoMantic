@@ -20,6 +20,7 @@ export interface Segment {
   end_value: number; // 结束值
   max_value: number; // 最大值
   min_value: number; // 最小值
+  r2: number; // 拟合优度
   start_time?: number; // 起始时间,单位是秒
   end_time?: number; // 结束时间,单位是秒
   delta_percentage?: number; // 变化率,单位是%

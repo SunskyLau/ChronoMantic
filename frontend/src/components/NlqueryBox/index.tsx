@@ -4,7 +4,7 @@ import "./index.css";
 import { setColorMap, setNLQuery, setOriginalQuery, setQuery, setQuerySpec } from "../../app/slice/stateSlice";
 import QueryIcon from "../../icons/Query";
 import SubmitIcon from "../../icons/Submit";
-import { AudioFilled, LoadingOutlined } from "@ant-design/icons";
+import { LoadingOutlined } from "@ant-design/icons";
 import { classnames } from "../../utils/classname";
 import type { SpeechRecognitionType } from "../../types";
 import { getFragmentsBySpec, getQuerySpecRequest } from "../../api";
@@ -13,6 +13,7 @@ import { setIsRequesting } from "../../app/slice/resultsSlice";
 import { formatQuerySpec, QuerySpecWithSource } from "../../types/QuerySpec";
 import { deepClone } from "../../utils/deepclone";
 import HighlightedText from './HighlightedText';
+import AudioIcon from "../../icons/Audio";
 
 // 语音识别配置
 const initSpeechRecognition = () => {
@@ -66,8 +67,8 @@ export default function NlqueryBox() {
 			}
 		};
 
-		document.addEventListener("mousedown", handleClickOutside);
-		return () => document.removeEventListener("mousedown", handleClickOutside);
+		document.addEventListener("mousedown", handleClickOutside, { capture: true });
+		return () => document.removeEventListener("mousedown", handleClickOutside, { capture: true });
 	}, []);
 
 	const toggleTextSourceDisabled = useCallback((text_source_id: number) => {
@@ -145,7 +146,7 @@ export default function NlqueryBox() {
 					}}
 				>
 					{NLQuery ? (
-						<HighlightedText 
+						<HighlightedText
 							text={NLQuery}
 							colorMap={colorMap}
 							query={query}
@@ -181,7 +182,7 @@ export default function NlqueryBox() {
 				type="button"
 				disabled={isRequesting}
 			>
-				<AudioFilled />
+				<AudioIcon></AudioIcon>
 			</button>
 			<button
 				className="btn send"

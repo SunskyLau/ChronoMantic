@@ -4,12 +4,9 @@
     height: 36px;
     align-items: center;
     box-sizing: border-box;
-    background: #619CD399;
-    border-bottom: 1px solid #e0e0e0;
-    /* font-weight: bold; */
     font-size: 20px;
-    line-height: 20px;
-    color: #fff;
+    line-height: 36px;
+    color: #B6B6B6;
 }
 
 .panel-header .panel-header-icon {

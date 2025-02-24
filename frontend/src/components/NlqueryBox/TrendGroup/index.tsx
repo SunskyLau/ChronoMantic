@@ -95,8 +95,8 @@ export default function TrendGroup({ groups, idLength, onChange, isEdit, disable
 									onChange={(min, max, minInclusive, maxInclusive) => {
 										const newGroups = deepClone(allGroups);
 										newGroups[index].time_span_condition = {
-											min: !min ? undefined : { value: min, inclusive: minInclusive },
-											max: !max ? undefined : { value: max, inclusive: maxInclusive },
+											min: typeof min === "number" ? { value: min, inclusive: minInclusive } : undefined,
+											max: typeof max === "number" ? { value: max, inclusive: maxInclusive } : undefined,
 											text_source_id: -1,
 										};
 										onChange(newGroups);

@@ -37,8 +37,8 @@ const emptyQuerySpec: QuerySpecWithSource = {
 
 const updateScopeCondition = (condition: ScopeConditionWithSource, min: number | null, max: number | null, minInclusive: boolean, maxInclusive: boolean): ScopeConditionWithSource => {
 	return {
-		min: !min ? undefined : { value: min, inclusive: minInclusive },
-		max: !max ? undefined : { value: max, inclusive: maxInclusive },
+		min: typeof min === "number" ? { value: min, inclusive: minInclusive } : undefined,
+		max: typeof max === "number" ? { value: max, inclusive: maxInclusive } : undefined,
 		text_source_id: condition.text_source_id,
 	};
 };

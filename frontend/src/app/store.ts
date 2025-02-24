@@ -6,6 +6,7 @@ import resultSlice from "./slice/resultsSlice";
 import filterSlice from "./slice/filterSlice";
 import selectSlice from "./slice/selectSlice";
 import approximationSlice from "./slice/approximation";
+import settingSlice from "./slice/setting";
 // ...
 
 const store = configureStore({
@@ -16,7 +17,8 @@ const store = configureStore({
     results: resultSlice,
     filter: filterSlice,
     select: selectSlice,
-    approximation: approximationSlice
+    approximation: approximationSlice,
+    setting: settingSlice
   },
 });
 

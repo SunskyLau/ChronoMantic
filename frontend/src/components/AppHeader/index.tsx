@@ -1,5 +1,5 @@
 import { useAppDispatch } from "../../app/hooks";
-import { setIsSettingShow } from "../../app/slice/stateSlice";
+import { setIsSettingShow } from "../../app/slice/setting";
 import SettingIcon from "../../icons/Setting";
 import CsvLoader from "../CsvLoader";
 import "./index.css";
@@ -9,7 +9,7 @@ function AppHeader() {
     <header className="header">
       <div className="header-left">
         <CsvLoader></CsvLoader>
-        <div onClick={() => dispatch(setIsSettingShow())}>
+        <div onClick={() => dispatch(setIsSettingShow(true))}>
           <SettingIcon />
         </div>
       </div>

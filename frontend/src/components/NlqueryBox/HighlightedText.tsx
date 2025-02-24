@@ -56,7 +56,7 @@ const HighlightedText = memo(({ text, colorMap, query, onToggleDisabled }: Highl
             <span
                 key={`${highlight.text_source_id}`}
                 style={{
-                    backgroundColor: highlight.color,
+                    background: `linear-gradient(to top, ${highlight.color}, transparent)`,
                     textDecoration: highlight.disabled ? "line-through" : "none",
                     opacity: highlight.disabled ? 0.5 : 1,
                 }}
