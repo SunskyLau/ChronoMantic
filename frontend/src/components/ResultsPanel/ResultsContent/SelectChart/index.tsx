@@ -9,7 +9,7 @@ interface DataPoint {
 
 interface SelectChartProps {
     data: DataPoint[];
-    title: string;
+    title?: string;
     onBrush?: (minX: number, maxX: number) => void;
 }
 
@@ -20,7 +20,7 @@ function SelectChart({ data, title, onBrush }: SelectChartProps) {
         if (svgRef.current && data.length > 0) {
             const width = svgRef.current.clientWidth;
             const height = svgRef.current.clientHeight;
-            const margin = { top: 20, right: 0, bottom: 0, left: 0 };
+            const margin = { top: title ? 20 : 0, right: 2, bottom: 0, left: 2 };
             const innerWidth = width - margin.left - margin.right;
             const innerHeight = height - margin.top - margin.bottom;
 
@@ -54,7 +54,8 @@ function SelectChart({ data, title, onBrush }: SelectChartProps) {
             g.append("path")
                 .datum(data)
                 .attr("d", areaGenerator)
-                .attr("fill", "#ddd");
+                .attr("fill", "steelblue")
+                .attr("fill-opacity", 0.3);
 
             svg.append('text')
                 .attr('x', innerWidth / 2)
@@ -62,7 +63,7 @@ function SelectChart({ data, title, onBrush }: SelectChartProps) {
                 .attr('text-anchor', 'middle')
                 .attr('font-size', '14px')
                 .attr('fill', '#808080')
-                .text(title);
+                .text(title ?? '');
 
             g.append('path')
                 .data([data])
@@ -82,15 +83,6 @@ function SelectChart({ data, title, onBrush }: SelectChartProps) {
                 if (!selection) return;
                 const [x0, x1] = selection;
                 const [minX, maxX] = [x.invert(x0 as number), x.invert(x1 as number)];
-                const areaGenerator = d3.area<DataPoint>()
-                    .x(d => x(d.x))
-                    .y0(y(0))
-                    .y1(d => y(d.y));
-                g.append("path")
-                    .attr("class", "area")
-                    .datum(data.filter(d => d.x >= minX && d.x <= maxX))
-                    .attr("d", areaGenerator)
-                    .attr("fill", "lightblue");
                 onBrush?.(minX, maxX);
             }
 
@@ -109,8 +101,8 @@ function SelectChart({ data, title, onBrush }: SelectChartProps) {
 
             svg.append("g").attr('transform', `translate(${margin.left},${margin.top})`).attr("class", "brush").call(brush);
             svg.select('.selection')
-                .attr('fill', 'none')
-                .attr("stroke", "black");
+                .attr('fill', '#0003')
+                .attr('stroke', 'none');
 
             return () => {
                 brush.on('brush', null).on('end', null);
