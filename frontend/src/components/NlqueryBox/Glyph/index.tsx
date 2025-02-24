@@ -597,13 +597,13 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 		const width = svgRef.current.clientWidth;
 		const height = svgRef.current.clientHeight;
 
-		const scale = 2;
+		const scale = width / (bbox.width + 20);
 		const x = (width - bbox.width * scale) / 2 - bbox.x * scale;
 		const y = (height - bbox.height * scale) / 2 - bbox.y * scale;
 
 		const zoom = d3
 			.zoom<SVGSVGElement, unknown>()
-			.scaleExtent([1, 5])
+			.scaleExtent([1, 10])
 			.on("zoom", (event) => {
 				g.attr("transform", event.transform);
 				setLastTransform(event.transform);
@@ -614,7 +614,7 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 		if (lastTransform) {
 			svg.call(zoom.transform, lastTransform);
 		} else {
-			svg.call(zoom.transform, d3.zoomIdentity.translate(x, y));
+			svg.call(zoom.transform, d3.zoomIdentity.translate(x, y).scale(scale));
 		}
 
 		return () => {

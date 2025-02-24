@@ -7,7 +7,7 @@ import SubmitIcon from "../../icons/Submit";
 import { LoadingOutlined } from "@ant-design/icons";
 import { classnames } from "../../utils/classname";
 import type { SpeechRecognitionType } from "../../types";
-import { getFragmentsBySpec, getQuerySpecRequest } from "../../api";
+import { addChatHistory, getFragmentsBySpec, getQuerySpecRequest } from "../../api";
 import { setQueryResults } from "../../app/slice/approximation";
 import { setIsRequesting } from "../../app/slice/resultsSlice";
 import { formatQuerySpec, QuerySpecWithSource } from "../../types/QuerySpec";
@@ -84,6 +84,7 @@ export default function NlqueryBox() {
 		const querySpec = formatQuerySpec(query);
 		dispatch(setQuerySpec(querySpec));
 		dispatch(setOriginalQuery(query));
+		addChatHistory(NLQuery, JSON.stringify(query));
 		const res = await getFragmentsBySpec(querySpec);
 		dispatch(setQueryResults(res));
 	}, [NLQuery, query, dispatch]);

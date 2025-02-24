@@ -34,15 +34,25 @@ interface SegmentAttribute {
     scope: 'global' | 'segment';
 }
 
+interface AttributeStats {
+    [key: string]: {
+        map: Record<string, number>;
+        max: number;
+        min: number;
+        array: number[];
+    };
+}
+
 interface AttributeOption extends SegmentAttribute {
     id: string;
     segmentIndex?: number;
     selected?: boolean;
+    permanent?: boolean;
 }
 
 export default function ResultsContent() {
-    const data = useAppSelector((state) => state.dataset.dataset?.data) || {};
-    const x = useAppSelector((state) => (data[state.dataset.dataset?.timeStampColumn ?? ""])) as string[];
+    const data = useAppSelector((state) => state.dataset.dataset?.data);
+    const x = useAppSelector((state) => (state.dataset.dataset?.data[state.dataset.dataset?.timeStampColumn ?? ""])) as string[];
     const queryResultsMap = useAppSelector(state => state.approximation.queryResults);
     const memoQueryResultsMap = useMemo(() => queryResultsMap || {}, [queryResultsMap]);
     const queryLevelResults: ApproximationLevelResults = useMemo(() => Object.entries(memoQueryResultsMap).map(([source, value]: [string, Record<number, Segment[][]>]) => {
@@ -62,6 +72,7 @@ export default function ResultsContent() {
             key: 'duration',
             label: 'Duration',
             scope: 'global',
+            permanent: true,
             format: (value) => `${value} days`,
             getValue: (segments) => ((segments.at(-1)?.end_time ?? 0) - (segments.at(0)?.start_time ?? 0)) / 86400
         },
@@ -70,6 +81,7 @@ export default function ResultsContent() {
             key: 'level',
             label: 'Approximation Level',
             scope: 'global',
+            permanent: true,
             format: (value) => value.toString(),
             getValue: (_1, _2, result?: ApproximationLevelResult) => result?.level ?? 0
         },
@@ -175,15 +187,6 @@ export default function ResultsContent() {
 
     const [attributeScales, setAttributeScales] = useState<Record<string, [number, number]>>({});
 
-    interface AttributeStats {
-        [key: string]: {
-            map: Record<string, number>;
-            max: number;
-            min: number;
-            array: number[];
-        };
-    }
-
     const attributeStats: AttributeStats = useMemo(() => {
         const stats: AttributeStats = {};
         selectedAttributes.forEach(attr => {
@@ -214,13 +217,15 @@ export default function ResultsContent() {
 
     useEffect(() => {
         const newAttributeScales: Record<string, [number, number]> = {};
-        selectedAttributes.forEach(attr => {
-            if (attributeScales[attr.id]) {
-                newAttributeScales[attr.id] = attributeScales[attr.id];
+        setAttributeScales(prev => {
+            for (const attr of selectedAttributes) {
+                if (prev[attr.id]) {
+                    newAttributeScales[attr.id] = prev[attr.id];
+                }
             }
+            return newAttributeScales;
         });
-        setAttributeScales(newAttributeScales);
-    }, [selectedAttributes, attributeScales]);
+    }, [selectedAttributes]);
 
     const [sortConfig, setSortConfig] = useState<{
         key: string;
@@ -237,14 +242,40 @@ export default function ResultsContent() {
         }));
     }, []);
 
+    const permanentAttributes = useMemo(() => {
+        return attributeOptions.filter(attr => attr.permanent);
+    }, [attributeOptions]);
+
+    const handleCascaderChange = useCallback((value: string[][]) => {
+        if (!value?.length) {
+            handleAttributeSelect(permanentAttributes);
+            return;
+        }
+        const newSelectedAttributes = value.map(item => {
+            const [scope, attr] = item;
+            if (scope === 'global') {
+                return attr ? attributeOptions.filter(option => option.id === attr) : attributeOptions;
+            } else {
+                const segmentIndex = parseInt(scope.split('_')[1]);
+                const options = getSegmentAttributeOptions(segmentIndex);
+                return attr ? options.filter(option => option.id === attr) : options;
+            }
+        }).flat();
+
+        const otherAttrs = newSelectedAttributes.filter(attr => !attr.permanent);
+        handleAttributeSelect([...permanentAttributes, ...otherAttrs]);
+    }, [attributeOptions, handleAttributeSelect, getSegmentAttributeOptions, permanentAttributes]);
+
     const getCascaderOptions = useCallback((length: number) => {
         const globalOptions = {
             value: 'global',
             label: 'Global',
-            children: attributeOptions.map(attr => ({
-                value: attr.id,
-                label: attr.label
-            }))
+            children: attributeOptions
+                .filter(attr => !attr.permanent)
+                .map(attr => ({
+                    value: attr.id,
+                    label: attr.label
+                }))
         };
 
         const segmentOptions = Array.from({ length }, (_, index) => ({
@@ -258,24 +289,6 @@ export default function ResultsContent() {
 
         return [globalOptions, ...segmentOptions];
     }, [attributeOptions, getSegmentAttributeOptions]);
-
-    const handleCascaderChange = useCallback((value: string[][]) => {
-        if (!value?.length) {
-            handleAttributeSelect([]);
-            return;
-        }
-        const newSelectedAttributes = value.map(item => {
-            const [scope, attr] = item;
-            if (scope === 'global') {
-                return attr ? attributeOptions.filter(option => option.id === attr) : attributeOptions;
-            } else {
-                const segmentIndex = parseInt(scope.split('_')[1]);
-                const options = getSegmentAttributeOptions(segmentIndex);
-                return attr ? options.filter(option => option.id === attr) : options;
-            }
-        }).flat();
-        handleAttributeSelect(newSelectedAttributes);
-    }, [attributeOptions, handleAttributeSelect, getSegmentAttributeOptions]);
 
     const options = useMemo(() => {
         const length = queryLevelResults?.[0]?.segments.length ?? 0;
@@ -351,6 +364,12 @@ export default function ResultsContent() {
         return () => clearInterval(interval);
     }, [sortedResults.length]);
 
+    useEffect(() => {
+        if (selectedAttributes.length === 0) {
+            handleAttributeSelect(permanentAttributes);
+        }
+    }, [selectedAttributes, permanentAttributes, handleAttributeSelect]);
+
     return (
         <>
             <div className="results-content">
@@ -376,19 +395,21 @@ export default function ResultsContent() {
                                             key={attr.id}
                                             onClick={() => handleSort(attr.id)}
                                         >
-                                            <div className="header-column-group-item-title">
-                                                <span className={classnames("header-column-group-item-title-icon")}>
-                                                    {sortConfig.key !== attr.id || sortConfig.direction === null ? <UnorderedListOutlined /> : sortConfig.direction === 'asc' ? <SortAscendingOutlined /> : <SortDescendingOutlined />}
-                                                </span>
-                                                <span className="header-column-group-item-title-text">{attr.label}</span>
-                                            </div>
-                                            {filteredResults.length ?
-                                                <SelectChart
-                                                    data={Object.entries(attributeStats[attr.id].map)
-                                                        .sort(([a], [b]) => Number(a) - Number(b))
-                                                        .map(([x, y]) => ({ x: Number(x), y }))}
-                                                    onBrush={(min, max) => handleAttributeScaleChange(attr.id, [min, max])}
-                                                /> : attr.label}
+                                            {filteredResults.length > 0 ?
+                                                (<>
+                                                    <div className="header-column-group-item-title">
+                                                        <span className={classnames("header-column-group-item-title-icon")}>
+                                                            {sortConfig.key !== attr.id || sortConfig.direction === null ? <UnorderedListOutlined /> : sortConfig.direction === 'asc' ? <SortAscendingOutlined /> : <SortDescendingOutlined />}
+                                                        </span>
+                                                        <span className="header-column-group-item-title-text">{attr.label}</span>
+                                                    </div>
+                                                    <SelectChart
+                                                        data={Object.entries(attributeStats[attr.id].map)
+                                                            .sort(([a], [b]) => Number(a) - Number(b))
+                                                            .map(([x, y]) => ({ x: Number(x), y }))}
+                                                        onBrush={(min, max) => handleAttributeScaleChange(attr.id, [min, max])}
+                                                    />
+                                                </>) : attr.label}
                                         </div>
                                     ))
                                 }
@@ -453,7 +474,7 @@ export default function ResultsContent() {
 
                             return (
                                 <div className={classnames("result-item", deepEqual(current, result) && current?.segments.at(0)?.start_idx === defaultSplits[0] && current.segments.at(-1)?.end_idx === defaultSplits.at(-1) ? "active" : "")}
-                                    key={`${index}-${start}-${end}`}
+                                    key={`${index}-${start}-${end}-${level}-${source}`}
                                     onClick={() => {
                                         const seg = results?.find(result => result.source === source)?.approximation_segments_list.find(list => list.approximation_level === level)?.segments || [];
                                         const r1 = seg.findIndex(item => deepEqual(item, segments.at(0)));
