@@ -19,7 +19,7 @@ from .debugger import debugger
 
 @typechecked
 class myAIClient:
-    def __init__(self, model: str, platform: str, if_keep_history: bool = True):
+    def __init__(self, model: str, platform: str, if_keep_history: bool = False):
         self.model = model
         self.chatHistory: List[Dict[str, str]] = []
         self.client = self._initialize_client(platform)
