@@ -16,8 +16,6 @@ from ..shared_data import (
     dataset_info_container,
     dataset_container,
     approximation_segments_containers_container,
-    parse_nl_system_prompt_container,
-    modify_nl_system_prompt_container,
     parse_nl_agent,
     modify_nl_agent,
 )
@@ -120,10 +118,9 @@ def process_dataset():
     dataset_info = DatasetInfo.from_dict(request.json.get("datasetInfo"))
     dataset_info_str = json.dumps(dataset_info.to_dict(), cls=CustomJSONEncoder)
     parse_nl_system_prompt = create_parse_nl_prompt(dataset_info_str)
-    # print(parse_nl_system_prompt)
-    parse_nl_system_prompt_container.set_data(parse_nl_system_prompt)
+    parse_nl_agent.set_system_prompt(parse_nl_system_prompt)
     modify_nl_system_prompt = create_modify_nl_prompt()
-    modify_nl_system_prompt_container.set_data(modify_nl_system_prompt)
+    modify_nl_agent.set_system_prompt(modify_nl_system_prompt)
     dataset_info_container.set_data(dataset_info)
     dataset = dataset_container.get_data()
     approxiamation_segments_containers = approximate_dataset(dataset, dataset_info)
@@ -181,7 +178,7 @@ def parse_nl_query():
     | results | QuerySpecWithSource | 解析后的结构化查询 |
     """
     nl_query = request.json.get("nl_query")
-    queryspec_with_source_str = parse_nl_agent.send_prompt(parse_nl_system_prompt_container.get_data(), nl_query, False)
+    queryspec_with_source_str = parse_nl_agent.send_prompt(nl_query, False)
     # 将字符串解析为Python字典
     queryspec_with_source = json.loads(queryspec_with_source_str)
     return jsonify({"code": 200, "message": "Parse nl query successful", "results": filter_json(queryspec_with_source)})
@@ -230,8 +227,7 @@ segment_groups
 intentions
 ```{intentions_str}
 ```"""
-
-    new_queryspec_with_source_str = modify_nl_agent.send_prompt(modify_nl_system_prompt_container.get_data(), input, False)
+    new_queryspec_with_source_str = modify_nl_agent.send_prompt(input, False)
     # 将字符串解析为Python字典
     new_queryspec_with_source = json.loads(new_queryspec_with_source_str)
     return jsonify({"code": 200, "message": "Modify nl query successful", "results": filter_json(new_queryspec_with_source)})
@@ -255,10 +251,7 @@ def calculate_segment_groups(segments: List[Segment], trend_groups: List[Tuple[i
             continue
         if trend_group[0] > trend_group[1]:
             continue
-            
-        segment_group = SegmentGroup(
-            ids=trend_group,
-            time_span=segments[trend_group[1]].end_time - segments[trend_group[0]].start_time
-        )
+
+        segment_group = SegmentGroup(ids=trend_group, time_span=segments[trend_group[1]].end_time - segments[trend_group[0]].start_time)
         segment_groups.append(segment_group)
     return segment_groups

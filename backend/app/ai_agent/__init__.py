@@ -19,45 +19,46 @@ from .debugger import debugger
 
 @typechecked
 class myAIClient:
-    def __init__(self, model: str, platform: str):
-        self.model: str = model
+    def __init__(self, model: str, platform: str, if_keep_history: bool = True):
+        self.model = model
         self.chatHistory: List[Dict[str, str]] = []
+        self.client = self._initialize_client(platform)
+        self.if_keep_history = if_keep_history
 
+    def set_system_prompt(self, system_prompt: str):
+        self.chatHistory.append({"role": "system", "content": system_prompt})
+
+    def _initialize_client(self, platform: str) -> OpenAI | AzureOpenAI:
+        """Initialize the appropriate client based on platform"""
         if platform == Platforms.AZURE:
-            self.client = AzureOpenAI(
+            return AzureOpenAI(
                 api_key=Azure.API_KEY,
                 api_version=Azure.API_VERSION,
                 azure_endpoint=Azure.ENDPOINT,
             )
         elif platform == Platforms.DEEPSEEK:
-            self.client = OpenAI(api_key=DeepSeek.API_KEY, base_url=DeepSeek.BASE_URL)
+            return OpenAI(api_key=DeepSeek.API_KEY, base_url=DeepSeek.BASE_URL)
         elif platform == Platforms.SILIICONFLOW:
-            self.client = OpenAI(api_key=SiliconFlow.API_KEY, base_url=SiliconFlow.BASE_URL)
+            return OpenAI(api_key=SiliconFlow.API_KEY, base_url=SiliconFlow.BASE_URL)
         elif platform == Platforms.QWEN:
-            self.client = OpenAI(api_key=Qwen.API_KEY, base_url=Qwen.BASE_URL)
+            return OpenAI(api_key=Qwen.API_KEY, base_url=Qwen.BASE_URL)
         elif platform == Platforms.TENCENT:
-            self.client = OpenAI(api_key=Tencent.API_KEY, base_url=Tencent.BASE_URL)
+            return OpenAI(api_key=Tencent.API_KEY, base_url=Tencent.BASE_URL)
         else:
-            raise ValueError("Invalid platform")
+            raise ValueError(f"Invalid platform: {platform}")
 
-    def send_prompt(self, system_prompt: str, user_prompt: str, if_json_format: bool = False, keep_history: bool = False) -> str:
+    def add_chat_history(self, role: str, content: str) -> None:
+        """Add a message to chat history"""
+        self.chatHistory.append({"role": role, "content": content})
+
+    def send_prompt(self, user_prompt: str, if_json_format: bool = False) -> str:
+        """Send prompt to AI model and get response"""
         debugger.info("--------send prompt---------\n" + user_prompt)
-
-        if self.client is None:
-            raise RuntimeError("No client")
-
-        if keep_history:
-            self.chatHistory.append({"role": "user", "content": user_prompt})
-        else:
-            self.chatHistory = [
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": user_prompt},
-            ]
-
-        response: Optional[ChatCompletion] = None
+        messages = self.chatHistory.copy()
+        messages.append({"role": "user", "content": user_prompt})
         try:
             response = self.client.chat.completions.create(
-                messages=self.chatHistory,
+                messages=messages,
                 model=self.model,
                 temperature=0,
                 max_tokens=4096,
@@ -71,25 +72,26 @@ class myAIClient:
             debugger.error(f"[sendPrompt] {e}")
             return ""
 
+        if not response or not response.choices[0].message.content:
+            raise RuntimeError("No response text provided")
+
         text = response.choices[0].message.content
-        if text is None:
-            raise RuntimeError("No text provided")
-
-        if keep_history:
-            self.chatHistory.append({"role": "assistant", "content": text})
-
         debugger.info("--------response--------\n" + text)
         debugger.info("--------finished--------")
+
+        if self.if_keep_history:
+            self.add_chat_history("user", user_prompt)
+            self.add_chat_history("assistant", text)
 
         return text
 
 
 def test_parse_nl_query():
-    client = myAIClient(model=Qwen.MODELS.QWEN_MAX, platform=Platforms.QWEN)
     # client = myAIClient(model=Azure.MODELS.GPT_4O, platform=Platforms.AZURE)
-
     dataset_info = """{"time_column": "Date", "value_columns": ["AMZN", "DPZ", "BTC", "NFLX"]}"""
     system_prompt = create_parse_nl_prompt(dataset_info)
+    client = myAIClient(model=Qwen.MODELS.QWEN_MAX, platform=Platforms.QWEN)
+    client.set_system_prompt(system_prompt)
     # nl_query = "Find periods in AMZN when price first rose sharply then fell gradually"
     # nl_query = "Find periods in DPZ when price first fall sharply then rise gradually, and the whole duration is about 3 months"
     # nl_query = "Find periods in AMZN when price presented a head-and-shoulders shape"
@@ -100,16 +102,23 @@ def test_parse_nl_query():
     # nl_query = "Look up two consecutive rises and the first rise is more gentle than the second rise"
     # nl_query = "Find periods when price first presented a double-bottom shape with a duration of about a week and then presented a double-top shape with a duration higher than the first double-bottom's duration"
     # nl_query = "Look up a high plateau pattern"
-    nl_query = "Look up a flat basin pattern in Amazon and Netflix"
+    # nl_query = "Look up a flat basin pattern in Amazon and Netflix"
     # nl_query = "Look up a flat basin pattern"
-    print(system_prompt)
-    response = client.send_prompt(system_prompt, nl_query, False)
-    print(response)
+    nl_query_1 = "Find periods when price rose sharply with a duration of about 4 days"
+    nl_query_2 = "Find periods when price rose sharply with a duration of about 4 days, then fell gradually"
+    nl_query_3 = "Find periods when price present a head-and-shoulders shape"
+    nl_query_4 = "Find periods when price first rise then present a head-and-shoulders shape then fell"
+    # print(system_prompt)
+    # response = client.send_prompt(nl_query_1, False)
+    # response = client.send_prompt(nl_query_2, False)
+    response = client.send_prompt(nl_query_3, False)
+    response = client.send_prompt(nl_query_4, False)
 
 
 def test_modify_nl_query():
     client = myAIClient(model=Qwen.MODELS.QWEN_MAX, platform=Platforms.QWEN)
     system_prompt = create_modify_nl_prompt()
+    client.set_system_prompt(system_prompt)
     modify_prompt = """
 old_queryspec_with_source:
 ```
