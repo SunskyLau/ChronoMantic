@@ -255,3 +255,19 @@ def calculate_segment_groups(segments: List[Segment], trend_groups: List[Tuple[i
         segment_group = SegmentGroup(ids=trend_group, time_span=segments[trend_group[1]].end_time - segments[trend_group[0]].start_time)
         segment_groups.append(segment_group)
     return segment_groups
+
+
+@bus_bp.route("/add_chat_history", methods=["POST"])
+def add_chat_history():
+    """添加聊天历史
+
+    | 参数名 | 类型 | 说明 |
+    |--------|------|------|
+    | user_prompt | str | 用户提示 |
+    | assistant_prompt | str | 助手提示 |
+    """
+    user_prompt = request.json.get("user_prompt")
+    assistant_prompt = request.json.get("assistant_prompt")
+    parse_nl_agent.add_chat_history("user", user_prompt)
+    parse_nl_agent.add_chat_history("assistant", assistant_prompt)
+    return jsonify({"code": 200, "message": "Add chat history successful"})
