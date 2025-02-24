@@ -1,7 +1,6 @@
 import Panel from "../Panel";
 import TableIcon from "../../icons/Table";
 import { useAppDispatch, useAppSelector } from '../../app/hooks';
-import CsvLoader from '../CsvLoader';
 import "./index.css";
 import Choose from "./Choose";
 import Exploration from "./Exploration";
@@ -31,7 +30,7 @@ export default function TableView() {
     const renderComponent = (state: TableState) => {
         switch (state) {
             case TableState.UPLOAD:
-                return <div className="table-upload"><CsvLoader></CsvLoader></div>;
+                return <div className="table-upload"></div>;
             case TableState.CHOOSE:
                 return <div className="table-content"><Choose></Choose></div>;
             case TableState.EXPLORATION:
