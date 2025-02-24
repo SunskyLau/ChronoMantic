@@ -75,10 +75,11 @@ interface TextWithColor {
 }
 
 const getSlopeText = (trend: TrendWithSource, colorMap: Record<string, string>, query: QuerySpecWithSource | null) => {
-	const { category, ...conditions } = trend;
-	if (!Object.keys(conditions).length || !category) return null;
+	const { ...conditions } = trend;
+	if (!Object.keys(conditions).length) return null;
 	const texts: Record<string, TextWithColor> = {};
 	Object.entries(conditions).forEach(([key, value]) => {
+		if (key === 'time_span_condition' || key === 'category') return;
 		if (value) {
 			texts[key] = {
 				text: getScopeText(value) ?? "",
@@ -90,6 +91,12 @@ const getSlopeText = (trend: TrendWithSource, colorMap: Record<string, string>, 
 };
 
 const hasOverlap = (range1: [number, number], range2: [number, number]) => {
+	if (range1[0] > range1[1]) {
+		[range1[0], range1[1]] = [range1[1], range1[0]];
+	}
+	if (range2[0] > range2[1]) {
+		[range2[0], range2[1]] = [range2[1], range2[0]];
+	}
 	const [start1, end1] = range1;
 	const [start2, end2] = range2;
 	const minStart = Math.max(start1, start2);
@@ -141,11 +148,13 @@ const calculateTimeRangeLevels = (trends: TrendWithSource[], trend_groups: Trend
 };
 
 
-const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_relations = [], height = 32, onClick, curTrend, curRelation, query, colorMap = {}, targets = [] }: GlyphProps) => {
+const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_relations = [], height = 32, onClick, curRelation, query, colorMap = {}, targets = [] }: GlyphProps) => {
 	const trendLength = height;
 	const disabled = curRelation !== -1;
 	const width = trends.length * trendLength;
 	const levelMap: Record<string, [number, number][]> = {};
+	const baseY1 = useRef(0);
+	const baseY2 = useRef(height);
 
 	const showTooltip = (texts: Record<string, TextWithColor>, x1: number, y1: number) => {
 		const tooltip = d3.select("body").append("div")
@@ -190,13 +199,12 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 	};
 
 	const getV = (level: number) => {
-		return - (level + 1) * 8;
+		return baseY1.current - (level + 1) * 12;
 	};
-
 
 	const drawTimeIndicator = ({ startX, endX, textY, timeColor, timeText, key, strokeWidth = 1, disabled = false, index }: { startX: number; endX: number; textY: number; timeColor: string; timeText?: string; key?: string, strokeWidth?: number, disabled?: boolean, index?: number }) => {
 		const lineHeight = height / 24;
-		const fontSize = 6;
+		const fontSize = 8;
 		const textWidth = timeText ? timeText.length * fontSize / 2 + fontSize * 2 : 0;
 		const isActive = index === curRelation;
 		const color = isActive ? timeColor.slice(0, 7) : disabled ? DISABLED_COLOR : timeColor;
@@ -251,29 +259,6 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 	};
 
 	const points = useRef<{ x1: number; y1: number; x2: number; y2: number; isUp: boolean; isDown: boolean }[]>(Array(trends.length).fill(null));
-	const getConsecutiveInfo = () => {
-		const consecutiveCounts = [];
-		let consecutiveCount = 1;
-		let count = 0;
-
-		for (let j = 0; j < trends.length; j++) {
-			count++;
-			const currentTrend = trends[j];
-			const nextTrend = trends[j + 1];
-			const { isUp: currentIsUp, isDown: currentIsDown } = getTrendInfo(currentTrend);
-			const { isUp: nextIsUp, isDown: nextIsDown } = getTrendInfo(nextTrend);
-			if ((currentIsDown && nextIsDown) || (currentIsUp && nextIsUp)) {
-				consecutiveCount++;
-			} else {
-				consecutiveCounts.push(...Array(count).fill(consecutiveCount).map((_, i) => (consecutiveCount - i)));
-				consecutiveCount = 1;
-				count = 0;
-			}
-		}
-
-		return consecutiveCounts;
-	};
-	const consecutiveCounts = getConsecutiveInfo();
 
 	const getTrend = (trend: TrendWithSource, i: number, showIndex = false) => {
 		if (!query) return null;
@@ -288,7 +273,7 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 			if (!prevEndPoint) {
 				return {
 					y1: isUp ? height : isDown ? 0 : y,
-					y2: isUp ? height - height / consecutiveCounts[i] : isDown ? height / consecutiveCounts[i] : y
+					y2: isUp ? 0 : isDown ? height : y
 				};
 			}
 			if (!isUp && !isDown) {
@@ -297,16 +282,9 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 					y2: prevEndPoint.y2
 				};
 			}
-			const step = isUp ? prevEndPoint.y2 / consecutiveCounts[i] : (height - prevEndPoint.y2) / consecutiveCounts[i];
+			const step = height;
 			const startY = prevEndPoint.y2;
-			let endY;
-
-			if ((isUp && prevEndPoint.isUp) || (isDown && prevEndPoint.isDown)) {
-				endY = isUp ? startY - step : startY + step;
-			} else {
-				endY = isUp ? height - step : step;
-			}
-
+			const endY = isUp ? startY - step : startY + step;
 			return { y1: startY, y2: endY };
 		};
 
@@ -361,14 +339,6 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 						/>
 					</marker>
 				</defs>
-				<rect
-					x={x1}
-					y={0}
-					width={trendLength}
-					height={height}
-					fill={curTrend === i ? color : "#eee0"}
-					opacity={0.5}
-				/>
 				<path
 					d={`M${currentPoint.x1},${currentPoint.y1} 
 						C${controlPoints.cp1x},${controlPoints.cp1y}
@@ -404,6 +374,9 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 
 	const trendLines = trends.map((trend, i) => getTrend(trend, i));
 
+	baseY1.current = Math.min(...points.current.map((point) => point?.y1 ?? 0), ...points.current.map((point) => point?.y2 ?? 0));
+	baseY2.current = Math.max(...points.current.map((point) => point?.y1 ?? 0), ...points.current.map((point) => point?.y2 ?? 0));
+
 	const drawCircle = (x: number, y: number, r: number = 1.5, color: string = "#000", disabled: boolean = false) => {
 		return (
 			<circle
@@ -415,21 +388,43 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 		);
 	};
 
-	const drawConnect = (x1: number, y1: number, x2: number, y2: number, v: number, index: number, color: string = DEFAULT_COLOR, disabled: boolean = false, strokeWidth: number = 1) => {
+	const drawConnect = (x1: number, y1: number, x2: number, y2: number, v: number, index: number, text?: Comparator, reverse: boolean = false, color: string = DEFAULT_COLOR, disabled: boolean = false, strokeWidth: number = 1) => {
+		if (x1 > x2) {
+			[x1, x2] = [x2, x1];
+			[y1, y2] = [y2, y1];
+		}
 		const isCurRelation = curRelation === index;
+		const textWidth = text ? text.length * 12 : 0;
+		const midX = (x1 + x2) / 2;
+
 		return (
-			<path
-				onClick={() => onClick?.("Relation", index)}
-				d={`M${x1},${y1} V${v} H${x2} V${y2}`}
-				stroke={isCurRelation ? color.slice(0, 7) : disabled ? DISABLED_COLOR : color}
-				style={{
-					animation: isCurRelation ? "dashFlow 1s linear infinite" : "none",
-				}}
-				fill="none"
-				strokeDasharray={"2,2"}
-				strokeLinecap="round"
-				strokeWidth={strokeWidth}
-			/>
+			<>
+				<path
+					onClick={() => onClick?.("Relation", index)}
+					d={`M${x1},${y1} V${v} H${midX - textWidth / 2}`}
+					stroke={isCurRelation ? color.slice(0, 7) : disabled ? DISABLED_COLOR : color}
+					style={{
+						animation: isCurRelation ? "dashFlow 1s linear infinite" : "none",
+					}}
+					fill="none"
+					strokeDasharray={"4,4"}
+					strokeLinecap="round"
+					strokeWidth={strokeWidth}
+				/>
+				<path
+					onClick={() => onClick?.("Relation", index)}
+					d={`M${midX + textWidth / 2},${v} H${x2} V${y2}`}
+					stroke={isCurRelation ? color.slice(0, 7) : disabled ? DISABLED_COLOR : color}
+					style={{
+						animation: isCurRelation ? "dashFlow 1s linear infinite" : "none",
+					}}
+					fill="none"
+					strokeDasharray={"4,4"}
+					strokeLinecap="round"
+					strokeWidth={strokeWidth}
+				/>
+				{text && drawComparator(midX, v, text, index, reverse, color, disabled, strokeWidth)}
+			</>
 		);
 	};
 
@@ -466,6 +461,7 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 
 		if (isStart || isEnd) {
 			const relationColor = getColorWithDisabled(colorMap, query, relation.text_source_id) || DEFAULT_COLOR;
+			const activeColor = isActive ? relationColor.slice(0, 7) : disabled ? DISABLED_COLOR : relationColor;
 			const x1 = isStart ? points.current[trendIndex1]?.x1 : points.current[trendIndex1]?.x2;
 			const x2 = isStart ? points.current[trendIndex2]?.x1 : points.current[trendIndex2]?.x2;
 			const y1 = isStart ? points.current[trendIndex1]?.y1 : points.current[trendIndex1]?.y2;
@@ -475,10 +471,9 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 
 			return (
 				<g key={i}>
-					{drawConnect(x1, y1, x2, y2, v, i, relationColor, disabled)}
-					{drawCircle(x1, y1, 2, relationColor, disabled)}
-					{drawCircle(x2, y2, 2, relationColor, disabled)}
-					{drawComparator((x1 + x2) / 2, v, relation.comparator, i, isReverse, relationColor, disabled)}
+					{drawConnect(x1, y1, x2, y2, v, i, relation.comparator, isReverse, relationColor, disabled)}
+					{drawCircle(x1, y1, 2, activeColor)}
+					{drawCircle(x2, y2, 2, activeColor)}
 				</g>
 			);
 		} else if (isSpan) {
@@ -495,8 +490,7 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 				<g key={i}>
 					{drawTimeIndicator({ startX: x11, endX: x12, textY: y, timeColor: relationColor, disabled, index: i })}
 					{drawTimeIndicator({ startX: x21, endX: x22, textY: y, timeColor: relationColor, disabled, index: i })}
-					{drawConnect((x12 + x11) / 2, y, (x21 + x22) / 2, y, v, i, relationColor, disabled)}
-					{drawComparator((x12 + x21) / 2, v, relation.comparator, i, isReverse, relationColor, disabled)}
+					{drawConnect((x12 + x11) / 2, y, (x21 + x22) / 2, y, v, i, relation.comparator, isReverse, relationColor, disabled)}
 				</g>
 			);
 		} else {
@@ -504,7 +498,6 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 			const { x1: x21, x2: x22, y1: y21, y2: y22 } = points.current[trendIndex2] ?? {};
 
 			const arcRadius = height / 6;
-			const midX = (x11 + x21) / 2 + arcRadius / 2;
 
 			const createArc = (index: number) => {
 				const arc = d3
@@ -534,8 +527,7 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 						stroke={isActive ? relationColor.slice(0, 7) : disabled ? DISABLED_COLOR : relationColor}
 						fill="none"
 					/>
-					{drawConnect(x11 + arcRadius / 2, y11, x21 + arcRadius / 2, y21, v, i, relationColor, disabled)}
-					{drawComparator(midX, v, relation.comparator, i, isReverse, relationColor, disabled)}
+					{drawConnect(x11 + arcRadius / 2, y11, x21 + arcRadius / 2, y21, v, i, relation.comparator, isReverse, relationColor, disabled)}
 				</g>
 			);
 		}
@@ -558,10 +550,10 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 		const group2Info = getGroupInfo(relation.group2);
 
 		if (!group1Info || !group2Info) return null;
-		const rangeY = 0;
+		const rangeY = baseY1.current;
 
 		const relationColor = getColorWithDisabled(colorMap, query, relation.text_source_id);
-		const level = getLevel(group1Info.center, group2Info.center);
+		const level = getLevel(group1Info.start, group2Info.end);
 		const v = getV(level);
 		const index = i + single_relations.length;
 
@@ -569,8 +561,7 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 			<g key={`group-${i}`}>
 				{drawTimeIndicator({ startX: group1Info.start, endX: group1Info.end, textY: rangeY, timeColor: relationColor, disabled, index })}
 				{drawTimeIndicator({ startX: group2Info.start, endX: group2Info.end, textY: rangeY, timeColor: relationColor, disabled, index })}
-				{drawConnect(group1Info.center, rangeY, group2Info.center, rangeY, v, index, relationColor, disabled, strokeWidth)}
-				{drawComparator((group1Info.center + group2Info.center) / 2, v, relation.comparator, index, false, relationColor, disabled, strokeWidth)}
+				{drawConnect(group1Info.center, rangeY, group2Info.center, rangeY, v, index, relation.comparator, false, relationColor, disabled, strokeWidth)}
 			</g>
 		);
 	};
@@ -597,7 +588,7 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 		const width = svgRef.current.clientWidth;
 		const height = svgRef.current.clientHeight;
 
-		const scale = width / (bbox.width + 20);
+		const scale = Math.min(width / (bbox.width + 20), height / (bbox.height + 20));
 		const x = (width - bbox.width * scale) / 2 - bbox.x * scale;
 		const y = (height - bbox.height * scale) / 2 - bbox.y * scale;
 
@@ -648,7 +639,7 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 				break;
 		}
 
-		const textY = height + (type === 'global' ? (level + 1) : level) * 5 + 3;
+		const textY = baseY2.current + (type === 'global' ? (level + 1) : level) * 5 + 3;
 		const timeColor = getColorWithDisabled(colorMap, query, condition.text_source_id);
 		const timeText = getScopeText(condition, 86400);
 
@@ -732,16 +723,17 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 
 	const drawTimeScopeCondition = () => {
 		if (!timeScopeCondition || !query) return null;
-		const fontSize = 6;
+		const fontSize = 8;
 		const color = getColorWithDisabled(colorMap, query, timeScopeCondition.text_source_id);
 		const minText = timeScopeCondition.min?.value ? formatTime(timeScopeCondition.min.value * 1000) : null;
 		const maxText = timeScopeCondition.max?.value ? formatTime(timeScopeCondition.max.value * 1000) : null;
+		const height = (baseY1.current + baseY2.current) / 2;
 		return (
 			<>
-				{minText && <text x={0} y={height / 2} fontSize={fontSize} fill={color} fontWeight={700} dominantBaseline="middle" textAnchor="end">
+				{minText && <text x={-10} y={height} fontSize={fontSize} fill={color} fontWeight={700} dominantBaseline="middle" textAnchor="end">
 					{minText}
 				</text>}
-				{maxText && <text x={width} y={height / 2} fontSize={fontSize} fill={color} fontWeight={700} dominantBaseline="middle" textAnchor="start">
+				{maxText && <text x={width + 10} y={height} fontSize={fontSize} fill={color} fontWeight={700} dominantBaseline="middle" textAnchor="start">
 					{maxText}
 				</text>}
 			</>
@@ -753,12 +745,12 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 		const text = getScopeText(scopeCondition);
 		if (!text) return null;
 
-		const fontSize = 6;
+		const fontSize = 8;
 		const color = getColorWithDisabled(colorMap, query, scopeCondition.text_source_id);
 		const strokeWidth = 1;
 		const lineHeight = 3;
 		return (
-			<g transform={`translate(${x - fontSize / 2}, 0)`}>
+			<g transform={`translate(${x - fontSize}, 0)`}>
 				<line
 					x1={x + strokeWidth}
 					y1={y - lineHeight}
@@ -818,8 +810,8 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 				{relationLines}
 				{timeIndicators()}
 				{drawTimeScopeCondition()}
-				{drawYValueScopeCondition(0, 0, maxScopeCondition)}
-				{drawYValueScopeCondition(0, height, minScopeCondition)}
+				{drawYValueScopeCondition(0, baseY1.current, maxScopeCondition)}
+				{drawYValueScopeCondition(0, baseY2.current, minScopeCondition)}
 				{groupRelationLines}
 			</g>
 		</svg>
