@@ -8,7 +8,7 @@ import { useAppDispatch, useAppSelector } from "../../../app/hooks";
 import { setCurTrend } from "../../../app/slice/stateSlice";
 import { classnames } from "../../../utils/classname";
 import { getColorFromMap } from "../../../utils/color";
-import { TrendCategory } from "../../../types/QuerySpec";
+import { TrendCategory, TrendTextMap } from "../../../types/QuerySpec";
 
 interface TrendProps {
 	title?: string;
@@ -36,13 +36,10 @@ export default function Trend({ title, trends, onChange, start = 0, isEdit, disa
 	}, [curTrend]);
 
 	const getAvailableOptions = () => {
-		return [
-			{ label: "Slope", value: "slope_scope_condition" },
-			{ label: "Delta Percentage", value: "delta_percentage_scope_condition" },
-			{ label: "Daily Average Delta", value: "daily_average_delta_percentage_scope_condition" },
-			{ label: "Abs Slope Percentage", value: "abs_slope_percentage_scope_condition" },
-			{ label: "Time Span", value: "time_span_condition" },
-		];
+		return Object.entries(TrendTextMap).filter(([key]) => key !== "category").map(([key, value]) => ({
+			label: value,
+			value: key,
+		}));
 	};
 
 	return (
@@ -134,7 +131,7 @@ export default function Trend({ title, trends, onChange, start = 0, isEdit, disa
 								{Object.keys(trend).map((key, i) => {
 									const k = key as keyof TrendWithSource;
 									const components: ReactNode[] = [];
-									components.push(<Typography.Paragraph key={i}>{k}</Typography.Paragraph>);
+									components.push(<Typography.Paragraph key={i}>{TrendTextMap[k]}</Typography.Paragraph>);
 									switch (k) {
 										case "category":
 											components.push(
