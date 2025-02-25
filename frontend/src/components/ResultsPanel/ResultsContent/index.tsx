@@ -55,13 +55,13 @@ export default function ResultsContent() {
     const x = useAppSelector((state) => (state.dataset.dataset?.data[state.dataset.dataset?.timeStampColumn ?? ""])) as string[];
     const queryResultsMap = useAppSelector(state => state.approximation.queryResults);
     const memoQueryResultsMap = useMemo(() => queryResultsMap || {}, [queryResultsMap]);
-    const queryLevelResults: ApproximationLevelResults = useMemo(() => Object.entries(memoQueryResultsMap).map(([source, value]: [string, Record<number, Segment[][]>]) => {
+    const queryLevelResults = useMemo(() => Object.entries(memoQueryResultsMap).map(([source, value]: [string, Record<number, Segment[][]>]) => {
         return Object.entries(value).map(([key, segments]) => segments.map(segment => ({ level: Number(key), segments: segment, source }))).flat()
-    }).flat().map((item, index) => ({ ...item, index })), [memoQueryResultsMap]);
+    }).flat(), [memoQueryResultsMap]);
     const r2 = useAppSelector((state) => state.setting.r2);
     const source = useAppSelector((state) => state.states.querySpec?.targets) || "";
     const results = useAppSelector((state) => state.approximation.results);
-    const filteredResults = useMemo(() => queryLevelResults.filter(({ segments }) => segments.every(({ r2: r }) => Math.abs(r) >= r2)), [queryLevelResults, r2]);
+    const filteredResults: ApproximationLevelResults = useMemo(() => queryLevelResults.filter(({ segments }) => segments.every(({ r2: r }) => r >= r2)).map((item, index) => ({ ...item, index })), [queryLevelResults, r2]);
     const dispatch = useAppDispatch();
     const current = useAppSelector((state) => state.approximation.current);
     const defaultSplits = useAppSelector((state) => state.select.defaultSplits);
