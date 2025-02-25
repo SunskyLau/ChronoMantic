@@ -107,7 +107,7 @@ export default function ResultsContent() {
             label: 'Min Value',
             scope: 'global',
             format: (value) => value.toFixed(2),
-            getValue: (segments) => Math.min(...segments.map(seg => seg.start_value))
+            getValue: (segments) => Math.min(...segments.map(seg => seg.min_value))
         },
         {
             id: 'max_value',
@@ -115,7 +115,7 @@ export default function ResultsContent() {
             label: 'Max Value',
             scope: 'global',
             format: (value) => value.toFixed(2),
-            getValue: (segments) => Math.max(...segments.map(seg => seg.end_value))
+            getValue: (segments) => Math.max(...segments.map(seg => seg.max_value))
         }
     ], []);
 
@@ -174,7 +174,7 @@ export default function ResultsContent() {
             format: (value) => `${value} days`,
             getValue: (segments) => {
                 const segment = segments[segmentIndex];
-                return segment ? ((segment?.end_time ?? 0) - (segment?.start_time ?? 0)) / 86400 : 0;
+                return (segment.time_span ?? 0) / 86400;
             }
         }
     ], []);

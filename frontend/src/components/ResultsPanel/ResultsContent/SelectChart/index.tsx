@@ -95,7 +95,7 @@ function SelectChart({ data, title, onBrush }: SelectChartProps) {
                     const selection = event.selection;
                     if (!selection) {
                         svg.select(".area").remove()
-                        onBrush?.(0, d3.max(data, (d) => d.x) || 0);
+                        onBrush?.(d3.min(data, (d => d.x)) || 0, d3.max(data, (d) => d.x) || 0);
                     }
                 });
 
@@ -118,7 +118,7 @@ function SelectChart({ data, title, onBrush }: SelectChartProps) {
             window.removeEventListener('resize', draw);
             cancel?.();
         };
-    },[draw]);
+    }, [draw]);
 
     return (<svg ref={svgRef} width="100%" height="100%"></svg>);
 }
