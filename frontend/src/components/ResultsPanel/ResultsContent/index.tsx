@@ -216,6 +216,10 @@ export default function ResultsContent() {
     }, []);
 
     useEffect(() => {
+        setAttributeScales({});
+    }, [queryLevelResults]);
+
+    useEffect(() => {
         const newAttributeScales: Record<string, [number, number]> = {};
         setAttributeScales(prev => {
             for (const attr of selectedAttributes) {
