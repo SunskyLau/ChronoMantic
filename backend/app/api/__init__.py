@@ -93,6 +93,8 @@ def upload_csv_file():
     return:
     code: 状态码
     """
+    parse_nl_agent.delete_chat_history()
+    modify_nl_agent.delete_chat_history()
     try:
         if "file" not in request.files:
             return jsonify({"code": 400, "message": "No file uploaded"}), 400

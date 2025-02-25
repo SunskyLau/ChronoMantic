@@ -51,6 +51,10 @@ class myAIClient:
         """Add a message to chat history"""
         self.chatHistory.append({"role": role, "content": content})
 
+    def delete_chat_history(self) -> None:
+        """Delete chat history"""
+        self.chatHistory = []
+
     def send_prompt(self, user_prompt: str, if_json_format: bool = False) -> str:
         """Send prompt to AI model and get response"""
         debugger.info("--------send prompt---------\n" + user_prompt)
