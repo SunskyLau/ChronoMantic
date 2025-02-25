@@ -94,6 +94,15 @@ export interface Trend {
   time_span_condition?: ScopeCondition; // 时间跨度的范围条件,单位是秒
 }
 
+export const TrendTextMap: Record<keyof Trend, string> = {
+	"slope_scope_condition": "Slope",
+	"delta_percentage_scope_condition": "Delta Ratio",
+	"daily_average_delta_percentage_scope_condition": "Daily Delta Ratio",
+	"abs_slope_percentage_scope_condition": "Abs Slope Percentage",
+	"time_span_condition": "Time Span",
+	"category": "Category",
+}
+
 // 单趋势可比较属性
 export enum SingleAttribute {
   SLOPE = "slope", // 斜率

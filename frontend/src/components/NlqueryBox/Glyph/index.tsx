@@ -1,4 +1,4 @@
-import { Comparator, GroupRelationWithSource, QuerySpecWithSource, ScopeConditionWithSource, SingleAttribute, SingleRelationWithSource, TargetWithSource, TrendGroupWithSource, TrendWithSource } from "../../../types/QuerySpec";
+import { Comparator, GroupRelationWithSource, QuerySpecWithSource, ScopeConditionWithSource, SingleAttribute, SingleRelationWithSource, TargetWithSource, TrendGroupWithSource, TrendTextMap, TrendWithSource } from "../../../types/QuerySpec";
 import * as d3 from "d3";
 import { useEffect, useRef, useState } from "react";
 import type { DefaultArcObject } from "d3-shape";
@@ -56,15 +56,15 @@ const getColorWithDisabled = (colorMap: Record<string, string>, query: QuerySpec
 	return getColorFromMap(colorMap, text_source_id);
 };
 
-const getScopeText = (scope: ScopeConditionWithSource, valueFormat: number = 1) => {
+const getScopeText = (scope: ScopeConditionWithSource, unit: string = "", valueFormat: number = 1) => {
 	if (!scope) return null;
 	const { min, max } = scope;
 	if (min && max) {
-		return `${min.inclusive ? "[" : "("}${min.value / valueFormat}, ${max.value / valueFormat}${max.inclusive ? "]" : ")"}`;
+		return `${min.inclusive ? "[" : "("}${min.value / valueFormat}${unit}, ${max.value / valueFormat}${unit}${max.inclusive ? "]" : ")"}`;
 	} else if (min) {
-		return `${min.inclusive ? "≥" : ">"}${min.value / valueFormat}`;
+		return `${min.inclusive ? "[" : "("}${min.value / valueFormat}${unit}, +∞)`;
 	} else if (max) {
-		return `${max.inclusive ? "≤" : "<"}${max.value / valueFormat}`;
+		return `(-∞, ${max.value / valueFormat}${unit}${max.inclusive ? "]" : ")"}`;
 	}
 	return "";
 };
@@ -78,11 +78,18 @@ const getSlopeText = (trend: TrendWithSource, colorMap: Record<string, string>, 
 	const { ...conditions } = trend;
 	if (!Object.keys(conditions).length) return null;
 	const texts: Record<string, TextWithColor> = {};
+	const map = {
+		"slope_scope_condition": { key: TrendTextMap["slope_scope_condition"], unit: "/day" },
+		"delta_percentage_scope_condition": { key: TrendTextMap["delta_percentage_scope_condition"], unit: "%" },
+		"daily_average_delta_percentage_scope_condition": { key: TrendTextMap["daily_average_delta_percentage_scope_condition"], unit: "%/day" },
+		"abs_slope_percentage_scope_condition": { key: TrendTextMap["abs_slope_percentage_scope_condition"], unit: "%" },
+	}
 	Object.entries(conditions).forEach(([key, value]) => {
 		if (key === 'time_span_condition' || key === 'category') return;
+		const unit = map[key as keyof typeof map];
 		if (value) {
 			texts[key] = {
-				text: getScopeText(value) ?? "",
+				text: unit.key + ": " + getScopeText(value, unit.unit),
 				color: getColorWithDisabled(colorMap, query, value.text_source_id),
 			};
 		}
@@ -155,30 +162,7 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 	const levelMap: Record<string, [number, number][]> = {};
 	const baseY1 = useRef(0);
 	const baseY2 = useRef(height);
-
-	const showTooltip = (texts: Record<string, TextWithColor>, x1: number, y1: number) => {
-		const tooltip = d3.select("body").append("div")
-			.attr("class", "glyph-tooltip")
-			.style("position", "absolute")
-			.style("background", "#0008")
-			.style("color", "#fff")
-			.style("padding", "2px")
-			.style("border", "1px solid #ccc")
-			.style("border-radius", "6px")
-			.style("pointer-events", "none")
-			.style("transform", "translate(-50%, -100%)")
-			.style("opacity", 0);
-		tooltip.transition()
-			.duration(200)
-			.style("opacity", 1);
-		tooltip.html(Object.entries(texts).map(([key, value]) => `<div class="active-component" style="margin:2px;padding: 4px 8px;background-color: ${value.color};">${key}: ${value.text}</div>`).join(""))
-			.style("left", `${x1}px`)
-			.style("top", `${y1}px`);
-	};
-
-	const hideTooltip = () => {
-		d3.selectAll(".glyph-tooltip").remove();
-	};
+	const fontSize = 5;
 
 	const getLevel = (x1: number, x2: number) => {
 		let level = 0;
@@ -204,7 +188,6 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 
 	const drawTimeIndicator = ({ startX, endX, textY, timeColor, timeText, key, strokeWidth = 1, disabled = false, index }: { startX: number; endX: number; textY: number; timeColor: string; timeText?: string; key?: string, strokeWidth?: number, disabled?: boolean, index?: number }) => {
 		const lineHeight = height / 24;
-		const fontSize = 8;
 		const textWidth = timeText ? timeText.length * fontSize / 2 + fontSize * 2 : 0;
 		const isActive = index === curRelation;
 		const color = isActive ? timeColor.slice(0, 7) : disabled ? DISABLED_COLOR : timeColor;
@@ -232,7 +215,6 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 					y={textY + fontSize / 16}
 					fontSize={fontSize}
 					fill={color}
-					fontWeight={700}
 					textAnchor="middle"
 					dominantBaseline="middle"
 				>
@@ -303,18 +285,8 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 		const controlPoints = getControlPoints();
 		const texts = getSlopeText(trend, colorMap, query) ?? {};
 		const currentPoint = { x1: prevEndPoint ? prevEndPoint.x2 : x1, y1: prevEndPoint ? prevEndPoint.y2 : y1, x2, y2, isUp, isDown };
+		const fontSize = trendLength / (Math.max(...Object.values(texts).map(text => text.text.length)) + 1) * 2;
 		points.current[i] = currentPoint;
-		const arcRadius = height / 6;
-
-		const createArc = () => {
-			const arc = d3
-				.arc()
-				.innerRadius(0)
-				.outerRadius(arcRadius)
-				.startAngle(Math.PI / 2)
-				.endAngle(Math.atan((y2 - y1) / (x2 - x1)) + Math.PI / 2);
-			return arc({} as DefaultArcObject) || "";
-		};
 
 		return (
 			<g
@@ -349,14 +321,22 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 					fill="none"
 					markerEnd={`url(#arrow-${id}-${i})`}
 				/>
-				{Object.keys(texts)?.length && <path
-					d={createArc()}
-					transform={`translate(${x1},${y1})`}
-					stroke={color}
-					fill={color}
-					onMouseEnter={(e) => showTooltip(texts, e.clientX, e.clientY - 20)}
-					onMouseLeave={() => hideTooltip()}
-				/>}
+				{Object.entries(texts).map(([key, text], index) => {
+					const lineHeight = fontSize * 1.5;
+					const textY = isUp ? y1 - index * lineHeight - fontSize / 2 : y1 + index * lineHeight + fontSize / 2;
+					return (
+						<text
+							key={key}
+							x={x1 + fontSize / 2}
+							y={textY}
+							fontSize={fontSize}
+							fill={text.color}
+							textAnchor="start"
+						>
+							{text.text}
+						</text>
+					);
+				})}
 				{showIndex && (
 					<text
 						x={x1 + height / 16}
@@ -641,7 +621,7 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 
 		const textY = baseY2.current + (type === 'global' ? (level + 1) : level) * 5 + 3;
 		const timeColor = getColorWithDisabled(colorMap, query, condition.text_source_id);
-		const timeText = getScopeText(condition, 86400);
+		const timeText = getScopeText(condition, "days", 86400);
 
 		if (!timeText) return null;
 
@@ -650,7 +630,7 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 			endX,
 			textY,
 			timeColor,
-			timeText: `${timeText} days`,
+			timeText,
 			key: `${type}-time-${index}`,
 		});
 	};
@@ -723,7 +703,6 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 
 	const drawTimeScopeCondition = () => {
 		if (!timeScopeCondition || !query) return null;
-		const fontSize = 8;
 		const color = getColorWithDisabled(colorMap, query, timeScopeCondition.text_source_id);
 		const minText = timeScopeCondition.min?.value ? formatTime(timeScopeCondition.min.value * 1000) : null;
 		const maxText = timeScopeCondition.max?.value ? formatTime(timeScopeCondition.max.value * 1000) : null;
@@ -745,7 +724,6 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 		const text = getScopeText(scopeCondition);
 		if (!text) return null;
 
-		const fontSize = 8;
 		const color = getColorWithDisabled(colorMap, query, scopeCondition.text_source_id);
 		const strokeWidth = 1;
 		const lineHeight = 3;

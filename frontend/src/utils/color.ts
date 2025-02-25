@@ -1,23 +1,23 @@
 export function getColor(index: number) {
     const colors = [
-        "#FF6B6B",
-        "#4ECDC4",
-        "#45B7D1",
-        "#96CEB4",
-        "#FFBE0B",
-        "#9B5DE5",
-        "#F15BB5",
-        "#00BBF9",
-        "#FF9F1C",
-        "#2EC4B6",
-        "#845EC2",
-        "#D65DB1",
-        "#FF8066",
-        "#FFC75F",
-        "#008F7A",
-        "#4B4453",
-        "#B0A8B9",
-        "#C34A36"
+        "#FFA07A",
+        "#7FFFD4",
+        "#6A5ACD",
+        "#FFD700",
+        "#FF69B4",
+        "#00BFFF",
+        "#90EE90",
+        "#FF4500",
+        "#DA70D6",
+        "#00FA9A",
+        "#FF8C00",
+        "#BA55D3",
+        "#32CD32",
+        "#FF00FF",
+        "#40E0D0",
+        "#FFB6C1",
+        "#2F4F4F",
+        "#FFE4B5"
     ];
     return colors[index % colors.length];
 }
