@@ -52,8 +52,8 @@ export default function QueryCondition() {
 	const dispatch = useAppDispatch();
 	const time = useAppSelector((state) => state.dataset.dataset?.data[state.dataset.dataset.timeStampColumn]) || [];
 	const date = time.map((t) => new Date(t).getTime());
-	const minDate = Math.min(...date);
-	const maxDate = Math.max(...date);
+	const minDate = date.reduce((min, curr) => curr < min ? curr : min, date[0]);
+	const maxDate = date.reduce((max, curr) => curr > max ? curr : max, date[0]);
 	const curRelation = useAppSelector((state) => state.states.curRelation);
 	const colorMap = useAppSelector((state) => state.states.colorMap);
 

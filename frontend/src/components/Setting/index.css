@@ -36,6 +36,13 @@
     align-items: center;
 }
 
+.setting .setting__inner .setting-form .choose-item {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
 .setting .setting-form .ant-btn {
     padding: 12px;
     width: 100%;

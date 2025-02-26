@@ -33,26 +33,31 @@ function CsvLoader() {
 					const dataset: Dataset = {
 						filename: res.filename,
 						data: {},
-						timeStampColumn: "",
-						valueColumns: [],
-						ratios: {},
+						timeStampColumn: result.meta.fields?.[0] ?? "",
+						timeStampColumnType: "number",
+						timeStampColumnUnit: 1,
+						valueColumns: result.meta.fields?.slice(1) ?? []
 					};
 
+					let lastTimeStamp = 0;
 					result.data.forEach((row) => {
 						for (const [key, value] of Object.entries(row)) {
-							if (!key || !value) continue;
+							if (!key || value === null) continue;
 							if (!dataset.data[key]) {
 								dataset.data[key] = [];
-								if (typeof value === "number") {
-									dataset.valueColumns.push(key);
-								} else {
-									dataset.timeStampColumn = key;
-								}
+							}
+							if (key === dataset.timeStampColumn && typeof value === "string" && !isNaN(new Date(value).getTime())) {
+								dataset.timeStampColumnType = "date";
+								dataset.timeStampColumnUnit = 86400000;
+							} else if (key === dataset.timeStampColumn && typeof value === "string" && !isNaN(Number(value))) {
+								dataset.timeStampColumnType = "number";
+								const timeStamp = Number(value);
+								dataset.timeStampColumnUnit = timeStamp - lastTimeStamp;
+								lastTimeStamp = timeStamp;
 							}
 							dataset.data[key].push(value);
 						}
 					});
-
 					dispatch(setDataset(dataset));
 					processDataset({ time_column: dataset.timeStampColumn, value_columns: dataset.valueColumns }).then((res) => {
 						dispatch(setResults(res));
