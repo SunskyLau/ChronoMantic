@@ -12,9 +12,11 @@ interface TrendGroupProps {
 	groups: TrendGroupWithSource[];
 	idLength: number;
 	onChange: (groups: TrendGroupWithSource[]) => void;
+	timeStampColumnType?: string;
+	timeStampColumnUnit?: number;
 }
 
-export default function TrendGroup({ groups, idLength, onChange, isEdit, disabled }: TrendGroupProps) {
+export default function TrendGroup({ groups, idLength, onChange, isEdit, disabled, timeStampColumnType = "number", timeStampColumnUnit = 1 }: TrendGroupProps) {
 	const colorMap = useAppSelector((state) => state.states.colorMap);
 	const allGroups = isEdit ? deepClone(groups) : groups;
 
@@ -90,8 +92,8 @@ export default function TrendGroup({ groups, idLength, onChange, isEdit, disable
 											}}
 										/>,
 									]}
-									addonAfter="days"
-									valueFormatter={86400}
+									addonAfter={timeStampColumnType !== "number" ? timeStampColumnType : undefined}
+									valueFormatter={timeStampColumnUnit}
 									onChange={(min, max, minInclusive, maxInclusive) => {
 										const newGroups = deepClone(allGroups);
 										newGroups[index].time_span_condition = {

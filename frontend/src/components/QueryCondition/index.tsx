@@ -56,13 +56,16 @@ export default function QueryCondition() {
 	const maxDate = date.reduce((max, curr) => curr > max ? curr : max, date[0]);
 	const curRelation = useAppSelector((state) => state.states.curRelation);
 	const colorMap = useAppSelector((state) => state.states.colorMap);
+	const timeStampColumnType = useAppSelector((state) => state.dataset.dataset?.timeStampColumnType) ?? "number";
+	const timeStampColumnUnit = useMemo(() => timeStampColumnType === "day" ? 86400 : timeStampColumnType === "hour" ? 3600 : timeStampColumnType === "minute" ? 60 : 1, [timeStampColumnType]);
+	const timeStampColumnUnitText = useMemo(() => timeStampColumnType === "number" ? "" : timeStampColumnType, [timeStampColumnType]);
 
 	const scopeConfigs = [
 		{
 			title: "Time Span",
 			condition: memoizedQuery.time_span_condition,
-			addonAfter: "days",
-			valueFormatter: 86400,
+			addonAfter: timeStampColumnUnitText,
+			valueFormatter: timeStampColumnUnit,
 		},
 		{
 			title: "Time Scope",
@@ -94,7 +97,7 @@ export default function QueryCondition() {
 					value={memoizedQuery.targets.map(target => target.target)}
 					options={values}
 					colorMap={colorMap}
-					sources={memoizedQuery?.targets.map(target=>target.text_source_id)}
+					sources={memoizedQuery?.targets.map(target => target.text_source_id)}
 					onChange={(val) => {
 						const newQuery = deepClone(memoizedQuery);
 						newQuery.targets = val.map(target => ({ target, text_source_id: query?.targets.find(source => source.target === target)?.text_source_id ?? -1 }))
@@ -113,6 +116,8 @@ export default function QueryCondition() {
 						newQuery.trends = trends;
 						dispatch(setQuery(newQuery));
 					}}
+					timeStampColumnType={timeStampColumnType}
+					timeStampColumnUnit={timeStampColumnUnit}
 				/>
 			</section>
 
@@ -140,6 +145,8 @@ export default function QueryCondition() {
 						newQuery.trend_groups = groups;
 						dispatch(setQuery(newQuery));
 					}}
+					timeStampColumnType={timeStampColumnType}
+					timeStampColumnUnit={timeStampColumnUnit}
 				/>
 				<Divider />
 			</section>

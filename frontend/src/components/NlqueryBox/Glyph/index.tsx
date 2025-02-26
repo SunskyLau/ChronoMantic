@@ -23,6 +23,8 @@ interface GlyphProps {
 	curRelation?: number;
 	colorMap?: Record<string, string>;
 	query?: QuerySpecWithSource | null;
+	timeStampColumnType?: string;
+	timeStampColumnUnit?: number;
 	onClick?: (type: ClickType, index: number) => void;
 }
 
@@ -80,8 +82,6 @@ const getSlopeText = (trend: TrendWithSource, colorMap: Record<string, string>, 
 	const texts: Record<string, TextWithColor> = {};
 	const map = {
 		"slope_scope_condition": { key: TrendTextMap["slope_scope_condition"], unit: "/day" },
-		"delta_percentage_scope_condition": { key: TrendTextMap["delta_percentage_scope_condition"], unit: "%" },
-		"daily_average_delta_percentage_scope_condition": { key: TrendTextMap["daily_average_delta_percentage_scope_condition"], unit: "%/day" },
 		"abs_slope_percentage_scope_condition": { key: TrendTextMap["abs_slope_percentage_scope_condition"], unit: "%" },
 	}
 	Object.entries(conditions).forEach(([key, value]) => {
@@ -155,7 +155,7 @@ const calculateTimeRangeLevels = (trends: TrendWithSource[], trend_groups: Trend
 };
 
 
-const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_relations = [], height = 32, onClick, curRelation, query, colorMap = {}, targets = [] }: GlyphProps) => {
+const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_relations = [], height = 32, onClick, curRelation, query, colorMap = {}, targets = [], timeStampColumnType = "number", timeStampColumnUnit = 1 }: GlyphProps) => {
 	const trendLength = height;
 	const disabled = curRelation !== -1;
 	const width = trends.length * trendLength;
@@ -623,7 +623,7 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 
 		const textY = baseY2.current + (type === 'global' ? (level + 1) : level) * 5 + 3;
 		const timeColor = getColorWithDisabled(colorMap, query, condition.text_source_id);
-		const timeText = getScopeText(condition, "days", 86400);
+		const timeText = getScopeText(condition, timeStampColumnType, timeStampColumnUnit);
 
 		if (!timeText) return null;
 

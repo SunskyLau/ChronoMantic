@@ -64,6 +64,9 @@ export default function ResultsContent() {
     const dispatch = useAppDispatch();
     const current = useAppSelector((state) => state.approximation.current);
     const defaultSplits = useAppSelector((state) => state.select.defaultSplits);
+    const timeStampColumnType = useAppSelector((state) => state.dataset.dataset?.timeStampColumnType);
+    const timeStampColumnUnit = useMemo(() => timeStampColumnType === "day" ? 86400 : timeStampColumnType === "hour" ? 3600 : timeStampColumnType === "minute" ? 60 : 1, [timeStampColumnType]);
+    const timeStampColumnUnitText = useMemo(() => timeStampColumnType === "number" ? "" : timeStampColumnType, [timeStampColumnType]);
 
     const attributeOptions: AttributeOption[] = useMemo(() => [
         {
@@ -72,8 +75,8 @@ export default function ResultsContent() {
             label: 'Duration',
             scope: 'global',
             permanent: true,
-            format: (value) => `${value} days`,
-            getValue: (segments) => ((segments.at(-1)?.end_time ?? 0) - (segments.at(0)?.start_time ?? 0)) / 86400
+            format: (value) => `${value} ${timeStampColumnUnitText}`,
+            getValue: (segments) => ((segments.at(-1)?.end_time ?? 0) - (segments.at(0)?.start_time ?? 0)) / timeStampColumnUnit
         },
         {
             id: 'level',
@@ -106,7 +109,7 @@ export default function ResultsContent() {
             label: 'Min Value',
             scope: 'global',
             format: (value) => value.toFixed(2),
-            getValue: (segments) => Math.min(...segments.map(seg => seg.min_value))
+            getValue: (segments) => Math.min(...segments.map(seg => seg.min_value ?? 0))
         },
         {
             id: 'max_value',
@@ -114,9 +117,9 @@ export default function ResultsContent() {
             label: 'Max Value',
             scope: 'global',
             format: (value) => value.toFixed(2),
-            getValue: (segments) => Math.max(...segments.map(seg => seg.max_value))
+            getValue: (segments) => Math.max(...segments.map(seg => seg.max_value ?? 0))
         }
-    ], []);
+    ], [timeStampColumnUnit, timeStampColumnUnitText]);
 
     const getSegmentAttributeOptions = useCallback((segmentIndex: number): AttributeOption[] => [
         {
@@ -135,7 +138,7 @@ export default function ResultsContent() {
             scope: 'segment',
             segmentIndex,
             format: (value) => value.toFixed(2),
-            getValue: (segments) => (segments[segmentIndex]?.slope ?? 0) * 86400
+            getValue: (segments) => (segments[segmentIndex]?.slope ?? 0) * timeStampColumnUnit
         },
         {
             id: `segment_${segmentIndex}_abs_slope`,
@@ -147,36 +150,18 @@ export default function ResultsContent() {
             getValue: (segments) => segments[segmentIndex]?.abs_slope_percentage ?? 0
         },
         {
-            id: `segment_${segmentIndex}_delta`,
-            key: 'delta_percentage',
-            label: `Delta`,
-            scope: 'segment',
-            segmentIndex,
-            format: (value) => value.toFixed(2) + '%',
-            getValue: (segments) => segments[segmentIndex]?.delta_percentage ?? 0
-        },
-        {
-            id: `segment_${segmentIndex}_daily_delta`,
-            key: 'daily_average_delta_percentage',
-            label: `Daily Avg Delta`,
-            scope: 'segment',
-            segmentIndex,
-            format: (value) => value.toFixed(2) + '%',
-            getValue: (segments) => segments[segmentIndex]?.daily_average_delta_percentage ?? 0
-        },
-        {
             id: `segment_${segmentIndex}_duration`,
             key: 'duration',
             label: `Duration`,
             scope: 'segment',
             segmentIndex,
-            format: (value) => `${value} days`,
+            format: (value) => `${value} ${timeStampColumnUnitText}`,
             getValue: (segments) => {
                 const segment = segments[segmentIndex];
-                return (segment.time_span ?? 0) / 86400;
+                return (segment.time_span ?? 0) / timeStampColumnUnit;
             }
         }
-    ], []);
+    ], [timeStampColumnUnit, timeStampColumnUnitText]);
 
     const [selectedAttributes, setSelectedAttributes] = useState<AttributeOption[]>([]);
 

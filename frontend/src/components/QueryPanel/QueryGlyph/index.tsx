@@ -5,13 +5,16 @@ import Glyph from "../../NlqueryBox/Glyph";
 import { flushSync } from "react-dom";
 import { useAppDispatch, useAppSelector } from "../../../app/hooks";
 import { setCurRelation, setCurTrend } from "../../../app/slice/stateSlice";
-
+import { useMemo } from "react";
 export default function QueryGlyph({ className }: { className?: string }) {
     const dispatch = useAppDispatch();
     const query = useAppSelector(state => state.states.query);
     const curTrend = useAppSelector(state => state.states.curTrend);
     const curRelation = useAppSelector(state => state.states.curRelation);
     const colorMap = useAppSelector(state => state.states.colorMap);
+    const timeStampColumnType = useAppSelector((state) => state.dataset.dataset?.timeStampColumnType) ?? "number";
+    const timeStampColumnUnit = useMemo(() => timeStampColumnType === "day" ? 86400 : timeStampColumnType === "hour" ? 3600 : timeStampColumnType === "minute" ? 60 : 1, [timeStampColumnType]);
+
 
     return (<div className={classnames("glyph", className)}>
         <Popover rootClassName="glyph-popover" trigger={["contextMenu"]} content={<QueryCondition></QueryCondition>}>
@@ -50,6 +53,8 @@ export default function QueryGlyph({ className }: { className?: string }) {
                     curTrend={curTrend ?? -1} 
                     curRelation={curRelation ?? -1} 
                     colorMap={colorMap}
+                    timeStampColumnType={timeStampColumnType}
+                    timeStampColumnUnit={timeStampColumnUnit}
                 />
             </div>
         </Popover>
