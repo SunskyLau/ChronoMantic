@@ -8,9 +8,10 @@ import { formatTime } from "../../utils/time";
 import IntentionPopover from "./IntentionPopover";
 import { IntentionLine, LineChartProps, PopoverPosition } from "./types";
 
-function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVisible = false, isYAxisVisible = false, isXAxisTextVisible = false, isYAxisTextVisible = false, isBrush = false, onBrush, onBrushEnd, range, height, split, isSplitMask = false, brushPosition, isExpand = true, isShowRange = true, isActive, children, onScroll, onContextMenu, xAxisColor = "#C5C5C5", yAxisColor = "#C5C5C5", lineColor = "#A6A6A6", textColor = "#C5C5C5", xAxisFormatter = (date: Date) => formatTime(date), brushColor = "#546BB633", resultsSplit, selectedSplits, defaultSplits = [], onSplitSelect, onSubmitIntentions, margin, isHoverable = false, xDataType = "number" }: LineChartProps) {
+function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVisible = false, isYAxisVisible = false, isXAxisTextVisible = false, isYAxisTextVisible = false, isBrush = false, onBrush, onBrushEnd, range, height, split, isSplitMask = false, brushPosition, isExpand = true, isShowRange = true, isActive, children, onScroll, onContextMenu, xAxisColor = "#C5C5C5", yAxisColor = "#C5C5C5", lineColor = "#A6A6A6", textColor = "#C5C5C5", xAxisFormatter = (date: Date) => formatTime(date, xDataType === "number" ? undefined : xDataType), brushColor = "#546BB633", resultsSplit, selectedSplits, defaultSplits = [], onSplitSelect, onSubmitIntentions, margin, isHoverable = false, xDataType = "number" }: LineChartProps) {
 	const svgRef = useRef<SVGSVGElement>(null);
 	const id = useId();
+	const isTime = useMemo(() => xDataType !== "number", [xDataType]);
 	const [popoverPosition, setPopoverPosition] = useState<PopoverPosition | null>(null);
 	const [selectedChoices, setSelectedChoices] = useState<SingleChoice[]>([]);
 	const [selectedGroups, setSelectedGroups] = useState<GroupChoice[]>([]);
@@ -536,7 +537,7 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 
 		svg.attr("height", outerHeight);
 
-		const x = xDataType === "date"
+		const x = isTime
 			? d3.scaleTime().domain(xScale.map((d) => new Date(d))).range([0, innerWidth])
 			: d3.scaleLinear().domain(xScale).range([0, innerWidth]);
 
@@ -544,7 +545,7 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 
 		const lineGenerator = d3
 			.line<[number, number]>()
-			.x((d) => xDataType === "date" ? x(new Date(d[0]))! : x(d[0])!)
+			.x((d) => isTime ? x(new Date(d[0]))! : x(d[0])!)
 			.y((d) => y(d[1]));
 
 		svg.selectAll("*").remove();
@@ -587,8 +588,15 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 		if (isXAxisVisible) {
 			const xAxis = d3
 				.axisBottom(x)
-				.tickFormat((d) => xDataType === "date" ? xAxisFormatter(new Date(+d)) : String(+d))
+				.tickFormat((d) => isTime ? xAxisFormatter(new Date(+d)) : String(+d))
 				.tickSize(isXAxisTextVisible ? 6 : 0);
+
+			const sampleText = isTime ? xAxisFormatter(new Date(timeStampData[0])) : String(timeStampData[0]);
+			const approximateTextWidth = sampleText.length * 8;
+			const maxTicks = Math.floor(innerWidth / (approximateTextWidth * 1.5));
+			const tickCount = Math.max(2, Math.min(maxTicks, 10));
+
+			xAxis.ticks(tickCount).tickSize(isXAxisTextVisible ? 6 : 0);
 
 			const xAxisG = g
 				.append("g")
@@ -671,16 +679,16 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 				g.on("mousemove", function (event) {
 					const [mouseX] = d3.pointer(event, this);
 					const xValue = x.invert(mouseX);
-					const closestIndex = d3.bisectCenter(keyData, xDataType === "date" ? (xValue as Date).getTime() : xValue as number);
+					const closestIndex = d3.bisectCenter(keyData, isTime ? (xValue as Date).getTime() : xValue as number);
 					const closestData = [keyData[closestIndex], valueData[closestIndex]] as [number, number];
 					hoverLine
-						.attr("x1", x(xDataType === "date" ? new Date(closestData[0]) : closestData[0]))
-						.attr("x2", x(xDataType === "date" ? new Date(closestData[0]) : closestData[0]))
+						.attr("x1", x(isTime ? new Date(closestData[0]) : closestData[0]))
+						.attr("x2", x(isTime ? new Date(closestData[0]) : closestData[0]))
 						.attr("y1", 0)
 						.attr("y2", innerHeight)
 						.style("opacity", 1);
 					hoverCircle
-						.attr("cx", x(xDataType === "date" ? new Date(closestData[0]) : closestData[0]))
+						.attr("cx", x(isTime ? new Date(closestData[0]) : closestData[0]))
 						.attr("cy", y(closestData[1]))
 						.style("opacity", 1);
 					tooltip.transition().duration(100).style("opacity", 0.9);
@@ -688,7 +696,7 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 					const tooltipHeight = tooltip.node()?.getBoundingClientRect().height || 0;
 					const left = Math.min(Math.max(event.pageX, 0), window.innerWidth - tooltipWidth / 2 - 10);
 					const top = Math.min(Math.max(event.pageY - 10, 0), window.innerHeight - tooltipHeight);
-					tooltip.html(`${xDataType === "date" ? "Time" : "X"}: ${xDataType === "date" ? xAxisFormatter(new Date(closestData[0])) : closestData[0]}<br>${xDataType === "date" ? "Value" : "Y"}: ${closestData[1]}`).style("left", (left) + "px").style("top", (top) + "px");
+					tooltip.html(`${isTime ? "Time" : "X"}: ${isTime ? xAxisFormatter(new Date(closestData[0])) : closestData[0]}<br>${isTime ? "Value" : "Y"}: ${closestData[1]}`).style("left", (left) + "px").style("top", (top) + "px");
 				}).on("mouseleave", function () {
 					hoverLine.style("opacity", 0);
 					hoverCircle.style("opacity", 0);
@@ -1104,7 +1112,7 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 			svg.selectAll("*").remove();
 			d3.selectAll(".tooltip").remove();
 		}
-	}, [xData, yData, ratio, title, isXAxisVisible, isYAxisVisible, isXAxisTextVisible, isYAxisTextVisible, isBrush, onBrush, isFill, range, height, split, isSplitMask, brushPosition, isExpand, isShowRange, id, onBrushEnd, isActive, xAxisColor, yAxisColor, lineColor, textColor, xAxisFormatter, brushColor, resultsSplit, handleSplitClick, selectedSplits, popoverPosition, handleMouseMove, handleMouseUp, intentions, defaultSplits, onSubmitIntentions, relationIds, computedMargin, isHoverable, timeStampData, xDataType]);
+	}, [xData, yData, ratio, title, isXAxisVisible, isYAxisVisible, isXAxisTextVisible, isYAxisTextVisible, isBrush, onBrush, isFill, range, height, split, isSplitMask, brushPosition, isExpand, isShowRange, id, onBrushEnd, isActive, xAxisColor, yAxisColor, lineColor, textColor, xAxisFormatter, brushColor, resultsSplit, handleSplitClick, selectedSplits, popoverPosition, handleMouseMove, handleMouseUp, intentions, defaultSplits, onSubmitIntentions, relationIds, computedMargin, isHoverable, timeStampData, isTime]);
 
 	useEffect(() => {
 		const cancle = draw();

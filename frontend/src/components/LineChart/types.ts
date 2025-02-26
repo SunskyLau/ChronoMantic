@@ -2,7 +2,7 @@ import { GroupChoice, GroupRelationChoice, Intentions, SingleChoice, SingleRelat
 
 export interface LineChartProps {
     xData: number[] | string[];
-    xDataType?: "number" | "date";
+    xDataType?: "number" | "day" | "hour" | "minute" | "second";
     yData: number[];
     ratio?: number;
     height?: number | string;

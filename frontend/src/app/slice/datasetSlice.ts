@@ -4,8 +4,7 @@ export type ColumnType = string | number;
 
 export interface DatasetColumn {
   timeStampColumn: string;
-  timeStampColumnType: "number" | "date";
-  timeStampColumnUnit: number;
+  timeStampColumnType: "number" | "day" | "hour" | "minute" | "second";
   valueColumns: string[];
 }
 
