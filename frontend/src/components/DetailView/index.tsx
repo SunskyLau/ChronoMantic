@@ -15,11 +15,13 @@ import { getSplit } from "../../utils/split";
 
 export default function DetailView() {
 	const data = useAppSelector((state) => state.dataset.dataset?.data) || {};
+	const timeStampColumnType = useAppSelector((state) => state.dataset.dataset?.timeStampColumnType);
 	const dispatch = useAppDispatch();
 	const range = useAppSelector((state) => state.select.range);
 	const timeCol = Object.keys(data).at(0);
 	const timeValues = timeCol ? data[timeCol] : [];
 	const source = useAppSelector((state) => state.approximation.source) || "";
+	const dataValues = source in data ? data[source] as number[] : [];
 	const level = useAppSelector((state) => state.approximation.level);
 	const results = useAppSelector((state) => state.approximation.results);
 	const queryResults = useAppSelector((state) => state.approximation.queryResults);
@@ -89,7 +91,8 @@ export default function DetailView() {
 						<LineChart
 							isShowRange={false}
 							xData={timeValues as string[]}
-							yData={data[source] as number[]}
+							xDataType={timeStampColumnType}
+							yData={dataValues}
 							resultsSplit={resultsSplit}
 							isXAxisVisible={true}
 							isYAxisVisible={true}
@@ -129,7 +132,7 @@ export default function DetailView() {
 					<div className="bg overview">
 						<LineChart
 							xData={timeValues as string[]}
-							yData={data[source] as number[]}
+							yData={dataValues}
 							isBrush={true}
 							onBrush={handleBrush}
 							height={"100%"}
@@ -138,6 +141,7 @@ export default function DetailView() {
 							isXAxisVisible
 							onBrushEnd={handleBrushEnd}
 							isXAxisTextVisible
+							xDataType={timeStampColumnType}
 						></LineChart>
 					</div>
 				</>
