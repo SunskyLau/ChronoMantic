@@ -77,7 +77,6 @@ def bottom_up_merge(value_column: str, x: np.ndarray, y: np.ndarray, k: int):
     segments: List[Segment] = []
     for i in range(n - 1):
         time_span = x[i + 1] - x[i]
-        delta_percentage, daily_avg_delta_percentage = calculate_percentage_metrics(y[i], y[i + 1], time_span)
         _, r2 = segment_error(x, y, i, i + 1)
 
         segments.append(
@@ -92,8 +91,6 @@ def bottom_up_merge(value_column: str, x: np.ndarray, y: np.ndarray, k: int):
                 start_time=x[i],
                 end_time=x[i + 1],
                 time_span=time_span,
-                delta_percentage=delta_percentage,
-                daily_average_delta_percentage=daily_avg_delta_percentage,
                 r2=r2
             )
         )
@@ -129,7 +126,6 @@ def bottom_up_merge(value_column: str, x: np.ndarray, y: np.ndarray, k: int):
         j = segments.index(seg2)
 
         time_span = x[seg2.end_idx] - x[seg1.start_idx]
-        delta_percentage, daily_avg_delta_percentage = calculate_percentage_metrics(seg1.start_value, seg2.end_value, time_span)
         _, r2 = segment_error(x, y, seg1.start_idx, seg2.end_idx)
 
         segments[i] = Segment(
@@ -143,8 +139,6 @@ def bottom_up_merge(value_column: str, x: np.ndarray, y: np.ndarray, k: int):
             start_time=x[seg1.start_idx],
             end_time=x[seg2.end_idx],
             time_span=time_span,
-            delta_percentage=delta_percentage,
-            daily_average_delta_percentage=daily_avg_delta_percentage,
             abs_slope_percentage=None,
             r2=r2
         )

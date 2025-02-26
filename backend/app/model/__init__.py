@@ -12,7 +12,15 @@ def approximate_dataset(dataset: pd.DataFrame, dataset_info: DatasetInfo, k: int
     approxiamation_segments_containers: List[ApproximationSegmentsContainer] = []
     time_column = dataset_info.time_column
     value_columns = dataset_info.value_columns
-    x = pd.to_datetime(dataset[time_column]).astype("int64") // 10**9  # 转换为秒
+
+    # 判断time_column是否为时间戳字符串
+    if pd.api.types.is_numeric_dtype(dataset[time_column]):
+        x = dataset[time_column].to_numpy()
+    else:
+        try:
+            x = pd.to_datetime(dataset[time_column]).astype("int64") // 10**9  # 转换为秒
+        except:
+            x = dataset[time_column].to_numpy()
 
     for vc in value_columns:
         y = dataset[vc].values
