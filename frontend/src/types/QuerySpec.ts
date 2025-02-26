@@ -11,22 +11,26 @@ export interface DatasetInfo {
  * Foundamental Data
  */
 
+export enum Source {
+  RESULT = "result", // 来源于查询结果
+  USER = "user", // 来源于用户指定
+}
+
 // 单个分段信息
 export interface Segment {
+  source: Source; // 来源，"result"代表来源于查询结果，"user"代表来源于用户指定
   start_idx: number; // 起始索引
   end_idx: number; // 结束索引
   slope: number; // 斜率
   start_value: number; // 起始值
   end_value: number; // 结束值
-  max_value: number; // 最大值
-  min_value: number; // 最小值
-  r2: number; // 拟合优度
+  max_value?: number; // 最大值
+  min_value?: number; // 最小值
   start_time?: number; // 起始时间,单位是秒
   end_time?: number; // 结束时间,单位是秒
-  delta_percentage?: number; // 变化率,单位是%
-  daily_average_delta_percentage?: number; // 日均变化率,单位是%/day
   abs_slope_percentage?: number; // 斜率在所有斜率中的占比,单位是%
   time_span?: number; // 时间跨度,单位是秒
+  r2?: number; // 拟合优度,范围是[0,1]
 }
 
 export interface SimplifiedSegment {
@@ -36,8 +40,6 @@ export interface SimplifiedSegment {
   end_value: number;    // 片段终止点的值
   start_time?: number;  // 片段起始时间，单位是秒，可选
   end_time?: number;    // 片段终止时间，单位是秒，可选
-  delta_percentage?: number;  // 片段的总体变化百分比，单位是%，可选
-  daily_average_delta_percentage?: number;  // 片段的日均变化百分比，单位是%，可选
   abs_slope_percentage?: number;  // 片段斜率在所有斜率中的占比，单位是%，可选
   time_span?: number;  // 片段的时间跨度，单位是秒，可选
 }
@@ -88,16 +90,12 @@ export enum TrendCategory {
 export interface Trend {
   category: TrendCategory; // 趋势类别
   slope_scope_condition?: ScopeCondition; // 斜率的范围条件
-  delta_percentage_scope_condition?: ScopeCondition; // 变化率的范围条件,单位是%,例如70就代表70%
-  daily_average_delta_percentage_scope_condition?: ScopeCondition; // 日平均变化率的范围条件,单位是%/day,例如5就代表5%/day
   abs_slope_percentage_scope_condition?: ScopeCondition; // 斜率在所有斜率中的占比范围条件,单位是%,例如30就代表30%
   time_span_condition?: ScopeCondition; // 时间跨度的范围条件,单位是秒
 }
 
 export const TrendTextMap: Record<keyof Trend, string> = {
 	"slope_scope_condition": "Slope",
-	"delta_percentage_scope_condition": "Delta Ratio",
-	"daily_average_delta_percentage_scope_condition": "Daily Delta Ratio",
 	"abs_slope_percentage_scope_condition": "Abs Slope Percentage",
 	"time_span_condition": "Time Span",
 	"category": "Category",
@@ -109,8 +107,6 @@ export enum SingleAttribute {
   START_VALUE = "start_value", // 起始值
   END_VALUE = "end_value", // 结束值
   TIME_SPAN = "time_span", // 时间跨度,单位是秒
-  DELTA_PERCENTAGE = "delta_percentage", // 变化率,单位是%
-  DAILY_AVERAGE_DELTA_PERCENTAGE = "daily_average_delta_percentage", // 日均变化率,单位是%/day
   ABS_SLOPE_PERCENTAGE = "abs_slope_percentage", // 斜率占比,单位是%
 }
 
@@ -187,8 +183,6 @@ export interface ScopeConditionWithSource extends WithSource, ScopeCondition { }
 export interface TrendWithSource {
   category: CategoryWithSource; // 趋势类别
   slope_scope_condition?: ScopeConditionWithSource; // 斜率的范围条件
-  delta_percentage_scope_condition?: ScopeConditionWithSource; // 变化率的范围条件
-  daily_average_delta_percentage_scope_condition?: ScopeConditionWithSource; // 日平均变化率的范围条件
   abs_slope_percentage_scope_condition?: ScopeConditionWithSource; // 斜率占比的范围条件
   time_span_condition?: ScopeConditionWithSource; // 时间跨度的范围条件
 }
@@ -231,8 +225,6 @@ export interface QuerySpecWithSource {
 export enum SingleChoice {
   CATEGORY = "category", // 趋势类别
   SLOPE = "slope", // 斜率属性
-  DELTA_PERCENTAGE = "delta_percentage", // 变化率属性,单位是%
-  DAILY_AVERAGE_DELTA_PERCENTAGE = "daily_average_delta_percentage", // 日均变化率属性,单位是%/day
   ABS_SLOPE_PERCENTAGE = "abs_slope_percentage", // 斜率占比属性,单位是%
   TIME_SPAN = "time_span", // 时间跨度属性,单位是秒
 }
@@ -246,8 +238,6 @@ export enum SingleRelationChoice {
   START_VALUE = "start_value", // 起始值关系
   END_VALUE = "end_value", // 结束值关系
   TIME_SPAN = "time_span", // 时间跨度关系
-  DELTA_PERCENTAGE = "delta_percentage", // 变化率关系
-  DAILY_AVERAGE_DELTA_PERCENTAGE = "daily_average_delta_percentage", // 日均变化率关系
   ABS_SLOPE_PERCENTAGE = "abs_slope_percentage", // 斜率占比关系
 }
 
@@ -308,8 +298,6 @@ export function formatQuerySpec(query: QuerySpecWithSource): QuerySpec {
   const formatTrend = (trend: TrendWithSource): Trend => ({
     category: query.text_sources[trend.category.text_source_id]?.disabled ? TrendCategory.ARBITRARY : trend.category.category,
     slope_scope_condition: formatScopeCondition(trend.slope_scope_condition),
-    delta_percentage_scope_condition: formatScopeCondition(trend.delta_percentage_scope_condition),
-    daily_average_delta_percentage_scope_condition: formatScopeCondition(trend.daily_average_delta_percentage_scope_condition),
     abs_slope_percentage_scope_condition: formatScopeCondition(trend.abs_slope_percentage_scope_condition),
     time_span_condition: formatScopeCondition(trend.time_span_condition)
   });

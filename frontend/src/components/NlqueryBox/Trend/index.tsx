@@ -16,10 +16,12 @@ interface TrendProps {
 	start?: number;
 	isEdit?: boolean;
 	disabled?: boolean;
+	timeStampColumnType?: string;
+	timeStampColumnUnit?: number;
 	onChange: (trends: TrendWithSource[]) => void;
 }
 
-export default function Trend({ title, trends, onChange, start = 0, isEdit, disabled }: TrendProps) {
+export default function Trend({ title, trends, onChange, start = 0, isEdit, disabled, timeStampColumnType = "number", timeStampColumnUnit = 1 }: TrendProps) {
 	const allTrends = trends;
 	const trendRefs = useRef<(HTMLDivElement | null)[]>([]);
 	const dispatch = useAppDispatch();
@@ -168,15 +170,13 @@ export default function Trend({ title, trends, onChange, start = 0, isEdit, disa
 											break;
 										case "time_span_condition":
 										case "slope_scope_condition":
-										case "delta_percentage_scope_condition":
-										case "daily_average_delta_percentage_scope_condition":
 										case "abs_slope_percentage_scope_condition":
 											components.push(
 												<Span
 													disabled={disabled}
 													key={k}
-													addonAfter={k.includes("span") ? "days" : undefined}
-													valueFormatter={k.includes("span") ? 86400 : undefined}
+													addonAfter={k.includes("span") && timeStampColumnType !== "number" ? timeStampColumnType : undefined}
+													valueFormatter={k.includes("span") ? timeStampColumnUnit : undefined}
 													min={trend[k]?.min?.value ?? null}
 													max={trend[k]?.max?.value ?? null}
 													activeColor={getColorFromMap(colorMap, trend[k]?.text_source_id)}
