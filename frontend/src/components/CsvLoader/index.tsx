@@ -35,7 +35,6 @@ function CsvLoader() {
 						data: {},
 						timeStampColumn: result.meta.fields?.[0] ?? "",
 						timeStampColumnType: "number",
-						timeStampColumnUnit: 1,
 						valueColumns: result.meta.fields?.slice(1) ?? []
 					};
 
@@ -47,13 +46,18 @@ function CsvLoader() {
 								dataset.data[key] = [];
 							}
 							if (key === dataset.timeStampColumn && typeof value === "string" && !isNaN(new Date(value).getTime())) {
-								dataset.timeStampColumnType = "date";
-								dataset.timeStampColumnUnit = 86400000;
-							} else if (key === dataset.timeStampColumn && typeof value === "string" && !isNaN(Number(value))) {
-								dataset.timeStampColumnType = "number";
-								const timeStamp = Number(value);
-								dataset.timeStampColumnUnit = timeStamp - lastTimeStamp;
+								const timeStamp = new Date(value).getTime();
+								const delta = timeStamp - lastTimeStamp;
 								lastTimeStamp = timeStamp;
+								if (delta >= 86400000) {
+									dataset.timeStampColumnType = "day";
+								} else if (delta >= 3600000) {
+									dataset.timeStampColumnType = "hour";
+								} else if (delta >= 60000) {
+									dataset.timeStampColumnType = "minute";
+								} else if (delta >= 1000) {
+									dataset.timeStampColumnType = "second";
+								}
 							}
 							dataset.data[key].push(value);
 						}
