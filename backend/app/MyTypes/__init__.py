@@ -30,8 +30,6 @@ class Segment(DictMixin):
     min_value: Optional[float] = None
     start_time: Optional[int] = None
     end_time: Optional[int] = None
-    delta_percentage: Optional[float] = None
-    daily_average_delta_percentage: Optional[float] = None
     abs_slope_percentage: Optional[float] = None
     time_span: Optional[int] = None
     source: Optional[Source] = None
@@ -83,8 +81,6 @@ class TrendCategory(Enum):
 class Trend(DictMixin):
     category: TrendCategory  # 趋势类别
     slope_scope_condition: Optional[ScopeCondition] = None  # 斜率的范围条件
-    delta_percentage_scope_condition: Optional[ScopeCondition] = None  # 变化率的范围条件, 单位是%, 例如70就代表70%
-    daily_average_delta_percentage_scope_condition: Optional[ScopeCondition] = None  # 日平均变化率的范围条件, 单位是%/day，例如5就代表5%/day
     abs_slope_percentage_scope_condition: Optional[ScopeCondition] = None  # 斜率在所有斜率中的占比范围条件, 单位是%，例如30就代表30%
     time_span_condition: Optional[ScopeCondition] = None  # 时间跨度的范围条件, 单位是秒，例如3600就代表1小时
 
@@ -94,8 +90,6 @@ class SingleAttribute(Enum):
     START_VALUE = "start_value"  # 起始值
     END_VALUE = "end_value"  # 结束值
     TIME_SPAN = "time_span"  # 时间跨度,单位是秒
-    DELTA_PERCENTAGE = "delta_percentage"  # 变化率,单位是%
-    DAILY_AVERAGE_DELTA_PERCENTAGE = "daily_average_delta_percentage"  # 日均变化率,单位是%/day
     ABS_SLOPE_PERCENTAGE = "abs_slope_percentage"  # 斜率占比,单位是%
 
 

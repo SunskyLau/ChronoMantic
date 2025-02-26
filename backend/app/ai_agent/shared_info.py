@@ -14,8 +14,6 @@ export interface Segment {
   end_value: number;    // 片段终止点的值
   start_time?: number;  // 片段起始时间，单位是秒，可选
   end_time?: number;    // 片段终止时间，单位是秒，可选
-  delta_percentage?: number;  // 片段的总体变化百分比，单位是%，可选
-  daily_average_delta_percentage?: number;  // 片段的日均变化百分比，单位是%，可选
   abs_slope_percentage?: number;  // 片段斜率在所有斜率中的占比，单位是%，可选
   time_span?: number;  // 片段的时间跨度，单位是秒，可选
 }
@@ -48,8 +46,6 @@ export interface ScopeCondition {
 export interface Trend {
   category: string; // 趋势类别，可以是"flat"(平稳),"up"(上升),"down"(下降)
   slope_scope_condition?: ScopeCondition; // 斜率的范围条件，用于限定趋势的斜率范围
-  delta_percentage_scope_condition?: ScopeCondition; // 变化率的范围条件，用于限定趋势的百分比变化范围，单位是%，例如70就代表70%,可以是负数
-  daily_average_delta_percentage_scope_condition?: ScopeCondition; // 日平均变化率的范围条件，用于限定趋势的日均百分比变化范围，单位是%/day，例如5就代表5%/day，可以是负数
   abs_slope_percentage_scope_condition?: ScopeCondition; // 斜率在所有斜率中的占比范围条件，用于限定趋势的相对斜率大小，单位是%，例如30就代表30%
   time_span_condition?: ScopeCondition; // 时间跨度的范围条件，用于限定趋势的持续时间，单位是秒，例如3600就代表1小时，1天是86400秒
 }
@@ -59,8 +55,6 @@ export enum SingleAttribute {
   START_VALUE = "start_value", // 起始值属性，用于比较趋势的起始点值
   END_VALUE = "end_value", // 结束值属性，用于比较趋势的终止点值
   TIME_SPAN = "time_span", // 时间跨度属性，用于比较趋势的持续时间，单位是秒
-  DELTA_PERCENTAGE = "delta_percentage", // 变化率属性，单位是%
-  DAILY_AVERAGE_DELTA_PERCENTAGE = "daily_average_delta_percentage", // 日均变化率属性，单位是%/day
   ABS_SLOPE_PERCENTAGE = "abs_slope_percentage" // 斜率占比属性，单位是%
 }
 
@@ -113,8 +107,8 @@ export interface QuerySpec {
  */
 
 export interface TextSource {
-  text: str; // 原始文本片段
-  index: int; // 用于区分text相同但是在原文中位置不同的文本片段，index=0表示第一个，index=1表示第二个，以此类推
+  text: string; // 原始文本片段
+  index: number; // 用于区分text相同但是在原文中位置不同的文本片段，index=0表示第一个，index=1表示第二个，以此类推
 }
 
 export interface WithSource {
@@ -132,8 +126,6 @@ export interface ScopeConditionWithSource extends WithSource, ScopeCondition {}
 export interface TrendWithSource {
   category: CategoryWithSource; // 趋势类别
   slope_scope_condition?: ScopeConditionWithSource; // 斜率的范围条件
-  delta_percentage_scope_condition?: ScopeConditionWithSource; // 变化率的范围条件
-  daily_average_delta_percentage_scope_condition?: ScopeConditionWithSource; // 日平均变化率的范围条件
   abs_slope_percentage_scope_condition?: ScopeConditionWithSource; // 斜率占比的范围条件
   time_span_condition?: ScopeConditionWithSource; // 时间跨度的范围条件
 }
@@ -177,8 +169,6 @@ intentions_info = """
 export enum SingleChoice {
   CATEGORY = "category", // 趋势类别
   SLOPE = "slope", // 斜率属性
-  DELTA_PERCENTAGE = "delta_percentage", // 变化率属性,单位是%
-  DAILY_AVERAGE_DELTA_PERCENTAGE = "daily_average_delta_percentage", // 日均变化率属性,单位是%/day
   ABS_SLOPE_PERCENTAGE = "abs_slope_percentage", // 斜率占比属性,单位是%
   TIME_SPAN = "time_span", // 时间跨度属性,单位是秒
 }
@@ -192,8 +182,6 @@ export enum SingleRelationChoice {
   START_VALUE = "start_value", // 起始值关系
   END_VALUE = "end_value", // 结束值关系
   TIME_SPAN = "time_span", // 时间跨度关系
-  DELTA_PERCENTAGE = "delta_percentage", // 变化率关系
-  DAILY_AVERAGE_DELTA_PERCENTAGE = "daily_average_delta_percentage", // 日均变化率关系
   ABS_SLOPE_PERCENTAGE = "abs_slope_percentage", // 斜率占比关系
 }
 
@@ -238,7 +226,7 @@ model_info = """
 parse_nl_logic_info = """
 1. 自然语言中如果出现模糊的范围表达，解析成ScopeConditionWithSource的时候需要让min和max构成一个满足模糊表达的范围，min和max不应该相等。例如，"about 2 weeks"需要解析成min对应12days，max对应16days的ScopeConditionWithSource，也就是允许一个比原数值更小的数和更大的数来组成这个模糊的范围。因此，你需要根据语义恰当地解析出一个范围。
 2. 自然语言中对于趋势和形状的描述，需要解析成TrendWithSource，其中category需要解析成趋势的类别，text_source需要解析成趋势的描述来源。你需要捕捉趋势和形状的特征并翻译为相应的字段。
-3. 自然语言中如果是确切的描述，如"a duration of 20~30days"，需要解析成time_span_condition，其中min和max需要解析成相应的数值。例如"Rising at an average rate of 7% per day"，需要解析成daily_average_delta_percentage_scope_condition，其中min和max需要解析成相应的数值。诸如此类，需要精准识别应该解析为什么condition。
+3. 自然语言中如果是确切的描述，如"a duration of 20~30days"，需要解析成time_span_condition，其中min和max需要解析成相应的数值。诸如此类，需要精准识别应该解析为什么condition。
 4. 有关趋势程度的模糊描述，根据语义解析为abs_slope_percentage_scope_condition。
 5. TextSource的text只能是来源original_text的连续子文本。text_sources数组中的元素应该严格遵循原文中的顺序，不重叠地输出。解析出来的text_source必须是被使用的，否则不应该出现在text_sources中。
 6. 你需要识别出自然语言中对于relation的描述，这种描述也可以分为隐式的和显式的。隐式的relation描述通常隐藏在形状的描述中，例如，"head-and-shoulders"中，中间的"head"应该要高于左右两个shoulders，这就意味着第二次上升趋势(trend_id=2)的end_value应该要大于第一次和第三次上升趋势(trend_id=0和trend_id=4)的end_value，这里relation就应该被解析出来。显式的relation描述通常是直接描述的，例如，"连续的两次上升，左边的上升速度比右边的上升速度更快"，这意味着第一次上升趋势(trend_id=0)的slope应该要大于第二次上升趋势(trend_id=1)的slope，这里relation就应该被解析出来。最后，你还需要避免引入无效的relation，例如，"rise sharply then rise slowly"，这里面"sharply"和"slowly"已经被解析成trend中的条件，再引入relation是多余的。

@@ -188,21 +188,6 @@ def match_single_trend(segment: Segment, trend: Trend) -> bool:
         ):
             return False
 
-    # 检查变化率的范围条件
-    if trend.delta_percentage_scope_condition:
-        if segment.delta_percentage is None or not check_single_threshold_condition(
-            segment.delta_percentage, trend.delta_percentage_scope_condition.min, trend.delta_percentage_scope_condition.max
-        ):
-            return False
-
-    # 检查日几何平均变化率的范围条件
-    if trend.daily_average_delta_percentage_scope_condition:
-        if segment.daily_average_delta_percentage is None or not check_single_threshold_condition(
-            segment.daily_average_delta_percentage,
-            trend.daily_average_delta_percentage_scope_condition.min,
-            trend.daily_average_delta_percentage_scope_condition.max,
-        ):
-            return False
 
     # 检查时间跨度条件
     if trend.time_span_condition:
@@ -299,10 +284,6 @@ def get_single_attribute_value(segment: Segment, attribute: SingleAttribute) -> 
         return segment.end_value
     elif attribute == SingleAttribute.TIME_SPAN:
         return segment.time_span
-    elif attribute == SingleAttribute.DELTA_PERCENTAGE:
-        return segment.delta_percentage
-    elif attribute == SingleAttribute.DAILY_AVERAGE_DELTA_PERCENTAGE:
-        return segment.daily_average_delta_percentage
     elif attribute == SingleAttribute.ABS_SLOPE_PERCENTAGE:
         return segment.abs_slope_percentage
     return None

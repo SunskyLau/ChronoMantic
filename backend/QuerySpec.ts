@@ -18,8 +18,6 @@ export interface Segment {
   min_value?: number; // 最小值
   start_time?: number; // 起始时间,单位是秒
   end_time?: number; // 结束时间,单位是秒
-  delta_percentage?: number; // 变化率,单位是%
-  daily_average_delta_percentage?: number; // 日均变化率,单位是%/day
   abs_slope_percentage?: number; // 斜率在所有斜率中的占比,单位是%
   time_span?: number; // 时间跨度,单位是秒
   r2?: number; // 拟合优度,范围是[0,1]
@@ -71,8 +69,6 @@ export enum TrendCategory {
 export interface Trend {
   category: TrendCategory; // 趋势类别
   slope_scope_condition?: ScopeCondition; // 斜率的范围条件
-  delta_percentage_scope_condition?: ScopeCondition; // 变化率的范围条件,单位是%,例如70就代表70%
-  daily_average_delta_percentage_scope_condition?: ScopeCondition; // 日平均变化率的范围条件,单位是%/day,例如5就代表5%/day
   abs_slope_percentage_scope_condition?: ScopeCondition; // 斜率在所有斜率中的占比范围条件,单位是%,例如30就代表30%
   time_span_condition?: ScopeCondition; // 时间跨度的范围条件,单位是秒
 }
@@ -83,8 +79,6 @@ export enum SingleAttribute {
   START_VALUE = "start_value", // 起始值
   END_VALUE = "end_value", // 结束值
   TIME_SPAN = "time_span", // 时间跨度,单位是秒
-  DELTA_PERCENTAGE = "delta_percentage", // 变化率,单位是%
-  DAILY_AVERAGE_DELTA_PERCENTAGE = "daily_average_delta_percentage", // 日均变化率,单位是%/day
   ABS_SLOPE_PERCENTAGE = "abs_slope_percentage", // 斜率占比,单位是%
 }
 
@@ -160,8 +154,6 @@ export interface ScopeConditionWithSource extends WithSource, ScopeCondition {}
 export interface TrendWithSource {
   category: CategoryWithSource; // 趋势类别
   slope_scope_condition?: ScopeConditionWithSource; // 斜率的范围条件
-  delta_percentage_scope_condition?: ScopeConditionWithSource; // 变化率的范围条件
-  daily_average_delta_percentage_scope_condition?: ScopeConditionWithSource; // 日平均变化率的范围条件
   abs_slope_percentage_scope_condition?: ScopeConditionWithSource; // 斜率占比的范围条件
   time_span_condition?: ScopeConditionWithSource; // 时间跨度的范围条件
 }
@@ -203,8 +195,6 @@ export interface QuerySpecWithSource {
 export enum SingleChoice {
   CATEGORY = "category", // 趋势类别
   SLOPE = "slope", // 斜率属性
-  DELTA_PERCENTAGE = "delta_percentage", // 变化率属性,单位是%
-  DAILY_AVERAGE_DELTA_PERCENTAGE = "daily_average_delta_percentage", // 日均变化率属性,单位是%/day
   ABS_SLOPE_PERCENTAGE = "abs_slope_percentage", // 斜率占比属性,单位是%
   TIME_SPAN = "time_span", // 时间跨度属性,单位是秒
 }
@@ -218,8 +208,6 @@ export enum SingleRelationChoice {
   START_VALUE = "start_value", // 起始值关系
   END_VALUE = "end_value", // 结束值关系
   TIME_SPAN = "time_span", // 时间跨度关系
-  DELTA_PERCENTAGE = "delta_percentage", // 变化率关系
-  DAILY_AVERAGE_DELTA_PERCENTAGE = "daily_average_delta_percentage", // 日均变化率关系
   ABS_SLOPE_PERCENTAGE = "abs_slope_percentage", // 斜率占比关系
 }
 
