@@ -476,7 +476,7 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 	const computedMargin = useMemo(() => ({ top: isMargin ? margin?.top ?? 30 : 0, right: isMargin ? margin?.right ?? 40 : 0, bottom: isMargin ? margin?.bottom ?? 30 : 0, left: isMargin ? margin?.left ?? 40 : 0 }), [isMargin, margin]);
 
 	const draw = useCallback(() => {
-		if (!svgRef.current || xData.length === 0 || yData.length === 0) return;
+		if (!svgRef.current || xData?.length === 0 || yData?.length === 0) return;
 
 		let start = range?.[0] ?? 0;
 		let end = range?.[1] ? range[1] + 1 : xData.length;

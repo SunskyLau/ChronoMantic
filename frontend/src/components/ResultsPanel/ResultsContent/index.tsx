@@ -51,14 +51,13 @@ interface AttributeOption extends SegmentAttribute {
 }
 
 export default function ResultsContent() {
-    const data = useAppSelector((state) => state.dataset.dataset?.data);
-    const x = useAppSelector((state) => (state.dataset.dataset?.data[state.dataset.dataset?.timeStampColumn ?? ""])) as string[];
-    const queryResultsMap = useAppSelector(state => state.approximation.queryResults);
-    const memoQueryResultsMap = useMemo(() => queryResultsMap || {}, [queryResultsMap]);
-    const queryLevelResults = useMemo(() => Object.entries(memoQueryResultsMap).map(([source, value]: [string, Record<number, Segment[][]>]) => {
+    const data = useAppSelector((state) => state.dataset.dataset?.data) ?? {};
+    const x = useAppSelector((state) => (state.dataset.dataset?.data[state.dataset.dataset?.timeStampColumn ?? ""])) as string[] || [];
+    const queryResults = useAppSelector(state => state.approximation.queryResults);
+    const memoQueryResults = useMemo(() => queryResults || {}, [queryResults]);
+    const queryLevelResults = useMemo(() => Object.entries(memoQueryResults).map(([source, value]: [string, Record<number, Segment[][]>]) => {
         return Object.entries(value).map(([key, segments]) => segments.map(segment => ({ level: Number(key), segments: segment, source }))).flat()
-    }).flat(), [memoQueryResultsMap]);
-    const source = useAppSelector((state) => state.states.querySpec?.targets) || "";
+    }).flat(), [memoQueryResults]);
     const results = useAppSelector((state) => state.approximation.results);
     const filteredResults: ApproximationLevelResults = useMemo(() => queryLevelResults.map((item, index) => ({ ...item, index })), [queryLevelResults]);
     const dispatch = useAppDispatch();
@@ -353,10 +352,8 @@ export default function ResultsContent() {
     }, [sortedResults.length]);
 
     useEffect(() => {
-        if (selectedAttributes.length === 0) {
-            handleAttributeSelect(permanentAttributes);
-        }
-    }, [selectedAttributes, permanentAttributes, handleAttributeSelect]);
+        handleAttributeSelect(permanentAttributes);
+    }, [permanentAttributes, handleAttributeSelect]);
 
     return (
         <>
@@ -453,7 +450,7 @@ export default function ResultsContent() {
                 </div>
 
                 <div className="result-item-list">
-                    {sortedResults.length === 0 || !source ? <Empty /> :
+                    {sortedResults.length === 0 ? <Empty /> :
                         sortedResults.slice(0, count).map((result) => {
                             const { level, index, segments, source } = result;
                             const start = segments.at(0)?.start_idx || 0;
@@ -483,7 +480,7 @@ export default function ResultsContent() {
                                     </div>
 
                                     <div className="item-column data-glyph">
-                                        <LineChart xData={x} range={[start, end]} yData={data?.[source] as number[]} height={40} split={splits} isShowRange={false} isExpand={false} />
+                                        <LineChart xData={x} range={[start, end]} yData={data?.[source] as number[] || []} height={40} split={splits} isShowRange={false} isExpand={false} />
                                     </div>
 
                                     {groupedAttributes.global.length > 0 && (
