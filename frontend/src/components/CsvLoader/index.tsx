@@ -5,7 +5,7 @@ import { useAppDispatch } from "../../app/hooks";
 import { setDataset, Dataset, ColumnType } from "../../app/slice/datasetSlice";
 import UploadIcon from "../../icons/Upload";
 import { processDataset, uploadCsvFile } from "../../api";
-import { setResults } from "../../app/slice/approximation";
+import { setQueryResults, setResults } from "../../app/slice/approximation";
 
 function CsvLoader() {
 	const dispatch = useAppDispatch();
@@ -63,6 +63,7 @@ function CsvLoader() {
 						}
 					});
 					dispatch(setDataset(dataset));
+					dispatch(setQueryResults({}));
 					processDataset({ time_column: dataset.timeStampColumn, value_columns: dataset.valueColumns }).then((res) => {
 						dispatch(setResults(res));
 					});

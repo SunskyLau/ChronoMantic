@@ -22,7 +22,6 @@ export default function DetailView() {
 	const timeValues = timeCol ? data[timeCol] : [];
 	const source = useAppSelector((state) => state.approximation.source) || "";
 	const dataValues = source in data ? data[source] as number[] : [];
-	console.log(dataValues)
 	const level = useAppSelector((state) => state.approximation.level);
 	const results = useAppSelector((state) => state.approximation.results);
 	const queryResults = useAppSelector((state) => state.approximation.queryResults);
