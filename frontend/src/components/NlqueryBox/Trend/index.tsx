@@ -1,7 +1,6 @@
 import { Button, Divider, Empty, Flex, Select, Typography } from "antd";
-import { TrendWithSource } from "../../../types/QuerySpec";
+import { ScopeConditionWithSourceWithUnit, TrendWithSource } from "../../../types/QuerySpec";
 import { deepClone } from "../../../utils/deepclone";
-import Span from "../Span";
 import { MinusOutlined, PlusOutlined } from "@ant-design/icons";
 import { ReactNode, useEffect, useRef } from "react";
 import { useAppDispatch, useAppSelector } from "../../../app/hooks";
@@ -9,6 +8,7 @@ import { setCurTrend } from "../../../app/slice/stateSlice";
 import { classnames } from "../../../utils/classname";
 import { getColorFromMap } from "../../../utils/color";
 import { TrendCategory, TrendTextMap } from "../../../types/QuerySpec";
+import SpanWithUnit from "../SpanWithUnit";
 
 interface TrendProps {
 	title?: string;
@@ -21,7 +21,7 @@ interface TrendProps {
 	onChange: (trends: TrendWithSource[]) => void;
 }
 
-export default function Trend({ title, trends, onChange, start = 0, isEdit, disabled, timeStampColumnType = "number", timeStampColumnUnit = 1 }: TrendProps) {
+export default function Trend({ title, trends, onChange, start = 0, isEdit, disabled }: TrendProps) {
 	const allTrends = trends;
 	const trendRefs = useRef<(HTMLDivElement | null)[]>([]);
 	const dispatch = useAppDispatch();
@@ -134,12 +134,13 @@ export default function Trend({ title, trends, onChange, start = 0, isEdit, disa
 									const k = key as keyof TrendWithSource;
 									const components: ReactNode[] = [];
 									components.push(<Typography.Paragraph key={i}>{TrendTextMap[k]}</Typography.Paragraph>);
+									const condition = trend[k] as ScopeConditionWithSourceWithUnit;
 									switch (k) {
 										case "category":
 											components.push(
 												<div
 													className="active-component"
-													style={{ backgroundColor: getColorFromMap(colorMap, trend[k].text_source_id) }}
+													style={{ backgroundColor: getColorFromMap(colorMap, condition.text_source_id) }}
 													key={k}
 												>
 													<Select
@@ -172,29 +173,24 @@ export default function Trend({ title, trends, onChange, start = 0, isEdit, disa
 										case "slope_scope_condition":
 										case "abs_slope_percentage_scope_condition":
 											components.push(
-												<Span
-													disabled={disabled}
+												<SpanWithUnit
 													key={k}
-													addonAfter={k.includes("span") && timeStampColumnType !== "number" ? timeStampColumnType : undefined}
-													valueFormatter={k.includes("span") ? timeStampColumnUnit : undefined}
-													min={trend[k]?.min?.value ?? null}
-													max={trend[k]?.max?.value ?? null}
-													activeColor={getColorFromMap(colorMap, trend[k]?.text_source_id)}
-													minInclusive={!!trend[k]?.min?.inclusive}
-													maxInclusive={!!trend[k]?.max?.inclusive}
-													onChange={(min, max, minInclusive, maxInclusive) => {
+													isSlope={k === "slope_scope_condition"}
+													disabled={disabled}
+													min={condition?.min?.value ?? null}
+													max={condition?.max?.value ?? null}
+													activeColor={getColorFromMap(colorMap, condition?.text_source_id)}
+													minInclusive={!!condition?.min?.inclusive}
+													maxInclusive={!!condition?.max?.inclusive}
+													unit={condition?.unit}
+													onChange={({ min, max, unit }) => {
 														const newTrends = deepClone(allTrends);
 														const change = {
 															[k]: {
-																text_source_id: trend[k]?.text_source_id,
-																min: !min ? undefined : {
-																	value: min,
-																	inclusive: minInclusive
-																},
-																max: !max ? undefined : {
-																	value: max,
-																	inclusive: maxInclusive
-																}
+																text_source_id: condition?.text_source_id,
+																min,
+																max,
+																unit,
 															},
 														};
 														newTrends[index] = {

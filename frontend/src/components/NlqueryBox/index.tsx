@@ -10,10 +10,11 @@ import type { SpeechRecognitionType } from "../../types";
 import { addChatHistory, getFragmentsBySpec, getQuerySpecRequest } from "../../api";
 import { setQueryResults } from "../../app/slice/approximation";
 import { setIsRequesting } from "../../app/slice/resultsSlice";
-import { formatQuerySpec, QuerySpecWithSource } from "../../types/QuerySpec";
+import { QuerySpecWithSource } from "../../types/QuerySpec";
 import { deepClone } from "../../utils/deepclone";
 import HighlightedText from './HighlightedText';
 import AudioIcon from "../../icons/Audio";
+import { formatQuerySpec } from "../../utils/query-spec";
 
 // 语音识别配置
 const initSpeechRecognition = () => {

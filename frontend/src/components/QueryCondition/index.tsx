@@ -11,7 +11,9 @@ import Trend from "../NlqueryBox/Trend";
 import TrendGroup from "../NlqueryBox/TrendGroup";
 import GroupRelation from "../NlqueryBox/GroupRelation";
 import { getColorFromMap } from "../../utils/color";
-import { QuerySpecWithSource, ScopeConditionWithSource } from "../../types/QuerySpec";
+import { QuerySpecWithSource, ScopeConditionWithSource, ScopeConditionWithSourceWithUnit, Unit } from "../../types/QuerySpec";
+import { getSecondsOfUnit } from "../../utils/query-spec";
+import SpanWithUnit from "../NlqueryBox/SpanWithUnit";
 
 const emptyQuerySpec: QuerySpecWithSource = {
 	original_text: "",
@@ -35,11 +37,12 @@ const emptyQuerySpec: QuerySpecWithSource = {
 	},
 };
 
-const updateScopeCondition = (condition: ScopeConditionWithSource, min: number | null, max: number | null, minInclusive: boolean, maxInclusive: boolean): ScopeConditionWithSource => {
+const updateScopeCondition = (condition: ScopeConditionWithSourceWithUnit, min: number | null, max: number | null, minInclusive: boolean, maxInclusive: boolean): ScopeConditionWithSourceWithUnit => {
 	return {
 		min: typeof min === "number" ? { value: min, inclusive: minInclusive } : undefined,
 		max: typeof max === "number" ? { value: max, inclusive: maxInclusive } : undefined,
 		text_source_id: condition.text_source_id,
+		unit: condition.unit,
 	};
 };
 
@@ -52,21 +55,15 @@ export default function QueryCondition() {
 	const dispatch = useAppDispatch();
 	const time = useAppSelector((state) => state.dataset.dataset?.data[state.dataset.dataset.timeStampColumn]) || [];
 	const date = time.map((t) => new Date(t).getTime());
-	const minDate = date.reduce((min, curr) => curr < min ? curr : min, date[0]);
-	const maxDate = date.reduce((max, curr) => curr > max ? curr : max, date[0]);
+	const minDate = date.reduce((min, curr) => (curr < min ? curr : min), date[0]);
+	const maxDate = date.reduce((max, curr) => (curr > max ? curr : max), date[0]);
 	const curRelation = useAppSelector((state) => state.states.curRelation);
 	const colorMap = useAppSelector((state) => state.states.colorMap);
 	const timeStampColumnType = useAppSelector((state) => state.dataset.dataset?.timeStampColumnType) ?? "number";
-	const timeStampColumnUnit = useMemo(() => timeStampColumnType === "day" ? 86400 : timeStampColumnType === "hour" ? 3600 : timeStampColumnType === "minute" ? 60 : 1, [timeStampColumnType]);
-	const timeStampColumnUnitText = useMemo(() => timeStampColumnType === "number" ? "" : timeStampColumnType, [timeStampColumnType]);
+	const timeStampColumnUnit = useMemo(() => getSecondsOfUnit(timeStampColumnType as Unit), [timeStampColumnType]);
+	const timeStampColumnUnitText = useMemo(() => (timeStampColumnType === "number" ? undefined : timeStampColumnType), [timeStampColumnType]);
 
 	const scopeConfigs = [
-		{
-			title: "Time Span",
-			condition: memoizedQuery.time_span_condition,
-			addonAfter: timeStampColumnUnitText,
-			valueFormatter: timeStampColumnUnit,
-		},
 		{
 			title: "Time Scope",
 			condition: memoizedQuery.time_scope_condition,
@@ -75,11 +72,11 @@ export default function QueryCondition() {
 		},
 		{
 			title: "Max Value Scope",
-			condition: memoizedQuery.max_value_scope_condition
+			condition: memoizedQuery.max_value_scope_condition,
 		},
 		{
 			title: "Min Value Scope",
-			condition: memoizedQuery.min_value_scope_condition
+			condition: memoizedQuery.min_value_scope_condition,
 		},
 	];
 
@@ -94,13 +91,13 @@ export default function QueryCondition() {
 		>
 			<section>
 				<Target
-					value={memoizedQuery.targets.map(target => target.target)}
+					value={memoizedQuery.targets.map((target) => target.target)}
 					options={values}
 					colorMap={colorMap}
-					sources={memoizedQuery?.targets.map(target => target.text_source_id)}
+					sources={memoizedQuery?.targets.map((target) => target.text_source_id)}
 					onChange={(val) => {
 						const newQuery = deepClone(memoizedQuery);
-						newQuery.targets = val.map(target => ({ target, text_source_id: query?.targets.find(source => source.target === target)?.text_source_id ?? -1 }))
+						newQuery.targets = val.map((target) => ({ target, text_source_id: query?.targets.find((source) => source.target === target)?.text_source_id ?? -1 }));
 						dispatch(setQuery(newQuery));
 					}}
 				/>
@@ -165,6 +162,28 @@ export default function QueryCondition() {
 				<Divider />
 			</section>
 
+			<section>
+				<SpanWithUnit
+					title="Time Span"
+					min={memoizedQuery.time_span_condition?.min?.value ?? null}
+					max={memoizedQuery.time_span_condition?.max?.value ?? null}
+					activeColor={getColorFromMap(colorMap, memoizedQuery.time_span_condition?.text_source_id)}
+					minInclusive={!!memoizedQuery.time_span_condition?.min?.inclusive}
+					maxInclusive={!!memoizedQuery.time_span_condition?.max?.inclusive}
+					unit={memoizedQuery.time_span_condition?.unit ?? timeStampColumnUnitText}
+					onChange={({ min, max, unit }) => {
+						const newQuery = deepClone(memoizedQuery);
+						newQuery.time_span_condition = {
+							min,
+							max,
+							unit,
+							text_source_id: memoizedQuery.time_span_condition?.text_source_id ?? -1,
+						};
+						dispatch(setQuery(newQuery));
+					}}
+				/>
+			</section>
+
 			{scopeConfigs.map(({ title, condition, ...props }, index) => (
 				<section key={index}>
 					<Scope
@@ -178,7 +197,7 @@ export default function QueryCondition() {
 						onChange={(min, max, minInclusive, maxInclusive) => {
 							const newQuery = deepClone(memoizedQuery);
 							const key = (title.toLowerCase().replace(/\s/g, "_") + "_condition") as ScopeConditionKeys;
-							newQuery[key] = updateScopeCondition(condition || {} as ScopeConditionWithSource, min, max, minInclusive, maxInclusive);
+							newQuery[key] = updateScopeCondition(condition || ({} as ScopeConditionWithSource), min, max, minInclusive, maxInclusive);
 							dispatch(setQuery(newQuery));
 						}}
 					/>
