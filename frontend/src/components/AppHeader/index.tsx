@@ -9,9 +9,9 @@ function AppHeader() {
     <header className="header">
       <div className="header-left">
         <CsvLoader></CsvLoader>
-        <div onClick={() => dispatch(setIsSettingShow(true))}>
+        {/* <div onClick={() => dispatch(setIsSettingShow(true))}>
           <SettingIcon />
-        </div>
+        </div> */}
       </div>
       <h1 className="header-title">ChronoMantic</h1>
       <div className="header-right"></div>

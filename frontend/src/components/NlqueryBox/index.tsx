@@ -1,18 +1,18 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useAppDispatch, useAppSelector } from "../../app/hooks";
 import "./index.css";
-import { setColorMap, setNLQuery, setOriginalQuery, setQuery, setQuerySpec } from "../../app/slice/stateSlice";
+import {  setNLQuery, setQuery } from "../../app/slice/stateSlice";
 import QueryIcon from "../../icons/Query";
 import SubmitIcon from "../../icons/Submit";
 import { LoadingOutlined } from "@ant-design/icons";
 import { classnames } from "../../utils/classname";
 import type { SpeechRecognitionType } from "../../types";
-import { addChatHistory, getFragmentsBySpec, getQuerySpecRequest } from "../../api";
+import { getFragmentsBySpec, getQuerySpecRequest } from "../../api";
 import { setQueryResults } from "../../app/slice/approximation";
 import { setIsRequesting } from "../../app/slice/resultsSlice";
 import { QuerySpecWithSource } from "../../types/QuerySpec";
 import { deepClone } from "../../utils/deepclone";
-import HighlightedText from './HighlightedText';
+import HighlightedText from "./HighlightedText";
 import AudioIcon from "../../icons/Audio";
 import { formatQuerySpec } from "../../utils/query-spec";
 
@@ -31,7 +31,7 @@ const TextSourceToggler = {
 	toggleSource: (query: QuerySpecWithSource, text_source_id: number) => {
 		if (!query.text_sources[text_source_id]) return;
 		query.text_sources[text_source_id].disabled = !query.text_sources[text_source_id].disabled;
-	}
+	},
 };
 
 const PLACEHOLDER = "Please enter your query...";
@@ -61,9 +61,7 @@ export default function NlqueryBox() {
 
 	useEffect(() => {
 		const handleClickOutside = (event: MouseEvent) => {
-			if (textareaRef.current && 
-				!textareaRef.current.contains(event.target as Node) && 
-				!document.querySelector(".ant-dropdown")?.contains(event.target as Node)) {
+			if (textareaRef.current && !textareaRef.current.contains(event.target as Node) && !document.querySelector(".ant-dropdown")?.contains(event.target as Node)) {
 				setIsEdit(false);
 			}
 		};
@@ -72,44 +70,43 @@ export default function NlqueryBox() {
 		return () => document.removeEventListener("mousedown", handleClickOutside, { capture: true });
 	}, []);
 
-	const toggleTextSourceDisabled = useCallback((text_source_id: number) => {
-		if (!query) return;
-		const newQuery = deepClone(query);
-		TextSourceToggler.toggleSource(newQuery, text_source_id);
-		dispatch(setQuery(newQuery));
-	}, [query, dispatch]);
+	const toggleTextSourceDisabled = useCallback(
+		(text_source_id: number) => {
+			if (!query) return;
+			const newQuery = deepClone(query);
+			TextSourceToggler.toggleSource(newQuery, text_source_id);
+			dispatch(setQuery(newQuery));
+		},
+		[query, dispatch]
+	);
 
-	const handleSubmit = useCallback(async (e: React.FormEvent) => {
-		e.preventDefault();
-		if (!NLQuery.trim() || !query) return;
-		const querySpec = formatQuerySpec(query);
-		dispatch(setQuerySpec(querySpec));
-		dispatch(setOriginalQuery(query));
-		addChatHistory(NLQuery, JSON.stringify(query));
-		const res = await getFragmentsBySpec(querySpec);
-		dispatch(setQueryResults(res));
-	}, [NLQuery, query, dispatch]);
-
-	const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
-		if (e.key === "Enter") {
+	const handleSubmit = useCallback(
+		async (e: React.FormEvent) => {
 			e.preventDefault();
-			dispatch(setIsRequesting(true));
-			if (textareaRef.current && NLQuery.trim()) {
-				textareaRef.current.blur();
+			if (NLQuery.trim()) {
 				setIsEdit(false);
-				dispatch(setQuery(null));
-				dispatch(setColorMap(null));
+				dispatch(setIsRequesting(true));
 				getQuerySpecRequest(NLQuery)
 					.then((res) => {
-						dispatch(setQuery(res));
-						dispatch(setColorMap(res));
+						const querySpec = formatQuerySpec(res);
+						return getFragmentsBySpec(querySpec);
+					})
+					.then((results) => {
+						dispatch(setQueryResults(results));
 					})
 					.finally(() => {
 						dispatch(setIsRequesting(false));
 					});
 			}
+		},
+		[NLQuery, dispatch]
+	);
+
+	const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
+		if (e.key === "Enter") {
+			e.preventDefault();
 		}
-	}, [NLQuery, dispatch]);
+	}, []);
 
 	return (
 		<form
@@ -154,7 +151,9 @@ export default function NlqueryBox() {
 							query={query}
 							onToggleDisabled={toggleTextSourceDisabled}
 						/>
-					) : PLACEHOLDER}
+					) : (
+						PLACEHOLDER
+					)}
 					{isRequesting && <LoadingOutlined style={{ marginLeft: 8 }} />}
 				</div>
 			)}

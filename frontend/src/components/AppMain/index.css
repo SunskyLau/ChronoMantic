@@ -17,6 +17,12 @@
     transition: .1s;
 }
 
+
+.main-middle {
+    width: var(--width);
+    max-width: var(--width);
+}
+
 .main-left {
     margin-left: var(--gap);
 }

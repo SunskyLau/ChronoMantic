@@ -369,9 +369,6 @@ export default function ResultsContent() {
 
                     {groupedAttributes.global.length > 0 && <div className="header-column">
                         <div className="header-column-group">
-                            <div className="header-column-group-title">
-                                <span>Global</span>
-                            </div>
                             <div className="header-column-group-content">
                                 {
                                     groupedAttributes.global.map(attr => (
@@ -383,9 +380,6 @@ export default function ResultsContent() {
                                             {filteredResults.length > 0 ?
                                                 (<>
                                                     <div className="header-column-group-item-title">
-                                                        <span className={classnames("header-column-group-item-title-icon")}>
-                                                            {sortConfig.key !== attr.id || sortConfig.direction === null ? <UnorderedListOutlined /> : sortConfig.direction === 'asc' ? <SortAscendingOutlined /> : <SortDescendingOutlined />}
-                                                        </span>
                                                         <span className="header-column-group-item-title-text">{attr.label}</span>
                                                     </div>
                                                     <SelectChart
@@ -435,18 +429,6 @@ export default function ResultsContent() {
                             </div>
                         )
                     ))}
-
-                    <div className="header-column">
-                        <Cascader
-                            options={options}
-                            onChange={handleCascaderChange}
-                            multiple
-                        >
-                            <div className="header-column-item add-icon">
-                                <AddIcon />
-                            </div>
-                        </Cascader>
-                    </div>
                 </div>
 
                 <div className="result-item-list">
