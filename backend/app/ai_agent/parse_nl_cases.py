@@ -1,3 +1,6 @@
+FUZZY_FACTOR = 0.1
+
+
 class ParseNL_Cases:
     case1 = """
 输入：
@@ -297,133 +300,134 @@ Find periods in AMZN when price presented a head-and-shoulders shape
 }
     """
 
-    case5 = """
+    case5 = f"""
 输入：
 Find periods in AMZN when price first presented a double-bottom shape with a duration of about a week and then presented a double-top shape with a duration higher than the first double-bottom's duration
 
 输出：
-{
+{{
   "original_text": "Find periods in AMZN when price first presented a double-bottom shape with a duration of about a week and then presented a double-top shape with a duration higher than the first double-bottom's duration",
   "text_sources": [
-    {
+    {{
       "text": "AMZN",
       "index": 0
-    },
-    {
+    }},
+    {{
       "text": "a double-bottom",
       "index": 0
-    },
-    {
+    }},
+    {{
       "text": "with a duration of about a week",
       "index": 0
-    },
-    {
+    }},
+    {{
       "text": "a double-top",
       "index": 0
-    },
-    {
+    }},
+    {{
       "text": "with a duration higher than the first double-bottom's duration",
       "index": 0
-    }
+    }}
   ],
   "targets": [
-    {
+    {{
       "target": "AMZN",
       "text_source_id": 0
-    }
+    }}
   ],
   "trends": [
-    {
-      "category": {
+    {{
+      "category": {{
         "category": "down",
         "text_source_id": 1
-      }
-    },
-    {
-      "category": {
+      }}
+    }},
+    {{
+      "category": {{
         "category": "up",
         "text_source_id": 1
-      }
-    },
-    {
-      "category": {
+      }}
+    }},
+    {{
+      "category": {{
         "category": "down",
         "text_source_id": 1
-      }
-    },
-    {
-      "category": {
+      }}
+    }},
+    {{
+      "category": {{
         "category": "up",
         "text_source_id": 1
-      }
-    },
-    {
-      "category": {
+      }}
+    }},
+    {{
+      "category": {{
         "category": "up",
         "text_source_id": 3
-      }
-    },
-    {
-      "category": {
+      }}
+    }},
+    {{
+      "category": {{
         "category": "down",
         "text_source_id": 3
-      }
-    },
-    {
-      "category": {
+      }}
+    }},
+    {{
+      "category": {{
         "category": "up",
         "text_source_id": 3
-      }
-    },
-    {
-      "category": {
+      }}
+    }},
+    {{
+      "category": {{
         "category": "down",
         "text_source_id": 3
-      }
-    }
+      }}
+    }}
   ],
   "single_relations": [
-    {
+    {{
       "id1": 0,
       "id2": 2,
       "attribute": "end_value",
       "comparator": "~=",
       "text_source_id": 1
-    },
-    {
+    }},
+    {{
       "id1": 4,
       "id2": 6,
       "attribute": "end_value",
       "comparator": "~=",
       "text_source_id": 3
-    }
+    }}
   ],
   "trend_groups": [
-    {
+    {{
       "ids": [0, 3],
-      "time_span_condition": {
-        "min": {
-          "value": 432000,
+      "time_span_condition": {{
+        "min": {{
+          "value": {1 - FUZZY_FACTOR},
           "inclusive": true
-        },
-        "max": {
-          "value": 777600,
+        }},
+        "max": {{
+          "value": {1 + FUZZY_FACTOR},
           "inclusive": true
-        },
+        }},
+        "unit": "week",
         "text_source_id": 2
-      }
-    }
+      }}
+    }}
   ],
   "group_relations": [
-    {
+    {{
       "group1": [0, 3],
       "group2": [4, 7],
       "attribute": "time_span",
       "comparator": "<",
       "text_source_id": 4
-    }
+    }}
   ]
-}
+}}
     """
 
     case6 = """

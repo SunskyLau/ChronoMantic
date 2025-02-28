@@ -2,9 +2,9 @@ import { Button, Divider, Empty, Flex, Select, Typography } from "antd";
 import { TrendGroupWithSource } from "../../../types/QuerySpec";
 import { MinusOutlined, PlusOutlined } from "@ant-design/icons";
 import { deepClone } from "../../../utils/deepclone";
-import Span from "../Span";
 import { getColorFromMap } from "../../../utils/color";
 import { useAppSelector } from "../../../app/hooks";
+import SpanWithUnit from "../SpanWithUnit";
 
 interface TrendGroupProps {
 	isEdit?: boolean;
@@ -16,7 +16,7 @@ interface TrendGroupProps {
 	timeStampColumnUnit?: number;
 }
 
-export default function TrendGroup({ groups, idLength, onChange, isEdit, disabled, timeStampColumnType = "number", timeStampColumnUnit = 1 }: TrendGroupProps) {
+export default function TrendGroup({ groups, idLength, onChange, isEdit, disabled }: TrendGroupProps) {
 	const colorMap = useAppSelector((state) => state.states.colorMap);
 	const allGroups = isEdit ? deepClone(groups) : groups;
 
@@ -63,13 +63,14 @@ export default function TrendGroup({ groups, idLength, onChange, isEdit, disable
 								gap={8}
 								align="center"
 							>
-								<Span
+								<SpanWithUnit
 									disabled={disabled}
 									min={group.time_span_condition?.min?.value ?? null}
 									max={group.time_span_condition?.max?.value ?? null}
 									activeColor={getColorFromMap(colorMap, group.time_span_condition?.text_source_id)}
 									minInclusive={!!group.time_span_condition?.min?.inclusive}
 									maxInclusive={!!group.time_span_condition?.max?.inclusive}
+									unit={group.time_span_condition?.unit}
 									addonBefore={[
 										<Select
 											disabled={disabled}
@@ -92,18 +93,17 @@ export default function TrendGroup({ groups, idLength, onChange, isEdit, disable
 											}}
 										/>,
 									]}
-									addonAfter={timeStampColumnType !== "number" ? timeStampColumnType : undefined}
-									valueFormatter={timeStampColumnUnit}
-									onChange={(min, max, minInclusive, maxInclusive) => {
+									onChange={({ min, max, unit }) => {
 										const newGroups = deepClone(allGroups);
 										newGroups[index].time_span_condition = {
-											min: typeof min === "number" ? { value: min, inclusive: minInclusive } : undefined,
-											max: typeof max === "number" ? { value: max, inclusive: maxInclusive } : undefined,
-											text_source_id: -1,
+											text_source_id: group.time_span_condition?.text_source_id ?? -1,
+											min,
+											max,
+											unit,
 										};
 										onChange(newGroups);
 									}}
-								/>
+								></SpanWithUnit>
 							</Flex>
 							{isEdit && !disabled && (
 								<Button

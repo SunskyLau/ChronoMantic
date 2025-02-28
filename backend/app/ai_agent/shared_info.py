@@ -1,3 +1,5 @@
+from .parse_nl_cases import FUZZY_FACTOR
+
 Segment_info = """
 /**
  * Segment - 分段线性拟合的时间序列片段接口定义
@@ -47,19 +49,19 @@ export interface Trend {
   category: string; // 趋势类别，可以是"flat"(平稳),"up"(上升),"down"(下降)
   slope_scope_condition?: ScopeCondition; // 斜率的范围条件，用于限定趋势的斜率范围
   abs_slope_percentage_scope_condition?: ScopeCondition; // 斜率在所有斜率中的占比范围条件，用于限定趋势的相对斜率大小，单位是%，例如30就代表30%
-  time_span_condition?: ScopeCondition; // 时间跨度的范围条件，用于限定趋势的持续时间，单位是秒，例如3600就代表1小时，1天是86400秒
+  time_span_condition?: ScopeCondition; // 时间跨度的范围条件，用于限定趋势的持续时间
 }
 
 export enum SingleAttribute {
   SLOPE = "slope", // 斜率属性，用于比较趋势的斜率
   START_VALUE = "start_value", // 起始值属性，用于比较趋势的起始点值
   END_VALUE = "end_value", // 结束值属性，用于比较趋势的终止点值
-  TIME_SPAN = "time_span", // 时间跨度属性，用于比较趋势的持续时间，单位是秒
+  TIME_SPAN = "time_span", // 时间跨度属性，用于比较趋势的持续时间
   ABS_SLOPE_PERCENTAGE = "abs_slope_percentage" // 斜率占比属性，单位是%
 }
 
 export enum GroupAttribute {
-  TIME_SPAN = "time_span", // 时间跨度属性，单位是秒
+  TIME_SPAN = "time_span", // 时间跨度属性
 }
 
 export enum Comparator {
@@ -80,7 +82,7 @@ export interface SingleRelation {
 
 export interface TrendGroup {
   ids: [number, number]; // 组合中包含的趋势ID列表，ids[1]>=ids[0]
-  time_span_condition: ScopeCondition; // 时间跨度条件，单位是秒
+  time_span_condition: ScopeCondition; // 时间跨度条件
 }
 
 export interface GroupRelation {
@@ -96,8 +98,8 @@ export interface QuerySpec {
   single_relations: SingleRelation[]; // 趋势间的关系条件列表
   trend_groups: TrendGroup[]; // 趋势组合列表
   group_relations: GroupRelation[]; // 组合关系列表
-  time_span_condition?: ScopeCondition; // 全局时间跨度条件，单位是秒，可选
-  time_scope_condition?: ScopeCondition; // 全局时间范围的筛选条件，单位是秒，可选
+  time_span_condition?: ScopeCondition; // 全局时间跨度条件
+  time_scope_condition?: ScopeCondition; // 全局时间范围的筛选条件
   max_value_scope_condition?: ScopeCondition; // 全局最大值的范围条件，可选
   min_value_scope_condition?: ScopeCondition; // 全局最小值的范围条件，可选
 }
@@ -120,14 +122,23 @@ export interface CategoryWithSource extends WithSource {
   category: TrendCategory; // 趋势类别
 }
 
+// 单位
+export type Unit = "second" | "minute" | "hour" | "day" | "week" | "month" | "year";
+
+export interface WithUnit {
+  unit?: Unit; // 单位
+}
+
 export interface ScopeConditionWithSource extends WithSource, ScopeCondition {}
+
+export interface ScopeConditionWithSourceWithUnit extends ScopeConditionWithSource, WithUnit {}
 
 // 单趋势的 WithSource 版本
 export interface TrendWithSource {
   category: CategoryWithSource; // 趋势类别
-  slope_scope_condition?: ScopeConditionWithSource; // 斜率的范围条件
+  slope_scope_condition?: ScopeConditionWithSourceWithUnit; // 斜率的范围条件
   abs_slope_percentage_scope_condition?: ScopeConditionWithSource; // 斜率占比的范围条件
-  time_span_condition?: ScopeConditionWithSource; // 时间跨度的范围条件
+  time_span_condition?: ScopeConditionWithSourceWithUnit; // 时间跨度的范围条件
 }
 
 // 单趋势关系的 WithSource 版本
@@ -154,7 +165,7 @@ export interface QuerySpecWithSource {
   single_relations: SingleRelationWithSource[]; // 单趋势关系列表
   trend_groups: TrendGroupWithSource[]; // 趋势组合列表
   group_relations: GroupRelationWithSource[]; // 组合关系列表
-  time_span_condition?: ScopeConditionWithSource; // 总时间跨度的范围条件
+  time_span_condition?: ScopeConditionWithSourceWithUnit; // 总时间跨度的范围条件
   time_scope_condition?: ScopeConditionWithSource; // 时间范围的范围条件
   max_value_scope_condition?: ScopeConditionWithSource; // 最大值的范围条件
   min_value_scope_condition?: ScopeConditionWithSource; // 最小值的范围条件
@@ -223,8 +234,8 @@ model_info = """
 为了满足对时间序列片段的趋势和形状描述，我们使用线段拟合分割方法对时间序列进行不同模糊等级的分割预处理。分割后的时间序列是许多连续线段组成的数组，它们首尾相连形成整个通过分割模糊化后的时间序列。每一段都是一条以两个分割点为起止点的线段。通过这种线段拟合分段的方式，可以满足基本的趋势和形状查询，只需要从原段序列中匹配出满足趋势或者形状的子段序列即可。
 """
 
-parse_nl_logic_info = """
-1. 自然语言中如果出现模糊的范围表达，解析成ScopeConditionWithSource的时候需要让min和max构成一个满足模糊表达的范围，min和max不应该相等。例如，"about 2 weeks"需要解析成min对应12days，max对应16days的ScopeConditionWithSource，也就是允许一个比原数值更小的数和更大的数来组成这个模糊的范围。因此，你需要根据语义恰当地解析出一个范围。
+parse_nl_logic_info = f"""
+1. 自然语言中如果出现模糊的范围表达，解析成ScopeConditionWithSource的时候需要让min和max构成一个满足模糊表达的范围，min和max不应该相等。例如，"about 2 weeks"需要根据模糊程度：{FUZZY_FACTOR}，解析成min对应{(1 - FUZZY_FACTOR) * 2}weeks，max对应{(1 + FUZZY_FACTOR) * 2}weeks的ScopeConditionWithSourceWithUnit，也就是允许一个比原数值更小的数和更大的数来组成这个模糊的范围。因此，你需要根据语义恰当地解析出一个范围。当用户明确给出单位的时候，你需要使用用户给出的单位。
 2. 自然语言中对于趋势和形状的描述，需要解析成TrendWithSource，其中category需要解析成趋势的类别，text_source需要解析成趋势的描述来源。你需要捕捉趋势和形状的特征并翻译为相应的字段。
 3. 自然语言中如果是确切的描述，如"a duration of 20~30days"，需要解析成time_span_condition，其中min和max需要解析成相应的数值。诸如此类，需要精准识别应该解析为什么condition。
 4. 有关趋势程度的模糊描述，根据语义解析为abs_slope_percentage_scope_condition。
@@ -232,6 +243,7 @@ parse_nl_logic_info = """
 6. 你需要识别出自然语言中对于relation的描述，这种描述也可以分为隐式的和显式的。隐式的relation描述通常隐藏在形状的描述中，例如，"head-and-shoulders"中，中间的"head"应该要高于左右两个shoulders，这就意味着第二次上升趋势(trend_id=2)的end_value应该要大于第一次和第三次上升趋势(trend_id=0和trend_id=4)的end_value，这里relation就应该被解析出来。显式的relation描述通常是直接描述的，例如，"连续的两次上升，左边的上升速度比右边的上升速度更快"，这意味着第一次上升趋势(trend_id=0)的slope应该要大于第二次上升趋势(trend_id=1)的slope，这里relation就应该被解析出来。最后，你还需要避免引入无效的relation，例如，"rise sharply then rise slowly"，这里面"sharply"和"slowly"已经被解析成trend中的条件，再引入relation是多余的。
 7. 对于自然语言中存在的持续时间描述，你需要判断使用整体的time_span_condition，还是使用trend_group中的time_span_condition，抑或是使用trend中的time_span_condition。如果是对于整体时间的描述，则使用整体time_span_condition；如果是对于组合时间的描述，则使用trend_group中的time_span_condition，如果是对于单个trend的持续时间描述，则使用trend中的time_span_condition。 
 8. 尽可能保证多轮对话解析中的稳定性和一致性。
+9. 对于趋势的描述，如果用户没有明确给出单位，默认使用秒，如果用户给出单位，例如“rising about 20/month”，则需要根据模糊程度：{FUZZY_FACTOR}，解析成min对应{(1 - FUZZY_FACTOR) * 20}，max对应{(1 + FUZZY_FACTOR) * 20}，单位是“month”的ScopeConditionWithSourceWithUnit。
 """
 
 modify_nl_logic_info = """

@@ -1,4 +1,4 @@
-import { Comparator, GroupRelationWithSource, QuerySpecWithSource, ScopeConditionWithSource, SingleAttribute, SingleRelationWithSource, TargetWithSource, TrendGroupWithSource, TrendTextMap, TrendWithSource } from "../../../types/QuerySpec";
+import { Comparator, GroupRelationWithSource, QuerySpecWithSource, ScopeConditionWithSource, ScopeConditionWithSourceWithUnit, SingleAttribute, SingleRelationWithSource, TargetWithSource, TrendGroupWithSource, TrendTextMap, TrendWithSource } from "../../../types/QuerySpec";
 import * as d3 from "d3";
 import { useEffect, useRef, useState } from "react";
 import type { DefaultArcObject } from "d3-shape";
@@ -58,15 +58,15 @@ const getColorWithDisabled = (colorMap: Record<string, string>, query: QuerySpec
 	return getColorFromMap(colorMap, text_source_id);
 };
 
-const getScopeText = (scope: ScopeConditionWithSource, unit: string = "", valueFormat: number = 1) => {
+const getScopeText = (scope: ScopeConditionWithSourceWithUnit, unitFormatter: (unit: string) => string = (unit: string) => unit) => {
 	if (!scope) return null;
-	const { min, max } = scope;
+	const { min, max, unit = "" } = scope;
 	if (min && max) {
-		return `${min.inclusive ? "[" : "("}${min.value / valueFormat}${unit}, ${max.value / valueFormat}${unit}${max.inclusive ? "]" : ")"}`;
+		return `${min.inclusive ? "[" : "("}${min.value}${unitFormatter(unit)}, ${max.value}${unitFormatter(unit)}${max.inclusive ? "]" : ")"}`;
 	} else if (min) {
-		return `${min.inclusive ? "[" : "("}${min.value / valueFormat}${unit}, +∞)`;
+		return `${min.inclusive ? "[" : "("}${min.value}${unitFormatter(unit)}, +∞)`;
 	} else if (max) {
-		return `(-∞, ${max.value / valueFormat}${unit}${max.inclusive ? "]" : ")"}`;
+		return `(-∞, ${max.value}${unitFormatter(unit)}${max.inclusive ? "]" : ")"}`;
 	}
 	return "";
 };
@@ -81,15 +81,15 @@ const getSlopeText = (trend: TrendWithSource, colorMap: Record<string, string>, 
 	if (!Object.keys(conditions).length) return null;
 	const texts: Record<string, TextWithColor> = {};
 	const map = {
-		"slope_scope_condition": { key: TrendTextMap["slope_scope_condition"], unit: "/day" },
-		"abs_slope_percentage_scope_condition": { key: TrendTextMap["abs_slope_percentage_scope_condition"], unit: "%" },
+		"slope_scope_condition": { key: TrendTextMap["slope_scope_condition"], unitFormatter: (unit: string) => unit ? `/${unit}` : "" },
+		"abs_slope_percentage_scope_condition": { key: TrendTextMap["abs_slope_percentage_scope_condition"], unitFormatter: () => `%` },
 	}
 	Object.entries(conditions).forEach(([key, value]) => {
 		if (key === 'time_span_condition' || key === 'category') return;
 		const unit = map[key as keyof typeof map];
 		if (value) {
 			texts[key] = {
-				text: unit.key + ": " + getScopeText(value, unit.unit),
+				text: unit.key + ": " + getScopeText(value, unit.unitFormatter),
 				color: getColorWithDisabled(colorMap, query, value.text_source_id),
 			};
 		}
@@ -155,7 +155,7 @@ const calculateTimeRangeLevels = (trends: TrendWithSource[], trend_groups: Trend
 };
 
 
-const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_relations = [], height = 32, onClick, curRelation, query, colorMap = {}, targets = [], timeStampColumnType = "number", timeStampColumnUnit = 1 }: GlyphProps) => {
+const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_relations = [], height = 32, onClick, curRelation, query, colorMap = {}, targets = [] }: GlyphProps) => {
 	const trendLength = height;
 	const disabled = curRelation !== -1;
 	const width = trends.length * trendLength;
@@ -599,7 +599,7 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 		type: 'trend' | 'group' | 'global';
 		index: number;
 		level: number;
-		condition?: ScopeConditionWithSource;
+		condition?: ScopeConditionWithSourceWithUnit;
 		ids?: [number, number];
 	}) => {
 		const { type, index, level, condition, ids } = params;
@@ -623,7 +623,7 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 
 		const textY = baseY2.current + (type === 'global' ? (level + 1) : level) * 5 + 3;
 		const timeColor = getColorWithDisabled(colorMap, query, condition.text_source_id);
-		const timeText = getScopeText(condition, timeStampColumnType, timeStampColumnUnit);
+		const timeText = getScopeText(condition);
 
 		if (!timeText) return null;
 

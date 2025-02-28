@@ -2,7 +2,7 @@ import { SwapRightOutlined } from "@ant-design/icons";
 import { Checkbox, Flex, InputNumber } from "antd";
 import { ReactNode } from "react";
 
-interface SpanProps {
+export interface SpanProps {
 	min: number | null;
 	max: number | null;
 	minInclusive: boolean;
@@ -12,8 +12,8 @@ interface SpanProps {
 	activeColor?: string;
 	minActiveColor?: string;
 	maxActiveColor?: string;
-	addonBefore?: [ReactNode, ReactNode];
-	addonAfter?: string;
+	addonBefore?: ReactNode | ReactNode[];
+	addonAfter?: ReactNode;
 	valueFormatter?: number;
 	disabled?: boolean;
 	onChange: (min: number | null, max: number | null, minInclusive: boolean, maxInclusive: boolean) => void;
@@ -38,7 +38,7 @@ export default function Span({ min, max, minValue, maxValue, minInclusive, addon
 					></Checkbox>
 					<InputNumber
 						disabled={disabled}
-						addonBefore={addonBefore?.[0]}
+						addonBefore={Array.isArray(addonBefore) ? addonBefore[0] : addonBefore}
 						addonAfter={addonAfter}
 						max={maxValue}
 						min={minValue}
@@ -52,7 +52,7 @@ export default function Span({ min, max, minValue, maxValue, minInclusive, addon
 				<Flex style={{ backgroundColor: maxActiveColor }} className="active-component" align="center" gap={8}>
 					<InputNumber
 						disabled={disabled}
-						addonBefore={addonBefore?.[1]}
+						addonBefore={Array.isArray(addonBefore) ? addonBefore[1] : addonBefore}
 						addonAfter={addonAfter}
 						max={maxValue}
 						min={minValue}

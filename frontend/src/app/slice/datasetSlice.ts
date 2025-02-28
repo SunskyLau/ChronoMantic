@@ -1,10 +1,11 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { Unit } from "../../types/QuerySpec";
 
 export type ColumnType = string | number;
 
 export interface DatasetColumn {
   timeStampColumn: string;
-  timeStampColumnType: "number" | "day" | "hour" | "minute" | "second";
+  timeStampColumnType: "number" | Unit;
   valueColumns: string[];
 }
 
