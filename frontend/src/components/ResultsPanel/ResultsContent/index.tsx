@@ -375,20 +375,8 @@ export default function ResultsContent() {
                                         <div
                                             className="header-column-group-item pointer"
                                             key={attr.id}
-                                            onClick={() => handleSort(attr.id)}
                                         >
-                                            {filteredResults.length > 0 ?
-                                                (<>
-                                                    <div className="header-column-group-item-title">
-                                                        <span className="header-column-group-item-title-text">{attr.label}</span>
-                                                    </div>
-                                                    <SelectChart
-                                                        data={Object.entries(attributeStats[attr.id].map)
-                                                            .sort(([a], [b]) => Number(a) - Number(b))
-                                                            .map(([x, y]) => ({ x: Number(x), y }))}
-                                                        onBrush={(min, max) => handleAttributeScaleChange(attr.id, [min, max])}
-                                                    />
-                                                </>) : attr.label}
+                                            {attr.label}
                                         </div>
                                     ))
                                 }
