@@ -1,5 +1,7 @@
 from datetime import datetime
 
+FUZZY_FACTOR = 0.1
+
 
 class Platforms:
     AZURE = "azure"
