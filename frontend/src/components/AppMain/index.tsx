@@ -4,6 +4,7 @@ import { classnames } from "../../utils/classname";
 import Setting from "../Setting";
 import "./index.css";
 import NlqueryBox from "../NlqueryBox";
+import TableView from "../TableView";
 
 export default function AppMain() {
     const isSettingShow = useAppSelector(state => state.setting.isSettingShow);
@@ -11,6 +12,9 @@ export default function AppMain() {
     return (
         <>
             <main className="main">
+                <section className={classnames("main-left")}>
+                    <TableView></TableView>
+                </section>
                 <section className={classnames("main-middle")}>
                     <NlqueryBox></NlqueryBox>
                     <ResultsPanel className="main-results" />

@@ -19,6 +19,7 @@
 .table-content table th {
     border-left: var(--border);
     border-bottom: var(--border);
+    border-top: var(--border);
     padding: 8px;
 }
 
@@ -49,4 +50,9 @@
 
 .table-content table tr:first-child td {
     border-top-width: 0;
+}
+
+.table-content table td {
+    height: 31px;
+    box-sizing: border-box;
 }

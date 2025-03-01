@@ -5,7 +5,7 @@ import AppMain from "./components/AppMain";
 function App() {
   return (
     <div id="app">
-      <AppHeader />
+      {/* <AppHeader /> */}
       <AppMain />
     </div>
   );

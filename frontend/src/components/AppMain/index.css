@@ -1,15 +1,14 @@
 .main {
     display: flex;
-    justify-content: center;
+    justify-content: flex-start;
     gap: var(--gap);
-    height: var(--height);
+    height: calc(var(--height) * 2 / 3);
     margin-top: var(--gap);
+    padding: 0 var(--gap);
 }
 
-.main-left,
-.main-middle {
-    flex: 1 1 var(--side-width);
-    max-width: var(--side-width);
+.main-left {
+    flex: 0 0 var(--side-width);
     min-width: 0;
     display: flex;
     flex-direction: column;
@@ -17,14 +16,12 @@
     transition: .1s;
 }
 
-
 .main-middle {
-    width: var(--width);
+    flex: 1;
     max-width: var(--width);
-}
-
-.main-left {
-    margin-left: var(--gap);
+    display: flex;
+    flex-direction: column;
+    gap: var(--gap);
 }
 
 .main-right {

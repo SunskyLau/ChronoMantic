@@ -41,6 +41,10 @@
   width: 96px;
 }
 
+.result-header .header-column:has(.header-column-group) {
+  flex: 1 0 0;
+}
+
 .result-header .header-column .header-column-group {
   display: flex;
   flex-direction: column;
@@ -75,7 +79,6 @@
   justify-content: center;
   background-color: var(--bg);
   border-radius: var(--gap);
-  width: 320px;
 }
 
 .result-header .header-column .header-column-group .header-column-group-item .header-column-group-item-title {
@@ -121,6 +124,7 @@
   flex: 1 0 0;
   width: fit-content;
   overflow-y: auto;
+  width: 100%;
 }
 
 .result-item-list:has(.ant-empty) {
@@ -128,7 +132,7 @@
 }
 
 .result-item-list .result-item {
-  width: fit-content;
+  width: 100%;
   background: white;
   gap: var(--gap);
   box-sizing: border-box;
@@ -164,7 +168,7 @@
 
 .result-item-list .result-item .item-column.data-value {
   height: 100%;
-  width: 320px;
+  flex: 1 0 0;
   color: var(--color);
   border-radius: 8px;
 }

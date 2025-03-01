@@ -6,6 +6,7 @@
 .table-upload {
     height: 100%;
     width: 100%;
+    color: #eee;
 }
 
 .table-upload .csv-loader {
