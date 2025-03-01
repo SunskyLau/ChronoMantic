@@ -1,14 +1,14 @@
-FUZZY_FACTOR = 0.1
+from .constant import FUZZY_FACTOR
 
 
 class ParseNL_Cases:
     case1 = """
 输入：
-Find periods in AMZN when price first rose sharply then fell gradually
+Find periods in AMZN when price first rose sharply then fell gradually and the price was higher than 100
 
 输出：
 {
-  "original_text": "Find periods in AMZN when price first rose sharply then fell gradually",
+  "original_text": "Find periods in AMZN when price first rose sharply then fell gradually and the price was higher than 100",
   "text_sources": [
     {
       "text": "AMZN",
@@ -28,6 +28,10 @@ Find periods in AMZN when price first rose sharply then fell gradually
     },
     {
       "text": "gradually",
+      "index": 0
+    },
+    {
+      "text": "higher than 100",
       "index": 0
     }
   ],
@@ -67,17 +71,24 @@ Find periods in AMZN when price first rose sharply then fell gradually
   ],
   "single_relations": [],
   "trend_groups": [],
-  "group_relations": []
+  "group_relations": [],
+  "min_value_scope_condition": {
+    "min": {
+      "value": 100,
+      "inclusive": true
+    },
+    "text_source_id": 5
+  }
 }
 """
 
     case2 = """
 输入：
-Find periods in DPZ when price presented a double-bottom shape
+Find periods in DPZ when price presented a double-bottom shape where the first bottom's slope was steeper than the second bottom's slope
 
 输出：
 {
-  "original_text": "Find periods in DPZ when price presented a double-bottom shape",
+  "original_text": "Find periods in DPZ when price presented a double-bottom shape where the first bottom's slope was steeper than the second bottom's slope",
   "text_sources": [
     {
       "text": "DPZ",
@@ -85,6 +96,10 @@ Find periods in DPZ when price presented a double-bottom shape
     },
     {
       "text": "double-bottom",
+      "index": 0
+    },
+    {
+      "text": "first bottom's slope was steeper than the second bottom's slope",
       "index": 0
     }
   ],
@@ -127,6 +142,20 @@ Find periods in DPZ when price presented a double-bottom shape
       "attribute": "end_value",
       "comparator": "~=",
       "text_source_id": 1
+    },
+    {
+      "id1": 0,
+      "id2": 2,
+      "attribute": "slope",
+      "comparator": "<",
+      "text_source_id": 2
+    },
+    {
+      "id1": 2,
+      "id2": 4,
+      "attribute": "slope",
+      "comparator": ">",
+      "text_source_id": 2
     }
   ],
   "trend_groups": [],
@@ -135,11 +164,14 @@ Find periods in DPZ when price presented a double-bottom shape
     """
     case3 = """
 输入：
-Find the time periods in Amazon stock when the price showed three consecutive peaks and the peaks got higher and higher
+Find the time periods in Amazon stock when the price showed three consecutive peaks and the peaks got higher and higher and each trend's slope should be steeper than 10 per month
+
+解释：
+趋势有上升下降的区别，所以在处理斜率（slope）时，需要区分上升和下降的斜率，上升的时候应该使用正斜率，并设置最小值为10；下降的时候应该使用负斜率，并设置最大值为-10。
 
 输出：
 {
-  "original_text": "Find the time periods in Amazon stock when the price showed three consecutive peaks and the peaks got higher and higher",
+  "original_text": "Find the time periods in Amazon stock when the price showed three consecutive peaks and the peaks got higher and higher and each trend's slope should be steeper than 10 per month",
   "text_sources": [
     {
       "text": "Amazon stock",
@@ -151,6 +183,10 @@ Find the time periods in Amazon stock when the price showed three consecutive pe
     },
     {
       "text": "peaks got higher and higher",
+      "index": 0
+    },
+    {
+      "text": "each trend's slope should be steeper than 10 per month",
       "index": 0
     }
   ],
@@ -165,36 +201,84 @@ Find the time periods in Amazon stock when the price showed three consecutive pe
       "category": {
         "category": "up",
         "text_source_id": 1
+      },
+      "slope_scope_condition": {
+        "min": {
+          "value": 10,
+          "inclusive": true
+        },
+        "unit": "month",
+        "text_source_id": 3
       }
     },
     {
       "category": {
         "category": "down",
         "text_source_id": 1
+      },
+      "slope_scope_condition": {
+        "max": {
+          "value": -10,
+          "inclusive": true
+        },
+        "unit": "month",
+        "text_source_id": 3
       }
     },
     {
       "category": {
         "category": "up",
         "text_source_id": 1
+      },
+      "slope_scope_condition": {
+        "min": {
+          "value": 10,
+          "inclusive": true
+        },
+        "unit": "month",
+        "text_source_id": 3
       }
     },
     {
       "category": {
         "category": "down",
         "text_source_id": 1
+      },
+      "slope_scope_condition": {
+        "max": {
+          "value": -10,
+          "inclusive": true
+        },
+        "unit": "month",
+        "text_source_id": 3
       }
     },
     {
       "category": {
         "category": "up",
         "text_source_id": 1
+      },
+      "slope_scope_condition": {
+        "min": {
+          "value": 10,
+          "inclusive": true
+        },
+        "unit": "month",
+        "text_source_id": 3
       }
     },
     {
       "category": {
         "category": "down",
         "text_source_id": 1
+      },
+      "slope_scope_condition": {
+        "max": {
+          "value": -10,
+          "inclusive": true
+        },
+        "unit": "month",
+        "text_source_id": 3
       }
     }
   ],
@@ -220,11 +304,11 @@ Find the time periods in Amazon stock when the price showed three consecutive pe
     """
     case4 = """
 输入：
-Find periods in AMZN when price presented a head-and-shoulders shape
+Find periods in AMZN when price presented a head-and-shoulders shape followed by a cup-with-handle shape
 
 输出：
 {
-  "original_text": "Find periods in AMZN when price presented a head-and-shoulders shape",
+  "original_text": "Find periods in AMZN when price presented a head-and-shoulders shape followed by a cup-with-handle shape",
   "text_sources": [
     {
       "text": "AMZN",
@@ -232,6 +316,10 @@ Find periods in AMZN when price presented a head-and-shoulders shape
     },
     {
       "text": "head-and-shoulders",
+      "index": 0
+    },
+    {
+      "text": "cup-with-handle",
       "index": 0
     }
   ],
@@ -276,6 +364,36 @@ Find periods in AMZN when price presented a head-and-shoulders shape
       "category": {
         "category": "down",
         "text_source_id": 1
+      }
+    },
+    {
+      "category": {
+        "category": "down",
+        "text_source_id": 2
+      }
+    },
+    {
+      "category": {
+        "category": "down",
+        "text_source_id": 2
+      }
+    },
+    {
+      "category": {
+        "category": "up",
+        "text_source_id": 2
+      }
+    },
+    {
+      "category": {
+        "category": "up",
+        "text_source_id": 2
+      }
+    },
+    {
+      "category": {
+        "category": "down",
+        "text_source_id": 2
       }
     }
   ],
@@ -293,6 +411,27 @@ Find periods in AMZN when price presented a head-and-shoulders shape
       "attribute": "end_value",
       "comparator": ">",
       "text_source_id": 1
+    },
+    {
+      "id1": 6,
+      "id2": 7,
+      "attribute": "slope",
+      "comparator": "<",
+      "text_source_id": 2
+    },
+    {
+      "id1": 8,
+      "id2": 9,
+      "attribute": "slope",
+      "comparator": "<",
+      "text_source_id": 2
+    },
+    {
+      "id1": 7,
+      "id2": 10,
+      "attribute": "end_value",
+      "comparator": "<",
+      "text_source_id": 2
     }
   ],
   "trend_groups": [],
@@ -300,146 +439,160 @@ Find periods in AMZN when price presented a head-and-shoulders shape
 }
     """
 
-    case5 = f"""
+    case5 = (
+        """
 输入：
 Find periods in AMZN when price first presented a double-bottom shape with a duration of about a week and then presented a double-top shape with a duration higher than the first double-bottom's duration
 
 输出：
-{{
+{
   "original_text": "Find periods in AMZN when price first presented a double-bottom shape with a duration of about a week and then presented a double-top shape with a duration higher than the first double-bottom's duration",
   "text_sources": [
-    {{
+    {
       "text": "AMZN",
       "index": 0
-    }},
-    {{
+    },
+    {
       "text": "a double-bottom",
       "index": 0
-    }},
-    {{
+    },
+    {
       "text": "with a duration of about a week",
       "index": 0
-    }},
-    {{
+    },
+    {
       "text": "a double-top",
       "index": 0
-    }},
-    {{
+    },
+    {
       "text": "with a duration higher than the first double-bottom's duration",
       "index": 0
-    }}
+    }
   ],
   "targets": [
-    {{
+    {
       "target": "AMZN",
       "text_source_id": 0
-    }}
+    }
   ],
   "trends": [
-    {{
-      "category": {{
+    {
+      "category": {
         "category": "down",
         "text_source_id": 1
-      }}
-    }},
-    {{
-      "category": {{
+      }
+    },
+    {
+      "category": {
         "category": "up",
         "text_source_id": 1
-      }}
-    }},
-    {{
-      "category": {{
+      }
+    },
+    {
+      "category": {
         "category": "down",
         "text_source_id": 1
-      }}
-    }},
-    {{
-      "category": {{
+      }
+    },
+    {
+      "category": {
         "category": "up",
         "text_source_id": 1
-      }}
-    }},
-    {{
-      "category": {{
+      }
+    },
+    {
+      "category": {
         "category": "up",
         "text_source_id": 3
-      }}
-    }},
-    {{
-      "category": {{
+      }
+    },
+    {
+      "category": {
         "category": "down",
         "text_source_id": 3
-      }}
-    }},
-    {{
-      "category": {{
+      }
+    },
+    {
+      "category": {
         "category": "up",
         "text_source_id": 3
-      }}
-    }},
-    {{
-      "category": {{
+      }
+    },
+    {
+      "category": {
         "category": "down",
         "text_source_id": 3
-      }}
-    }}
+      }
+    }
   ],
   "single_relations": [
-    {{
+    {
       "id1": 0,
       "id2": 2,
       "attribute": "end_value",
       "comparator": "~=",
       "text_source_id": 1
-    }},
-    {{
+    },
+    {
       "id1": 4,
       "id2": 6,
       "attribute": "end_value",
       "comparator": "~=",
       "text_source_id": 3
-    }}
+    }
   ],
   "trend_groups": [
-    {{
+    {
       "ids": [0, 3],
-      "time_span_condition": {{
-        "min": {{
-          "value": {1 - FUZZY_FACTOR},
+      "time_span_condition": {
+        "min": {
+          "value": """
+        + str(1 - FUZZY_FACTOR)
+        + """,
           "inclusive": true
-        }},
-        "max": {{
-          "value": {1 + FUZZY_FACTOR},
+        },
+        "max": {
+          "value": """
+        + str(1 + FUZZY_FACTOR)
+        + """,
           "inclusive": true
-        }},
+        },
         "unit": "week",
         "text_source_id": 2
-      }}
-    }}
+      }
+    }
   ],
   "group_relations": [
-    {{
+    {
       "group1": [0, 3],
       "group2": [4, 7],
       "attribute": "time_span",
       "comparator": "<",
       "text_source_id": 4
-    }}
+    }
   ]
-}}
+}
     """
+    )
 
-    case6 = """
+    case6 = (
+        """
 输入：
-Find periods when price presented a high plateau shape
+Find periods when price presented a high plateau shape with a slope of downtrend is about 20/week
+
+解释：
+趋势需要区分上升和下降，下降的时候应该使用负斜率，并根据模糊程度进行设置。
 
 输出：
 {
-  "original_text": "Find periods when price presented a high plateau shape",
+  "original_text": "Find periods when price presented a high plateau shape with a slope of downtrend is about 20/week",
   "text_sources": [
     {
       "text": "a high plateau shape",
+      "index": 0
+    },
+    {
+      "text": "a slope of downtrend is about 20/week",
       "index": 0
     }
   ],
@@ -461,6 +614,22 @@ Find periods when price presented a high plateau shape
       "category": {
         "category": "down",
         "text_source_id": 0
+      },
+      "slope_scope_condition": {
+        "min": {
+          "value": """
+        + str(-20 * (1 + FUZZY_FACTOR))
+        + """,
+          "inclusive": true
+        },
+        "max": {
+          "value": """
+        + str(-20 * (1 - FUZZY_FACTOR))
+        + """,
+          "inclusive": true
+        },
+        "unit": "week",
+        "text_source_id": 1
       }
     }
   ],
@@ -469,3 +638,4 @@ Find periods when price presented a high plateau shape
   "group_relations": []
 }
 """
+    )

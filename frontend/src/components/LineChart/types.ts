@@ -1,8 +1,8 @@
-import { GroupChoice, GroupRelationChoice, Intentions, SingleChoice, SingleRelationChoice } from "../../types/QuerySpec";
+import { GroupChoice, GroupRelationChoice, Intentions, SingleChoice, SingleRelationChoice, Unit } from "../../types/QuerySpec";
 
 export interface LineChartProps {
     xData: number[] | string[];
-    xDataType?: "number" | "day" | "hour" | "minute" | "second";
+    xDataType?: "number" | Unit;
     yData: number[];
     ratio?: number;
     height?: number | string;

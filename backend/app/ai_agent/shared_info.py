@@ -1,4 +1,4 @@
-from .parse_nl_cases import FUZZY_FACTOR
+from .constant import FUZZY_FACTOR
 
 Segment_info = """
 /**
@@ -33,7 +33,7 @@ export interface SegmentGroup {
 
 QuerySpecWithSource_info = """
 /**
- * QuerySpec - 基础查询规范接口定义
+ * 基础条件接口定义
  */
 export interface ThresholdCondition {
   value: number; // 阈值值，用于定义范围的具体数值
@@ -43,13 +43,6 @@ export interface ThresholdCondition {
 export interface ScopeCondition {
   max?: ThresholdCondition; // 范围的最大值条件，可选
   min?: ThresholdCondition; // 范围的最小值条件，可选
-}
-
-export interface Trend {
-  category: string; // 趋势类别，可以是"flat"(平稳),"up"(上升),"down"(下降)
-  slope_scope_condition?: ScopeCondition; // 斜率的范围条件，用于限定趋势的斜率范围
-  abs_slope_percentage_scope_condition?: ScopeCondition; // 斜率在所有斜率中的占比范围条件，用于限定趋势的相对斜率大小，单位是%，例如30就代表30%
-  time_span_condition?: ScopeCondition; // 时间跨度的范围条件，用于限定趋势的持续时间
 }
 
 export enum SingleAttribute {
@@ -80,28 +73,11 @@ export interface SingleRelation {
   comparator: Comparator; // 比较关系的运算符
 }
 
-export interface TrendGroup {
-  ids: [number, number]; // 组合中包含的趋势ID列表，ids[1]>=ids[0]
-  time_span_condition: ScopeCondition; // 时间跨度条件
-}
-
 export interface GroupRelation {
   group1: [number, number]; // 第一个趋势组合的ID列表，group1[1]>=group1[0]
   group2: [number, number]; // 第二个趋势组合的ID列表，group2[1]>=group2[0]
   attribute: GroupAttribute; // 要比较的属性类型
   comparator: Comparator; // 比较关系的运算符
-}
-
-export interface QuerySpec {
-  targets: string[]; // 查询目标的时间序列名称列表
-  trends: Trend[]; // 趋势条件列表
-  single_relations: SingleRelation[]; // 趋势间的关系条件列表
-  trend_groups: TrendGroup[]; // 趋势组合列表
-  group_relations: GroupRelation[]; // 组合关系列表
-  time_span_condition?: ScopeCondition; // 全局时间跨度条件
-  time_scope_condition?: ScopeCondition; // 全局时间范围的筛选条件
-  max_value_scope_condition?: ScopeCondition; // 全局最大值的范围条件，可选
-  min_value_scope_condition?: ScopeCondition; // 全局最小值的范围条件，可选
 }
 
 /**
@@ -135,10 +111,10 @@ export interface ScopeConditionWithSourceWithUnit extends ScopeConditionWithSour
 
 // 单趋势的 WithSource 版本
 export interface TrendWithSource {
-  category: CategoryWithSource; // 趋势类别
-  slope_scope_condition?: ScopeConditionWithSourceWithUnit; // 斜率的范围条件
-  abs_slope_percentage_scope_condition?: ScopeConditionWithSource; // 斜率占比的范围条件
-  time_span_condition?: ScopeConditionWithSourceWithUnit; // 时间跨度的范围条件
+  category: CategoryWithSource; // 趋势类别，可以是"flat"(平稳),"up"(上升),"down"(下降)
+  slope_scope_condition?: ScopeConditionWithSourceWithUnit; // 斜率的范围条件，用于限定趋势的斜率范围
+  abs_slope_percentage_scope_condition?: ScopeConditionWithSource; // 斜率在所有斜率中的占比范围条件，用于限定趋势的相对斜率大小，单位是%，例如30就代表30%
+  time_span_condition?: ScopeConditionWithSourceWithUnit; // 时间跨度的范围条件，用于限定趋势的持续时间
 }
 
 // 单趋势关系的 WithSource 版本
@@ -243,7 +219,8 @@ parse_nl_logic_info = f"""
 6. 你需要识别出自然语言中对于relation的描述，这种描述也可以分为隐式的和显式的。隐式的relation描述通常隐藏在形状的描述中，例如，"head-and-shoulders"中，中间的"head"应该要高于左右两个shoulders，这就意味着第二次上升趋势(trend_id=2)的end_value应该要大于第一次和第三次上升趋势(trend_id=0和trend_id=4)的end_value，这里relation就应该被解析出来。显式的relation描述通常是直接描述的，例如，"连续的两次上升，左边的上升速度比右边的上升速度更快"，这意味着第一次上升趋势(trend_id=0)的slope应该要大于第二次上升趋势(trend_id=1)的slope，这里relation就应该被解析出来。最后，你还需要避免引入无效的relation，例如，"rise sharply then rise slowly"，这里面"sharply"和"slowly"已经被解析成trend中的条件，再引入relation是多余的。
 7. 对于自然语言中存在的持续时间描述，你需要判断使用整体的time_span_condition，还是使用trend_group中的time_span_condition，抑或是使用trend中的time_span_condition。如果是对于整体时间的描述，则使用整体time_span_condition；如果是对于组合时间的描述，则使用trend_group中的time_span_condition，如果是对于单个trend的持续时间描述，则使用trend中的time_span_condition。 
 8. 尽可能保证多轮对话解析中的稳定性和一致性。
-9. 对于趋势的描述，如果用户没有明确给出单位，默认使用秒，如果用户给出单位，例如“rising about 20/month”，则需要根据模糊程度：{FUZZY_FACTOR}，解析成min对应{(1 - FUZZY_FACTOR) * 20}，max对应{(1 + FUZZY_FACTOR) * 20}，单位是“month”的ScopeConditionWithSourceWithUnit。
+9. 趋势有上升下降的区别，所以在处理斜率（slope）时，需要区分上升和下降的斜率，上升的时候应该使用正斜率；下降的时候应该使用负斜率。并注意设置大小关系，例如，"each trend's slope should be steeper than 10 per month"，这意味着每个趋势的斜率应该大于10，所以当趋势上升应该设置min为10，max为无穷大；当趋势下降应该设置max为-10，min为无穷小。
+10. 对于趋势的描述，如果用户没有明确给出单位，默认使用秒，如果用户给出单位，例如“falling almost 20/year”，则需要根据模糊程度：{FUZZY_FACTOR}，解析成min对应{(1 + FUZZY_FACTOR) * (-20)}，max对应{(1 - FUZZY_FACTOR) * (-20)}，单位是“year”的ScopeConditionWithSourceWithUnit。
 """
 
 modify_nl_logic_info = """

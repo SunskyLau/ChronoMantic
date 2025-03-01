@@ -12,6 +12,7 @@ import LevelController from "../LevelController";
 import { deepClone } from "../../utils/deepclone";
 import { setLevel } from "../../app/slice/approximation";
 import { getSplit } from "../../utils/split";
+import { Source } from "../../types/QuerySpec";
 
 export default function DetailView() {
 	const data = useAppSelector((state) => state.dataset.dataset?.data) || {};
@@ -29,9 +30,10 @@ export default function DetailView() {
 	const segments = useMemo(() => results?.find((result) => result.source === source)?.approximation_segments_list.find((item) => item.approximation_level === level)?.segments || [], [results, source, level]);
 	const split = useMemo(() => getSplit(segments), [segments]);
 	const query = useAppSelector((state) => state.states.query);
+	const filteredTargets = query?.targets.filter((target) => target.text_source_id && target.text_source_id !== -1) || [];
 	const colorMap = useAppSelector((state) => state.states.colorMap);
 	const brushPosition = useAppSelector((state) => state.select.brushPosition);
-	const isTarget = !query?.targets.length || query?.targets.some(target => target.target === source);
+	const isTarget = !filteredTargets.length || filteredTargets.some(target => target.target === source);
 	const resultsSplit = useMemo(() => {
 		return { colors: query?.trends.map((trend) => getColorFromMap(colorMap, trend.category.text_source_id)) || [], segments: (isTarget && memoQueryResults[source]?.[level]?.map((segments) => segments.map((segment) => [segment.start_idx, segment.end_idx] as [number, number]))) || [] }
 	}, [query, colorMap, level, memoQueryResults, isTarget, source])
@@ -115,7 +117,7 @@ export default function DetailView() {
 										originalQuery,
 										segments.filter((item) => {
 											return item.start_idx >= selectedSplits[0] && item.end_idx <= selectedSplits[selectedSplits.length - 1];
-										}),
+										}).map(segment => ({ ...segment, source: segment.start_idx >= defaultSplits[0] && segment.end_idx <= defaultSplits[defaultSplits.length - 1] ? Source.RESULT : Source.USER })),
 										intentions.segment_group_intentions.map((intention) => [intention.ids[0], intention.ids[1]]),
 										intentions
 									)
