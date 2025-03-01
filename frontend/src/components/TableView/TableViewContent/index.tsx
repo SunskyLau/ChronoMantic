@@ -23,7 +23,7 @@ export default function TableViewContent() {
                 const scrollPosition = startIndex * rowHeight;
                 tableContent.scrollTo({
                     top: scrollPosition,
-                    left: headers.indexOf(source ?? "") * 90,
+                    left: headers.indexOf(source ?? "") * 120 - 120,
                     behavior: "smooth"
                 });
             }, 100);
@@ -36,7 +36,7 @@ export default function TableViewContent() {
                 <thead>
                     <tr>
                         <th></th>
-                        {headers.map(header => <th style={{backgroundColor: source === header ? "skyblue" : ""}} className={classnames(header !== timeCol ? "table-header" : "")} key={header}>{header}</th>)}
+                        {headers.map(header => <th style={{backgroundColor: source === header ? "#C5D7EF" : ""}} className={classnames(header !== timeCol ? "table-header" : "")} key={header}>{header}</th>)}
                     </tr>
                 </thead>
                 <tbody>
@@ -44,7 +44,7 @@ export default function TableViewContent() {
                         <tr key={rowIndex}>
                             <td>{rowIndex}</td>
                             {headers.map((_, colIndex) => (
-                                <td key={colIndex} style={{backgroundColor: source === headers[colIndex] && rowIndex >= startIndex && rowIndex <= endIndex ? "skyblue" : ""}}>{colIndex === 0 ? formatTime(csvData[headers[colIndex]]?.[rowIndex]) : csvData[headers[colIndex]]?.[rowIndex]}</td>
+                                <td key={colIndex} style={{backgroundColor: source === headers[colIndex] && rowIndex >= startIndex && rowIndex <= endIndex ? "#C5D7EF" : ""}}>{colIndex === 0 ? formatTime(csvData[headers[colIndex]]?.[rowIndex]) : csvData[headers[colIndex]]?.[rowIndex]}</td>
                             ))}
                         </tr>
                     ))}

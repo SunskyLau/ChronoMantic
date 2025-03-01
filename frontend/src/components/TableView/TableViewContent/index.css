@@ -21,6 +21,8 @@
     border-bottom: var(--border);
     border-top: var(--border);
     padding: 8px;
+    min-width: 120px;
+    box-sizing: border-box;
 }
 
 .table-content table th.table-header {
@@ -41,10 +43,21 @@
     border-right: var(--border);
     position: sticky;
     left: 0;
+    min-width: 60px;
+    box-sizing: border-box;
 }
 
 .table-content table td:nth-child(2),
 .table-content table th:nth-child(2) {
+    border-left-width: 0;
+    background-color: #F2F8FA;
+    position: sticky;
+    left: 60px;
+    border-right: var(--border);
+}
+
+.table-content table td:nth-child(3),
+.table-content table th:nth-child(3) {
     border-left-width: 0;
 }
 
