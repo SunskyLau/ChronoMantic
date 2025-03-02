@@ -578,21 +578,21 @@ Find periods in AMZN when price first presented a double-bottom shape with a dur
     case6 = (
         """
 输入：
-Find periods when price presented a high plateau shape with a slope of downtrend is about 20/week
+Find periods when price presented a high plateau shape with a slope of downtrend is about 20%/week
 
 解释：
 趋势需要区分上升和下降，下降的时候应该使用负斜率，并根据模糊程度进行设置。
 
 输出：
 {
-  "original_text": "Find periods when price presented a high plateau shape with a slope of downtrend is about 20/week",
+  "original_text": "Find periods when price presented a high plateau shape with a slope of downtrend is about 20%/week",
   "text_sources": [
     {
       "text": "a high plateau shape",
       "index": 0
     },
     {
-      "text": "a slope of downtrend is about 20/week",
+      "text": "a slope of downtrend is about 20%/week",
       "index": 0
     }
   ],
@@ -618,13 +618,13 @@ Find periods when price presented a high plateau shape with a slope of downtrend
       "slope_scope_condition": {
         "min": {
           "value": """
-        + str(-20 * (1 + FUZZY_FACTOR))
+        + str(-0.2 * (1 + FUZZY_FACTOR))
         + """,
           "inclusive": true
         },
         "max": {
           "value": """
-        + str(-20 * (1 - FUZZY_FACTOR))
+        + str(-0.2 * (1 - FUZZY_FACTOR))
         + """,
           "inclusive": true
         },

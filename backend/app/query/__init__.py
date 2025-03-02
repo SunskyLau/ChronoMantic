@@ -1,6 +1,7 @@
 from typing import List, Optional, Dict, Set, Tuple
 import pandas as pd
 from typeguard import typechecked
+import matplotlib.pyplot as plt
 
 from .config import FLAT_THRESHOLD, APPROXIMATELY_EQUAL_THRESHOLD
 from .utils import check_double_threshold_condition, check_single_threshold_condition, query_by_no_trends
@@ -188,7 +189,6 @@ def match_single_trend(segment: Segment, trend: Trend) -> bool:
         ):
             return False
 
-
     # 检查时间跨度条件
     if trend.time_span_condition:
         if segment.time_span is None or not check_single_threshold_condition(segment.time_span, trend.time_span_condition.min, trend.time_span_condition.max):
@@ -314,25 +314,79 @@ def satisfies_time_span_condition(segments: List[Segment], condition: ScopeCondi
     return check_single_threshold_condition(total_time_span, condition.min, condition.max)
 
 
+@typechecked
+def visualize_query_results(
+    df: pd.DataFrame,
+    query_spec: QuerySpec,
+    approximation_segments_containers: List[ApproximationSegmentsContainer],
+    results: Dict[str, Dict[int, List[List[Segment]]]],
+) -> None:
+    """Visualize query results for each approximation level
+
+    Args:
+        df: Input dataframe
+        query_spec: Query specification
+        approximation_segments_containers: List of approximation segment containers
+        results: Query results dictionary
+    """
+    for container in approximation_segments_containers:
+        for approximation_segments in container.approximation_segments_list:
+            level = approximation_segments.approximation_level
+
+            fig, ax = plt.subplots(figsize=(15, 3))
+            ax.patch.set_alpha(0.0)
+            ax.set_frame_on(False)
+            ax.set_xticks([])
+            ax.set_yticks([])
+            fig.patch.set_alpha(0.0)
+
+            ax.plot(df[container.source], color="gray", alpha=0.8, linewidth=6)
+
+            for segment in approximation_segments.segments:
+                ax.plot(
+                    [segment.start_idx, segment.end_idx],
+                    [df[container.source][segment.start_idx], df[container.source][segment.end_idx]],
+                    color="#FF9800",
+                    linewidth=6,
+                )
+
+            if level in results[container.source]:
+                for segments in results[container.source][level]:
+                    for segment in segments:
+                        ax.plot(
+                            [segment.start_idx, segment.end_idx],
+                            [df[container.source][segment.start_idx], df[container.source][segment.end_idx]],
+                            color="red",
+                            linewidth=6,
+                        )
+
+            plt.tight_layout()
+            plt.savefig(f"query_{level}.png", transparent=True)
+            plt.show()
+
+
 if __name__ == "__main__":
-    # 加载数据
-    df = pd.read_csv("../portfolio_data.csv")
-    dataset_info = DatasetInfo(time_column="Date", value_columns=["AMZN", "DPZ"])
+    df = pd.read_csv("../datasets/portfolio_data.csv")
+    df = df.iloc[1200:].reset_index(drop=True)
+    dataset_info = DatasetInfo(time_column="Date", value_columns=["AMZN"])
     approximation_segments_containers = approximate_dataset(df, dataset_info)
 
     query_spec1 = QuerySpec(
-        targets=["AMZN", "DPZ"],
+        targets=["AMZN"],
         trends=[
-            Trend(category=TrendCategory.UP, slope_scope_condition=ScopeCondition(min=ThresholdCondition(value=0.000001, inclusive=True))),
-            Trend(category=TrendCategory.UP, slope_scope_condition=ScopeCondition(min=ThresholdCondition(value=0.000001, inclusive=True))),
+            Trend(category=TrendCategory.UP),
+            Trend(category=TrendCategory.DOWN),
+            Trend(category=TrendCategory.UP),
+            Trend(category=TrendCategory.DOWN),
         ],
-        single_relations=[SingleRelation(comparator=Comparator.LESS, id1=0, id2=1, attribute=SingleAttribute.END_VALUE)],
-        trend_groups=[TrendGroup(ids=(0, 1), time_span_condition=ScopeCondition(min=ThresholdCondition(value=86400, inclusive=True)))],
+        single_relations=[SingleRelation(id1=0, id2=2, attribute=SingleAttribute.END_VALUE, comparator=Comparator.APPROXIMATELY_EQUAL_TO)],
+        trend_groups=[],
         group_relations=[],
         time_span_condition=None,
         time_scope_condition=None,
         max_value_scope_condition=None,
         min_value_scope_condition=None,
     )
+
     results = query(query_spec1, approximation_segments_containers, df)
-    print(results["DPZ"])
+    visualize_query_results(df, query_spec1, approximation_segments_containers, results)
