@@ -102,11 +102,11 @@ intentions
   "single_segment_intentions": [
     {
       "id": 0,
-      "single_choices":["daily_average_delta_percentage"]
+      "single_choices":["abs_slope_percentage"]
     },
     {
       "id": 2,
-      "single_choices":["category", "daily_average_delta_percentage"]
+      "single_choices":["category", "slope", "abs_slope_percentage"]
     }
   ],
   "segment_group_intentions": [
@@ -122,7 +122,7 @@ intentions
 
 输出：
 {
-  "original_text": "Find periods in AMZN when price first fell with a average daily change rate of 0.8% then presented a flat trend, with a duration about 293 days, and finally rose with a average daily change rate of 13%",
+  "original_text": "Find periods in AMZN where the price first fell very slowly, then showed a flat trend for about 10 months, and finally rose moderately by about 30% and the slope of this trend is about 0.000494 per second",
   "text_sources": [
     {
       "text": "AMZN",
@@ -133,7 +133,7 @@ intentions
       "index": 0
     },
     {
-      "text": "with a average daily change rate of 0.8%",
+      "text": "very slowly",
       "index": 0
     },
     {
@@ -141,7 +141,7 @@ intentions
       "index": 0
     },
     {
-      "text": "about 293 days",
+      "text": "about 10 months",
       "index": 0
     },
     {
@@ -149,7 +149,11 @@ intentions
       "index": 0
     },
     {
-      "text": "with a average daily change rate of 13%",
+      "text": "moderately by about 30%",
+      "index": 0
+    },
+    {
+      "text": "about 0.000494 per second",
       "index": 0
     }
   ],
@@ -165,9 +169,9 @@ intentions
         "category": "down",
         "text_source_id": 1
       },
-      "daily_average_delta_percentage_scope_condition": {
+      "abs_slope_percentage_scope_condition": {
         "min": {
-          "value": -1.5,
+          "value": -3,
           "inclusive": true
         },
         "max": {
@@ -188,17 +192,37 @@ intentions
         "category": "up",
         "text_source_id": 5
       },
-      "daily_average_delta_percentage_scope_condition": {
+      "slope_scope_condition": {
         "min": {
-          "value": 10,
+          "value": """
+        + str(0.000494 * (1 - FUZZY_FACTOR))
+        + """,
           "inclusive": true
         },
         "max": {
-          "value": 16,
+          "value": """
+        + str(0.000494 * (1 + FUZZY_FACTOR))
+        + """,
+          "inclusive": true
+        },
+        "unit": "second",
+        "text_source_id": 7
+      },
+      "abs_slope_percentage_scope_condition": {
+        "min": {
+          "value": """
+        + str(30 * (1 - FUZZY_FACTOR))
+        + """,
+          "inclusive": true
+        },
+        "max": {
+          "value": """
+        + str(30 * (1 + FUZZY_FACTOR))
+        + """,
           "inclusive": false
         },
         "text_source_id": 6
-      } 
+      }
     }
   ],
   "single_relations": [],
@@ -208,17 +232,17 @@ intentions
       "time_span_condition": {
         "min": {
           "value": """
-        + str(293 * (1 - FUZZY_FACTOR))
+        + str(10 * (1 - FUZZY_FACTOR))
         + """,
           "inclusive": true
         },
         "max": {
           "value": """
-        + str(293 * (1 + FUZZY_FACTOR))
+        + str(10 * (1 + FUZZY_FACTOR))
         + """,
           "inclusive": false
         },
-        "unit": "day",
+        "unit": "month",
         "text_source_id": 4
       }
     }
@@ -227,7 +251,9 @@ intentions
 }
     """
     )
-    case2 = """## 示例2
+
+    case2 = (
+        """## 示例2
 输入：
 old_queryspec_with_source
 ```
@@ -310,17 +336,21 @@ old_queryspec_with_source
   ],
   "trend_groups": [
     {
-      "ids": [0, 1, 2, 3, 4],
+      "ids": [0, 4],
       "time_span_condition": {
         "min": {
-          "value": 12,
+          "value": """
+        + str(2 * (1 - FUZZY_FACTOR))
+        + """,
           "inclusive": true
         },
         "max": {
-          "value": 16,
+          "value": """
+        + str(2 * (1 + FUZZY_FACTOR))
+        + """,
           "inclusive": true
         },
-        "unit": "day",
+        "unit": "week",
         "text_source_id": 2
       }
     }
@@ -385,7 +415,7 @@ segments
 ]
 ```
 
-segment_group_ids
+segment_groups
 ```
 []
 ```
@@ -393,30 +423,22 @@ segment_group_ids
 intentions
 ```
 {
-  "single_segment_intentions": [
-    {
-      "id": 0,
-      "single_choices": ["abs_slope_percentage"]
-    },
-    {
-      "id": 1,
-      "single_choices": ["abs_slope_percentage"]
-    }
+  "single_segment_intentions": [],
+  "segment_group_intentions": [],
+  "single_relation_intentions": [
+    {"id1": 0, "id2": 3, "single_choices": ["abs_slope_percentage"]},
+    {"id1": 1, "id2": 2, "single_choices": ["abs_slope_percentage"]},
+    {"id1": 1, "id2": 3, "single_choices": ["start_value"]}
   ],
-  "segment_group_intentions": [
-    {
-      "ids": [0, 1, 2, 3, 4],
-      "group_choices": ["time_span"]
-    }
-  ],
-  "single_relation_intentions": [],
-  "group_relation_intentions": []
+  "group_relation_intentions": [
+    {"group1": [0, 3], "group2": [4, 4], "single_choices": ["time_span"]}
+  ]
 }
 ```
 
 输出：
 {
-  "original_text": "Find periods in AMZN when price presented a cup-with-handle shape with a duration of about 2 weeks, where the first down trend had a slope of about 47% and the second down trend had a slope of about 8%",
+  "original_text": "Find periods in AMZN when price presented a cup-with-handle shape with a duration of about 2 weeks, where the first down trend and the second up trend had similarly sharp slopes, while the second down trend and the first up trend had similarly gentle slopes. The second down trend started at approximately the same value as the second up trend, and the first four segments had a longer time span than the last segment.",
   "text_sources": [
     {
       "index": 0,
@@ -432,11 +454,19 @@ intentions
     },
     {
       "index": 0,
-      "text": "first down trend had a slope of about 47%"
+      "text": "first down trend and the second up trend had similarly slopes"
     },
     {
       "index": 0,
-      "text": "second down trend had a slope of about 8%"
+      "text": "second down trend and the first up trend had similarly gentle slopes"
+    },
+    {
+      "index": 0,
+      "text": "second down trend started at approximately the same value as the second up trend"
+    },
+    {
+      "index": 0,
+      "text": "first four segments had a longer time span than the last segment"
     }
   ],
   "targets": [
@@ -450,34 +480,12 @@ intentions
       "category": {
         "category": "down",
         "text_source_id": 1
-      },
-      "abs_slope_percentage_scope_condition": {
-        "min": {
-          "value": 42,
-          "inclusive": true
-        },
-        "max": {
-          "value": 52,
-          "inclusive": true
-        },
-        "text_source_id": 3
       }
     },
     {
       "category": {
         "category": "down",
         "text_source_id": 1
-      },
-      "abs_slope_percentage_scope_condition": {
-        "min": {
-          "value": 6,
-          "inclusive": true
-        },
-        "max": {
-          "value": 10,
-          "inclusive": true
-        },
-        "text_source_id": 4
       }
     },
     {
@@ -524,389 +532,135 @@ intentions
   ],
   "trend_groups": [
     {
-      "ids": [0, 1, 2, 3, 4],
+      "ids": [0, 4],
       "time_span_condition": {
         "min": {
-          "value": 12,
+          "value": """
+        + str(2 * (1 - FUZZY_FACTOR))
+        + """,
           "inclusive": true
         },
         "max": {
-          "value": 16,
-          "inclusive": true
-        },
-        "unit": "day",
-        "text_source_id": 2
-      }
-    }
-  ],
-  "group_relations": []
-}
-    """
-    case3 = """## 示例3
-输入：
-old_queryspec_with_source
-```
-{
-  "original_text": "Find periods when price presented a high plateau shape with a slope of downtrend is about 20/week and uptrend slope about 35/day",
-  "text_sources": [
-    {
-      "text": "a high plateau shape",
-      "index": 0
-    },
-    {
-      "text": "slope of downtrend is about 20/week",
-      "index": 0
-    },
-    {
-      "text": "uptrend slope about 35/day",
-      "index": 0
-    }
-  ],
-  "targets": [],
-  "trends": [
-    {
-      "category": {
-        "category": "up",
-        "text_source_id": 0
-      },
-      "slope_scope_condition": {
-        "min": {
-          "value": 31,
-          "inclusive": true
-        },
-        "max": {
-          "value": 39,
-          "inclusive": true
-        },
-        "unit": "day",
-        "text_source_id": 2
-      }
-    },
-    {
-      "category": {
-        "category": "flat",
-        "text_source_id": 0
-      }
-    },
-    {
-      "category": {
-        "category": "down",
-        "text_source_id": 0
-      },
-      "slope_scope_condition": {
-        "min": {
-          "value": 18,
-          "inclusive": true
-        },
-        "max": {
-          "value": 22,
+          "value": """
+        + str(2 * (1 + FUZZY_FACTOR))
+        + """,
           "inclusive": true
         },
         "unit": "week",
-        "text_source_id": 1
-      }
-    }
-  ],
-  "single_relations": [],
-  "trend_groups": [],
-  "group_relations": []
-}
-```
-
-segments
-```
-[
-  {
-    "abs_slope_percentage": 35.2,
-    "end_time": 1518048000,
-    "end_value": 150.5,
-    "slope": 0.0005,
-    "source": "result",
-    "start_time": 1517961600,
-    "start_value": 100.2,
-    "time_span": 86400
-  },
-  {
-    "abs_slope_percentage": 0.5,
-    "end_time": 1518393600,
-    "end_value": 151.0,
-    "slope": 0.00001,
-    "source": "result",
-    "start_time": 1518048000,
-    "start_value": 150.5,
-    "time_span": 345600
-  },
-  {
-    "abs_slope_percentage": 20.1,
-    "end_time": 1518739200,
-    "end_value": 120.0,
-    "slope": -0.0003,
-    "source": "result",
-    "start_time": 1518393600,
-    "start_value": 151.0,
-    "time_span": 345600
-  }
-]
-```
-
-segment_group_ids
-```
-[]
-```
-
-intentions
-```
-{
-  "single_segment_intentions": [
-    {
-      "id": 2,
-      "single_choices": ["slope"]
-    }
-  ],
-  "segment_group_intentions": [],
-  "single_relation_intentions": [],
-  "group_relation_intentions": []
-}
-```
-
-输出：
-{
-  "original_text": "Find periods when price presented a high plateau shape with a slope of downtrend about 20% per week, where the uptrend had a slope of about 35% and the flat trend lasted about 4 days",
-  "text_sources": [
-    {
-      "text": "a high plateau shape",
-      "index": 0
-    },
-    {
-      "text": "slope of downtrend about 20% per week",
-      "index": 0
-    },
-    {
-      "text": "uptrend had a slope of about 35%",
-      "index": 0
-    },
-    {
-      "text": "flat trend lasted about 4 days",
-      "index": 0
-    }
-  ],
-  "targets": [],
-  "trends": [
-    {
-      "category": {
-        "category": "up",
-        "text_source_id": 0
-      },
-      "abs_slope_percentage_scope_condition": {
-        "min": {
-          "value": 31,
-          "inclusive": true
-        },
-        "max": {
-          "value": 39,
-          "inclusive": true
-        },
         "text_source_id": 2
-      }
-    },
-    {
-      "category": {
-        "category": "flat",
-        "text_source_id": 0
-      },
-      "time_span_condition": {
-        "min": {
-          "value": 3,
-          "inclusive": true
-        },
-        "max": {
-          "value": 5,
-          "inclusive": true
-        },
-        "unit": "day",
-        "text_source_id": 3
-      }
-    },
-    {
-      "category": {
-        "category": "down",
-        "text_source_id": 0
-      },
-      "abs_slope_percentage_scope_condition": {
-        "min": {
-          "value": 18,
-          "inclusive": true
-        },
-        "max": {
-          "value": 22,
-          "inclusive": true
-        },
-        "unit": "week",
-        "text_source_id": 1
-      }
-    }
-  ],
-  "single_relations": [],
-  "trend_groups": [],
-  "group_relations": []
-}
-"""
-
-    case4 = """## 示例4
-输入：
-old_queryspec_with_source
-```
-{
-  "original_text": "Find periods in AMZN when price presented a head-and-shoulders shape with first shoulder's uptrend slope about 25/day and head's uptrend slope about 36/day, followed by a cup-with-handle shape with first downtrend slope about 40/week",
-  "text_sources": [
-    {
-      "text": "AMZN",
-      "index": 0
-    },
-    {
-      "text": "head-and-shoulders",
-      "index": 0
-    },
-    {
-      "text": "cup-with-handle",
-      "index": 0
-    },
-    {
-      "text": "first shoulder's uptrend slope about 25/day",
-      "index": 0
-    },
-    {
-      "text": "head's uptrend slope about 36/day",
-      "index": 0
-    },
-    {
-      "text": "first downtrend slope about 40/week",
-      "index": 0
-    }
-  ],
-  "targets": [
-    {
-      "target": "AMZN",
-      "text_source_id": 0
-    }
-  ],
-  "trends": [
-    {
-      "category": {
-        "category": "up",
-        "text_source_id": 1
-      },
-      "slope_scope_condition": {
-        "min": {
-          "value": 23,
-          "inclusive": true
-        },
-        "max": {
-          "value": 27,
-          "inclusive": true
-        },
-        "unit": "day",
-        "text_source_id": 3
-      }
-    },
-    {
-      "category": {
-        "category": "down",
-        "text_source_id": 1
-      }
-    },
-    {
-      "category": {
-        "category": "up",
-        "text_source_id": 1
-      },
-      "slope_scope_condition": {
-        "min": {
-          "value": 34,
-          "inclusive": true
-        },
-        "max": {
-          "value": 38,
-          "inclusive": true
-        },
-        "unit": "day",
-        "text_source_id": 4
-      }
-    },
-    {
-      "category": {
-        "category": "down",
-        "text_source_id": 1
-      }
-    },
-    {
-      "category": {
-        "category": "up",
-        "text_source_id": 1
-      }
-    },
-    {
-      "category": {
-        "category": "down",
-        "text_source_id": 1
-      }
-    },
-    {
-      "category": {
-        "category": "down",
-        "text_source_id": 2
-      },
-      "slope_scope_condition": {
-        "min": {
-          "value": 36,
-          "inclusive": true
-        },
-        "max": {
-          "value": 44,
-          "inclusive": true
-        },
-        "unit": "week",
-        "text_source_id": 5
       }
     }
   ],
   "single_relations": [
     {
+      "attribute": "abs_slope_percentage",
+      "comparator": "~=",
       "id1": 0,
+      "id2": 3,
+      "text_source_id": 3
+    },
+    {
+      "attribute": "abs_slope_percentage",
+      "comparator": "~=",
+      "id1": 1,
       "id2": 2,
-      "attribute": "end_value",
-      "comparator": "<",
-      "text_source_id": 1
+      "text_source_id": 4
     },
     {
-      "id1": 2,
-      "id2": 4,
-      "attribute": "end_value",
-      "comparator": ">",
-      "text_source_id": 1
-    },
-    {
-      "id1": 6,
-      "id2": 7,
-      "attribute": "slope",
-      "comparator": "<",
-      "text_source_id": 2
-    },
-    {
-      "id1": 8,
-      "id2": 9,
-      "attribute": "slope",
-      "comparator": "<",
-      "text_source_id": 2
-    },
-    {
-      "id1": 7,
-      "id2": 10,
-      "attribute": "end_value",
-      "comparator": "<",
-      "text_source_id": 2
+      "attribute": "start_value",
+      "comparator": "~=",
+      "id1": 1,
+      "id2": 3,
+      "text_source_id": 5
     }
   ],
+  "group_relations": [
+    {
+      "group1": [0, 3],
+      "group2": [4, 4],
+      "attribute": "time_span",
+      "comparator": ">=",
+      "text_source_id": 6
+    }
+  ]
+}
+    """
+    )
+    case3 = (
+        """## 示例3
+输入：
+old_queryspec_with_source
+```
+{
+  "original_text": "Find periods when price presented a high plateau shape with uptrend slope about 3%/day and the slope of downtrend is about 20%/week",
+  "text_sources": [
+    {
+      "text": "high plateau",
+      "index": 0
+    },
+    {
+      "text": "uptrend slope about 3%/day",
+      "index": 0
+    },
+    {
+      "text": "slope of downtrend is about 20%/week",
+      "index": 0
+    }
+  ],
+  "targets": [],
+  "trends": [
+    {
+      "category": {
+        "category": "up",
+        "text_source_id": 0
+      },
+      "slope_scope_condition": {
+        "text_source_id": 1,
+        "min": {
+          "value": """
+        + str(0.03 * (1 - FUZZY_FACTOR))
+        + """,
+          "inclusive": true
+        },
+        "max": {
+          "value": """
+        + str(0.03 * (1 + FUZZY_FACTOR))
+        + """,
+          "inclusive": true
+        },
+        "unit": "day"
+      }
+    },
+    {
+      "category": {
+        "category": "flat",
+        "text_source_id": 0
+      }
+    },
+    {
+      "category": {
+        "category": "down",
+        "text_source_id": 0
+      },
+      "slope_scope_condition": {
+        "max": {
+          "inclusive": true,
+          "value": """
+        + str(0.2 * (1 + FUZZY_FACTOR))
+        + """,
+        },
+        "min": {
+          "inclusive": true,
+          "value": """
+        + str(-0.2 * (1 - FUZZY_FACTOR))
+        + """,
+        },
+        "text_source_id": 2,
+        "unit": "week"
+      }
+    }
+  ],
+  "single_relations": [],
   "trend_groups": [],
   "group_relations": []
 }
@@ -916,41 +670,86 @@ segments
 ```
 [
   {
-    "abs_slope_percentage": 25.5,
-    "end_time": 1518048000,
-    "end_value": 150.5,
-    "slope": 0.0004,
-    "source": "result",
-    "start_time": 1517961600,
-    "start_value": 120.2,
-    "time_span": 86400
+    "abs_slope_percentage": 0.2753391665644733,
+    "end_idx": 318,
+    "end_time": 1407196800,
+    "end_value": 60.407143,
+    "max_value": 64.654289,
+    "min_value": 60.265713,
+    "r2": 0.3969188923110135,
+    "slope": -9.984237001424515e-7,
+    "source": "user",
+    "start_idx": 300,
+    "start_time": 1404950400,
+    "start_value": 62.650002,
+    "time_span": 2246400
   },
   {
-    "abs_slope_percentage": 15.2,
-    "end_time": 1518134400,
-    "end_value": 130.5,
-    "slope": -0.0002,
+    "abs_slope_percentage": 1.5111551853629317,
+    "end_idx": 331,
+    "end_time": 1408665600,
+    "end_value": 68.455711,
+    "max_value": 68.455711,
+    "min_value": 60.407143,
+    "r2": 0.7891829733803885,
+    "slope": 0.000005479689542483657,
     "source": "result",
-    "start_time": 1518048000,
-    "start_value": 150.5,
-    "time_span": 86400
+    "start_idx": 318,
+    "start_time": 1407196800,
+    "start_value": 60.407143,
+    "time_span": 1468800
   },
   {
-    "abs_slope_percentage": 35.8,
-    "end_time": 1518393600,
-    "end_value": 180.0,
-    "slope": 0.0006,
+    "abs_slope_percentage": 0.054034123249919165,
+    "end_idx": 344,
+    "end_time": 1410393600,
+    "end_value": 68.794289,
+    "max_value": 69.19857,
+    "min_value": 67.524284,
+    "r2": -0.5486946042665466,
+    "slope": 1.9593634259259983e-7,
     "source": "result",
-    "start_time": 1518134400,
-    "start_value": 130.5,
-    "time_span": 259200
+    "start_idx": 331,
+    "start_time": 1408665600,
+    "start_value": 68.455711,
+    "time_span": 1728000
+  },
+  {
+    "abs_slope_percentage": 1.6075216881683112,
+    "end_idx": 351,
+    "end_time": 1411344000,
+    "end_value": 63.254284,
+    "max_value": 68.794289,
+    "min_value": 63.254284,
+    "r2": 0.8130511506610364,
+    "slope": -0.000005829129840067348,
+    "source": "result",
+    "start_idx": 344,
+    "start_time": 1410393600,
+    "start_value": 68.794289,
+    "time_span": 950400
+  },
+  {
+    "abs_slope_percentage": 0.11518305133769169,
+    "end_idx": 368,
+    "end_time": 1413331200,
+    "end_value": 64.084282,
+    "max_value": 66.694283,
+    "min_value": 62.654285,
+    "r2": -0.35735071825608977,
+    "slope": 4.1767210144927703e-7,
+    "source": "user",
+    "start_idx": 351,
+    "start_time": 1411344000,
+    "start_value": 63.254284,
+    "time_span": 1987200
   }
 ]
 ```
 
-segment_group_ids
+segment_groups
 ```
-[]
+[[1,3]]
 ```
 
 intentions
@@ -959,14 +758,19 @@ intentions
   "single_segment_intentions": [
     {
       "id": 0,
-      "single_choices": ["abs_slope_percentage"]
+      "single_choices": ["category"]
     },
     {
-      "id": 2,
-      "single_choices": ["abs_slope_percentage"]
+      "id": 4,
+      "single_choices": ["category"]
     }
   ],
-  "segment_group_intentions": [],
+  "segment_group_intentions": [
+    {
+      "ids": [1,3],
+      "group_choices": ["time_span"]
+    }
+  ],
   "single_relation_intentions": [],
   "group_relation_intentions": []
 }
@@ -974,163 +778,121 @@ intentions
 
 输出：
 {
-  "original_text": "Find periods in AMZN when price presented a head-and-shoulders shape with first shoulder's uptrend slope about 25% and head's uptrend slope about 36%, followed by a cup-with-handle shape",
+  "original_text": "Find periods when price first had a gentle downward trend, then showed a high plateau pattern lasting about 7 weeks, where the price first rose with a slope of about 3% per day, followed by a flat trend, then a downward trend with a slope of about 20% per week, and finally showed a gentle upward trend.",
   "text_sources": [
     {
-      "text": "AMZN",
+      "text": "a gentle downward trend",
       "index": 0
     },
     {
-      "text": "head-and-shoulders",
+      "text": "a high plateau pattern",
       "index": 0
     },
     {
-      "text": "cup-with-handle",
+      "text": "about 7 weeks",
       "index": 0
     },
     {
-      "text": "first shoulder's uptrend slope about 25%",
+      "text": "about 3% per day",
       "index": 0
     },
     {
-      "text": "head's uptrend slope about 36%",
+      "text": "about 20% per week",
+      "index": 0
+    },
+    {
+      "text": "a gentle upward trend",
       "index": 0
     }
   ],
-  "targets": [
-    {
-      "target": "AMZN",
-      "text_source_id": 0
-    }
-  ],
+  "targets": [],
   "trends": [
+    {
+      "category": {
+        "category": "down",
+        "text_source_id": 0
+      }
+    },
     {
       "category": {
         "category": "up",
         "text_source_id": 1
       },
-      "abs_slope_percentage_scope_condition": {
+      "slope_scope_condition": {
         "min": {
-          "value": 23,
+          "value": """
+        + str(0.03 * (1 - FUZZY_FACTOR))
+        + """,
           "inclusive": true
         },
         "max": {
-          "value": 27,
+          "value": """
+        + str(0.03 * (1 + FUZZY_FACTOR))
+        + """,
           "inclusive": true
         },
+        "unit": "day",
         "text_source_id": 3
       }
     },
     {
       "category": {
-        "category": "down",
-        "text_source_id": 1
+        "category": "flat",
+        "text_source_id": 0
       }
     },
     {
       "category": {
-        "category": "up",
-        "text_source_id": 1
+        "category": "down",
+        "text_source_id": 0
       },
-      "abs_slope_percentage_scope_condition": {
+      "slope_scope_condition": {
         "min": {
-          "value": 34,
+          "value": """
+        + str(-0.2 * (1 + FUZZY_FACTOR))
+        + """,
           "inclusive": true
         },
         "max": {
-          "value": 38,
+          "value": """
+        + str(-0.2 * (1 - FUZZY_FACTOR))
+        + """,
           "inclusive": true
         },
+        "unit": "week",
         "text_source_id": 4
       }
     },
     {
       "category": {
-        "category": "down",
-        "text_source_id": 1
-      }
-    },
-    {
-      "category": {
         "category": "up",
-        "text_source_id": 1
+        "text_source_id": 5
       }
-    },
+    }
+  ],
+  "single_relations": [],
+  "trend_groups": [
     {
-      "category": {
-        "category": "down",
-        "text_source_id": 1
-      }
-    },
-    {
-      "category": {
-        "category": "down",
-        "text_source_id": 2
-      }
-    },
-    {
-      "category": {
-        "category": "down",
-        "text_source_id": 2
-      }
-    },
-    {
-      "category": {
-        "category": "up",
-        "text_source_id": 2
-      }
-    },
-    {
-      "category": {
-        "category": "up",
-        "text_source_id": 2
-      }
-    },
-    {
-      "category": {
-        "category": "down",
+      "ids": [1, 3],
+      "time_span_condition": {
+        "min": {
+          "value": """
+        + str(7 * (1 - FUZZY_FACTOR))
+        + """,
+          "inclusive": true
+        },
+        "max": {
+          "value": """
+        + str(7 * (1 + FUZZY_FACTOR))
+        + """,
+          "inclusive": true
+        },
+        "unit": "week",
         "text_source_id": 2
       }
     }
   ],
-  "single_relations": [
-    {
-      "id1": 0,
-      "id2": 2,
-      "attribute": "end_value",
-      "comparator": "<",
-      "text_source_id": 1
-    },
-    {
-      "id1": 2,
-      "id2": 4,
-      "attribute": "end_value",
-      "comparator": ">",
-      "text_source_id": 1
-    },
-    {
-      "id1": 6,
-      "id2": 7,
-      "attribute": "slope",
-      "comparator": "<",
-      "text_source_id": 2
-    },
-    {
-      "id1": 8,
-      "id2": 9,
-      "attribute": "slope",
-      "comparator": "<",
-      "text_source_id": 2
-    },
-    {
-      "id1": 7,
-      "id2": 10,
-      "attribute": "end_value",
-      "comparator": "<",
-      "text_source_id": 2
-    }
-  ],
-  "trend_groups": [],
   "group_relations": []
 }
 """
+    )

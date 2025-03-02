@@ -32,10 +32,10 @@ def segment_error(x: np.ndarray, y: np.ndarray, start: int, end: int) -> tuple[f
     x_seg = x[start : end + 1]
     y_pred = m * x_seg + b
     y_actual = y[start : end + 1]
-    
+
     # 计算误差
     sum_error = np.sum((y_actual - y_pred) ** 2)
-    
+
     # 计算R2
     y_mean = np.mean(y_actual)
     ss_tot = np.sum((y_actual - y_mean) ** 2)
@@ -91,7 +91,7 @@ def bottom_up_merge(value_column: str, x: np.ndarray, y: np.ndarray, k: int):
                 start_time=x[i],
                 end_time=x[i + 1],
                 time_span=time_span,
-                r2=r2
+                r2=r2,
             )
         )
 
@@ -140,7 +140,7 @@ def bottom_up_merge(value_column: str, x: np.ndarray, y: np.ndarray, k: int):
             end_time=x[seg2.end_idx],
             time_span=time_span,
             abs_slope_percentage=None,
-            r2=r2
+            r2=r2,
         )
         segments.pop(j)
 
@@ -161,33 +161,36 @@ def bottom_up_merge(value_column: str, x: np.ndarray, y: np.ndarray, k: int):
     return approximation_segments_container
 
 
-def visualize_segments(y, segments: List[Segment]):
+def visualize_segments(y, segments: List[Segment], level: int = 0):
     """可视化分段结果"""
-    fig, ax = plt.subplots(figsize=(15, 8))
-    ax.set_facecolor("white")
-    fig.patch.set_facecolor("white")
+    fig, ax = plt.subplots(figsize=(15, 3))
+    fig.patch.set_alpha(0.0)
+    ax.patch.set_alpha(0.0)
 
     # 原始数据
     x = np.arange(len(y))
-    ax.plot(x, y, color="gray", alpha=0.5, linewidth=1.5)
+    ax.plot(x, y, color="gray", alpha=0.8, linewidth=6)
 
     # 分段拟合
     for seg in segments:
         start, end = seg.start_idx, seg.end_idx
-        ax.plot([start, end], [y[start], y[end]], color="#2196F3", linewidth=2)
+        ax.plot([start, end], [y[start], y[end]], color="#FF9800", linewidth=6)
 
-    # 设置样式
-    ax.spines["top"].set_visible(False)
-    ax.spines["right"].set_visible(False)
+    # 隐藏边框和坐标轴
+    ax.set_frame_on(False)
+    ax.set_xticks([])
+    ax.set_yticks([])
+
     plt.tight_layout()
-    plt.show()
+    plt.savefig(f"segments_{level}.png", transparent=True)
+    # plt.show()
 
 
 if __name__ == "__main__":
     # 加载数据
-    data = pd.read_csv("../portfolio_data.csv")
-    x = data["AMZN"].index
-    y = data["AMZN"].values
+    data = pd.read_csv("../datasets/portfolio_data.csv")
+    x = data["AMZN"].index[1200:]
+    y = data["AMZN"].values[1200:]
 
     # 分段
     start_time = time.time()
@@ -196,6 +199,7 @@ if __name__ == "__main__":
 
     for approximation_segments in approximation_segments_container.approximation_segments_list:
         print(len(approximation_segments.segments))
+        visualize_segments(y, approximation_segments.segments, approximation_segments.approximation_level)
     # print(approximation_segments_container.max_approximation_level)
     # for seg in segments:
     #     print(seg)
@@ -206,5 +210,5 @@ if __name__ == "__main__":
     #     error = segment_error(x, y, seg.start_idx, seg.end_idx)
     #     print(f"段 {i}: [{seg.start_idx}-{seg.end_idx}], 平方误差和={error:.4f}")
 
-    # # 可视化
-    # visualize_segments(y, segments)
+    # 可视化
+    # visualize_segments(y, approximation_segments.segments)
