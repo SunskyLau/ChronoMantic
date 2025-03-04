@@ -350,6 +350,9 @@ def visualize_query_results(
                     linewidth=6,
                 )
 
+            plt.tight_layout()
+            plt.savefig(f"segment_{level}.png", transparent=True)
+
             if level in results[container.source]:
                 for segments in results[container.source][level]:
                     for segment in segments:
@@ -360,7 +363,6 @@ def visualize_query_results(
                             linewidth=6,
                         )
 
-            plt.tight_layout()
             plt.savefig(f"query_{level}.png", transparent=True)
             plt.show()
 
