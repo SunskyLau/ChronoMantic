@@ -12,6 +12,7 @@ import { deepEqual } from "../../../utils/deepclone";
 import AddIcon from "../../../icons/Add";
 import { SortAscendingOutlined, SortDescendingOutlined, UnorderedListOutlined } from '@ant-design/icons';
 import { formatTime } from "../../../utils/time";
+import { getColorFromMap } from "../../../utils/color";
 
 export interface DataType {
     date: Date;
@@ -54,6 +55,8 @@ interface AttributeOption extends SegmentAttribute {
 export default function ResultsContent() {
     const data = useAppSelector((state) => state.dataset.dataset?.data) ?? {};
     const x = useAppSelector((state) => (state.dataset.dataset?.data[state.dataset.dataset?.timeStampColumn ?? ""])) as string[] || [];
+    const query = useAppSelector((state) => state.states.query);
+    const colorMap = useAppSelector((state) => state.states.colorMap);
     const queryResults = useAppSelector(state => state.approximation.queryResults);
     const memoQueryResults = useMemo(() => queryResults || {}, [queryResults]);
     const queryLevelResults = useMemo(() => Object.entries(memoQueryResults).map(([source, value]: [string, Record<number, Segment[][]>]) => {
@@ -494,7 +497,7 @@ export default function ResultsContent() {
                                     </div>
 
                                     <div className="item-column data-glyph">
-                                        <LineChart xData={x} range={[start, end]} yData={data?.[source] as number[] || []} height={40} split={splits} isShowRange={false} isExpand={false} />
+                                        <LineChart xData={x} range={[start, end]} yData={data?.[source] as number[] || []} height={40} split={splits} isShowRange={false} isExpand={false} resultsSplit={{segments: [segments.map(segment => [segment.start_idx, segment.end_idx])], colors: query?.trends.map((trend) => getColorFromMap(colorMap, trend.category.text_source_id)) || []}} />
                                     </div>
 
                                     {groupedAttributes.global.length > 0 && (
