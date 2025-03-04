@@ -27,13 +27,16 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 		group_relation_intentions: [],
 	});
 
-	const handleScroll = useCallback((event: WheelEvent) => {
-		if (!onScroll) return;
-		event.preventDefault();
-		const total = range ? range?.[1] - range?.[0] : xData.length;
-		const step = Math.max(1, Math.round(total / 10));
-		onScroll(event.deltaY > 0 ? step : -step);
-	}, [onScroll, range, xData.length]);
+	const handleScroll = useCallback(
+		(event: WheelEvent) => {
+			if (!onScroll) return;
+			event.preventDefault();
+			const total = range ? range?.[1] - range?.[0] : xData.length;
+			const step = Math.max(1, Math.round(total / 10));
+			onScroll(event.deltaY > 0 ? step : -step);
+		},
+		[onScroll, range, xData.length]
+	);
 
 	useEffect(() => {
 		if (!svgRef.current) return;
@@ -44,11 +47,14 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 		};
 	}, [handleScroll]);
 
-	const handleContextMenu = useCallback((event: MouseEvent) => {
-		if (!onContextMenu) return;
-		event.preventDefault();
-		onContextMenu(event);
-	}, [onContextMenu]);
+	const handleContextMenu = useCallback(
+		(event: MouseEvent) => {
+			if (!onContextMenu) return;
+			event.preventDefault();
+			onContextMenu(event);
+		},
+		[onContextMenu]
+	);
 
 	useEffect(() => {
 		if (!svgRef.current) return;
@@ -110,16 +116,19 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 		setPopoverPosition(null);
 	}, []);
 
-	const createIntention = useMemo(() => ({
-		SingleSegment: (ranges: [number, number][], choices: SingleChoice[]) => ({
-			id: selectedSplits?.findIndex((split) => split === ranges[0][0]) ?? -1,
-			single_choices: choices,
+	const createIntention = useMemo(
+		() => ({
+			SingleSegment: (ranges: [number, number][], choices: SingleChoice[]) => ({
+				id: selectedSplits?.findIndex((split) => split === ranges[0][0]) ?? -1,
+				single_choices: choices,
+			}),
+			SegmentGroup: (ranges: [number, number][], choices: GroupChoice[]) => ({
+				ids: [selectedSplits?.findIndex((split) => split === ranges[0][0]) ?? -1, selectedSplits?.findIndex((split) => split === ranges[ranges.length - 1][0]) ?? -1] as [number, number],
+				group_choices: choices,
+			}),
 		}),
-		SegmentGroup: (ranges: [number, number][], choices: GroupChoice[]) => ({
-			ids: [selectedSplits?.findIndex((split) => split === ranges[0][0]) ?? -1, selectedSplits?.findIndex((split) => split === ranges[ranges.length - 1][0]) ?? -1] as [number, number],
-			group_choices: choices,
-		}),
-	}), [selectedSplits]);
+		[selectedSplits]
+	);
 
 	const handleConfirm = useCallback(() => {
 		if (!popoverPosition) return;
@@ -218,119 +227,181 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 		setRelationIds([]);
 	}, [popoverPosition, intentions, selectedChoices, selectedGroups, createIntention, handlePopoverClose, selectedSplits, selectedRelations, selectedGroupRelations]);
 
-	const handleSplitClick = useCallback((event: MouseEvent, clickRange: [number, number]) => {
-		if (!onSplitSelect || !split || !selectedSplits || !defaultSplits) return;
-		const [start, end] = clickRange;
+	const handleSplitClick = useCallback(
+		(event: MouseEvent, clickRange: [number, number]) => {
+			if (!onSplitSelect || !split || !selectedSplits || !defaultSplits) return;
+			const [start, end] = clickRange;
 
-		const minSplit = Math.min(...selectedSplits);
-		const maxSplit = Math.max(...selectedSplits);
+			const minSplit = Math.min(...selectedSplits);
+			const maxSplit = Math.max(...selectedSplits);
 
-		if (event.button === 0) {
-			if (start >= minSplit && end <= maxSplit) {
-				setDragStart(clickRange);
-				setIsDragging(true);
-				return;
-			}
+			if (event.button === 0) {
+				if (start >= minSplit && end <= maxSplit) {
+					setDragStart(clickRange);
+					setIsDragging(true);
+					return;
+				}
 
-			const left = Math.min(start, minSplit);
-			const right = Math.max(end, maxSplit);
-			if (popoverPosition && (popoverPosition.ranges[0][0] < left || popoverPosition.ranges[popoverPosition.ranges.length - 1][1] > right)) {
-				setPopoverPosition(null);
-			}
-			onSplitSelect(split.filter((point) => point >= left && point <= right));
-		} else if (event.button === 2) {
-			const defaultMaxSplit = Math.max(...defaultSplits);
-			const defaultMinSplit = Math.min(...defaultSplits);
-			if (start >= defaultMaxSplit) {
-				const left = Math.min(defaultMinSplit, minSplit);
-				const right = start;
-				const newSelectedSplits = selectedSplits.filter((point) => point <= right && point >= left);
+				const left = Math.min(start, minSplit);
+				const right = Math.max(end, maxSplit);
 				if (popoverPosition && (popoverPosition.ranges[0][0] < left || popoverPosition.ranges[popoverPosition.ranges.length - 1][1] > right)) {
 					setPopoverPosition(null);
 				}
-				onSplitSelect(newSelectedSplits);
-			} else if (end <= defaultMinSplit) {
-				const left = end;
-				const right = Math.max(defaultMaxSplit, maxSplit);
-				const newSelectedSplits = selectedSplits.filter((point) => point >= left && point <= right);
-				if (popoverPosition && (popoverPosition.ranges[0][0] < left || popoverPosition.ranges[popoverPosition.ranges.length - 1][1] > right)) {
-					setPopoverPosition(null);
+				onSplitSelect(split.filter((point) => point >= left && point <= right));
+			} else if (event.button === 2) {
+				const defaultMaxSplit = Math.max(...defaultSplits);
+				const defaultMinSplit = Math.min(...defaultSplits);
+				if (start >= defaultMaxSplit) {
+					const left = Math.min(defaultMinSplit, minSplit);
+					const right = start;
+					const newSelectedSplits = selectedSplits.filter((point) => point <= right && point >= left);
+					if (popoverPosition && (popoverPosition.ranges[0][0] < left || popoverPosition.ranges[popoverPosition.ranges.length - 1][1] > right)) {
+						setPopoverPosition(null);
+					}
+					onSplitSelect(newSelectedSplits);
+				} else if (end <= defaultMinSplit) {
+					const left = end;
+					const right = Math.max(defaultMaxSplit, maxSplit);
+					const newSelectedSplits = selectedSplits.filter((point) => point >= left && point <= right);
+					if (popoverPosition && (popoverPosition.ranges[0][0] < left || popoverPosition.ranges[popoverPosition.ranges.length - 1][1] > right)) {
+						setPopoverPosition(null);
+					}
+					onSplitSelect(newSelectedSplits);
 				}
-				onSplitSelect(newSelectedSplits);
 			}
-		}
-	}, [split, selectedSplits, defaultSplits, onSplitSelect, popoverPosition]);
+		},
+		[split, selectedSplits, defaultSplits, onSplitSelect, popoverPosition]
+	);
 
-	const handleMouseMove = useCallback((event: MouseEvent) => {
-		if (!isDragging || !dragStart || !split || !selectedSplits) return;
+	const handleMouseMove = useCallback(
+		(event: MouseEvent) => {
+			if (!isDragging || !dragStart || !split || !selectedSplits) return;
 
-		const rect = event.target as SVGRectElement;
-		const range = rect.getAttribute("data-range");
-		if (!range) return;
+			const rect = event.target as SVGRectElement;
+			const range = rect.getAttribute("data-range");
+			if (!range) return;
 
-		const currentRange = JSON.parse(range) as [number, number];
-		const ranges: [number, number][] = [];
+			const currentRange = JSON.parse(range) as [number, number];
+			const ranges: [number, number][] = [];
 
-		const minSplit = Math.min(...selectedSplits);
-		const maxSplit = Math.max(...selectedSplits);
+			const minSplit = Math.min(...selectedSplits);
+			const maxSplit = Math.max(...selectedSplits);
 
-		const startIdx = Math.max(minSplit, Math.min(dragStart[0], currentRange[0]));
-		const endIdx = Math.min(maxSplit, Math.max(dragStart[1], currentRange[1]));
+			const startIdx = Math.max(minSplit, Math.min(dragStart[0], currentRange[0]));
+			const endIdx = Math.min(maxSplit, Math.max(dragStart[1], currentRange[1]));
 
-		for (let i = 0; i < split.length - 1; i++) {
-			if (split[i] >= startIdx && split[i + 1] <= endIdx && split[i] >= minSplit && split[i + 1] <= maxSplit) {
-				ranges.push([split[i], split[i + 1]]);
+			for (let i = 0; i < split.length - 1; i++) {
+				if (split[i] >= startIdx && split[i + 1] <= endIdx && split[i] >= minSplit && split[i + 1] <= maxSplit) {
+					ranges.push([split[i], split[i + 1]]);
+				}
 			}
-		}
 
-		d3.selectAll(".split-interaction rect").attr("fill", function () {
-			const rangeAttr = (this as SVGRectElement)?.getAttribute?.("data-range");
-			if (!rangeAttr) return "transparent";
-			const [s, e] = JSON.parse(rangeAttr);
-			return s >= startIdx && e <= endIdx && s >= minSplit && e <= maxSplit ? "#1890ff33" : selectedSplits.includes(s) && selectedSplits.includes(e) ? "#3331" : "transparent";
-		});
-	}, [isDragging, dragStart, split, selectedSplits]);
+			d3.selectAll(".split-interaction rect").attr("fill", function () {
+				const rangeAttr = (this as SVGRectElement)?.getAttribute?.("data-range");
+				if (!rangeAttr) return "transparent";
+				const [s, e] = JSON.parse(rangeAttr);
+				return s >= startIdx && e <= endIdx && s >= minSplit && e <= maxSplit ? "#1890ff33" : selectedSplits.includes(s) && selectedSplits.includes(e) ? "#3331" : "transparent";
+			});
+		},
+		[isDragging, dragStart, split, selectedSplits]
+	);
 
-	const handleMouseUp = useCallback((event: MouseEvent) => {
-		if (!isDragging || !dragStart || !split || !selectedSplits) return;
-		const isRelation = event.shiftKey || event.ctrlKey;
+	const handleMouseUp = useCallback(
+		(event: MouseEvent) => {
+			if (!isDragging || !dragStart || !split || !selectedSplits) return;
+			const isRelation = event.shiftKey || event.ctrlKey;
 
-		const rect = event.target as SVGRectElement;
-		const range = rect.getAttribute("data-range");
-		if (!range) return;
+			const rect = event.target as SVGRectElement;
+			const range = rect.getAttribute("data-range");
+			if (!range) return;
 
-		const currentRange = JSON.parse(range) as [number, number];
-		const ranges: [number, number][] = [];
+			const currentRange = JSON.parse(range) as [number, number];
+			const ranges: [number, number][] = [];
 
-		const minSplit = Math.min(...selectedSplits);
-		const maxSplit = Math.max(...selectedSplits);
+			const minSplit = Math.min(...selectedSplits);
+			const maxSplit = Math.max(...selectedSplits);
 
-		const startIdx = Math.max(minSplit, Math.min(dragStart[0], currentRange[0]));
-		const endIdx = Math.min(maxSplit, Math.max(dragStart[1], currentRange[1]));
+			const startIdx = Math.max(minSplit, Math.min(dragStart[0], currentRange[0]));
+			const endIdx = Math.min(maxSplit, Math.max(dragStart[1], currentRange[1]));
 
-		for (let i = 0; i < split.length - 1; i++) {
-			if (split[i] >= startIdx && split[i + 1] <= endIdx && split[i] >= minSplit && split[i + 1] <= maxSplit) {
-				ranges.push([split[i], split[i + 1]]);
+			for (let i = 0; i < split.length - 1; i++) {
+				if (split[i] >= startIdx && split[i + 1] <= endIdx && split[i] >= minSplit && split[i + 1] <= maxSplit) {
+					ranges.push([split[i], split[i + 1]]);
+				}
 			}
-		}
 
-		if (ranges.length > 0) {
-			if (isRelation) {
-				if (relationIds.length === 0) {
-					setPopoverPosition(null);
-					setRelationIds([...ranges]);
+			if (ranges.length > 0) {
+				if (isRelation) {
+					if (relationIds.length === 0) {
+						setPopoverPosition(null);
+						setRelationIds([...ranges]);
+					} else {
+						const allRanges = [[...relationIds], [...ranges]].sort((a, b) => a[0][0] - b[0][0]);
+						const isGroupRelation = allRanges.some((group) => group.length > 1);
+
+						const highlightedRects = Array.from(d3.selectAll(".split-interaction rect").nodes()).filter((node) => {
+							const rangeAttr = (node as SVGRectElement).getAttribute("data-range");
+							if (!rangeAttr) return false;
+							const [s, e] = JSON.parse(rangeAttr);
+							return allRanges.some((group) => group.some(([rs, re]) => s === rs && e === re));
+						}) as SVGRectElement[];
+
+						if (highlightedRects.length > 0) {
+							const bounds = highlightedRects.reduce(
+								(acc, rect) => {
+									const rectBounds = rect.getBoundingClientRect();
+									return {
+										left: Math.min(acc.left, rectBounds.left),
+										right: Math.max(acc.right, rectBounds.right),
+										top: Math.min(acc.top, rectBounds.top),
+										bottom: Math.max(acc.bottom, rectBounds.bottom),
+									};
+								},
+								{
+									left: Infinity,
+									right: -Infinity,
+									top: Infinity,
+									bottom: -Infinity,
+								}
+							);
+
+							const svgRect = svgRef.current?.getBoundingClientRect();
+							if (svgRect) {
+								const centerX = (bounds.left + bounds.right) / 2;
+								const centerY = bounds.top;
+
+								setPopoverPosition(null);
+
+								const existingRelations = intentions.single_relation_intentions.filter((intention) => allRanges?.[0][0][0] === selectedSplits?.[intention.id1] && allRanges?.[1][0][0] === selectedSplits?.[intention.id2]);
+								const existingGroupRelations = intentions.group_relation_intentions.filter((intention) => allRanges?.[0][0][0] === selectedSplits?.[intention.group1[0]] && allRanges?.[0][allRanges[0].length - 1][0] === selectedSplits?.[intention.group1[1]] && allRanges?.[1][0][0] === selectedSplits?.[intention.group2[0]] && allRanges?.[1][allRanges[1].length - 1][0] === selectedSplits?.[intention.group2[1]]);
+
+								setSelectedRelations(existingRelations.flatMap((intention) => intention.relation_choices));
+								setSelectedGroupRelations(existingGroupRelations.flatMap((intention) => intention.relation_choices));
+
+								setPopoverPosition({
+									x: centerX - svgRect.left,
+									y: centerY - svgRect.top,
+									type: isGroupRelation ? "GroupRelation" : "SingleRelation",
+									ranges: allRanges.flat() as [number, number][],
+									groups: allRanges as [[number, number][], [number, number][]],
+									rectWidth: bounds.right - bounds.left,
+									rectHeight: bounds.bottom - bounds.top,
+								});
+								setRelationIds([]);
+							}
+						}
+					}
 				} else {
-					const allRanges = [[...relationIds], [...ranges]].sort((a, b) => a[0][0] - b[0][0]);
-					const isGroupRelation = allRanges.some((group) => group.length > 1);
-
+					setRelationIds([]);
 					const highlightedRects = Array.from(d3.selectAll(".split-interaction rect").nodes()).filter((node) => {
 						const rangeAttr = (node as SVGRectElement).getAttribute("data-range");
 						if (!rangeAttr) return false;
 						const [s, e] = JSON.parse(rangeAttr);
-						return allRanges.some((group) => group.some(([rs, re]) => s === rs && e === re));
+						return s >= startIdx && e <= endIdx && s >= minSplit && e <= maxSplit;
 					}) as SVGRectElement[];
 
-					if (highlightedRects.length > 0) {
+					const svgRect = svgRef.current?.getBoundingClientRect();
+					if (svgRect && highlightedRects.length > 0) {
 						const bounds = highlightedRects.reduce(
 							(acc, rect) => {
 								const rectBounds = rect.getBoundingClientRect();
@@ -349,87 +420,34 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 							}
 						);
 
-						const svgRect = svgRef.current?.getBoundingClientRect();
-						if (svgRect) {
-							const centerX = (bounds.left + bounds.right) / 2;
-							const centerY = bounds.top;
+						const centerX = (bounds.left + bounds.right) / 2;
+						const centerY = bounds.top;
 
-							setPopoverPosition(null);
+						flushSync(() => setPopoverPosition(null));
 
-							const existingRelations = intentions.single_relation_intentions.filter((intention) => allRanges?.[0][0][0] === selectedSplits?.[intention.id1] && allRanges?.[1][0][0] === selectedSplits?.[intention.id2]);
-							const existingGroupRelations = intentions.group_relation_intentions.filter((intention) => allRanges?.[0][0][0] === selectedSplits?.[intention.group1[0]] && allRanges?.[0][allRanges[0].length - 1][0] === selectedSplits?.[intention.group1[1]] && allRanges?.[1][0][0] === selectedSplits?.[intention.group2[0]] && allRanges?.[1][allRanges[1].length - 1][0] === selectedSplits?.[intention.group2[1]]);
+						const existingIntentions = intentions.single_segment_intentions.filter((intention) => ranges[0][0] === selectedSplits[intention.id] && ranges[ranges.length - 1][1] === selectedSplits[intention.id + 1]);
+						const existingGroups = intentions.segment_group_intentions.filter((intention) => ranges[0][0] === selectedSplits[intention.ids[0]] && ranges[ranges.length - 1][0] === selectedSplits[intention.ids[1]]);
 
-							setSelectedRelations(existingRelations.flatMap((intention) => intention.relation_choices));
-							setSelectedGroupRelations(existingGroupRelations.flatMap((intention) => intention.relation_choices));
+						setSelectedChoices(existingIntentions.flatMap((intention) => intention.single_choices));
+						setSelectedGroups(existingGroups.flatMap((intention) => intention.group_choices));
 
-							setPopoverPosition({
-								x: centerX - svgRect.left,
-								y: centerY - svgRect.top,
-								type: isGroupRelation ? "GroupRelation" : "SingleRelation",
-								ranges: allRanges.flat() as [number, number][],
-								groups: allRanges as [[number, number][], [number, number][]],
-								rectWidth: bounds.right - bounds.left,
-								rectHeight: bounds.bottom - bounds.top,
-							});
-							setRelationIds([]);
-						}
+						setPopoverPosition({
+							x: centerX - svgRect.left,
+							y: centerY - svgRect.top,
+							type: ranges.length > 1 ? "SegmentGroup" : "SingleSegment",
+							ranges,
+							rectWidth: bounds.right - bounds.left,
+							rectHeight: bounds.bottom - bounds.top,
+						});
 					}
 				}
-			} else {
-				setRelationIds([]);
-				const highlightedRects = Array.from(d3.selectAll(".split-interaction rect").nodes()).filter((node) => {
-					const rangeAttr = (node as SVGRectElement).getAttribute("data-range");
-					if (!rangeAttr) return false;
-					const [s, e] = JSON.parse(rangeAttr);
-					return s >= startIdx && e <= endIdx && s >= minSplit && e <= maxSplit;
-				}) as SVGRectElement[];
-
-				const svgRect = svgRef.current?.getBoundingClientRect();
-				if (svgRect && highlightedRects.length > 0) {
-					const bounds = highlightedRects.reduce(
-						(acc, rect) => {
-							const rectBounds = rect.getBoundingClientRect();
-							return {
-								left: Math.min(acc.left, rectBounds.left),
-								right: Math.max(acc.right, rectBounds.right),
-								top: Math.min(acc.top, rectBounds.top),
-								bottom: Math.max(acc.bottom, rectBounds.bottom),
-							};
-						},
-						{
-							left: Infinity,
-							right: -Infinity,
-							top: Infinity,
-							bottom: -Infinity,
-						}
-					);
-
-					const centerX = (bounds.left + bounds.right) / 2;
-					const centerY = bounds.top;
-
-					flushSync(() => setPopoverPosition(null));
-
-					const existingIntentions = intentions.single_segment_intentions.filter((intention) => ranges[0][0] === selectedSplits[intention.id] && ranges[ranges.length - 1][1] === selectedSplits[intention.id + 1]);
-					const existingGroups = intentions.segment_group_intentions.filter((intention) => ranges[0][0] === selectedSplits[intention.ids[0]] && ranges[ranges.length - 1][0] === selectedSplits[intention.ids[1]]);
-
-					setSelectedChoices(existingIntentions.flatMap((intention) => intention.single_choices));
-					setSelectedGroups(existingGroups.flatMap((intention) => intention.group_choices));
-
-					setPopoverPosition({
-						x: centerX - svgRect.left,
-						y: centerY - svgRect.top,
-						type: ranges.length > 1 ? "SegmentGroup" : "SingleSegment",
-						ranges,
-						rectWidth: bounds.right - bounds.left,
-						rectHeight: bounds.bottom - bounds.top,
-					});
-				}
 			}
-		}
 
-		setIsDragging(false);
-		setDragStart(null);
-	}, [isDragging, dragStart, split, selectedSplits, relationIds, svgRef, intentions]);
+			setIsDragging(false);
+			setDragStart(null);
+		},
+		[isDragging, dragStart, split, selectedSplits, relationIds, svgRef, intentions]
+	);
 
 	const handleDelete = useCallback(() => {
 		if (!popoverPosition) return;
@@ -472,7 +490,7 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 	}, [popoverPosition, intentions, selectedSplits, handlePopoverClose]);
 
 	const isMargin = useMemo(() => isXAxisVisible || isXAxisTextVisible || isYAxisVisible || isYAxisTextVisible, [isXAxisVisible, isXAxisTextVisible, isYAxisVisible, isYAxisTextVisible]);
-	const timeStampData = useMemo(() => xData.every((x) => typeof x === "string") ? xData.map((d) => new Date(d).getTime()) : xData.slice(), [xData]);
+	const timeStampData = useMemo(() => (xData.every((x) => typeof x === "string") ? xData.map((d) => new Date(d).getTime()) : xData.slice()), [xData]);
 	const computedMargin = useMemo(() => ({ top: isMargin ? margin?.top ?? 30 : 0, right: isMargin ? margin?.right ?? 40 : 0, bottom: isMargin ? margin?.bottom ?? 30 : 0, left: isMargin ? margin?.left ?? 40 : 0 }), [isMargin, margin]);
 
 	const draw = useCallback(() => {
@@ -538,14 +556,17 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 		svg.attr("height", outerHeight);
 
 		const x = isTime
-			? d3.scaleTime().domain(xScale.map((d) => new Date(d))).range([0, innerWidth])
+			? d3
+					.scaleTime()
+					.domain(xScale.map((d) => new Date(d)))
+					.range([0, innerWidth])
 			: d3.scaleLinear().domain(xScale).range([0, innerWidth]);
 
 		const y = d3.scaleLinear().domain(yScale).range([innerHeight, 0]);
 
 		const lineGenerator = d3
 			.line<[number, number]>()
-			.x((d) => isTime ? x(new Date(d[0]))! : x(d[0])!)
+			.x((d) => (isTime ? x(new Date(d[0]))! : x(d[0])!))
 			.y((d) => y(d[1]));
 
 		svg.selectAll("*").remove();
@@ -559,7 +580,7 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 			svg.append("rect").attr("x", 0).attr("y", 0).attr("width", outerWidth).attr("height", outerHeight).attr("fill", "#82C4FF33");
 		}
 
-		g.append("text").attr("x", 15).attr("y", -10).attr("text-anchor", "end").attr("font-size", 12).attr("fill", textColor).attr("writing-mode", "sideways-lr").text(title);
+		g.append("text").attr("x", 5).attr("y", 0).attr("text-anchor", "start").attr("font-size", 12).attr("fill", textColor).text(title);
 
 		svg.append("defs")
 			.append("marker")
@@ -572,23 +593,15 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 			.attr("orient", "auto")
 			.append("g")
 			.call((g) => {
-				g.append("path")
-					.attr("d", "M0,-10 L18,0 L0,10")
-					.attr("fill", "none")
-					.attr("stroke", xAxisColor)
-					.attr("stroke-width", 1);
+				g.append("path").attr("d", "M0,-10 L18,0 L0,10").attr("fill", "none").attr("stroke", xAxisColor).attr("stroke-width", 1);
 
-				g.append("path")
-					.attr("d", "M2,-10 L20,0 L2,10")
-					.attr("fill", "none")
-					.attr("stroke", xAxisColor)
-					.attr("stroke-width", 1);
+				g.append("path").attr("d", "M2,-10 L20,0 L2,10").attr("fill", "none").attr("stroke", xAxisColor).attr("stroke-width", 1);
 			});
 
 		if (isXAxisVisible) {
 			const xAxis = d3
 				.axisBottom(x)
-				.tickFormat((d) => isTime ? xAxisFormatter(new Date(+d)) : String(+d))
+				.tickFormat((d) => (isTime ? xAxisFormatter(new Date(+d)) : String(+d)))
 				.tickSize(isXAxisTextVisible ? 6 : 0);
 
 			const sampleText = isTime ? xAxisFormatter(new Date(timeStampData[0])) : String(timeStampData[0]);
@@ -642,7 +655,8 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 		if ((range && start !== end) || !range) {
 			const pathG = g.append("g").attr("class", "line-path").raise();
 
-			pathG.append("path")
+			pathG
+				.append("path")
 				.datum(keyData.map((t, i) => [t, valueData[i]] as [number, number]))
 				.attr("d", lineGenerator)
 				.attr("fill", "none")
@@ -652,34 +666,16 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 				.attr("stroke-width", 1);
 
 			if (isHoverable) {
-				const tooltip = d3.select("body").append("div")
-					.attr("class", "tooltip")
-					.style("position", "absolute")
-					.style("background", "#000a")
-					.style("color", "#fff")
-					.style("padding", "5px 10px")
-					.style("border", "1px solid #ccc")
-					.style("border-radius", "6px")
-					.style("pointer-events", "none")
-					.style("transform", "translate(-50%, -100%)")
-					.style("opacity", 0);
+				const tooltip = d3.select("body").append("div").attr("class", "tooltip").style("position", "absolute").style("background", "#000a").style("color", "#fff").style("padding", "5px 10px").style("border", "1px solid #ccc").style("border-radius", "6px").style("pointer-events", "none").style("transform", "translate(-50%, -100%)").style("opacity", 0);
 
-				const hoverLine = pathG.append("line")
-					.attr("class", "hover-line")
-					.attr("stroke", lineColor)
-					.attr("stroke-opacity", 0.7)
-					.attr("stroke-width", 1.5)
-					.style("opacity", 0);
+				const hoverLine = pathG.append("line").attr("class", "hover-line").attr("stroke", lineColor).attr("stroke-opacity", 0.7).attr("stroke-width", 1.5).style("opacity", 0);
 
-				const hoverCircle = pathG.append("circle")
-					.attr("r", 4)
-					.attr("fill", lineColor)
-					.style("opacity", 0);
+				const hoverCircle = pathG.append("circle").attr("r", 4).attr("fill", lineColor).style("opacity", 0);
 
 				g.on("mousemove", function (event) {
 					const [mouseX] = d3.pointer(event, this);
 					const xValue = x.invert(mouseX);
-					const closestIndex = d3.bisectCenter(keyData, isTime ? (xValue as Date).getTime() : xValue as number);
+					const closestIndex = d3.bisectCenter(keyData, isTime ? (xValue as Date).getTime() : (xValue as number));
 					const closestData = [keyData[closestIndex], valueData[closestIndex]] as [number, number];
 					hoverLine
 						.attr("x1", x(isTime ? new Date(closestData[0]) : closestData[0]))
@@ -696,12 +692,15 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 					const tooltipHeight = tooltip.node()?.getBoundingClientRect().height || 0;
 					const left = Math.min(Math.max(event.pageX, 0), window.innerWidth - tooltipWidth / 2 - 10);
 					const top = Math.min(Math.max(event.pageY - 10, 0), window.innerHeight - tooltipHeight);
-					tooltip.html(`${isTime ? "Time" : "X"}: ${isTime ? xAxisFormatter(new Date(closestData[0])) : closestData[0]}<br>${isTime ? "Value" : "Y"}: ${closestData[1]}`).style("left", (left) + "px").style("top", (top) + "px");
+					tooltip
+						.html(`${isTime ? "Time" : "X"}: ${isTime ? xAxisFormatter(new Date(closestData[0])) : closestData[0]}<br>${isTime ? "Value" : "Y"}: ${closestData[1]}`)
+						.style("left", left + "px")
+						.style("top", top + "px");
 				}).on("mouseleave", function () {
 					hoverLine.style("opacity", 0);
 					hoverCircle.style("opacity", 0);
 					tooltip.transition().duration(500).style("opacity", 0);
-				})
+				});
 			}
 		}
 
@@ -972,7 +971,7 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 
 					line.on("click", () => {
 						if (popoverPosition) {
-							setPopoverPosition(null)
+							setPopoverPosition(null);
 							setSelectedChoices([]);
 							setSelectedGroups([]);
 							setSelectedRelations([]);
@@ -1111,7 +1110,7 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 		return () => {
 			svg.selectAll("*").remove();
 			d3.selectAll(".tooltip").remove();
-		}
+		};
 	}, [xData, yData, ratio, title, isXAxisVisible, isYAxisVisible, isXAxisTextVisible, isYAxisTextVisible, isBrush, onBrush, isFill, range, height, split, isSplitMask, brushPosition, isExpand, isShowRange, id, onBrushEnd, isActive, xAxisColor, yAxisColor, lineColor, textColor, xAxisFormatter, brushColor, resultsSplit, handleSplitClick, selectedSplits, popoverPosition, handleMouseMove, handleMouseUp, intentions, defaultSplits, onSubmitIntentions, relationIds, computedMargin, isHoverable, timeStampData, isTime]);
 
 	useEffect(() => {

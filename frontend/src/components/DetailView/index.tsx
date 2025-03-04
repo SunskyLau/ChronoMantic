@@ -84,7 +84,7 @@ export default function DetailView() {
 		<Panel
 			className="main-view"
 			icon={<div>D</div>}
-			title="Main View"
+			title="Detail View"
 			right={<LevelController level={level} disabled={!current} maxLevel={current?.max_approximation_level ?? 0} onChange={(level) => dispatch(setLevel(level))} />}
 		>
 			{timeCol && source ? (

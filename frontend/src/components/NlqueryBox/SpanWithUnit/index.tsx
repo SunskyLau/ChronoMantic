@@ -15,7 +15,7 @@ interface SpanWithUnitProps {
 	addonBefore?: ReactNode | ReactNode[];
 	unit?: Unit;
 	isSlope?: boolean;
-	onChange: (params: { min?: { value: number; inclusive: boolean }; max?: { value: number; inclusive: boolean }; unit: Unit }) => void;
+	onChange: (params: { min?: { value: number; inclusive: boolean }; max?: { value: number; inclusive: boolean }; unit?: Unit }) => void;
 }
 
 const UNIT_OPTIONS = Object.values(Unit).map((unit) => ({
@@ -35,10 +35,17 @@ const convertValue = (value: number | null, fromUnit: string, toUnit: string, is
 	}
 };
 
-export default function SpanWithUnit({ title, disabled, min, max, minInclusive, maxInclusive, activeColor, unit = Unit.SECOND, onChange, addonBefore, isSlope = false }: SpanWithUnitProps) {
+export default function SpanWithUnit({ title, disabled, min, max, minInclusive, maxInclusive, activeColor, unit, onChange, addonBefore, isSlope = false }: SpanWithUnitProps) {
 	return (
 		<>
-			{title && <Typography.Title level={4} keyboard>{title}</Typography.Title>}
+			{title && (
+				<Typography.Title
+					level={4}
+					keyboard
+				>
+					{title}
+				</Typography.Title>
+			)}
 			<Span
 				disabled={disabled}
 				min={min ?? null}
@@ -48,35 +55,37 @@ export default function SpanWithUnit({ title, disabled, min, max, minInclusive, 
 				minInclusive={minInclusive ?? false}
 				maxInclusive={maxInclusive ?? false}
 				addonAfter={
-					<Select
-						disabled={disabled}
-						value={unit}
-						popupMatchSelectWidth={false}
-						options={UNIT_OPTIONS}
-						onChange={(newUnit) => {
-							const oldUnit = unit;
-							const newMin = min !== null ? convertValue(min ?? 0, oldUnit, newUnit, isSlope) : null;
-							const newMax = max !== null ? convertValue(max ?? 0, oldUnit, newUnit, isSlope) : null;
+					unit && (
+						<Select
+							disabled={disabled}
+							value={unit}
+							popupMatchSelectWidth={false}
+							options={UNIT_OPTIONS}
+							onChange={(newUnit) => {
+								const oldUnit = unit;
+								const newMin = min !== null ? convertValue(min ?? 0, oldUnit, newUnit, isSlope) : null;
+								const newMax = max !== null ? convertValue(max ?? 0, oldUnit, newUnit, isSlope) : null;
 
-							onChange({
-								min:
-									typeof newMin === "number"
-										? {
-												value: newMin,
-												inclusive: !!minInclusive,
-										  }
-										: undefined,
-								max:
-									typeof newMax === "number"
-										? {
-												value: newMax,
-												inclusive: !!maxInclusive,
-										  }
-										: undefined,
-								unit: newUnit,
-							});
-						}}
-					/>
+								onChange({
+									min:
+										typeof newMin === "number"
+											? {
+													value: newMin,
+													inclusive: !!minInclusive,
+											  }
+											: undefined,
+									max:
+										typeof newMax === "number"
+											? {
+													value: newMax,
+													inclusive: !!maxInclusive,
+											  }
+											: undefined,
+									unit: newUnit,
+								});
+							}}
+						/>
+					)
 				}
 				onChange={(newMin, newMax, newMinInclusive, newMaxInclusive) => {
 					onChange({

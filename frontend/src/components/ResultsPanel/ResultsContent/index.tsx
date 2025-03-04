@@ -1,9 +1,9 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../../../app/hooks";
 import "./index.css";
 import SelectChart from "./SelectChart";
 import { Cascader, Empty } from "antd";
-import { Segment } from "../../../types/QuerySpec";
+import { Segment, Unit } from "../../../types/QuerySpec";
 import LineChart from "../../LineChart";
 import { setCurrent, setLevel, setSource } from "../../../app/slice/approximation";
 import { setBrushPosition, setDefaultSplits, setRange, setSelectedSplits } from "../../../app/slice/selectSlice";
@@ -11,6 +11,7 @@ import { classnames } from "../../../utils/classname";
 import { deepEqual } from "../../../utils/deepclone";
 import AddIcon from "../../../icons/Add";
 import { SortAscendingOutlined, SortDescendingOutlined, UnorderedListOutlined } from '@ant-design/icons';
+import { formatTime } from "../../../utils/time";
 
 export interface DataType {
     date: Date;
@@ -91,7 +92,7 @@ export default function ResultsContent() {
             key: 'start_time',
             label: 'Start Time',
             scope: 'global',
-            format: (value) => new Date(value * 1000).toLocaleDateString(),
+            format: (value) => formatTime(new Date(value * 1000), timeStampColumnType as Unit),
             getValue: (segments) => segments[0]?.start_time ?? 0
         },
         {
@@ -99,7 +100,7 @@ export default function ResultsContent() {
             key: 'end_time',
             label: 'End Time',
             scope: 'global',
-            format: (value) => new Date(value * 1000).toLocaleDateString(),
+            format: (value) => formatTime(new Date(value * 1000), timeStampColumnType as Unit),
             getValue: (segments) => segments[segments.length - 1]?.end_time ?? 0
         },
         {
@@ -118,7 +119,7 @@ export default function ResultsContent() {
             format: (value) => value.toFixed(2),
             getValue: (segments) => Math.max(...segments.map(seg => seg.max_value ?? 0))
         }
-    ], [timeStampColumnUnit, timeStampColumnUnitText]);
+    ], [timeStampColumnUnit, timeStampColumnUnitText, timeStampColumnType]);
 
     const getSegmentAttributeOptions = useCallback((segmentIndex: number): AttributeOption[] => [
         {
@@ -303,6 +304,24 @@ export default function ResultsContent() {
         return groups;
     }, [selectedAttributes, queryLevelResults]);
 
+    const [count, setCount] = useState(10);
+    const [isLoading, setIsLoading] = useState(false);
+
+    const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
+        const element = e.currentTarget;
+        if (
+            element.scrollHeight - element.scrollTop <= element.clientHeight + 100 &&
+            !isLoading &&
+            count < filteredResults.length
+        ) {
+            setIsLoading(true);
+            setTimeout(() => {
+                setCount(prev => Math.min(prev + 10, filteredResults.length));
+                setIsLoading(false);
+            }, 100);
+        }
+    }, [count, filteredResults.length, isLoading]);
+
     const sortedResults = useMemo(() => {
         let results = filteredResults.filter((result) => {
             const attrCondition = selectedAttributes.every((attr) => {
@@ -322,7 +341,7 @@ export default function ResultsContent() {
                 .find(attr => attr.id === sortConfig.key);
 
             if (attr) {
-                results = [...results].sort((a, b) => {
+                results = results.sort((a, b) => {
                     const valueA = attr.getValue(a.segments, attr.segmentIndex, a);
                     const valueB = attr.getValue(b.segments, attr.segmentIndex, b);
                     return sortConfig.direction === 'asc'
@@ -335,21 +354,16 @@ export default function ResultsContent() {
         return results;
     }, [filteredResults, selectedAttributes, attributeScales, sortConfig, groupedAttributes]);
 
-    const [count, setCount] = useState(0);
-
+    
+    const resultList = useRef<HTMLDivElement>(null);
     useEffect(() => {
-        const incrementRender = () => {
-            setCount((count) => {
-                if (count >= sortedResults.length) {
-                    clearInterval(interval);
-                }
-                return count + 10;
-            });
-        };
-        setCount(0);
-        const interval = setInterval(incrementRender, 160);
-        return () => clearInterval(interval);
-    }, [sortedResults.length]);
+        if (sortConfig.key && sortConfig.direction !== null) {
+            setCount(20);
+            if (resultList.current) {
+                resultList.current.scrollTop = 0;
+            }
+        }
+    }, [sortConfig]);
 
     useEffect(() => {
         handleAttributeSelect(permanentAttributes);
@@ -449,7 +463,7 @@ export default function ResultsContent() {
                     </div>
                 </div>
 
-                <div className="result-item-list">
+                <div className="result-item-list" onScroll={handleScroll} ref={resultList}>
                     {sortedResults.length === 0 ? <Empty /> :
                         sortedResults.slice(0, count).map((result) => {
                             const { level, index, segments, source } = result;
@@ -475,7 +489,7 @@ export default function ResultsContent() {
                                         dispatch(setCurrent(result));
                                     }}>
 
-                                    <div className="item-column">
+                                    <div className="item-column text">
                                         {source}
                                     </div>
 
@@ -511,6 +525,7 @@ export default function ResultsContent() {
                                 </div>
                             );
                         })}
+                    {isLoading && <div className="loading">Loading...</div>}
                 </div>
             </div>
         </>
