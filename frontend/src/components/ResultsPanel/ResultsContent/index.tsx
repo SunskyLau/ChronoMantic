@@ -377,7 +377,7 @@ export default function ResultsContent() {
             <div className="results-content">
                 <div className="result-header">
                     <div className="header-column">
-                        <div className="header-column-item">ID</div>
+                        <div className="header-column-item">Source</div>
                     </div>
 
                     <div className="header-column">
