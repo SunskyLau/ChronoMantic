@@ -86,6 +86,9 @@ Find periods in AMZN when price first rose sharply then fell gradually and the p
 输入：
 Find periods in DPZ when price presented a double-bottom shape where the first bottom's slope was steeper than the second bottom's slope
 
+解释：
+double-top代表有两次的上升下降趋势，所以应该解析为up->down->up->down；double-bottom代表有两次的下降上升趋势，所以应该解析为down->up->down->up。如果用户输入triple-bottom，则应该解析三组这样的下降上升为down->up->down->up->down->up，同理，triple-top代表有三次的上升下降趋势，所以应该解析为up->down->up->down->up->down。
+
 输出：
 {
   "original_text": "Find periods in DPZ when price presented a double-bottom shape where the first bottom's slope was steeper than the second bottom's slope",
@@ -167,7 +170,7 @@ Find periods in DPZ when price presented a double-bottom shape where the first b
 Find the time periods in Amazon stock when the price showed three consecutive peaks and the peaks got higher and higher and each trend's slope should be steeper than 10 per month
 
 解释：
-趋势有上升下降的区别，所以在处理斜率（slope）时，需要区分上升和下降的斜率，上升的时候应该使用正斜率，并设置最小值为10；下降的时候应该使用负斜率，并设置最大值为-10。
+three consecutive peaks代表有三个连续的上升下降趋势，所以应该解析为up->down->up->down->up->down。趋势有上升下降的区别，所以在处理斜率（slope）时，需要区分上升和下降的斜率，上升的时候应该使用正斜率，并设置最小值为10；下降的时候应该使用负斜率，并设置最大值为-10。
 
 输出：
 {
@@ -305,6 +308,9 @@ Find the time periods in Amazon stock when the price showed three consecutive pe
     case4 = """
 输入：
 Find periods in AMZN when price presented a head-and-shoulders shape followed by a cup-with-handle shape
+
+解释：
+head-and-shoulders是头肩形，形状为up->down->up->down->up->down；cup-with-handle是杯柄形，形状为down->down->up->up->down，所以解析出来应该是up->down->up->down->up->down->down->down->up->up->down。
 
 输出：
 {
