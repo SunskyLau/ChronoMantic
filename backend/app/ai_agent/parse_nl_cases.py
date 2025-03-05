@@ -550,7 +550,7 @@ Find periods in AMZN when price first presented a double-bottom shape with a dur
   "trend_groups": [
     {
       "ids": [0, 3],
-      "time_span_condition": {
+      "duration_condition": {
         "min": {
           "value": """
         + str(1 - FUZZY_FACTOR)
@@ -572,7 +572,7 @@ Find periods in AMZN when price first presented a double-bottom shape with a dur
     {
       "group1": [0, 3],
       "group2": [4, 7],
-      "attribute": "time_span",
+      "attribute": "duration",
       "comparator": "<",
       "text_source_id": 4
     }

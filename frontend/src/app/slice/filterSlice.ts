@@ -1,13 +1,13 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 interface FilterState {
-  timeSpanScale: [number, number];
+  durationScale: [number, number];
   scoreScale: [number, number];
   levelScale: [number, number];
 }
 
 const initialState: FilterState = {
-  timeSpanScale: [0, 0],
+  durationScale: [0, 0],
   scoreScale: [0, 0],
   levelScale: [0, 0]
 };
@@ -16,8 +16,8 @@ export const filterSlice = createSlice({
   name: "filter",
   initialState,
   reducers: {
-    setTimeSpanScale: (state, action: PayloadAction<[number, number]>) => {
-      state.timeSpanScale = action.payload;
+    setDurationScale: (state, action: PayloadAction<[number, number]>) => {
+      state.durationScale = action.payload;
     },
     setScoreScale: (state, action: PayloadAction<[number, number]>) => {
       state.scoreScale = action.payload;
@@ -28,6 +28,6 @@ export const filterSlice = createSlice({
   },
 });
 
-export const { setScoreScale, setTimeSpanScale, setLevelScale } = filterSlice.actions;
+export const { setScoreScale, setDurationScale, setLevelScale } = filterSlice.actions;
 
 export default filterSlice.reducer;

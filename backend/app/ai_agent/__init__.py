@@ -179,7 +179,7 @@ segments:
     "slope": -0.00003233023630401235,
     "start_time": 1395100800,
     "start_value": 378.769989,
-    "time_span": 2073600
+    "duration": 2073600
   },
   {
     "source": "result",
@@ -191,7 +191,7 @@ segments:
     "slope": 1.9746239413468913e-9,
     "start_time": 1397174400,
     "start_value": 311.730011,
-    "time_span": 25315200
+    "duration": 25315200
   },
   {
     "source": "user",
@@ -203,7 +203,7 @@ segments:
     "slope": -0.0004947916666666667,
     "start_time": 1422489600,
     "start_value": 311.779999,
-    "time_span": 86400
+    "duration": 86400
   }
 ]
 ```

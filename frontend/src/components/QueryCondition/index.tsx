@@ -23,7 +23,7 @@ const emptyQuerySpec: QuerySpecWithSource = {
 	single_relations: [],
 	trend_groups: [],
 	group_relations: [],
-	time_span_condition: {
+	duration_condition: {
 		text_source_id: -1,
 	},
 	time_scope_condition: {
@@ -164,20 +164,20 @@ export default function QueryCondition() {
 
 			<section>
 				<SpanWithUnit
-					title="Time Span"
-					min={memoizedQuery.time_span_condition?.min?.value ?? null}
-					max={memoizedQuery.time_span_condition?.max?.value ?? null}
-					activeColor={getColorFromMap(colorMap, memoizedQuery.time_span_condition?.text_source_id)}
-					minInclusive={!!memoizedQuery.time_span_condition?.min?.inclusive}
-					maxInclusive={!!memoizedQuery.time_span_condition?.max?.inclusive}
-					unit={memoizedQuery.time_span_condition?.unit ?? timeStampColumnUnitText}
+					title="Duration"
+					min={memoizedQuery.duration_condition?.min?.value ?? null}
+					max={memoizedQuery.duration_condition?.max?.value ?? null}
+					activeColor={getColorFromMap(colorMap, memoizedQuery.duration_condition?.text_source_id)}
+					minInclusive={!!memoizedQuery.duration_condition?.min?.inclusive}
+					maxInclusive={!!memoizedQuery.duration_condition?.max?.inclusive}
+					unit={memoizedQuery.duration_condition?.unit ?? timeStampColumnUnitText}
 					onChange={({ min, max, unit }) => {
 						const newQuery = deepClone(memoizedQuery);
-						newQuery.time_span_condition = {
+						newQuery.duration_condition = {
 							min,
 							max,
 							unit,
-							text_source_id: memoizedQuery.time_span_condition?.text_source_id ?? -1,
+							text_source_id: memoizedQuery.duration_condition?.text_source_id ?? -1,
 						};
 						dispatch(setQuery(newQuery));
 					}}

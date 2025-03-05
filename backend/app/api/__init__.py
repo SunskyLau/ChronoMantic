@@ -161,8 +161,8 @@ def query_by_specification():
         return jsonify({"code": 200, "message": "Query successful", "results": filter_json(results_dict)})
     except ValueError as e:
         return jsonify({"code": 400, "message": str(e)}), 400
-    except Exception as e:
-        return jsonify({"code": 500, "message": f"Error processing query: {str(e)}"}), 500
+    # except Exception as e:
+    #     return jsonify({"code": 500, "message": f"Error processing query: {str(e)}"}), 500
 
 
 @bus_bp.route("/parse_nl_query", methods=["POST"])
@@ -253,8 +253,8 @@ def calculate_segment_groups(segments: List[Segment], trend_groups: List[Tuple[i
             continue
         if trend_group[0] > trend_group[1]:
             continue
-
-        segment_group = SegmentGroup(ids=trend_group, time_span=segments[trend_group[1]].end_time - segments[trend_group[0]].start_time)
+        duration = float(segments[trend_group[1]].end_time - segments[trend_group[0]].start_time)
+        segment_group = SegmentGroup(ids=trend_group, duration=duration)
         segment_groups.append(segment_group)
     return segment_groups
 

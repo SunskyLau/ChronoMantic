@@ -39,7 +39,7 @@ export default function TrendGroup({ groups, idLength, onChange, isEdit, disable
 							const newGroups = deepClone(allGroups);
 							newGroups.push({
 								ids: [0, 0],
-								time_span_condition: {
+								duration_condition: {
 									text_source_id: -1,
 								},
 							});
@@ -65,12 +65,12 @@ export default function TrendGroup({ groups, idLength, onChange, isEdit, disable
 							>
 								<SpanWithUnit
 									disabled={disabled}
-									min={group.time_span_condition?.min?.value ?? null}
-									max={group.time_span_condition?.max?.value ?? null}
-									activeColor={getColorFromMap(colorMap, group.time_span_condition?.text_source_id)}
-									minInclusive={!!group.time_span_condition?.min?.inclusive}
-									maxInclusive={!!group.time_span_condition?.max?.inclusive}
-									unit={group.time_span_condition?.unit}
+									min={group.duration_condition?.min?.value ?? null}
+									max={group.duration_condition?.max?.value ?? null}
+									activeColor={getColorFromMap(colorMap, group.duration_condition?.text_source_id)}
+									minInclusive={!!group.duration_condition?.min?.inclusive}
+									maxInclusive={!!group.duration_condition?.max?.inclusive}
+									unit={group.duration_condition?.unit}
 									addonBefore={[
 										<Select
 											disabled={disabled}
@@ -95,8 +95,8 @@ export default function TrendGroup({ groups, idLength, onChange, isEdit, disable
 									]}
 									onChange={({ min, max, unit }) => {
 										const newGroups = deepClone(allGroups);
-										newGroups[index].time_span_condition = {
-											text_source_id: group.time_span_condition?.text_source_id ?? -1,
+										newGroups[index].duration_condition = {
+											text_source_id: group.duration_condition?.text_source_id ?? -1,
 											min,
 											max,
 											unit,

@@ -85,7 +85,7 @@ const getSlopeText = (trend: TrendWithSource, colorMap: Record<string, string>, 
 		"abs_slope_percentage_scope_condition": { key: TrendTextMap["abs_slope_percentage_scope_condition"], unitFormatter: () => `%` },
 	}
 	Object.entries(conditions).forEach(([key, value]) => {
-		if (key === 'time_span_condition' || key === 'category') return;
+		if (key === 'duration_condition' || key === 'category') return;
 		const unit = map[key as keyof typeof map];
 		if (value) {
 			texts[key] = {
@@ -120,7 +120,7 @@ const calculateTimeRangeLevels = (trends: TrendWithSource[], trend_groups: Trend
 	}[] = [];
 
 	trends.forEach((trend, i) => {
-		if (trend.time_span_condition) {
+		if (trend.duration_condition) {
 			timeRanges.push({
 				type: "trend",
 				range: [i * trendLength, (i + 1) * trendLength],
@@ -429,7 +429,7 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 	};
 
 	const relationLines = single_relations.map((relation, i) => {
-		if (!query) return null;
+		if (!query || !relation.attribute || relation.id1 === undefined || relation.id2 === undefined) return null;
 		const trendIndex1 = relation.id1;
 		const trendIndex2 = relation.id2;
 		const isReverse = trendIndex1 > trendIndex2;
@@ -437,7 +437,7 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 
 		const isEnd = relation.attribute === SingleAttribute.END_VALUE;
 		const isStart = relation.attribute === SingleAttribute.START_VALUE;
-		const isSpan = relation.attribute === SingleAttribute.TIME_SPAN;
+		const isSpan = relation.attribute === SingleAttribute.DURATION;
 
 		if (isStart || isEnd) {
 			const relationColor = getColorWithDisabled(colorMap, query, relation.text_source_id) || DEFAULT_COLOR;
@@ -643,29 +643,29 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 
 		return (
 			<>
-				{trends.map((trend, i) => trend.time_span_condition &&
+				{trends.map((trend, i) => trend.duration_condition &&
 					drawTimeRangeIndicator({
 						type: 'trend',
 						index: i,
 						level: timeRangeLevels.find(item => item.type === 'trend' && item.index === i)?.level || 0,
-						condition: trend.time_span_condition
+						condition: trend.duration_condition
 					})
 				)}
-				{trend_groups.map((group, i) => group.time_span_condition &&
+				{trend_groups.map((group, i) => group.duration_condition &&
 					drawTimeRangeIndicator({
 						type: 'group',
 						index: i,
 						level: timeRangeLevels.find(item => item.type === 'group' && item.index === i)?.level || 0,
-						condition: group.time_span_condition,
+						condition: group.duration_condition,
 						ids: group.ids
 					})
 				)}
-				{query?.time_span_condition &&
+				{query?.duration_condition &&
 					drawTimeRangeIndicator({
 						type: 'global',
 						index: 0,
 						level: maxLevel,
-						condition: query.time_span_condition
+						condition: query.duration_condition
 					})
 				}
 			</>

@@ -169,7 +169,7 @@ export default function Trend({ title, trends, onChange, start = 0, isEdit, disa
 												</div>
 											);
 											break;
-										case "time_span_condition":
+										case "duration_condition":
 										case "slope_scope_condition":
 										case "abs_slope_percentage_scope_condition":
 											components.push(

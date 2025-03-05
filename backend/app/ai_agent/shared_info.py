@@ -17,7 +17,7 @@ export interface Segment {
   start_time?: number;  // 片段起始时间，单位是秒，可选
   end_time?: number;    // 片段终止时间，单位是秒，可选
   abs_slope_percentage?: number;  // 片段斜率在所有斜率中的占比，单位是%，可选
-  time_span?: number;  // 片段的时间跨度，单位是秒，可选
+  duration?: number;  // 片段的时间跨度，单位是秒，可选
 }
 """
 
@@ -27,7 +27,7 @@ SegmentGroup_info = """
  */
 export interface SegmentGroup {
   ids: [number, number]; // 片段组中包含的片段ID列表，ids[1]>=ids[0]，id是来源于Segments的id
-  time_span?: number; // 片段组的时间跨度，单位是秒，可选
+  duration?: number; // 片段组的时间跨度，单位是秒，可选
 }
 """
 
@@ -49,12 +49,12 @@ export enum SingleAttribute {
   SLOPE = "slope", // 斜率属性，用于比较趋势的斜率
   START_VALUE = "start_value", // 起始值属性，用于比较趋势的起始点值
   END_VALUE = "end_value", // 结束值属性，用于比较趋势的终止点值
-  TIME_SPAN = "time_span", // 时间跨度属性，用于比较趋势的持续时间
+  DURATION = "duration", // 时间跨度属性，用于比较趋势的持续时间
   ABS_SLOPE_PERCENTAGE = "abs_slope_percentage" // 斜率占比属性，单位是%
 }
 
 export enum GroupAttribute {
-  TIME_SPAN = "time_span", // 时间跨度属性
+  DURATION = "duration", // 时间跨度属性
 }
 
 export enum Comparator {
@@ -114,7 +114,7 @@ export interface TrendWithSource {
   category: CategoryWithSource; // 趋势类别，可以是"flat"(平稳),"up"(上升),"down"(下降)
   slope_scope_condition?: ScopeConditionWithSourceWithUnit; // 斜率的范围条件，用于限定趋势的斜率范围
   abs_slope_percentage_scope_condition?: ScopeConditionWithSource; // 斜率在所有斜率中的占比范围条件，用于限定趋势的相对斜率大小，单位是%，例如30就代表30%
-  time_span_condition?: ScopeConditionWithSourceWithUnit; // 时间跨度的范围条件，用于限定趋势的持续时间
+  duration_condition?: ScopeConditionWithSourceWithUnit; // 时间跨度的范围条件，用于限定趋势的持续时间
 }
 
 // 单趋势关系的 WithSource 版本
@@ -123,7 +123,7 @@ export interface SingleRelationWithSource extends SingleRelation, WithSource {}
 // 趋势组合的 WithSource 版本
 export interface TrendGroupWithSource {
   ids: [number, number]; // 组内趋势的id列表,ids[1]>=ids[0]
-  time_span_condition?: ScopeConditionWithSource; // 该组的时间跨度条件
+  duration_condition?: ScopeConditionWithSource; // 该组的时间跨度条件
 }
 
 // 组合关系的 WithSource 版本
@@ -141,7 +141,7 @@ export interface QuerySpecWithSource {
   single_relations: SingleRelationWithSource[]; // 单趋势关系列表
   trend_groups: TrendGroupWithSource[]; // 趋势组合列表
   group_relations: GroupRelationWithSource[]; // 组合关系列表
-  time_span_condition?: ScopeConditionWithSourceWithUnit; // 总时间跨度的范围条件
+  duration_condition?: ScopeConditionWithSourceWithUnit; // 总时间跨度的范围条件
   time_scope_condition?: ScopeConditionWithSource; // 时间范围的范围条件
   max_value_scope_condition?: ScopeConditionWithSource; // 最大值的范围条件
   min_value_scope_condition?: ScopeConditionWithSource; // 最小值的范围条件
@@ -157,23 +157,23 @@ export enum SingleChoice {
   CATEGORY = "category", // 趋势类别
   SLOPE = "slope", // 斜率属性
   ABS_SLOPE_PERCENTAGE = "abs_slope_percentage", // 斜率占比属性,单位是%
-  TIME_SPAN = "time_span", // 时间跨度属性,单位是秒
+  DURATION = "duration", // 时间跨度属性,单位是秒
 }
 
 export enum GroupChoice {
-  TIME_SPAN = "time_span", // 趋势组合的时间跨度条件
+  DURATION = "duration", // 趋势组合的时间跨度条件
 }
 
 export enum SingleRelationChoice {
   SLOPE = "slope", // 斜率关系
   START_VALUE = "start_value", // 起始值关系
   END_VALUE = "end_value", // 结束值关系
-  TIME_SPAN = "time_span", // 时间跨度关系
+  DURATION = "duration", // 时间跨度关系
   ABS_SLOPE_PERCENTAGE = "abs_slope_percentage", // 斜率占比关系
 }
 
 export enum GroupRelationChoice {
-  TIME_SPAN = "time_span", // 时间跨度关系
+  DURATION = "duration", // 时间跨度关系
 }
 
 export interface SingleSegmentIntention {
@@ -213,11 +213,11 @@ model_info = """
 parse_nl_logic_info = f"""
 1. 自然语言中如果出现模糊的范围表达，解析成ScopeConditionWithSource的时候需要让min和max构成一个满足模糊表达的范围，min和max不应该相等。例如，"about 2 weeks"需要根据模糊程度：{FUZZY_FACTOR}，解析成min对应{(1 - FUZZY_FACTOR) * 2}weeks，max对应{(1 + FUZZY_FACTOR) * 2}weeks的ScopeConditionWithSourceWithUnit，也就是允许一个比原数值更小的数和更大的数来组成这个模糊的范围。因此，你需要根据语义恰当地解析出一个范围。当用户明确给出单位的时候，你需要使用用户给出的单位。
 2. 自然语言中对于趋势和形状的描述，需要解析成TrendWithSource，其中category需要解析成趋势的类别，text_source需要解析成趋势的描述来源。你需要捕捉趋势和形状的特征并翻译为相应的字段。
-3. 自然语言中如果是确切的描述，如"a duration of 20~30days"，需要解析成time_span_condition，其中min和max需要解析成相应的数值。诸如此类，需要精准识别应该解析为什么condition。
+3. 自然语言中如果是确切的描述，如"a duration of 20~30days"，需要解析成duration_condition，其中min和max需要解析成相应的数值。诸如此类，需要精准识别应该解析为什么condition。
 4. 有关趋势程度的模糊描述，根据语义解析为abs_slope_percentage_scope_condition。
 5. TextSource的text只能是来源original_text的连续子文本。text_sources数组中的元素应该严格遵循原文中的顺序，不重叠地输出。解析出来的text_source必须是被使用的，否则不应该出现在text_sources中。
 6. 你需要识别出自然语言中对于relation的描述，这种描述也可以分为隐式的和显式的。隐式的relation描述通常隐藏在形状的描述中，例如，"head-and-shoulders"中，中间的"head"应该要高于左右两个shoulders，这就意味着第二次上升趋势(trend_id=2)的end_value应该要大于第一次和第三次上升趋势(trend_id=0和trend_id=4)的end_value，这里relation就应该被解析出来。显式的relation描述通常是直接描述的，例如，"连续的两次上升，左边的上升速度比右边的上升速度更快"，这意味着第一次上升趋势(trend_id=0)的slope应该要大于第二次上升趋势(trend_id=1)的slope，这里relation就应该被解析出来。最后，你还需要避免引入无效的relation，例如，"rise sharply then rise slowly"，这里面"sharply"和"slowly"已经被解析成trend中的条件，再引入relation是多余的。
-7. 对于自然语言中存在的持续时间描述，你需要判断使用整体的time_span_condition，还是使用trend_group中的time_span_condition，抑或是使用trend中的time_span_condition。如果是对于整体时间的描述，则使用整体time_span_condition；如果是对于组合时间的描述，则使用trend_group中的time_span_condition，如果是对于单个trend的持续时间描述，则使用trend中的time_span_condition。 
+7. 对于自然语言中存在的持续时间描述，你需要判断使用整体的duration_condition，还是使用trend_group中的duration_condition，抑或是使用trend中的duration_condition。如果是对于整体时间的描述，则使用整体duration_condition；如果是对于组合时间的描述，则使用trend_group中的duration_condition，如果是对于单个trend的持续时间描述，则使用trend中的duration_condition。 
 8. 尽可能保证多轮对话解析中的稳定性和一致性。
 9. 趋势有上升下降的区别，所以在处理斜率（slope）时，需要区分上升和下降的斜率，上升的时候应该使用正斜率；下降的时候应该使用负斜率。并注意设置大小关系，例如，"each trend's slope should be steeper than 10 per month"，这意味着每个趋势的斜率应该大于10，所以当趋势上升应该设置min为10，max为无穷大；当趋势下降应该设置max为-10，min为无穷小。
 10. 对于趋势的描述，如果用户没有明确给出单位，默认使用秒，如果用户给出单位，例如“falling almost 20/year”，则需要根据模糊程度：{FUZZY_FACTOR}，解析成min对应{(1 + FUZZY_FACTOR) * (-20)}，max对应{(1 - FUZZY_FACTOR) * (-20)}，单位是“year”的ScopeConditionWithSourceWithUnit。
