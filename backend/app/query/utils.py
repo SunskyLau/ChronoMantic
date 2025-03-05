@@ -54,7 +54,7 @@ def query_by_no_trends(
     query_spec: QuerySpec, approximation_segments_container: ApproximationSegmentsContainer, df: pd.DataFrame
 ) -> Dict[int, List[List[Segment]]]:
     """根据无趋势的查询规范查询数据集"""
-    time_span_condition = query_spec.time_span_condition
+    duration_condition = query_spec.duration_condition
     time_scope_condition = query_spec.time_scope_condition
     max_value_scope_condition = query_spec.max_value_scope_condition
     min_value_scope_condition = query_spec.min_value_scope_condition
@@ -104,11 +104,11 @@ def query_by_no_trends(
         results.append(current_result)
 
     # 过滤时间跨度
-    if time_span_condition:
+    if duration_condition:
         results = [
             result
             for result in results
-            if check_single_threshold_condition(result[-1].end_time - result[0].start_time, time_span_condition.min, time_span_condition.max)
+            if check_single_threshold_condition(result[-1].end_time - result[0].start_time, duration_condition.min, duration_condition.max)
         ]
 
     return {0: results}

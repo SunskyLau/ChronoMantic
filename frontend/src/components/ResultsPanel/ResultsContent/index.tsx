@@ -161,7 +161,7 @@ export default function ResultsContent() {
             format: (value) => `${value} ${timeStampColumnUnitText}`,
             getValue: (segments) => {
                 const segment = segments[segmentIndex];
-                return (segment.time_span ?? 0) / timeStampColumnUnit;
+                return (segment.duration ?? 0) / timeStampColumnUnit;
             }
         }
     ], [timeStampColumnUnit, timeStampColumnUnitText]);

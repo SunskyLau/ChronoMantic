@@ -61,7 +61,7 @@ export function formatQuerySpec(query: QuerySpecWithSource): QuerySpec {
         category: query.text_sources[trend.category.text_source_id]?.disabled ? TrendCategory.ARBITRARY : trend.category.category,
         slope_scope_condition: formatScopeCondition(trend.slope_scope_condition, (a, b) => a / b),
         abs_slope_percentage_scope_condition: formatScopeCondition(trend.abs_slope_percentage_scope_condition),
-        time_span_condition: formatScopeCondition(trend.time_span_condition)
+        duration_condition: formatScopeCondition(trend.duration_condition)
     });
 
     // 格式化 SingleRelation
@@ -79,7 +79,7 @@ export function formatQuerySpec(query: QuerySpecWithSource): QuerySpec {
     const formatTrendGroup = (group: TrendGroupWithSource): TrendGroup | null => {
         return {
             ids: group.ids,
-            time_span_condition: formatScopeCondition(group.time_span_condition)
+            duration_condition: formatScopeCondition(group.duration_condition)
         };
     };
 
@@ -122,7 +122,7 @@ export function formatQuerySpec(query: QuerySpecWithSource): QuerySpec {
         single_relations: filteredSingleRelations,
         trend_groups: filteredTrendGroups,
         group_relations: filteredGroupRelations,
-        time_span_condition: formatScopeCondition(query.time_span_condition),
+        duration_condition: formatScopeCondition(query.duration_condition),
         time_scope_condition: formatScopeCondition(query.time_scope_condition),
         max_value_scope_condition: formatScopeCondition(query.max_value_scope_condition),
         min_value_scope_condition: formatScopeCondition(query.min_value_scope_condition)

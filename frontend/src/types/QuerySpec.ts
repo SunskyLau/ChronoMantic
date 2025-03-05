@@ -29,7 +29,7 @@ export interface Segment {
   start_time?: number; // 起始时间,单位是秒
   end_time?: number; // 结束时间,单位是秒
   abs_slope_percentage?: number; // 斜率在所有斜率中的占比,单位是%
-  time_span?: number; // 时间跨度,单位是秒
+  duration?: number; // 时间跨度,单位是秒
   r2?: number; // 拟合优度,范围是[0,1]
 }
 
@@ -41,13 +41,13 @@ export interface SimplifiedSegment {
   start_time?: number;  // 片段起始时间，单位是秒，可选
   end_time?: number;    // 片段终止时间，单位是秒，可选
   abs_slope_percentage?: number;  // 片段斜率在所有斜率中的占比，单位是%，可选
-  time_span?: number;  // 片段的时间跨度，单位是秒，可选
+  duration?: number;  // 片段的时间跨度，单位是秒，可选
 }
 
 // 趋势组合
 export interface SegmentGroup {
   ids: [number, number]; // 组内趋势的id列表,ids[1]>=ids[0]
-  time_span: number; // 时间跨度,单位是秒
+  duration: number; // 时间跨度,单位是秒
 }
 
 // 近似的连续分段信息
@@ -88,31 +88,31 @@ export enum TrendCategory {
 
 // 趋势
 export interface Trend {
-  category: TrendCategory; // 趋势类别
-  slope_scope_condition?: ScopeCondition; // 斜率的范围条件
-  abs_slope_percentage_scope_condition?: ScopeCondition; // 斜率在所有斜率中的占比范围条件,单位是%,例如30就代表30%
-  time_span_condition?: ScopeCondition; // 时间跨度的范围条件,单位是秒
+  category: TrendCategory;
+  slope_scope_condition?: ScopeCondition;
+  abs_slope_percentage_scope_condition?: ScopeCondition;
+  duration_condition?: ScopeCondition;
 }
 
 export const TrendTextMap: Record<keyof Trend, string> = {
 	"slope_scope_condition": "Slope",
 	"abs_slope_percentage_scope_condition": "Abs Slope Percentage",
-	"time_span_condition": "Time Span",
+	"duration_condition": "Duration",
 	"category": "Category",
 }
 
 // 单趋势可比较属性
 export enum SingleAttribute {
-  SLOPE = "slope", // 斜率
-  START_VALUE = "start_value", // 起始值
-  END_VALUE = "end_value", // 结束值
-  TIME_SPAN = "time_span", // 时间跨度,单位是秒
-  ABS_SLOPE_PERCENTAGE = "abs_slope_percentage", // 斜率占比,单位是%
+  SLOPE = "slope",
+  START_VALUE = "start_value",
+  END_VALUE = "end_value",
+  DURATION = "duration",
+  ABS_SLOPE_PERCENTAGE = "abs_slope_percentage"
 }
 
 // 趋势组合可比较属性
 export enum GroupAttribute {
-  TIME_SPAN = "time_span", // 时间跨度,单位是秒
+  DURATION = "duration"
 }
 
 // 比较关系
@@ -135,8 +135,8 @@ export interface SingleRelation {
 
 // 趋势组合
 export interface TrendGroup {
-  ids: [number, number]; // 组内趋势的id列表,ids[1]>=ids[0]
-  time_span_condition?: ScopeCondition; // 该组的时间跨度条件
+  ids: [number, number];
+  duration_condition?: ScopeCondition;
 }
 
 export interface GroupRelation {
@@ -147,15 +147,15 @@ export interface GroupRelation {
 }
 
 export interface QuerySpec {
-  targets: string[]; // 查询的目标时间序列名
-  trends: Trend[]; // 趋势列表
-  single_relations: SingleRelation[]; // 不同趋势之间的属性比较关系列表
-  trend_groups: TrendGroup[]; // 趋势组合列表
-  group_relations: GroupRelation[]; // 组合之间的关系列表
-  time_span_condition?: ScopeCondition; // 总时间跨度的范围条件
-  time_scope_condition?: ScopeCondition; // 时间范围的范围条件
-  max_value_scope_condition?: ScopeCondition; // 最大值的范围条件
-  min_value_scope_condition?: ScopeCondition; // 最小值的范围条件
+  targets: string[];
+  trends: Trend[];
+  single_relations: SingleRelation[];
+  trend_groups: TrendGroup[];
+  group_relations: GroupRelation[];
+  duration_condition?: ScopeCondition;
+  time_scope_condition?: ScopeCondition;
+  max_value_scope_condition?: ScopeCondition;
+  min_value_scope_condition?: ScopeCondition;
 }
 
 /**
@@ -202,7 +202,7 @@ export interface TrendWithSource {
   category: CategoryWithSource; // 趋势类别
   slope_scope_condition?: ScopeConditionWithSourceWithUnit; // 斜率的范围条件
   abs_slope_percentage_scope_condition?: ScopeConditionWithSource; // 斜率占比的范围条件
-  time_span_condition?: ScopeConditionWithSourceWithUnit; // 时间跨度的范围条件
+  duration_condition?: ScopeConditionWithSourceWithUnit; // 时间跨度的范围条件
 }
 
 // 单趋势关系的 WithSource 版本
@@ -211,7 +211,7 @@ export interface SingleRelationWithSource extends SingleRelation, WithSource { }
 // 趋势组合的 WithSource 版本
 export interface TrendGroupWithSource {
   ids: [number, number]; // 组内趋势的id列表,ids[1]>=ids[0]
-  time_span_condition?: ScopeConditionWithSourceWithUnit; // 该组的时间跨度条件
+  duration_condition?: ScopeConditionWithSourceWithUnit; // 该组的时间跨度条件
 }
 
 // 组合关系的 WithSource 版本
@@ -229,7 +229,7 @@ export interface QuerySpecWithSource {
   single_relations: SingleRelationWithSource[]; // 单趋势关系列表
   trend_groups: TrendGroupWithSource[]; // 趋势组合列表
   group_relations: GroupRelationWithSource[]; // 组合关系列表
-  time_span_condition?: ScopeConditionWithSourceWithUnit; // 总时间跨度的范围条件
+  duration_condition?: ScopeConditionWithSourceWithUnit; // 总时间跨度的范围条件
   time_scope_condition?: ScopeConditionWithSource; // 时间范围的范围条件
   max_value_scope_condition?: ScopeConditionWithSource; // 最大值的范围条件
   min_value_scope_condition?: ScopeConditionWithSource; // 最小值的范围条件
@@ -244,23 +244,23 @@ export enum SingleChoice {
   CATEGORY = "category", // 趋势类别
   SLOPE = "slope", // 斜率属性
   ABS_SLOPE_PERCENTAGE = "abs_slope_percentage", // 斜率占比属性,单位是%
-  TIME_SPAN = "time_span", // 时间跨度属性,单位是秒
+  DURATION = "duration", // 时间跨度属性,单位是秒
 }
 
 export enum GroupChoice {
-  TIME_SPAN = "time_span", // 趋势组合的时间跨度条件
+  DURATION = "duration", // 趋势组合的时间跨度条件
 }
 
 export enum SingleRelationChoice {
   SLOPE = "slope", // 斜率关系
   START_VALUE = "start_value", // 起始值关系
   END_VALUE = "end_value", // 结束值关系
-  TIME_SPAN = "time_span", // 时间跨度关系
+  DURATION = "duration", // 时间跨度关系
   ABS_SLOPE_PERCENTAGE = "abs_slope_percentage", // 斜率占比关系
 }
 
 export enum GroupRelationChoice {
-  TIME_SPAN = "time_span", // 时间跨度关系
+  DURATION = "duration", // 时间跨度关系
 }
 
 export interface SingleSegmentIntention {

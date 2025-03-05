@@ -62,7 +62,7 @@ segments
     "slope": -0.00003233023630401235,
     "start_time": 1395100800,
     "start_value": 378.769989,
-    "time_span": 2073600
+    "duration": 2073600
   },
   {
     "source": "result",
@@ -74,7 +74,7 @@ segments
     "slope": 1.9746239413468913e-9,
     "start_time": 1397174400,
     "start_value": 311.730011,
-    "time_span": 25315200
+    "duration": 25315200
   },
   {
     "source": "user",
@@ -86,7 +86,7 @@ segments
     "slope": 0.0004947916666666667,
     "start_time": 1422489600,
     "start_value": 311.779999,
-    "time_span": 86400
+    "duration": 86400
   }
 ]
 ```
@@ -112,7 +112,7 @@ intentions
   "segment_group_intentions": [
     {
       "ids": [0, 1],
-      "group_choices":["time_span"]
+      "group_choices":["duration"]
     }
   ],
   "single_relation_intentions": [],
@@ -229,7 +229,7 @@ intentions
   "trend_groups": [
     {
       "ids": [0, 1],
-      "time_span_condition": {
+      "duration_condition": {
         "min": {
           "value": """
         + str(10 * (1 - FUZZY_FACTOR))
@@ -337,7 +337,7 @@ old_queryspec_with_source
   "trend_groups": [
     {
       "ids": [0, 4],
-      "time_span_condition": {
+      "duration_condition": {
         "min": {
           "value": """
         + str(2 * (1 - FUZZY_FACTOR))
@@ -370,7 +370,7 @@ segments
     "source": "result",
     "start_time": 1517961600,
     "start_value": 1416.780029,
-    "time_span": 86400
+    "duration": 86400
   },
   {
     "abs_slope_percentage": 7.821487638650382,
@@ -380,7 +380,7 @@ segments
     "source": "result",
     "start_time": 1518048000,
     "start_value": 1350.5,
-    "time_span": 86400
+    "duration": 86400
   },
   {
     "abs_slope_percentage": 11.153369933748698,
@@ -390,7 +390,7 @@ segments
     "source": "result",
     "start_time": 1518134400,
     "start_value": 1339.599976,
-    "time_span": 259200
+    "duration": 259200
   },
   {
     "abs_slope_percentage": 23.25634184016303,
@@ -400,7 +400,7 @@ segments
     "source": "result",
     "start_time": 1518393600,
     "start_value": 1386.22998,
-    "time_span": 172800
+    "duration": 172800
   },
   {
     "abs_slope_percentage": 0.8467667386731758,
@@ -410,7 +410,7 @@ segments
     "source": "result",
     "start_time": 1518566400,
     "start_value": 1451.050049,
-    "time_span": 172800
+    "duration": 172800
   }
 ]
 ```
@@ -431,14 +431,14 @@ intentions
     {"id1": 1, "id2": 3, "single_choices": ["start_value"]}
   ],
   "group_relation_intentions": [
-    {"group1": [0, 3], "group2": [4, 4], "single_choices": ["time_span"]}
+    {"group1": [0, 3], "group2": [4, 4], "single_choices": ["duration"]}
   ]
 }
 ```
 
 输出：
 {
-  "original_text": "Find periods in AMZN when price presented a cup-with-handle shape with a duration of about 2 weeks, where the first down trend and the second up trend had similarly sharp slopes, while the second down trend and the first up trend had similarly gentle slopes. The second down trend started at approximately the same value as the second up trend, and the first four segments had a longer time span than the last segment.",
+  "original_text": "Find periods in AMZN when price presented a cup-with-handle shape with a duration of about 2 weeks, where the first down trend and the second up trend had similarly sharp slopes, while the second down trend and the first up trend had similarly gentle slopes. The second down trend started at approximately the same value as the second up trend, and the first four segments had a longer duration than the last segment.",
   "text_sources": [
     {
       "index": 0,
@@ -466,7 +466,7 @@ intentions
     },
     {
       "index": 0,
-      "text": "first four segments had a longer time span than the last segment"
+      "text": "first four segments had a longer duration than the last segment"
     }
   ],
   "targets": [
@@ -533,7 +533,7 @@ intentions
   "trend_groups": [
     {
       "ids": [0, 4],
-      "time_span_condition": {
+      "duration_condition": {
         "min": {
           "value": """
         + str(2 * (1 - FUZZY_FACTOR))
@@ -578,7 +578,7 @@ intentions
     {
       "group1": [0, 3],
       "group2": [4, 4],
-      "attribute": "time_span",
+      "attribute": "duration",
       "comparator": ">=",
       "text_source_id": 6
     }
@@ -682,7 +682,7 @@ segments
     "start_idx": 300,
     "start_time": 1404950400,
     "start_value": 62.650002,
-    "time_span": 2246400
+    "duration": 2246400
   },
   {
     "abs_slope_percentage": 1.5111551853629317,
@@ -697,7 +697,7 @@ segments
     "start_idx": 318,
     "start_time": 1407196800,
     "start_value": 60.407143,
-    "time_span": 1468800
+    "duration": 1468800
   },
   {
     "abs_slope_percentage": 0.054034123249919165,
@@ -712,7 +712,7 @@ segments
     "start_idx": 331,
     "start_time": 1408665600,
     "start_value": 68.455711,
-    "time_span": 1728000
+    "duration": 1728000
   },
   {
     "abs_slope_percentage": 1.6075216881683112,
@@ -727,7 +727,7 @@ segments
     "start_idx": 344,
     "start_time": 1410393600,
     "start_value": 68.794289,
-    "time_span": 950400
+    "duration": 950400
   },
   {
     "abs_slope_percentage": 0.11518305133769169,
@@ -742,7 +742,7 @@ segments
     "start_idx": 351,
     "start_time": 1411344000,
     "start_value": 63.254284,
-    "time_span": 1987200
+    "duration": 1987200
   }
 ]
 ```
@@ -768,7 +768,7 @@ intentions
   "segment_group_intentions": [
     {
       "ids": [1,3],
-      "group_choices": ["time_span"]
+      "group_choices": ["duration"]
     }
   ],
   "single_relation_intentions": [],
@@ -874,7 +874,7 @@ intentions
   "trend_groups": [
     {
       "ids": [1, 3],
-      "time_span_condition": {
+      "duration_condition": {
         "min": {
           "value": """
         + str(7 * (1 - FUZZY_FACTOR))

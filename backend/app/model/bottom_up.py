@@ -56,13 +56,13 @@ def calculate_merge_cost(x: np.ndarray, y: np.ndarray, segment1: Segment, segmen
     return error - (error1 + error2)
 
 
-def calculate_percentage_metrics(start_value: float, end_value: float, time_span: float) -> tuple[float | None, float | None]:
+def calculate_percentage_metrics(start_value: float, end_value: float, duration: float) -> tuple[float | None, float | None]:
     """计算变化率相关的指标"""
     if start_value <= 0:
         return None, None
 
     delta_percentage = ((end_value - start_value) / start_value) * 100
-    days = time_span / (24 * 3600)
+    days = duration / (24 * 3600)
     daily_average_delta_percentage = (pow(1 + delta_percentage / 100, 1 / days) - 1) * 100
 
     return delta_percentage, daily_average_delta_percentage
@@ -76,7 +76,7 @@ def bottom_up_merge(value_column: str, x: np.ndarray, y: np.ndarray, k: int):
 
     segments: List[Segment] = []
     for i in range(n - 1):
-        time_span = x[i + 1] - x[i]
+        duration = x[i + 1] - x[i]
         _, r2 = segment_error(x, y, i, i + 1)
 
         segments.append(
@@ -90,7 +90,7 @@ def bottom_up_merge(value_column: str, x: np.ndarray, y: np.ndarray, k: int):
                 min_value=min(y[i], y[i + 1]),
                 start_time=x[i],
                 end_time=x[i + 1],
-                time_span=time_span,
+                duration=duration,
                 r2=r2,
             )
         )
@@ -125,7 +125,7 @@ def bottom_up_merge(value_column: str, x: np.ndarray, y: np.ndarray, k: int):
         i = segments.index(seg1)
         j = segments.index(seg2)
 
-        time_span = x[seg2.end_idx] - x[seg1.start_idx]
+        duration = x[seg2.end_idx] - x[seg1.start_idx]
         _, r2 = segment_error(x, y, seg1.start_idx, seg2.end_idx)
 
         segments[i] = Segment(
@@ -138,7 +138,7 @@ def bottom_up_merge(value_column: str, x: np.ndarray, y: np.ndarray, k: int):
             min_value=min(seg1.min_value, seg2.min_value),
             start_time=x[seg1.start_idx],
             end_time=x[seg2.end_idx],
-            time_span=time_span,
+            duration=duration,
             abs_slope_percentage=None,
             r2=r2,
         )

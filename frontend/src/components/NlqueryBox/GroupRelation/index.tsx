@@ -38,7 +38,7 @@ export default function GroupRelation({ relations, trends = [], onChange, isEdit
 								group1: [0, 0],
 								group2: [0, 0],
 								comparator: Comparator.GREATER,
-								attribute: GroupAttribute.TIME_SPAN,
+								attribute: GroupAttribute.DURATION,
 								text_source_id: -1,
 							});
 							onChange(newRelations);

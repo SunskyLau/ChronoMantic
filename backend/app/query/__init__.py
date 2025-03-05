@@ -111,7 +111,7 @@ def satisfies_all_conditions(sequence: List[Segment], query_spec: QuerySpec, df_
         return False
 
     # 检查总时间跨度条件
-    if query_spec.time_span_condition and not satisfies_time_span_condition(sequence, query_spec.time_span_condition):
+    if query_spec.duration_condition and not satisfies_duration_condition(sequence, query_spec.duration_condition):
         return False
 
     return True
@@ -190,8 +190,8 @@ def match_single_trend(segment: Segment, trend: Trend) -> bool:
             return False
 
     # 检查时间跨度条件
-    if trend.time_span_condition:
-        if segment.time_span is None or not check_single_threshold_condition(segment.time_span, trend.time_span_condition.min, trend.time_span_condition.max):
+    if trend.duration_condition:
+        if segment.duration is None or not check_single_threshold_condition(segment.duration, trend.duration_condition.min, trend.duration_condition.max):
             return False
 
     return True
@@ -221,8 +221,11 @@ def satisfy_single_relation(segments: List[Segment], relation: SingleRelation) -
     if val1 is None or val2 is None:
         return False
 
+    # 计算近似值阈值
+    approximation_threshold = calculate_approximation_threshold(segments, relation.attribute)
+
     # 根据比较器进行比较
-    return compare_values(val1, val2, relation.comparator)
+    return compare_values(float(val1), float(val2), relation.comparator, approximation_threshold)
 
 
 @typechecked
@@ -233,9 +236,9 @@ def satisfies_trend_groups(segments: List[Segment], trend_groups: List[TrendGrou
         if id1 >= len(segments) or id2 >= len(segments):
             return False
 
-        if group.time_span_condition:
-            time_span = segments[id2].end_time - segments[id1].start_time
-            if not check_single_threshold_condition(time_span, group.time_span_condition.min, group.time_span_condition.max):
+        if group.duration_condition:
+            duration = segments[id2].end_time - segments[id1].start_time
+            if not check_single_threshold_condition(duration, group.duration_condition.min, group.duration_condition.max):
                 return False
 
     return True
@@ -260,7 +263,7 @@ def satisfy_group_relation(segments: List[Segment], relation: GroupRelation) -> 
         return False
 
     # 计算两个组的属性值
-    if relation.attribute == GroupAttribute.TIME_SPAN:
+    if relation.attribute == GroupAttribute.DURATION:
         val1 = segments[id1_2].end_time - segments[id1_1].start_time
         val2 = segments[id2_2].end_time - segments[id2_1].start_time
     else:
@@ -269,33 +272,43 @@ def satisfy_group_relation(segments: List[Segment], relation: GroupRelation) -> 
     if val1 is None or val2 is None:
         return False
 
+    # 计算近似值阈值
+    approximation_threshold = calculate_group_approximation_threshold(segments, relation.attribute)
+
     # 根据比较器进行比较
-    return compare_values(val1, val2, relation.comparator)
+    return compare_values(float(val1), float(val2), relation.comparator, approximation_threshold)
 
 
 @typechecked
 def get_single_attribute_value(segment: Segment, attribute: SingleAttribute) -> Optional[float]:
     """从段中获取单趋势属性的值"""
     if attribute == SingleAttribute.SLOPE:
-        return segment.slope
+        return float(segment.slope) if segment.slope is not None else None
     elif attribute == SingleAttribute.START_VALUE:
-        return segment.start_value
+        return float(segment.start_value) if segment.start_value is not None else None
     elif attribute == SingleAttribute.END_VALUE:
-        return segment.end_value
-    elif attribute == SingleAttribute.TIME_SPAN:
-        return segment.time_span
+        return float(segment.end_value) if segment.end_value is not None else None
+    elif attribute == SingleAttribute.DURATION:
+        return float(segment.duration) if segment.duration is not None else None
     elif attribute == SingleAttribute.ABS_SLOPE_PERCENTAGE:
-        return segment.abs_slope_percentage
+        return float(segment.abs_slope_percentage) if segment.abs_slope_percentage is not None else None
     return None
 
 
 @typechecked
-def compare_values(val1: float, val2: float, comparator: Comparator) -> bool:
-    """根据比较器比较两个值"""
+def compare_values(val1: float, val2: float, comparator: Comparator, approximation_threshold: float) -> bool:
+    """根据比较器比较两个值
+
+    Args:
+        val1: 第一个值
+        val2: 第二个值
+        comparator: 比较器
+        approximation_threshold: 近似值阈值，基于数据段范围计算得出
+    """
     if comparator == Comparator.GREATER:
-        return bool(val1 > val2 and abs(val1 - val2) > abs(val2 * APPROXIMATELY_EQUAL_THRESHOLD))
+        return bool(val1 > val2)
     elif comparator == Comparator.LESS:
-        return bool(val1 < val2 and abs(val1 - val2) > abs(val1 * APPROXIMATELY_EQUAL_THRESHOLD))
+        return bool(val1 < val2)
     elif comparator == Comparator.EQUAL:
         return bool(val1 == val2)
     elif comparator == Comparator.NO_GREATER:
@@ -303,15 +316,49 @@ def compare_values(val1: float, val2: float, comparator: Comparator) -> bool:
     elif comparator == Comparator.NO_LESS:
         return bool(val1 >= val2)
     elif comparator == Comparator.APPROXIMATELY_EQUAL_TO:
-        return bool(abs(val1 - val2) <= abs(val1 * APPROXIMATELY_EQUAL_THRESHOLD))
+        return bool(abs(val1 - val2) <= approximation_threshold)
     return False
 
 
 @typechecked
-def satisfies_time_span_condition(segments: List[Segment], condition: ScopeCondition) -> bool:
-    """检查段序列是否满足总时间跨度条件"""
-    total_time_span = segments[-1].end_time - segments[0].start_time
-    return check_single_threshold_condition(total_time_span, condition.min, condition.max)
+def satisfies_duration_condition(segments: List[Segment], condition: ScopeCondition) -> bool:
+    """检查段序列是否满足总持续时间条件"""
+    total_duration = segments[-1].end_time - segments[0].start_time
+    return check_single_threshold_condition(total_duration, condition.min, condition.max)
+
+
+@typechecked
+def calculate_approximation_threshold(segments: List[Segment], attribute: SingleAttribute) -> float:
+    """计算单个属性的近似值阈值"""
+    values = []
+    for segment in segments:
+        val = get_single_attribute_value(segment, attribute)
+        if val is not None:
+            values.append(val)
+
+    if not values:
+        return APPROXIMATELY_EQUAL_THRESHOLD  # 使用默认阈值
+
+    value_range = max(values) - min(values)
+    return value_range * APPROXIMATELY_EQUAL_THRESHOLD
+
+
+@typechecked
+def calculate_group_approximation_threshold(segments: List[Segment], attribute: GroupAttribute) -> float:
+    """计算组属性的近似值阈值"""
+    if attribute == GroupAttribute.DURATION:
+        durations = []
+        for i in range(len(segments) - 1):
+            duration = segments[i + 1].end_time - segments[i].start_time
+            durations.append(duration)
+
+        if not durations:
+            return APPROXIMATELY_EQUAL_THRESHOLD  # 使用默认阈值
+
+        duration_range = max(durations) - min(durations)
+        return duration_range * APPROXIMATELY_EQUAL_THRESHOLD
+
+    return APPROXIMATELY_EQUAL_THRESHOLD  # 其他属性使用默认阈值
 
 
 @typechecked
@@ -384,7 +431,7 @@ if __name__ == "__main__":
         single_relations=[SingleRelation(id1=0, id2=2, attribute=SingleAttribute.END_VALUE, comparator=Comparator.APPROXIMATELY_EQUAL_TO)],
         trend_groups=[],
         group_relations=[],
-        time_span_condition=None,
+        duration_condition=None,
         time_scope_condition=None,
         max_value_scope_condition=None,
         min_value_scope_condition=None,

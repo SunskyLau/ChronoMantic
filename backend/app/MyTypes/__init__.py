@@ -31,7 +31,7 @@ class Segment(DictMixin):
     start_time: Optional[int] = None
     end_time: Optional[int] = None
     abs_slope_percentage: Optional[float] = None
-    time_span: Optional[int] = None
+    duration: Optional[int] = None  # Changed from duration
     source: Optional[Source] = None
     r2: Optional[float] = None  # 片段的拟合优度, 范围是[0,1]
 
@@ -39,7 +39,7 @@ class Segment(DictMixin):
 @dataclass
 class SegmentGroup(DictMixin):
     ids: Tuple[int, int]  # 组内趋势的id列表，ids[1]>=ids[0]
-    time_span: int
+    duration: int  # Changed from duration
 
 
 @dataclass
@@ -82,19 +82,19 @@ class Trend(DictMixin):
     category: TrendCategory  # 趋势类别
     slope_scope_condition: Optional[ScopeCondition] = None  # 斜率的范围条件
     abs_slope_percentage_scope_condition: Optional[ScopeCondition] = None  # 斜率在所有斜率中的占比范围条件, 单位是%，例如30就代表30%
-    time_span_condition: Optional[ScopeCondition] = None  # 时间跨度的范围条件, 单位是秒，例如3600就代表1小时
+    duration_condition: Optional[ScopeCondition] = None  # Changed from duration_condition
 
 
 class SingleAttribute(Enum):
     SLOPE = "slope"  # 斜率
     START_VALUE = "start_value"  # 起始值
     END_VALUE = "end_value"  # 结束值
-    TIME_SPAN = "time_span"  # 时间跨度,单位是秒
+    DURATION = "duration"  # 持续时间,单位是秒
     ABS_SLOPE_PERCENTAGE = "abs_slope_percentage"  # 斜率占比,单位是%
 
 
 class GroupAttribute(Enum):
-    TIME_SPAN = "time_span"  # 时间跨度,单位是秒
+    DURATION = "duration"  # 持续时间,单位是秒
 
 
 class Comparator(Enum):
@@ -117,7 +117,7 @@ class SingleRelation(DictMixin):  # 两个单趋势之间的比较关系
 @dataclass
 class TrendGroup(DictMixin):  # 趋势组合
     ids: Tuple[int, int]  # 组内趋势的id列表，ids[1]>=ids[0]
-    time_span_condition: Optional[ScopeCondition] = None  # 该组的时间跨度条件
+    duration_condition: Optional[ScopeCondition] = None  # Changed from duration_condition
 
 
 @dataclass
@@ -135,7 +135,7 @@ class QuerySpec(DictMixin):
     single_relations: List[SingleRelation]  # 不同趋势之间的属性比较关系列表
     trend_groups: List[TrendGroup]  # 趋势组合列表
     group_relations: List[GroupRelation]  # 组合之间的关系列表
-    time_span_condition: Optional[ScopeCondition] = None  # 总时间跨度的范围条件
+    duration_condition: Optional[ScopeCondition] = None  # Changed from duration_condition
     time_scope_condition: Optional[ScopeCondition] = None  # 时间范围的范围条件
     max_value_scope_condition: Optional[ScopeCondition] = None  # 最大值的范围条件
     min_value_scope_condition: Optional[ScopeCondition] = None  # 最小值的范围条件
