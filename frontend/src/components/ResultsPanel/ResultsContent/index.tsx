@@ -144,13 +144,13 @@ export default function ResultsContent() {
             getValue: (segments) => (segments[segmentIndex]?.slope ?? 0) * timeStampColumnUnit
         },
         {
-            id: `segment_${segmentIndex}_abs_slope`,
-            key: 'abs_slope_percentage',
-            label: `Abs Slope`,
+            id: `segment_${segmentIndex}_relative_slope`,
+            key: 'relative_slope',
+            label: `Relative Slope`,
             scope: 'segment',
             segmentIndex,
             format: (value) => value.toFixed(2) + '%',
-            getValue: (segments) => segments[segmentIndex]?.abs_slope_percentage ?? 0
+            getValue: (segments) => segments[segmentIndex]?.relative_slope ?? 0
         },
         {
             id: `segment_${segmentIndex}_duration`,

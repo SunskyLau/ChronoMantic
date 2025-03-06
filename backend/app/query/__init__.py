@@ -162,13 +162,13 @@ def match_trend_sequence(segments: List[Segment], trends: List[Trend]) -> bool:
 def match_single_trend(segment: Segment, trend: Trend) -> bool:
     """检查单个段是否匹配趋势模式"""
     if trend.category == TrendCategory.FLAT:
-        if not segment.abs_slope_percentage <= FLAT_THRESHOLD:
+        if not segment.relative_slope <= FLAT_THRESHOLD:
             return False
     elif trend.category == TrendCategory.UP:
-        if not (segment.slope > 0 and segment.abs_slope_percentage > FLAT_THRESHOLD):
+        if not (segment.slope > 0 and segment.relative_slope > FLAT_THRESHOLD):
             return False
     elif trend.category == TrendCategory.DOWN:
-        if not (segment.slope < 0 and segment.abs_slope_percentage > FLAT_THRESHOLD):
+        if not (segment.slope < 0 and segment.relative_slope > FLAT_THRESHOLD):
             return False
     elif trend.category == TrendCategory.ARBITRARY:
         pass  # 任意趋势，不需要检查趋势类型
@@ -181,11 +181,9 @@ def match_single_trend(segment: Segment, trend: Trend) -> bool:
             return False
 
     # 检查斜率在所有斜率中所处比率的范围条件
-    if trend.abs_slope_percentage_scope_condition:
-        if segment.abs_slope_percentage is None or not check_single_threshold_condition(
-            segment.abs_slope_percentage,
-            trend.abs_slope_percentage_scope_condition.min,
-            trend.abs_slope_percentage_scope_condition.max,
+    if trend.relative_slope_scope_condition:
+        if segment.relative_slope is None or not check_single_threshold_condition(
+            segment.relative_slope, trend.relative_slope_scope_condition.min, trend.relative_slope_scope_condition.max
         ):
             return False
 
@@ -283,15 +281,15 @@ def satisfy_group_relation(segments: List[Segment], relation: GroupRelation) -> 
 def get_single_attribute_value(segment: Segment, attribute: SingleAttribute) -> Optional[float]:
     """从段中获取单趋势属性的值"""
     if attribute == SingleAttribute.SLOPE:
-        return float(segment.slope) if segment.slope is not None else None
+        return segment.slope
     elif attribute == SingleAttribute.START_VALUE:
-        return float(segment.start_value) if segment.start_value is not None else None
+        return segment.start_value
     elif attribute == SingleAttribute.END_VALUE:
-        return float(segment.end_value) if segment.end_value is not None else None
+        return segment.end_value
     elif attribute == SingleAttribute.DURATION:
-        return float(segment.duration) if segment.duration is not None else None
-    elif attribute == SingleAttribute.ABS_SLOPE_PERCENTAGE:
-        return float(segment.abs_slope_percentage) if segment.abs_slope_percentage is not None else None
+        return segment.duration
+    elif attribute == SingleAttribute.RELATIVE_SLOPE:
+        return segment.relative_slope
     return None
 
 

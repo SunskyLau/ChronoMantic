@@ -82,7 +82,7 @@ const getSlopeText = (trend: TrendWithSource, colorMap: Record<string, string>, 
 	const texts: Record<string, TextWithColor> = {};
 	const map = {
 		"slope_scope_condition": { key: TrendTextMap["slope_scope_condition"], unitFormatter: (unit: string) => unit ? `/${unit}` : "" },
-		"abs_slope_percentage_scope_condition": { key: TrendTextMap["abs_slope_percentage_scope_condition"], unitFormatter: () => `%` },
+		"relative_slope_scope_condition": { key: TrendTextMap["relative_slope_scope_condition"], unitFormatter: () => `%` },
 	}
 	Object.entries(conditions).forEach(([key, value]) => {
 		if (key === 'duration_condition' || key === 'category') return;

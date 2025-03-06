@@ -25,15 +25,15 @@ def approximate_dataset(dataset: pd.DataFrame, dataset_info: DatasetInfo, k: int
     for vc in value_columns:
         y = dataset[vc].values
         approxiamation_segments_container = bottom_up_merge(vc, x, y, k)
-        approxiamation_segments_container = update_abs_slope_percentage(approxiamation_segments_container)
+        approxiamation_segments_container = update_relative_slope(approxiamation_segments_container)
         approxiamation_segments_containers.append(approxiamation_segments_container)
 
     return approxiamation_segments_containers
 
 
 @typechecked
-def update_abs_slope_percentage(approximation_segments_container: ApproximationSegmentsContainer):
-    """更新每个segment的abs_slope_percentage"""
+def update_relative_slope(approximation_segments_container: ApproximationSegmentsContainer):
+    """更新每个segment的relative_slope"""
     # 只找level为0的segments
     level_0_segments = next((segments for segments in approximation_segments_container.approximation_segments_list if segments.approximation_level == 0), None)
 
@@ -41,13 +41,13 @@ def update_abs_slope_percentage(approximation_segments_container: ApproximationS
         # 计算level 0的segments的abs_slope的最大值
         max_abs_slope = max(abs(segment.slope) for segment in level_0_segments.segments)
 
-        # 更新所有level的segments的abs_slope_percentage
+        # 更新所有level的segments的relative_slope
         for approximation_segments in approximation_segments_container.approximation_segments_list:
             for segment in approximation_segments.segments:
                 if max_abs_slope > 0:  # 避免除以0
-                    segment.abs_slope_percentage = abs(segment.slope) / max_abs_slope * 100
+                    segment.relative_slope = abs(segment.slope) / max_abs_slope * 100
                 else:
-                    segment.abs_slope_percentage = 0
+                    segment.relative_slope = 0
 
     return approximation_segments_container
 

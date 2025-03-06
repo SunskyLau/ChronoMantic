@@ -8,7 +8,7 @@ import { formatTime } from "../../utils/time";
 import IntentionPopover from "./IntentionPopover";
 import { IntentionLine, LineChartProps, PopoverPosition } from "./types";
 
-function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVisible = false, isYAxisVisible = false, isXAxisTextVisible = false, isYAxisTextVisible = false, isBrush = false, onBrush, onBrushEnd, range, height, split, isSplitMask = false, brushPosition, isExpand = true, isShowRange = true, isActive, children, onScroll, onContextMenu, xAxisColor = "#C5C5C5", yAxisColor = "#C5C5C5", lineColor = "#A6A6A6", textColor = "#C5C5C5", xAxisFormatter = (date: Date) => formatTime(date, xDataType === "number" ? undefined : xDataType), brushColor = "#546BB633", resultsSplit, selectedSplits, defaultSplits = [], onSplitSelect, onSubmitIntentions, margin, isHoverable = false, xDataType = "number" }: LineChartProps) {
+function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVisible = false, isYAxisVisible = false, isXAxisTextVisible = false, isYAxisTextVisible = false, isBrush = false, onBrush, onBrushEnd, range, height, split, isSplitMask = false, brushPosition, isExpand = true, isShowRange = true, isActive, children, onScroll, onContextMenu, xAxisColor = "#C5C5C5", yAxisColor = "#C5C5C5", lineColor = "#A6A6A6", textColor = "#C5C5C5", xAxisFormatter = (date: Date) => formatTime(date, xDataType === "number" ? undefined : xDataType), brushColor = "#546BB633", resultsSplit, selectedSplits, defaultSplits = [], onSplitSelect, onSubmitIntentions, margin, isHoverable = false, xDataType = "number", isRequesting = false }: LineChartProps) {
 	const svgRef = useRef<SVGSVGElement>(null);
 	const id = useId();
 	const isTime = useMemo(() => xDataType !== "number", [xDataType]);
@@ -738,7 +738,7 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 
 				splitLinesG.append("line").attr("class", "split-line").attr("x1", x1).attr("x2", x2).attr("y1", y1).attr("y2", y2).attr("stroke", darkerColor).attr("stroke-opacity", "0.5").attr("stroke-width", 1).attr("pointer-events", "none");
 
-				if (defaultSplits && selectedSplits) {
+				if (defaultSplits?.length && selectedSplits) {
 					splitInteractionG
 						.append("rect")
 						.attr("x", x1)
@@ -750,7 +750,9 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 						.attr("data-range", JSON.stringify([split[i], split[i + 1]]))
 						.style("pointer-events", "all")
 						.on("pointerdown", function (event) {
-							handleSplitClick(event, [split[i], split[i + 1]]);
+							if (!isRequesting) {
+								handleSplitClick(event, [split[i], split[i + 1]]);
+							}
 						})
 						.on("mousemove", handleMouseMove)
 						.on("mouseup", handleMouseUp);
@@ -1013,32 +1015,78 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 				});
 
 			if (selectedSplits && selectedSplits.length > 0) {
-				const buttonX = Math.min(
-					x(timeStampData[selectedSplits[selectedSplits.length - 1]]) + 10,
-					innerWidth - 70
-				);
+				const buttonX = Math.min(x(timeStampData[selectedSplits[selectedSplits.length - 1]]) + 10, innerWidth - 70);
+
+				const loadingDefs = svg.append("defs");
+				loadingDefs
+					.append("linearGradient")
+					.attr("id", `loading-gradient-${id}`)
+					.attr("gradientUnits", "userSpaceOnUse")
+					.selectAll("stop")
+					.data([
+						{ offset: "0%", color: "#ffffff" },
+						{ offset: "100%", color: "#1890ff" },
+					])
+					.enter()
+					.append("stop")
+					.attr("offset", (d) => d.offset)
+					.attr("stop-color", (d) => d.color);
+
+				const animateRotate = loadingDefs.append("animateTransform").attr("attributeName", "transform").attr("type", "rotate").attr("from", "0 12 12").attr("to", "360 12 12").attr("dur", "1s").attr("repeatCount", "indefinite");
 
 				const submitButton = intentionLinesG
 					.append("g")
 					.attr("class", "submit-button")
 					.attr("transform", `translate(${buttonX}, ${computedMargin.top})`)
-					.style("cursor", "pointer");
+					.style("cursor", isRequesting ? "not-allowed" : "pointer");
 
-				submitButton.append("rect").attr("width", 60).attr("height", 24).attr("rx", 4).attr("fill", "#1890ff");
+				submitButton.append("rect").attr("width", isRequesting ? 84 : 60).attr("height", 24).attr("rx", 4).attr("fill", isRequesting ? "#1890ff66" : "#1890ff");
 
-				submitButton.append("text").attr("x", 30).attr("y", 16).attr("text-anchor", "middle").attr("fill", "white").attr("font-size", "12px").text("Refine");
+				if (isRequesting) {
+					const loadingGroup = submitButton.append("g").attr("transform", "translate(15, 12)");
+
+					loadingGroup
+						.append("circle")
+						.attr("r", 4)
+						.attr("fill", "none")
+						.attr("stroke", `url(#loading-gradient-${id})`)
+						.attr("stroke-width", 2)
+						.attr("stroke-dasharray", "12.5 12.5")
+						.attr("transform-origin", "-12px -12px")
+						.call((g) => g.node()?.appendChild(animateRotate.node()!.cloneNode()));
+
+					submitButton.append("text")
+						.attr("x", 30)
+						.attr("y", 16)
+						.attr("text-anchor", "start")
+						.attr("fill", "white")
+						.attr("font-size", "12px")
+						.text("Loading");
+				} else {
+					submitButton.append("text")
+						.attr("x", 30)
+						.attr("y", 16)
+						.attr("text-anchor", "middle")
+						.attr("fill", "white")
+						.attr("font-size", "12px")
+						.text("Refine");
+				}
 
 				submitButton
 					.on("click", () => {
-						if (onSubmitIntentions) {
+						if (!isRequesting && onSubmitIntentions) {
 							onSubmitIntentions(intentions);
 						}
 					})
 					.on("mouseenter", function () {
-						d3.select(this).select("rect").transition().duration(200).attr("fill", "#40a9ff");
+						if (!isRequesting) {
+							d3.select(this).select("rect").transition().duration(200).attr("fill", "#40a9ff");
+						}
 					})
 					.on("mouseleave", function () {
-						d3.select(this).select("rect").transition().duration(200).attr("fill", "#1890ff");
+						if (!isRequesting) {
+							d3.select(this).select("rect").transition().duration(200).attr("fill", "#1890ff");
+						}
 					});
 			}
 		}
@@ -1118,7 +1166,7 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 			svg.selectAll("*").remove();
 			d3.selectAll(".tooltip").remove();
 		};
-	}, [xData, yData, ratio, title, isXAxisVisible, isYAxisVisible, isXAxisTextVisible, isYAxisTextVisible, isBrush, onBrush, isFill, range, height, split, isSplitMask, brushPosition, isExpand, isShowRange, id, onBrushEnd, isActive, xAxisColor, yAxisColor, lineColor, textColor, xAxisFormatter, brushColor, resultsSplit, handleSplitClick, selectedSplits, popoverPosition, handleMouseMove, handleMouseUp, intentions, defaultSplits, onSubmitIntentions, relationIds, computedMargin, isHoverable, timeStampData, isTime]);
+	}, [xData, yData, ratio, title, isXAxisVisible, isYAxisVisible, isXAxisTextVisible, isYAxisTextVisible, isBrush, onBrush, isFill, range, height, split, isSplitMask, brushPosition, isExpand, isShowRange, id, onBrushEnd, isActive, xAxisColor, yAxisColor, lineColor, textColor, xAxisFormatter, brushColor, resultsSplit, handleSplitClick, selectedSplits, popoverPosition, handleMouseMove, handleMouseUp, intentions, defaultSplits, onSubmitIntentions, relationIds, computedMargin, isHoverable, timeStampData, isTime, isRequesting]);
 
 	useEffect(() => {
 		const cancle = draw();

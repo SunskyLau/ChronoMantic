@@ -45,6 +45,7 @@ export interface LineChartProps {
     selectedSplits?: number[];
     defaultSplits?: number[];
     isHoverable?: boolean;
+    isRequesting?: boolean;
     onSplitSelect?: (splits: number[]) => void;
     onSubmitIntentions?: (intentions: Intentions) => void;
 }

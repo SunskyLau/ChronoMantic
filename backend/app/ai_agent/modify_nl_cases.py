@@ -54,7 +54,7 @@ segments
 [
   {
     "source": "result",
-    "abs_slope_percentage": 2.0044006295398686,
+    "relative_slope": 2.0044006295398686,
     "daily_average_delta_percentage": -0.808347110206753,
     "delta_percentage": -17.699390117203826,
     "end_time": 1397174400,
@@ -66,7 +66,7 @@ segments
   },
   {
     "source": "result",
-    "abs_slope_percentage": 0.00012242216338669335,
+    "relative_slope": 0.00012242216338669335,
     "daily_average_delta_percentage": 0.000054724881026757544,
     "delta_percentage": 0.016035671329695883,
     "end_time": 1422489600,
@@ -78,7 +78,7 @@ segments
   },
   {
     "source": "user",
-    "abs_slope_percentage": 30.67595048894415,
+    "relative_slope": 30.67595048894415,
     "daily_average_delta_percentage": 13.711591550810166,
     "delta_percentage": 13.711591550810159,
     "end_time": 1422576000,
@@ -102,11 +102,11 @@ intentions
   "single_segment_intentions": [
     {
       "id": 0,
-      "single_choices":["abs_slope_percentage"]
+      "single_choices":["relative_slope"]
     },
     {
       "id": 2,
-      "single_choices":["category", "slope", "abs_slope_percentage"]
+      "single_choices":["category", "slope", "relative_slope"]
     }
   ],
   "segment_group_intentions": [
@@ -169,7 +169,7 @@ intentions
         "category": "down",
         "text_source_id": 1
       },
-      "abs_slope_percentage_scope_condition": {
+      "relative_slope_scope_condition": {
         "min": {
           "value": -3,
           "inclusive": true
@@ -208,7 +208,7 @@ intentions
         "unit": "second",
         "text_source_id": 7
       },
-      "abs_slope_percentage_scope_condition": {
+      "relative_slope_scope_condition": {
         "min": {
           "value": """
         + str(30 * (1 - FUZZY_FACTOR))
@@ -363,7 +363,7 @@ segments
 ```
 [
   {
-    "abs_slope_percentage": 47.560301473913036,
+    "relative_slope": 47.560301473913036,
     "end_time": 1518048000,
     "end_value": 1350.5,
     "slope": -0.0007671299652777779,
@@ -373,7 +373,7 @@ segments
     "duration": 86400
   },
   {
-    "abs_slope_percentage": 7.821487638650382,
+    "relative_slope": 7.821487638650382,
     "end_time": 1518134400,
     "end_value": 1339.599976,
     "slope": -0.00012615768518518553,
@@ -383,7 +383,7 @@ segments
     "duration": 86400
   },
   {
-    "abs_slope_percentage": 11.153369933748698,
+    "relative_slope": 11.153369933748698,
     "end_time": 1518393600,
     "end_value": 1386.22998,
     "slope": 0.00017989970679012384,
@@ -393,7 +393,7 @@ segments
     "duration": 259200
   },
   {
-    "abs_slope_percentage": 23.25634184016303,
+    "relative_slope": 23.25634184016303,
     "end_time": 1518566400,
     "end_value": 1451.050049,
     "slope": 0.00037511614004629557,
@@ -403,7 +403,7 @@ segments
     "duration": 172800
   },
   {
-    "abs_slope_percentage": 0.8467667386731758,
+    "relative_slope": 0.8467667386731758,
     "end_time": 1518739200,
     "end_value": 1448.689941,
     "slope": -0.000013658032407406566,
@@ -426,8 +426,8 @@ intentions
   "single_segment_intentions": [],
   "segment_group_intentions": [],
   "single_relation_intentions": [
-    {"id1": 0, "id2": 3, "single_choices": ["abs_slope_percentage"]},
-    {"id1": 1, "id2": 2, "single_choices": ["abs_slope_percentage"]},
+    {"id1": 0, "id2": 3, "single_choices": ["relative_slope"]},
+    {"id1": 1, "id2": 2, "single_choices": ["relative_slope"]},
     {"id1": 1, "id2": 3, "single_choices": ["start_value"]}
   ],
   "group_relation_intentions": [
@@ -553,14 +553,14 @@ intentions
   ],
   "single_relations": [
     {
-      "attribute": "abs_slope_percentage",
+      "attribute": "relative_slope",
       "comparator": "~=",
       "id1": 0,
       "id2": 3,
       "text_source_id": 3
     },
     {
-      "attribute": "abs_slope_percentage",
+      "attribute": "relative_slope",
       "comparator": "~=",
       "id1": 1,
       "id2": 2,
@@ -670,7 +670,7 @@ segments
 ```
 [
   {
-    "abs_slope_percentage": 0.2753391665644733,
+    "relative_slope": 0.2753391665644733,
     "end_idx": 318,
     "end_time": 1407196800,
     "end_value": 60.407143,
@@ -685,7 +685,7 @@ segments
     "duration": 2246400
   },
   {
-    "abs_slope_percentage": 1.5111551853629317,
+    "relative_slope": 1.5111551853629317,
     "end_idx": 331,
     "end_time": 1408665600,
     "end_value": 68.455711,
@@ -700,7 +700,7 @@ segments
     "duration": 1468800
   },
   {
-    "abs_slope_percentage": 0.054034123249919165,
+    "relative_slope": 0.054034123249919165,
     "end_idx": 344,
     "end_time": 1410393600,
     "end_value": 68.794289,
@@ -715,7 +715,7 @@ segments
     "duration": 1728000
   },
   {
-    "abs_slope_percentage": 1.6075216881683112,
+    "relative_slope": 1.6075216881683112,
     "end_idx": 351,
     "end_time": 1411344000,
     "end_value": 63.254284,
@@ -730,7 +730,7 @@ segments
     "duration": 950400
   },
   {
-    "abs_slope_percentage": 0.11518305133769169,
+    "relative_slope": 0.11518305133769169,
     "end_idx": 368,
     "end_time": 1413331200,
     "end_value": 64.084282,

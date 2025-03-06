@@ -47,7 +47,7 @@ Find periods in AMZN when price first rose sharply then fell gradually and the p
         "category": "up",
         "text_source_id": 1
       },
-      "abs_slope_percentage_scope_condition": {
+      "relative_slope_scope_condition": {
         "min": {
           "value": 80,
           "inclusive": true
@@ -60,7 +60,7 @@ Find periods in AMZN when price first rose sharply then fell gradually and the p
         "category": "down",
         "text_source_id": 3
       },
-      "abs_slope_percentage_scope_condition": {
+      "relative_slope_scope_condition": {
         "max": {
           "value": 20,
           "inclusive": true
