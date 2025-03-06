@@ -1012,28 +1012,35 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 					});
 				});
 
-			const submitButton = intentionLinesG
-				.append("g")
-				.attr("class", "submit-button")
-				.attr("transform", `translate(${innerWidth - 20}, 0)`)
-				.style("cursor", "pointer");
+			if (selectedSplits && selectedSplits.length > 0) {
+				const buttonX = Math.min(
+					x(timeStampData[selectedSplits[selectedSplits.length - 1]]) + 10,
+					innerWidth - 70
+				);
 
-			submitButton.append("rect").attr("width", 60).attr("height", 24).attr("rx", 4).attr("fill", "#1890ff");
+				const submitButton = intentionLinesG
+					.append("g")
+					.attr("class", "submit-button")
+					.attr("transform", `translate(${buttonX}, ${computedMargin.top})`)
+					.style("cursor", "pointer");
 
-			submitButton.append("text").attr("x", 30).attr("y", 16).attr("text-anchor", "middle").attr("fill", "white").attr("font-size", "12px").text("Submit");
+				submitButton.append("rect").attr("width", 60).attr("height", 24).attr("rx", 4).attr("fill", "#1890ff");
 
-			submitButton
-				.on("click", () => {
-					if (onSubmitIntentions) {
-						onSubmitIntentions(intentions);
-					}
-				})
-				.on("mouseenter", function () {
-					d3.select(this).select("rect").transition().duration(200).attr("fill", "#40a9ff");
-				})
-				.on("mouseleave", function () {
-					d3.select(this).select("rect").transition().duration(200).attr("fill", "#1890ff");
-				});
+				submitButton.append("text").attr("x", 30).attr("y", 16).attr("text-anchor", "middle").attr("fill", "white").attr("font-size", "12px").text("Refine");
+
+				submitButton
+					.on("click", () => {
+						if (onSubmitIntentions) {
+							onSubmitIntentions(intentions);
+						}
+					})
+					.on("mouseenter", function () {
+						d3.select(this).select("rect").transition().duration(200).attr("fill", "#40a9ff");
+					})
+					.on("mouseleave", function () {
+						d3.select(this).select("rect").transition().duration(200).attr("fill", "#1890ff");
+					});
+			}
 		}
 
 		if (isBrush) {
