@@ -60,7 +60,7 @@ export function formatQuerySpec(query: QuerySpecWithSource): QuerySpec {
     const formatTrend = (trend: TrendWithSource): Trend => ({
         category: query.text_sources[trend.category.text_source_id]?.disabled ? TrendCategory.ARBITRARY : trend.category.category,
         slope_scope_condition: formatScopeCondition(trend.slope_scope_condition, (a, b) => a / b),
-        abs_slope_percentage_scope_condition: formatScopeCondition(trend.abs_slope_percentage_scope_condition),
+        relative_slope_scope_condition: formatScopeCondition(trend.relative_slope_scope_condition),
         duration_condition: formatScopeCondition(trend.duration_condition)
     });
 

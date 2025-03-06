@@ -171,7 +171,7 @@ segments:
 [
   {
     "source": "result",
-    "abs_slope_percentage": 2.0044006295398686,
+    "relative_slope": 2.0044006295398686,
     "daily_average_delta_percentage": -0.808347110206753,
     "delta_percentage": -17.699390117203826,
     "end_time": 1397174400,
@@ -183,7 +183,7 @@ segments:
   },
   {
     "source": "result",
-    "abs_slope_percentage": 0.00012242216338669335,
+    "relative_slope": 0.00012242216338669335,
     "daily_average_delta_percentage": 0.000054724881026757544,
     "delta_percentage": 0.016035671329695883,
     "end_time": 1422489600,
@@ -195,7 +195,7 @@ segments:
   },
   {
     "source": "user",
-    "abs_slope_percentage": 30.67595048894415,
+    "relative_slope": 30.67595048894415,
     "daily_average_delta_percentage": -13.711591550810166,
     "delta_percentage": -13.711591550810159,
     "end_time": 1422576000,

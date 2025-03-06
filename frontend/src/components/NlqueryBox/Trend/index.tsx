@@ -171,7 +171,7 @@ export default function Trend({ title, trends, onChange, start = 0, isEdit, disa
 											break;
 										case "duration_condition":
 										case "slope_scope_condition":
-										case "abs_slope_percentage_scope_condition":
+										case "relative_slope_scope_condition":
 											components.push(
 												<SpanWithUnit
 													key={k}

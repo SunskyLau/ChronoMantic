@@ -139,7 +139,7 @@ def bottom_up_merge(value_column: str, x: np.ndarray, y: np.ndarray, k: int):
             start_time=x[seg1.start_idx],
             end_time=x[seg2.end_idx],
             duration=duration,
-            abs_slope_percentage=None,
+            relative_slope=None,
             r2=r2,
         )
         segments.pop(j)

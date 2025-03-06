@@ -30,10 +30,10 @@ class Segment(DictMixin):
     min_value: Optional[float] = None
     start_time: Optional[int] = None
     end_time: Optional[int] = None
-    abs_slope_percentage: Optional[float] = None
-    duration: Optional[int] = None  # Changed from duration
+    relative_slope: Optional[float] = None  # Changed from relative_slope
+    duration: Optional[int] = None
     source: Optional[Source] = None
-    r2: Optional[float] = None  # 片段的拟合优度, 范围是[0,1]
+    r2: Optional[float] = None
 
 
 @dataclass
@@ -79,10 +79,10 @@ class TrendCategory(Enum):
 
 @dataclass
 class Trend(DictMixin):
-    category: TrendCategory  # 趋势类别
-    slope_scope_condition: Optional[ScopeCondition] = None  # 斜率的范围条件
-    abs_slope_percentage_scope_condition: Optional[ScopeCondition] = None  # 斜率在所有斜率中的占比范围条件, 单位是%，例如30就代表30%
-    duration_condition: Optional[ScopeCondition] = None  # Changed from duration_condition
+    category: TrendCategory
+    slope_scope_condition: Optional[ScopeCondition] = None
+    relative_slope_scope_condition: Optional[ScopeCondition] = None  # Changed from relative_slope_scope_condition
+    duration_condition: Optional[ScopeCondition] = None
 
 
 class SingleAttribute(Enum):
@@ -90,7 +90,7 @@ class SingleAttribute(Enum):
     START_VALUE = "start_value"  # 起始值
     END_VALUE = "end_value"  # 结束值
     DURATION = "duration"  # 持续时间,单位是秒
-    ABS_SLOPE_PERCENTAGE = "abs_slope_percentage"  # 斜率占比,单位是%
+    RELATIVE_SLOPE = "relative_slope"  # 相对斜率,单位是%
 
 
 class GroupAttribute(Enum):

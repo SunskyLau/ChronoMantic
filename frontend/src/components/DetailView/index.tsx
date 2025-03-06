@@ -4,7 +4,7 @@ import "./index.css";
 import LineChart from "../LineChart";
 import { useAppDispatch, useAppSelector } from "../../app/hooks";
 import { setBrushPosition, setRange, setSelectedSplits, setSelectPosition } from "../../app/slice/selectSlice";
-import { useCallback, useMemo } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { getModifyPrompt } from "../../api";
 import { setColorMap, setNLQuery, setQuery } from "../../app/slice/stateSlice";
 import { getColorFromMap } from "../../utils/color";
@@ -79,6 +79,7 @@ export default function DetailView() {
 	const current = results?.find((result) => result.source === source);
 
 	const originalQuery = useAppSelector((state) => state.states.originalQuery);
+	const [isRequesting, setIsRequesting] = useState(false);
 
 	return (
 		<Panel
@@ -111,8 +112,10 @@ export default function DetailView() {
 							selectedSplits={isTarget ? selectedSplits : undefined}
 							defaultSplits={isTarget ? defaultSplits : undefined}
 							onSplitSelect={isTarget ? handleSplitSelect : undefined}
+							isRequesting={isRequesting}
 							onSubmitIntentions={(intentions) => {
 								if (originalQuery) {
+									setIsRequesting(true);
 									getModifyPrompt(
 										originalQuery,
 										segments.filter((item) => {
@@ -126,7 +129,10 @@ export default function DetailView() {
 											dispatch(setQuery(results));
 											dispatch(setColorMap(results));
 										})
-										.catch(() => { });
+										.catch(() => { })
+										.finally(() => {
+											setIsRequesting(false);
+										});
 								}
 							}}
 						></LineChart>

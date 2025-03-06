@@ -28,7 +28,7 @@ export interface Segment {
   min_value?: number; // 最小值
   start_time?: number; // 起始时间,单位是秒
   end_time?: number; // 结束时间,单位是秒
-  abs_slope_percentage?: number; // 斜率在所有斜率中的占比,单位是%
+  relative_slope?: number; // 相对斜率,单位是%
   duration?: number; // 时间跨度,单位是秒
   r2?: number; // 拟合优度,范围是[0,1]
 }
@@ -40,7 +40,7 @@ export interface SimplifiedSegment {
   end_value: number;    // 片段终止点的值
   start_time?: number;  // 片段起始时间，单位是秒，可选
   end_time?: number;    // 片段终止时间，单位是秒，可选
-  abs_slope_percentage?: number;  // 片段斜率在所有斜率中的占比，单位是%，可选
+  relative_slope?: number;  // 片段斜率在所有斜率中的占比，单位是%，可选
   duration?: number;  // 片段的时间跨度，单位是秒，可选
 }
 
@@ -90,13 +90,13 @@ export enum TrendCategory {
 export interface Trend {
   category: TrendCategory;
   slope_scope_condition?: ScopeCondition;
-  abs_slope_percentage_scope_condition?: ScopeCondition;
+  relative_slope_scope_condition?: ScopeCondition;
   duration_condition?: ScopeCondition;
 }
 
 export const TrendTextMap: Record<keyof Trend, string> = {
 	"slope_scope_condition": "Slope",
-	"abs_slope_percentage_scope_condition": "Abs Slope Percentage",
+	"relative_slope_scope_condition": "Relative Slope",
 	"duration_condition": "Duration",
 	"category": "Category",
 }
@@ -107,7 +107,7 @@ export enum SingleAttribute {
   START_VALUE = "start_value",
   END_VALUE = "end_value",
   DURATION = "duration",
-  ABS_SLOPE_PERCENTAGE = "abs_slope_percentage"
+  RELATIVE_SLOPE = "relative_slope"
 }
 
 // 趋势组合可比较属性
@@ -201,7 +201,7 @@ export interface ScopeConditionWithSourceWithUnit extends ScopeConditionWithSour
 export interface TrendWithSource {
   category: CategoryWithSource; // 趋势类别
   slope_scope_condition?: ScopeConditionWithSourceWithUnit; // 斜率的范围条件
-  abs_slope_percentage_scope_condition?: ScopeConditionWithSource; // 斜率占比的范围条件
+  relative_slope_scope_condition?: ScopeConditionWithSource; // 斜率占比的范围条件
   duration_condition?: ScopeConditionWithSourceWithUnit; // 时间跨度的范围条件
 }
 
@@ -243,7 +243,7 @@ export interface QuerySpecWithSource {
 export enum SingleChoice {
   CATEGORY = "category", // 趋势类别
   SLOPE = "slope", // 斜率属性
-  ABS_SLOPE_PERCENTAGE = "abs_slope_percentage", // 斜率占比属性,单位是%
+  RELATIVE_SLOPE = "relative_slope", // 相对斜率属性,单位是%
   DURATION = "duration", // 时间跨度属性,单位是秒
 }
 
@@ -256,7 +256,7 @@ export enum SingleRelationChoice {
   START_VALUE = "start_value", // 起始值关系
   END_VALUE = "end_value", // 结束值关系
   DURATION = "duration", // 时间跨度关系
-  ABS_SLOPE_PERCENTAGE = "abs_slope_percentage", // 斜率占比关系
+  RELATIVE_SLOPE = "relative_slope", // 相对斜率关系
 }
 
 export enum GroupRelationChoice {
