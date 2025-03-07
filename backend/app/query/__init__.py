@@ -281,15 +281,15 @@ def satisfy_group_relation(segments: List[Segment], relation: GroupRelation) -> 
 def get_single_attribute_value(segment: Segment, attribute: SingleAttribute) -> Optional[float]:
     """从段中获取单趋势属性的值"""
     if attribute == SingleAttribute.SLOPE:
-        return segment.slope
+        return float(segment.slope)
     elif attribute == SingleAttribute.START_VALUE:
-        return segment.start_value
+        return float(segment.start_value)
     elif attribute == SingleAttribute.END_VALUE:
-        return segment.end_value
+        return float(segment.end_value)
     elif attribute == SingleAttribute.DURATION:
-        return segment.duration
+        return float(segment.duration)
     elif attribute == SingleAttribute.RELATIVE_SLOPE:
-        return segment.relative_slope
+        return float(segment.relative_slope)
     return None
 
 
