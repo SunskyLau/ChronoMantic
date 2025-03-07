@@ -64,7 +64,7 @@ intentions
     },
     {
       "id": 2,
-      "single_choices":["category", "slope", "relative_slope"]
+      "single_choices":["slope", "relative_slope"]
     }
   ],
   "segment_group_intentions": [
@@ -78,9 +78,16 @@ intentions
 }
 ```
 
+解释：
+1. single_segment_intentions 中，需要关注所有segment的source和category，如果source是result，则不需要添加到trends中，保持不变即可，如果source是user，则需要添加到trends中，并设置category为up。
+  1.1 需要调整id为0的segment的relative_slope，所以应该设置relative_slope大约为2.00。这一段是来源是result，所以不需要添加到trends中。
+  1.2 需要调整id为1的segment，用户没有给出调整意图，所以只需要关注category，这一段是来源是result，所以不需要添加到trends中。
+  1.3 需要调整id为2的segment的slope，所以应该设置slope大约为42.75。这一段是来源是user，所以需要添加到trends中，并设置category为up。
+2. segment_group_intentions 中，需要设置ids为[0, 1]的segment_group的duration，这一段的时间为24 + 293 = 317天，大约为10个月。
+
 输出：
 {
-  "original_text": "Find periods in AMZN where the price first fell very slowly, then showed a flat trend for about 10 months, and finally rose moderately by about 30% and the slope of this trend is about 42 per day",
+  "original_text": "Find periods in AMZN where the price first fell very slowly, then showed a flat trend for about 10 months, and finally rose moderately by about 30% and the slope of this trend is about 42.75 per day",
   "text_sources": [
     {
       "text": "AMZN",
@@ -129,11 +136,15 @@ intentions
       },
       "relative_slope_scope_condition": {
         "min": {
-          "value": -3,
+          "value": """
+        + str(2 * (1 - FUZZY_FACTOR))
+        + """,
           "inclusive": true
         },
         "max": {
-          "value": 0,
+          "value": """
+        + str(2 * (1 + FUZZY_FACTOR))
+        + """,
           "inclusive": false
         },
         "text_source_id": 2
@@ -341,7 +352,12 @@ intentions
 ```
 
 解释：
-1. single_segment_intentions 中，需要调整id为4的segment的slope，所以应该设置slope大约为-1.18。
+1. single_segment_intentions 中，需要关注所有segment的source和category，如果source是result，则不需要添加到trends中，保持不变即可，如果source是user，则需要添加到trends中，并设置category为up。
+  1.1 需要调整id为0的segment的category，这一段是来源是result，所以不需要添加到trends中，保持不变即可。
+  1.2 需要调整id为1的segment的category，这一段是来源是result，所以不需要添加到trends中，保持不变即可。
+  1.3 需要调整id为2的segment的category，这一段是来源是result，所以不需要添加到trends中，保持不变即可。
+  1.4 需要调整id为3的segment的category，这一段是来源是result，所以不需要添加到trends中，保持不变即可。
+  1.5 需要调整id为4的segment的slope，所以应该设置slope大约为-1.18。这一段是来源是result，所以不需要添加到trends中，保持不变即可。
 2. segment_group_intentions 中，没有segment_group，所以不需要调整这个属性。
 3. single_relation_intentions 中，
   2.1 需要比较id1为0，id2为3的relation的relative_slope，分别是27.56和25.26，计算27.56 ~= 25.26，所以应该设置他们的关系为近似相等~=。
@@ -607,12 +623,7 @@ segments
 intentions
 ```
 {
-  "single_segment_intentions": [
-    {
-      "id": 0,
-      "single_choices": ["category"]
-    }
-  ],
+  "single_segment_intentions": [],
   "segment_group_intentions": [
     {
       "ids": [1,3],
@@ -625,7 +636,11 @@ intentions
 ```
 
 解释：
-1. single_segment_intentions 中，需要调整id为0的segment的category，这一段是用户传入的，所以应该在原有基础上，添加一段trend，并设置category为down。
+1. single_segment_intentions 中，需要关注所有segment的source和category，如果source是result，则不需要添加到trends中，保持不变即可，如果source是user，则需要添加到trends中，并设置category为up。
+  1.1 id为0的segment，这一段的source是user，所以应该在原有基础上，添加一段trend，并设置category为down。
+  1.2 id为1的segment，这一段的source是result，所以不需要添加到trends中，保持不变即可。
+  1.3 id为2的segment，这一段的source是result，所以不需要添加到trends中，保持不变即可。
+  1.4 id为3的segment，这一段的source是result，所以不需要添加到trends中，保持不变即可。
 2. segment_group_intentions 中，需要调整ids为[1,3]的segment_group的duration，对应segment1、2、3的duration之和，所以应该计算 2.43 + 2.86 + 1.57 = 6.86，再加上unit，所以应该调整duration大约 6.86 week。
   2.1 注意：ids为[1,3]的segment_group，对应segment1、2、3，而不是segment1、3。不要把segment1和segment3的duration之和设置为duration_condition。
   2.2 注意：这里不需要设置single_segment_intentions，因为single_segment_intentions是针对单个segment的调整，而segment_group_intentions是针对多个segment形成的组的调整，所以你不应该在trends中的某些位置设置duration_condition。只应该在trend_groups中设置duration_condition。
@@ -762,15 +777,7 @@ intentions
   "single_segment_intentions": [
     {
       "id": 0,
-      "single_choices": ["category", "slope"]
-    },
-    {
-      "id": 1,
-      "single_choices": ["category"]
-    },
-    {
-      "id": 2,
-      "single_choices": ["category"]
+      "single_choices": ["slope"]
     }
   ],
   "segment_group_intentions": [
@@ -791,10 +798,10 @@ intentions
 ```
 
 解释：
-1. single_segment_intentions 中：
-  1.1 需要调整id为0的segment的category和slope，读取它的category为down，slope为-1.23，所以应该调整category为down，slope大约是-1.23，再根据FUZZY_FACTOR进行模糊调整slope的范围。
-  1.2 需要调整id为1的segment的category，读取它的category为up，所以应该调整category为up。
-  1.3 需要调整id为2的segment的category，读取它的category为down，所以应该调整category为down。
+1. single_segment_intentions 中，需要关注所有segment的source和category，如果source是result，则不需要添加到trends中，保持不变即可，如果source是user，则需要添加到trends中，并设置category为up。
+  1.1 id为0的segment，这一段的source是user，所以应该在原有基础上，添加一段trend，并设置category为down。同时，需要调整id为0的segment的slope，读取它的slope为-1.23，所以应该调整slope大约是-1.23，再根据FUZZY_FACTOR进行模糊调整slope的范围。
+  1.2 id为1的segment，这一段的source是user，所以应该在原有基础上，添加一段trend，并设置category为up。
+  1.3 id为2的segment，这一段的source是user，所以应该在原有基础上，添加一段trend，并设置category为down。
 2. segment_group_intentions 中，需要调整ids为[0,1]的segment_group的duration，对应segment0和segment1的duration之和，所以应该计算35 + 25 = 60，再加上unit，所以应该调整duration为60 second。
 3. single_relation_intentions 中，需要调整id1为0，id2为2的relation的slope，对应segment0和segment2的slope，所以应该计算-1.23 > -10，所以应该调整他们的关系是大于>。
 4. group_relation_intentions 中，没有group_relation，所以不需要调整这个属性。

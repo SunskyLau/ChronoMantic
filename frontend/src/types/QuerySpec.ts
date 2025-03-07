@@ -241,7 +241,6 @@ export interface QuerySpecWithSource {
  */
 
 export enum SingleChoice {
-  CATEGORY = "category", // 趋势类别
   SLOPE = "slope", // 斜率属性
   RELATIVE_SLOPE = "relative_slope", // 相对斜率属性,单位是%
   DURATION = "duration", // 时间跨度属性,单位是秒

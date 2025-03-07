@@ -14,11 +14,12 @@ export interface Segment {
   slope: number;      // 片段的斜率，表示变化趋势
   start_value: number;  // 片段起始点的值
   end_value: number;    // 片段终止点的值
-  start_time?: number;  // 片段起始时间，单位是秒，可选
-  end_time?: number;    // 片段终止时间，单位是秒，可选
-  relative_slope?: number;  // 片段斜率在所有斜率中的占比，单位是%，可选
-  duration?: number;  // 片段的时间跨度，单位是秒，可选
-  unit?: Unit;  // 片段的跨度单位（即duration、slope的范围），可选
+  start_time: number;  // 片段起始时间，单位是秒
+  end_time: number;    // 片段终止时间，单位是秒
+  relative_slope: number;  // 片段斜率在所有斜率中的占比，单位是%
+  duration: number;  // 片段的时间跨度，单位是秒
+  unit: Unit;  // 片段的跨度单位（即duration、slope的范围）
+  category: TrendCategory;  // 片段的趋势类别
 }
 """
 
@@ -94,6 +95,12 @@ export interface WithSource {
   text_source_id: number; // 来源于哪个text_sources数组中的哪个TextSource
 }
 
+export enum TrendCategory {
+  FLAT = "flat", // 平坦
+  UP = "up", // 上升
+  DOWN = "down" // 下降
+}
+
 // 基础条件的 WithSource 版本
 export interface CategoryWithSource extends WithSource {
   category: TrendCategory; // 趋势类别
@@ -155,7 +162,6 @@ intentions_info = """
  */
 
 export enum SingleChoice {
-  CATEGORY = "category", // 趋势类别
   SLOPE = "slope", // 斜率属性
   RELATIVE_SLOPE = "relative_slope", // 斜率占比属性,单位是%
   DURATION = "duration", // 时间跨度属性,单位是秒
@@ -239,7 +245,7 @@ modify_nl_logic_info = """
 5. 尽可能保证调整后的original_text和调整前不发生太大变化。
 6. `new_queryspec_with_source`中的text_sources要保证是来自于new_queryspec_with_source的original_text的连续子文本，你需要先生成对应的文本，再生成text_sources，确保text_sources是来自于original_text的连续子文本，并且text_sources数组中的元素应该严格遵循原文中的顺序，不重叠地输出。如果没有在`new_queryspec_with_source`中的属性出现，则不应该添加到text_sources中。
 7. 对于`SingleRelationIntention`中，需要根据具体的`relation_choices`，选择相应的`segments`中对应的属性进行精确比较，然后对QuerySpecWithSource进行调整， 同时符合相应的语义。不属于`SingleRelationIntention`的属性不需要进行调整。它的相关属性single_relations中，你不能修改除了single_relations以外的其他属性的属性。同样的，对于`GroupRelationIntention`，你不能修改除了group_relations以外的其他属性的属性。对于`single_segment_intentions`，你不能修改除了trends中特定id对应trend以外的其他属性的属性。对于`segment_group_intentions`，你不能修改除了trend_groups中特定id对应trend_group以外的其他属性的属性。
-8. 你需要关注所有的segments，并需要关注segment的source，如果source是`result`，则表示该segment来源于查询结果，如果source是`user`，则表示该segment来源于用户指定。如果所有值都是`user`，代表这是一段用户自定义的片段，用户需要你从segment中根据他的意图intentions生成QuerySpecWithSource。
-9. 用户可能会在任何地方添加需要的字段，你需要合理调整语序。例如，用户输入一个“find a double top trend”，然后选择了之前的一段上升片段，则需要改为“find rising trend followed by a double top trend”。
-10. 如果用户传递的intentions为空，则直接返回old_queryspec_with_source即可（如果为null，则直接返回null）。
+8. 你需要关注所有的segments，并需要关注segment的source和category，确保这些片段被正确解析到trends中并设置正确的category。如果source是`result`，则表示该segment来源于查询结果，代表他在old_queryspec_with_source中已经出现了，如果source是`user`，则表示该segment来源于用户指定，你需要把他添加到合适的位置。如果所有值都是`user`，代表这是一段用户自定义的片段，用户需要你从segment中根据他的意图intentions生成QuerySpecWithSource。
+9. 对于`single_segment_intentions`，你需要关注`segments`中所有`id`，并根据`intentions`中`single_segment_intentions`的`id`，调整`trends`中`id`对应内容，如果用户intentions中没有传递任何内容，你只需要关心category，不要关心任何其他内容。其中slope对应`slope_scope_condition`，`relative_slope`对应`relative_slope_scope_condition`，`duration`对应`duration_condition`。如果用户没有传递这些intention，则不需要进行任何调整。
+10. 用户可能会在任何地方添加需要的字段，你需要合理调整语序。例如，用户输入一个“find a double top trend”，然后选择了之前的一段上升片段，则需要改为“find rising trend followed by a double top trend”。
 """
