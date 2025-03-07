@@ -1,4 +1,4 @@
-import { memo, useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import * as d3 from "d3";
 import { deepClone, deepEqual } from "../../utils/deepclone";
 import { Popover } from "antd";
@@ -7,11 +7,19 @@ import { flushSync } from "react-dom";
 import { formatTime } from "../../utils/time";
 import IntentionPopover from "./IntentionPopover";
 import { IntentionLine, LineChartProps, PopoverPosition } from "./types";
+import { generateId } from "../../utils/id";
 
-function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVisible = false, isYAxisVisible = false, isXAxisTextVisible = false, isYAxisTextVisible = false, isBrush = false, onBrush, onBrushEnd, range, height, split, isSplitMask = false, brushPosition, isExpand = true, isShowRange = true, isActive, children, onScroll, onContextMenu, xAxisColor = "#C5C5C5", yAxisColor = "#C5C5C5", lineColor = "#A6A6A6", textColor = "#C5C5C5", xAxisFormatter = (date: Date) => formatTime(date, xDataType === "number" ? undefined : xDataType), brushColor = "#546BB633", resultsSplit, selectedSplits, defaultSplits = [], onSplitSelect, onSubmitIntentions, margin, isHoverable = false, xDataType = "number", isRequesting = false }: LineChartProps) {
+function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVisible = false, isYAxisVisible = false, isXAxisTextVisible = false, isYAxisTextVisible = false, isBrush = false, onBrush, onBrushEnd, range, height, split, isSplitMask = false, brushPosition, isExpand = true, isShowRange = true, isActive, children, onScroll, onContextMenu, xAxisColor = "#C5C5C5", yAxisColor = "#C5C5C5", lineColor = "#A6A6A6", textColor = "#C5C5C5", xAxisFormatter = (date: Date) => formatTime(date, xDataType === "number" ? undefined : xDataType), brushColor = "#546BB633", resultsSplit, selectedSplits, defaultSplits = [], isSelectable = false, onSplitSelect, onSubmitIntentions, margin, isHoverable = false, xDataType = "number", isRequesting = false, onCancelSplit }: LineChartProps) {
 	const svgRef = useRef<SVGSVGElement>(null);
-	const id = useId();
+	const id = generateId();
 	const isTime = useMemo(() => xDataType !== "number", [xDataType]);
+	const [userSplits, setUserSplits] = useState<number[]>([]);
+
+	useEffect(() => {
+		setUserSplits([]);
+	}, [xData, yData]);
+
+	const splits = useMemo(() => (defaultSplits?.length ? defaultSplits : userSplits), [defaultSplits, userSplits]);
 	const [popoverPosition, setPopoverPosition] = useState<PopoverPosition | null>(null);
 	const [selectedChoices, setSelectedChoices] = useState<SingleChoice[]>([]);
 	const [selectedGroups, setSelectedGroups] = useState<GroupChoice[]>([]);
@@ -66,7 +74,6 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 	}, [handleContextMenu]);
 
 	useEffect(() => {
-		if (!defaultSplits?.length || !selectedSplits?.length || !xData?.length || !yData?.length || !split?.length) return;
 		setPopoverPosition(null);
 		setIntentions({
 			single_segment_intentions: [],
@@ -74,7 +81,7 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 			single_relation_intentions: [],
 			group_relation_intentions: [],
 		});
-	}, [defaultSplits, selectedSplits, xData, yData, split]);
+	}, [splits, selectedSplits, xData, yData, split]);
 
 	const handleChoicesChange = useCallback((choice: SingleChoice) => {
 		setSelectedChoices((prev) => {
@@ -229,9 +236,16 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 
 	const handleSplitClick = useCallback(
 		(event: MouseEvent, clickRange: [number, number]) => {
-			if (!onSplitSelect || !split || !selectedSplits || !defaultSplits) return;
+			if (!onSplitSelect || !split) return;
 			const [start, end] = clickRange;
 
+			if (!splits.length) {
+				setUserSplits([start, end]);
+				onSplitSelect([start, end]);
+				return;
+			}
+
+			if (!selectedSplits) return;
 			const minSplit = Math.min(...selectedSplits);
 			const maxSplit = Math.max(...selectedSplits);
 
@@ -249,8 +263,8 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 				}
 				onSplitSelect(split.filter((point) => point >= left && point <= right));
 			} else if (event.button === 2) {
-				const defaultMaxSplit = Math.max(...defaultSplits);
-				const defaultMinSplit = Math.min(...defaultSplits);
+				const defaultMaxSplit = Math.max(...splits);
+				const defaultMinSplit = Math.min(...splits);
 				if (start >= defaultMaxSplit) {
 					const left = Math.min(defaultMinSplit, minSplit);
 					const right = start;
@@ -270,7 +284,7 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 				}
 			}
 		},
-		[split, selectedSplits, defaultSplits, onSplitSelect, popoverPosition]
+		[split, selectedSplits, splits, onSplitSelect, popoverPosition]
 	);
 
 	const handleMouseMove = useCallback(
@@ -300,7 +314,7 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 				const rangeAttr = (this as SVGRectElement)?.getAttribute?.("data-range");
 				if (!rangeAttr) return "transparent";
 				const [s, e] = JSON.parse(rangeAttr);
-				return s >= startIdx && e <= endIdx && s >= minSplit && e <= maxSplit ? "#1890ff33" : selectedSplits.includes(s) && selectedSplits.includes(e) ? "#3331" : "transparent";
+				return s >= startIdx && e <= endIdx && s >= minSplit && e <= maxSplit ? (event.shiftKey || event.ctrlKey ? "#00800033" : "#1890ff33") : selectedSplits.includes(s) && selectedSplits.includes(e) ? "#3331" : "transparent";
 			});
 		},
 		[isDragging, dragStart, split, selectedSplits]
@@ -666,7 +680,7 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 				.attr("stroke-width", 1);
 
 			if (isHoverable) {
-				const tooltip = d3.select("body").append("div").attr("class", "tooltip").style("position", "absolute").style("background", "#000a").style("color", "#fff").style("padding", "5px 10px").style("border", "1px solid #ccc").style("border-radius", "6px").style("pointer-events", "none").style("transform", "translate(-50%, -100%)").style("opacity", 0);
+				const tooltip = d3.select("body").append("div").attr("class", `tooltip-${id}`).style("position", "absolute").style("background", "#000a").style("color", "#fff").style("padding", "5px 10px").style("border", "1px solid #ccc").style("border-radius", "6px").style("pointer-events", "none").style("transform", "translate(-50%, -100%)").style("opacity", 0);
 
 				const hoverLine = pathG.append("line").attr("class", "hover-line").attr("stroke", lineColor).attr("stroke-opacity", 0.7).attr("stroke-width", 1.5).style("opacity", 0);
 
@@ -738,14 +752,14 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 
 				splitLinesG.append("line").attr("class", "split-line").attr("x1", x1).attr("x2", x2).attr("y1", y1).attr("y2", y2).attr("stroke", darkerColor).attr("stroke-opacity", "0.5").attr("stroke-width", 1).attr("pointer-events", "none");
 
-				if (defaultSplits?.length && selectedSplits) {
+				if (isSelectable && selectedSplits) {
 					splitInteractionG
 						.append("rect")
 						.attr("x", x1)
 						.attr("y", 0)
 						.attr("width", x2 - x1)
 						.attr("height", innerHeight)
-						.attr("fill", popoverPosition?.ranges.some(([s, e]) => s === split[i] && e === split[i + 1]) || relationIds.some(([s, e]) => s === split[i] && e === split[i + 1]) ? "#1890ff33" : selectedSplits?.includes(split[i]) && selectedSplits?.includes(split[i + 1]) ? "#3331" : "transparent")
+						.attr("fill", popoverPosition?.ranges.some(([s, e]) => s === split[i] && e === split[i + 1]) || relationIds.some(([s, e]) => s === split[i] && e === split[i + 1]) ? (relationIds.length > 0 || popoverPosition?.type === "SingleRelation" || popoverPosition?.type === "GroupRelation" ? "#00800033" : "#1890ff33") : selectedSplits?.includes(split[i]) && selectedSplits?.includes(split[i + 1]) ? "#3331" : "transparent")
 						.attr("cursor", "pointer")
 						.attr("data-range", JSON.stringify([split[i], split[i + 1]]))
 						.style("pointer-events", "all")
@@ -797,8 +811,8 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 			g.append("path").datum(data).attr("d", areaGenerator).attr("fill", "#82C4FF99");
 		}
 
-		if (split && intentions && defaultSplits && selectedSplits) {
-			const intentionLinesG = svg.append("g").attr("class", "intention-lines").attr("transform", `translate(${computedMargin.left},0)`);
+		if (split && intentions && isSelectable && selectedSplits) {
+			const intentionLinesG = svg.append("g").attr("class", "intention-lines").attr("transform", `translate(${computedMargin.left},0)`).attr("clip-path", `url(#clip-path-${id})`);
 			const lines: Record<number, IntentionLine[]> = {};
 
 			intentions.single_segment_intentions.forEach((intention) => {
@@ -1015,7 +1029,7 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 				});
 
 			if (selectedSplits && selectedSplits.length > 0) {
-				const buttonX = Math.min(x(timeStampData[selectedSplits[selectedSplits.length - 1]]) + 10, innerWidth - 70);
+				const buttonX = x(timeStampData[selectedSplits[selectedSplits.length - 1]]) + 10;
 
 				const loadingDefs = svg.append("defs");
 				loadingDefs
@@ -1040,7 +1054,34 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 					.attr("transform", `translate(${buttonX}, ${computedMargin.top})`)
 					.style("cursor", isRequesting ? "not-allowed" : "pointer");
 
-				submitButton.append("rect").attr("width", isRequesting ? 84 : 60).attr("height", 24).attr("rx", 4).attr("fill", isRequesting ? "#1890ff66" : "#1890ff");
+				submitButton
+					.append("rect")
+					.attr("width", isRequesting ? 84 : defaultSplits?.length ? 60 : 60)
+					.attr("height", 24)
+					.attr("rx", 4)
+					.attr("fill", isRequesting ? "#1890ff66" : "#1890ff");
+
+				const cancleButton = intentionLinesG
+					.append("g")
+					.attr("transform", `translate(${buttonX}, ${computedMargin.top + 32})`)
+					.attr("class", "cancle-button")
+					.style("cursor", isRequesting ? "not-allowed" : "pointer");
+
+				cancleButton
+					.append("rect")
+					.attr("width", 60)
+					.attr("height", 24)
+					.attr("rx", 4)
+					.attr("fill", isRequesting ? "#ff4d4f66" : "#ff4d4f");
+
+				cancleButton.append("text").attr("x", 30).attr("y", 16).attr("text-anchor", "middle").attr("fill", "white").attr("font-size", "12px").text("Cancle");
+
+				cancleButton.on("click", () => {
+					if (isRequesting) return;
+					onSplitSelect?.([]);
+					onCancelSplit?.();
+					setUserSplits([]);
+				});
 
 				if (isRequesting) {
 					const loadingGroup = submitButton.append("g").attr("transform", "translate(15, 12)");
@@ -1055,21 +1096,16 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 						.attr("transform-origin", "-12px -12px")
 						.call((g) => g.node()?.appendChild(animateRotate.node()!.cloneNode()));
 
-					submitButton.append("text")
-						.attr("x", 30)
-						.attr("y", 16)
-						.attr("text-anchor", "start")
-						.attr("fill", "white")
-						.attr("font-size", "12px")
-						.text("Loading");
+					submitButton.append("text").attr("x", 30).attr("y", 16).attr("text-anchor", "start").attr("fill", "white").attr("font-size", "12px").text("Loading");
 				} else {
-					submitButton.append("text")
+					submitButton
+						.append("text")
 						.attr("x", 30)
 						.attr("y", 16)
 						.attr("text-anchor", "middle")
 						.attr("fill", "white")
 						.attr("font-size", "12px")
-						.text("Refine");
+						.text(defaultSplits?.length ? "Refine" : "Author");
 				}
 
 				submitButton
@@ -1159,14 +1195,14 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 			return () => {
 				brush.on("brush", null).on("end", null);
 				svg.selectAll("*").remove();
-				d3.selectAll(".tooltip").remove();
+				d3.selectAll(`.tooltip-${id}`).remove();
 			};
 		}
 		return () => {
 			svg.selectAll("*").remove();
-			d3.selectAll(".tooltip").remove();
+			d3.selectAll(`.tooltip-${id}`).remove();
 		};
-	}, [xData, yData, ratio, title, isXAxisVisible, isYAxisVisible, isXAxisTextVisible, isYAxisTextVisible, isBrush, onBrush, isFill, range, height, split, isSplitMask, brushPosition, isExpand, isShowRange, id, onBrushEnd, isActive, xAxisColor, yAxisColor, lineColor, textColor, xAxisFormatter, brushColor, resultsSplit, handleSplitClick, selectedSplits, popoverPosition, handleMouseMove, handleMouseUp, intentions, defaultSplits, onSubmitIntentions, relationIds, computedMargin, isHoverable, timeStampData, isTime, isRequesting]);
+	}, [xData, yData, ratio, title, isXAxisVisible, isYAxisVisible, isXAxisTextVisible, isYAxisTextVisible, isBrush, onBrush, isFill, range, height, split, isSplitMask, brushPosition, isExpand, isShowRange, id, onBrushEnd, isActive, xAxisColor, yAxisColor, lineColor, textColor, xAxisFormatter, brushColor, resultsSplit, handleSplitClick, selectedSplits, popoverPosition, handleMouseMove, handleMouseUp, intentions, defaultSplits, onSubmitIntentions, relationIds, computedMargin, isHoverable, timeStampData, isTime, isRequesting, isSelectable, onSplitSelect, onCancelSplit]);
 
 	useEffect(() => {
 		const cancle = draw();
