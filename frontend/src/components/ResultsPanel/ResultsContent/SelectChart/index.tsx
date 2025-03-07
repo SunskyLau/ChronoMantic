@@ -20,7 +20,7 @@ function SelectChart({ data, title, onBrush }: SelectChartProps) {
         if (svgRef.current && data.length > 0) {
             const width = svgRef.current.clientWidth;
             const height = svgRef.current.clientHeight;
-            const margin = { top: title ? 20 : 0, right: 2, bottom: 0, left: 2 };
+            const margin = { top: title ? 20 : 4, right: 1, bottom: 0, left: 1 };
             const innerWidth = width - margin.left - margin.right;
             const innerHeight = height - margin.top - margin.bottom;
 

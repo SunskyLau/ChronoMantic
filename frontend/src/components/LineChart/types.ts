@@ -29,7 +29,7 @@ export interface LineChartProps {
     isExpand?: boolean;
     isZoom?: boolean;
     isActive?: boolean;
-    onScroll?: (delta: number) => void;
+    onScroll?: (delta: number, position: number) => void;
     onContextMenu?: (event: MouseEvent) => void;
     children?: React.ReactNode;
     xAxisColor?: string;
