@@ -67,10 +67,13 @@ export default function DetailView() {
 	);
 
 	const handleScroll = useCallback(
-		(val: number) => {
+		(val: number, position: number) => {
 			const delta = val;
-			const range1 = Math.max(0, range[0] - delta);
-			const range2 = Math.max(0, Math.min(range[1] + delta, timeValues.length - 1));
+			const leftRatio = 0.5 + (position * 0.5);
+			const rightRatio = 1 - leftRatio;
+			const range1 = Math.max(0, Math.round(range[0] - (delta * leftRatio)));
+			const range2 = Math.max(0, Math.min(Math.round(range[1] + (delta * rightRatio)), timeValues.length - 1));
+
 			if (Math.abs(range1 - range2) < 2) return;
 			if (range1 > range2) {
 				handleBrush(range2, range1);
