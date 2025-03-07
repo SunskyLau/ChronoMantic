@@ -51,7 +51,7 @@
 .result-header .header-column .header-column-group .header-column-group-title {
   font-size: 12px;
   line-height: 24px;
-  margin-top: -24px;
+  margin-top: calc(-24px - var(--gap));
   color: var(--color);
   background-color: var(--bg);
   border-radius: var(--gap);
@@ -134,11 +134,13 @@
   box-sizing: border-box;
   display: flex;
   align-items: center;
-  border-top: 1px solid #e0e0e0;
   border-bottom: 1px solid #e0e0e0;
-  margin-bottom: -1px;
   padding: 2px 0;
   height: 46px;
+}
+
+.result-item-list .result-item:first-child {
+  border-top: 1px solid #e0e0e0;
 }
 
 .result-item-list .result-item .item-column {

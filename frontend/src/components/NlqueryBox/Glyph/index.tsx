@@ -88,8 +88,9 @@ const getSlopeText = (trend: TrendWithSource, colorMap: Record<string, string>, 
 		if (key === 'duration_condition' || key === 'category') return;
 		const unit = map[key as keyof typeof map];
 		if (value) {
+			const text = getScopeText(value, unit.unitFormatter);
 			texts[key] = {
-				text: unit.key + ": " + getScopeText(value, unit.unitFormatter),
+				text: text ? unit.key + ": " + text : "",
 				color: getColorWithDisabled(colorMap, query, value.text_source_id),
 			};
 		}
@@ -162,7 +163,7 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 	const levelMap: Record<string, [number, number][]> = {};
 	const baseY1 = useRef(0);
 	const baseY2 = useRef(height);
-	const fontSize = 5;
+	const fontSize = 4;
 
 	const getLevel = (x1: number, x2: number) => {
 		let level = 0;
@@ -188,24 +189,24 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 
 	const drawTimeIndicator = ({ startX, endX, textY, timeColor, timeText, key, strokeWidth = 1, disabled = false, index }: { startX: number; endX: number; textY: number; timeColor: string; timeText?: string; key?: string, strokeWidth?: number, disabled?: boolean, index?: number }) => {
 		const lineHeight = height / 24;
-		const textWidth = timeText ? timeText.length * fontSize / 2 + fontSize * 2 : 0;
+		const textWidth = timeText ? timeText.length * fontSize / 2 + fontSize : 0;
 		const isActive = index === curRelation;
 		const color = isActive ? timeColor.slice(0, 7) : disabled ? DISABLED_COLOR : timeColor;
 
 		return (
 			<g key={key}>
 				<line
-					x1={startX + strokeWidth / 2}
+					x1={startX}
 					y1={textY - lineHeight}
-					x2={startX + strokeWidth / 2}
+					x2={startX}
 					y2={textY + lineHeight}
 					stroke={color}
 					strokeWidth={strokeWidth}
 				/>
 				<line
-					x1={endX - strokeWidth / 2}
+					x1={endX}
 					y1={textY - lineHeight}
-					x2={endX - strokeWidth / 2}
+					x2={endX}
 					y2={textY + lineHeight}
 					stroke={color}
 					strokeWidth={strokeWidth}
@@ -221,7 +222,7 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 					{timeText}
 				</text>
 				<line
-					x1={startX + strokeWidth}
+					x1={startX + strokeWidth / 2}
 					y1={textY}
 					x2={Math.max(startX, (startX + endX - textWidth) / 2)}
 					y2={textY}
@@ -231,7 +232,7 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 				<line
 					x1={Math.min(endX, (startX + endX + textWidth) / 2)}
 					y1={textY}
-					x2={endX - strokeWidth}
+					x2={endX - strokeWidth / 2}
 					y2={textY}
 					stroke={color}
 					strokeWidth={strokeWidth}

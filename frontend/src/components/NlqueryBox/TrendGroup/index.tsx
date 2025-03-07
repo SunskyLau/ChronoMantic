@@ -57,7 +57,8 @@ export default function TrendGroup({ groups, idLength, onChange, isEdit, disable
 						<Flex
 							justify="space-between"
 							align="center"
-							className="group-item"
+							className="group-item active-component"
+							style={{ backgroundColor: getColorFromMap(colorMap, group.duration_condition?.text_source_id) }}
 						>
 							<Flex
 								gap={8}
@@ -67,7 +68,6 @@ export default function TrendGroup({ groups, idLength, onChange, isEdit, disable
 									disabled={disabled}
 									min={group.duration_condition?.min?.value ?? null}
 									max={group.duration_condition?.max?.value ?? null}
-									activeColor={getColorFromMap(colorMap, group.duration_condition?.text_source_id)}
 									minInclusive={!!group.duration_condition?.min?.inclusive}
 									maxInclusive={!!group.duration_condition?.max?.inclusive}
 									unit={group.duration_condition?.unit}
