@@ -29,7 +29,7 @@ function IntentionPopover<T extends SingleChoice | GroupChoice | SingleRelationC
                         checked={selected.includes(choice)}
                         onChange={() => onChange(choice)}
                     >
-                        {choice}
+                        {choice.split("_").map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join(" ")}
                     </Checkbox>
                 ))}
             </Space>

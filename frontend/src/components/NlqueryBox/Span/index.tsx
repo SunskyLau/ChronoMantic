@@ -1,6 +1,7 @@
 import { SwapRightOutlined } from "@ant-design/icons";
 import { Checkbox, Flex, InputNumber } from "antd";
 import { ReactNode } from "react";
+import { classnames } from "../../../utils/classname";
 
 export interface SpanProps {
 	min: number | null;
@@ -25,10 +26,15 @@ export default function Span({ min, max, minValue, maxValue, minInclusive, addon
 			<Flex
 				gap={4}
 				align="center"
-				className="active-component"
+				className={classnames(activeColor ? "active-component" : "")}
 				style={{ backgroundColor: activeColor }}
 			>
-				<Flex style={{ backgroundColor: minActiveColor }} className="active-component" align="center" gap={8}>
+				<Flex
+					style={{ backgroundColor: minActiveColor, paddingLeft: "4px" }}
+					className={classnames(minActiveColor ? "active-component" : "")}
+					align="center"
+					gap={8}
+				>
 					<Checkbox
 						checked={minInclusive}
 						disabled={disabled || !min}
@@ -49,7 +55,12 @@ export default function Span({ min, max, minValue, maxValue, minInclusive, addon
 					/>
 				</Flex>
 				<SwapRightOutlined />
-				<Flex style={{ backgroundColor: maxActiveColor }} className="active-component" align="center" gap={8}>
+				<Flex
+					style={{ backgroundColor: maxActiveColor, paddingRight: "4px" }}
+					className={classnames(maxActiveColor ? "active-component" : "")}
+					align="center"
+					gap={4}
+				>
 					<InputNumber
 						disabled={disabled}
 						addonBefore={Array.isArray(addonBefore) ? addonBefore[1] : addonBefore}

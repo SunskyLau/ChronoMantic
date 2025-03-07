@@ -145,7 +145,7 @@ export default function QueryCondition() {
 					timeStampColumnType={timeStampColumnType}
 					timeStampColumnUnit={timeStampColumnUnit}
 				/>
-				<Divider />
+				{memoizedQuery.trend_groups.length <= 0 && <Divider />}
 			</section>
 
 			<section>
@@ -159,7 +159,7 @@ export default function QueryCondition() {
 						dispatch(setQuery(newQuery));
 					}}
 				/>
-				<Divider />
+				{memoizedQuery.group_relations.length <= 0 && <Divider />}
 			</section>
 
 			<section>
@@ -182,6 +182,7 @@ export default function QueryCondition() {
 						dispatch(setQuery(newQuery));
 					}}
 				/>
+				<Divider />
 			</section>
 
 			{scopeConfigs.map(({ title, condition, ...props }, index) => (
