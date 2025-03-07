@@ -18,6 +18,7 @@ export interface Segment {
   end_time?: number;    // 片段终止时间，单位是秒，可选
   relative_slope?: number;  // 片段斜率在所有斜率中的占比，单位是%，可选
   duration?: number;  // 片段的时间跨度，单位是秒，可选
+  unit?: Unit;  // 片段的跨度单位（即duration、slope的范围），可选
 }
 """
 
@@ -74,8 +75,8 @@ export interface SingleRelation {
 }
 
 export interface GroupRelation {
-  group1: [number, number]; // 第一个趋势组合的ID列表，group1[1]>=group1[0]
-  group2: [number, number]; // 第二个趋势组合的ID列表，group2[1]>=group2[0]
+  group1: [number, number]; // 第一个趋势组合的ID列表，group1[1]>=group1[0]，表示从group1[0]到group1[1]的所有片段，例如[1,4]表示从1到4的所有片段，即片段1、2、3、4
+  group2: [number, number]; // 第二个趋势组合的ID列表，group2[1]>=group2[0]，表示从group2[0]到group2[1]的所有片段，例如[2,3]表示从2到3的所有片段，即片段2、3
   attribute: GroupAttribute; // 要比较的属性类型
   comparator: Comparator; // 比较关系的运算符
 }
@@ -99,7 +100,7 @@ export interface CategoryWithSource extends WithSource {
 }
 
 // 单位
-export type Unit = "second" | "minute" | "hour" | "day" | "week" | "month" | "year";
+export type Unit = "number" | "second" | "minute" | "hour" | "day" | "week" | "month" | "year";
 
 export interface WithUnit {
   unit?: Unit; // 单位
@@ -182,7 +183,7 @@ export interface SingleSegmentIntention {
 }
 
 export interface SegmentGroupIntention {
-  ids: [number, number]; // 组合中包含的Segment ID列表,ids[1]>=ids[0]
+  ids: [number, number]; // 组合中包含的Segment ID列表,ids[1]>=ids[0]，例如[1,3]表示从1到3的所有片段，即片段1、2、3
   group_choices: GroupChoice[]; // 该组合需要考虑的属性列表
 }
 
@@ -193,16 +194,16 @@ export interface SingleRelationIntention {
 }
 
 export interface GroupRelationIntention {
-  group1: [number, number]; // 第一个Segment的ID标识组合的ID列表,group1[1]>=group1[0]
-  group2: [number, number]; // 第二个Segment的ID标识组合的ID列表,group2[1]>=group2[0]
+  group1: [number, number]; // 第一个Segment的ID标识组合的ID列表,group1[1]>=group1[0]，例如[1,1]表示片段1
+  group2: [number, number]; // 第二个Segment的ID标识组合的ID列表,group2[1]>=group2[0]，例如[2,3]表示从2到3的所有片段，即片段2、3
   relation_choices: GroupRelationChoice[]; // 需要比较的关系属性
 }
 
 export interface Intentions {
-  single_segment_intentions: SingleSegmentIntention[]; // 单个Segment的意图列表
-  segment_group_intentions: SegmentGroupIntention[]; // Segment组合的意图列表
-  single_relation_intentions: SingleRelationIntention[]; // 单个Segment关系的意图列表
-  group_relation_intentions: GroupRelationIntention[]; // Segment组合关系的意图列表
+  single_segment_intentions: SingleSegmentIntention[]; // 单个Segment的意图列表，你只需要关心这个id所在的segment的属性，不需要关心与他相关的relation或者segment_group的属性
+  segment_group_intentions: SegmentGroupIntention[]; // Segment组合的意图列表，你只需要关心这个ids所在的组合的属性，不需要关心这其中每一个segment的属性
+  single_relation_intentions: SingleRelationIntention[]; // 两个Segment关系的意图列表，你只需要关心这个id1和id2所在的relation的各项属性，不需要关心其他group_relation或者segment_group或者segment的属性
+  group_relation_intentions: GroupRelationIntention[]; // 两个Segment组合关系的意图列表，你只需要关心这个group1和group2所在的relation的各项属性，不需要关心其他group_relation或者segment_group或者segment的属性
 }
 """
 
@@ -227,16 +228,18 @@ modify_nl_logic_info = """
 输入参数
 - `old_queryspec_with_source: QuerySpecWithSource`：原始的查询规范
 - `segments:Segment[]`：用户选择的连续时间序列片段
-- `segment_groups:SegmentGroup[]`：用户选择的时间序列片段组
 - `intentions:Intentions`：用户对于查询调整的意图
 输出参数
 - `new_queryspec_with_source: QuerySpecWithSource`：调整后的查询规范
 
 1. 总体来说，你需要根据以上输入参数，输出调整后的`new_queryspec_with_source`，需要进行调整的地方依据`intentions`，具体如何调整依据`segments`中涉及的属性数值，根据相应的数值提供一定的范围性条件。
-2. TextSource的text只能是来源original_text的连续子文本。text_sources数组中的元素应该严格遵循原文中的顺序，不重叠地输出。解析出来的text_source必须是被使用的，否则不应该出现在text_sources中。
+2. TextSource的text只能是来源original_text的连续子文本，必须与original_text中的文本严格一一对应。text_sources数组中的元素应该严格遵循原文中的顺序，不重叠地输出。解析出来的text_source必须是被使用的，否则不应该出现在text_sources中。如果没有在QuerySpecWithSource中的属性出现，则不应该添加到text_sources中。
 3. 调整需要同时体现在original_text和QuerySpec的修改需要有严格的对应关系。新增的条件应该也对应到text中描述的新增，修改的条件应该也对应到text中描述的修改，删除的条件应该也对应到text中描述的删除。
-4. 不涉及调整意图的condition字段，要正确保留不要发生调整。最后，尽可能保证调整后的original_text和调整前不发生太大变化。
-5. `new_queryspec_with_source`中的text_sources也要保证是来自于original_text的连续子文本，并且text_sources数组中的元素应该严格遵循原文中的顺序，不重叠地输出。
-6. 对于`SingleRelationIntention`中，需要根据具体的`relation_choices`，选择相应的`segments`中对应的属性进行精确比较，然后对QuerySpecWithSource进行调整， 同时符合相应的语义。
-7. 对于用户的segments，你需要关注他的source，如果source是`result`，则表示该segment来源于查询结果，如果source是`user`，则表示该segment来源于用户指定。用户指定的片段如果包含任意一个属性，则需要添加到QuerySpecWithSource中。你需要合理调整语序，例如，用户输入一个“find a double top trend”，然后选择了之前的一段上升片段，则需要改为“find rising trend followed by a double top trend”。
+4. 你只需要关注intentions中涉及到的调整意图，不涉及调整意图的所有原始字段需要保持不变，正确保留原始old_queryspec_with_source中的原始字段。
+5. 尽可能保证调整后的original_text和调整前不发生太大变化。
+6. `new_queryspec_with_source`中的text_sources要保证是来自于new_queryspec_with_source的original_text的连续子文本，你需要先生成对应的文本，再生成text_sources，确保text_sources是来自于original_text的连续子文本，并且text_sources数组中的元素应该严格遵循原文中的顺序，不重叠地输出。如果没有在`new_queryspec_with_source`中的属性出现，则不应该添加到text_sources中。
+7. 对于`SingleRelationIntention`中，需要根据具体的`relation_choices`，选择相应的`segments`中对应的属性进行精确比较，然后对QuerySpecWithSource进行调整， 同时符合相应的语义。不属于`SingleRelationIntention`的属性不需要进行调整。它的相关属性single_relations中，你不能修改除了single_relations以外的其他属性的属性。同样的，对于`GroupRelationIntention`，你不能修改除了group_relations以外的其他属性的属性。对于`single_segment_intentions`，你不能修改除了trends中特定id对应trend以外的其他属性的属性。对于`segment_group_intentions`，你不能修改除了trend_groups中特定id对应trend_group以外的其他属性的属性。
+8. 你需要关注所有的segments，并需要关注segment的source，如果source是`result`，则表示该segment来源于查询结果，如果source是`user`，则表示该segment来源于用户指定。如果所有值都是`user`，代表这是一段用户自定义的片段，用户需要你从segment中根据他的意图intentions生成QuerySpecWithSource。
+9. 用户可能会在任何地方添加需要的字段，你需要合理调整语序。例如，用户输入一个“find a double top trend”，然后选择了之前的一段上升片段，则需要改为“find rising trend followed by a double top trend”。
+10. 如果用户传递的intentions为空，则直接返回old_queryspec_with_source即可（如果为null，则直接返回null）。
 """

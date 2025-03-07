@@ -3,11 +3,13 @@ from typing import List, Tuple
 from app.ai_agent.prompts import create_parse_nl_prompt, create_modify_nl_prompt
 from flask import Blueprint
 from app.query import query
+from app.query.config import FLAT_THRESHOLD
+from app.utils.time_units import get_appropriate_unit_and_value, get_seconds_of_unit
 from ..config import Config
 from flask import Blueprint, request, jsonify
 import numpy as np
 import pandas as pd
-from app.utils import process_csv_file
+from app.utils.file import process_csv_file
 from app.services.banking_to_45degree import find_optimal_aspect_ratio
 from ..MyTypes import DatasetInfo, QuerySpec, Segment, SegmentGroup
 from ..model import approximate_dataset
@@ -194,7 +196,6 @@ def modify_nl_query():
     |--------|------|------|
     | old_queryspec_with_source | QuerySpecWithSource | 原始结构化查询 |
     | segments | List[SimplifiedSegment] | 用户指定的连续时间序列片段 |
-    | segment_group_ids | List[Tuple[int, int]] | 用户指定的连续时间序列片段的组 |
     | intentions | List[Intention] | 用户的调整意图 |
 
     | 返回字段 | 类型 | 说明 |
@@ -205,13 +206,11 @@ def modify_nl_query():
     """
     old_queryspec_with_source = request.json.get("old_queryspec_with_source")
     segments = request.json.get("segments")
-    segment_group_ids = request.json.get("segment_group_ids")
-    segment_groups = calculate_segment_groups([Segment.from_dict(segment) for segment in segments], [(group[0], group[1]) for group in segment_group_ids])
+    segments = _get_segment_info(segments)
     intentions = request.json.get("intentions")
 
     old_queryspec_with_source_str = json.dumps(old_queryspec_with_source, indent=2)
     segments_str = json.dumps(segments, indent=2)
-    segment_groups_str = json.dumps(filter_json(segment_groups), indent=2)
     intentions_str = json.dumps(intentions, indent=2)
 
     input = f"""old_queryspec_with_source
@@ -222,10 +221,6 @@ segments
 ```{segments_str}
 ```
 
-segment_groups
-```{segment_groups_str}
-```
-
 intentions
 ```{intentions_str}
 ```"""
@@ -233,6 +228,29 @@ intentions
     # 将字符串解析为Python字典
     new_queryspec_with_source = json.loads(new_queryspec_with_source_str)
     return jsonify({"code": 200, "message": "Modify nl query successful", "results": filter_json(new_queryspec_with_source)})
+
+
+def _get_segment_category(segment: dict) -> str:
+    """根据斜率确定segment类别"""
+    if segment["relative_slope"] <= FLAT_THRESHOLD:
+        return "flat"
+    return "up" if segment["slope"] > 0 else "down"
+
+
+def _get_segment_info(segments: List[dict]) -> List[dict]:
+    min_duration = min([segment["duration"] for segment in segments])
+    unit_type, base_value = get_appropriate_unit_and_value(min_duration)
+    unit_value = get_seconds_of_unit(unit_type)
+    return [
+        {
+            **segment,
+            "category": _get_segment_category(segment),
+            "unit": unit_type,
+            "duration": round(segment["duration"] / unit_value, 2),
+            "slope": round(segment["slope"] * unit_value, 2),
+        }
+        for segment in segments
+    ]
 
 
 def calculate_segment_groups(segments: List[Segment], trend_groups: List[Tuple[int, int]]) -> List[SegmentGroup]:
