@@ -39,9 +39,13 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 		(event: WheelEvent) => {
 			if (!onScroll) return;
 			event.preventDefault();
+			const rect = svgRef.current?.getBoundingClientRect();
+			if (!rect) return;
+			const relativeX = (event.clientX - rect.left) / rect.width;
+			const normalizedPosition = (relativeX * 2) - 1;
 			const total = range ? range?.[1] - range?.[0] : xData.length;
 			const step = Math.max(1, Math.round(total / 10));
-			onScroll(event.deltaY > 0 ? step : -step);
+			onScroll(event.deltaY > 0 ? step : -step, normalizedPosition);
 		},
 		[onScroll, range, xData.length]
 	);
@@ -240,8 +244,8 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 			const [start, end] = clickRange;
 
 			if (!splits.length) {
-				setUserSplits([start, end]);
-				onSplitSelect([start, end]);
+				setDragStart(clickRange);
+				setIsDragging(true);
 				return;
 			}
 
@@ -289,40 +293,47 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 
 	const handleMouseMove = useCallback(
 		(event: MouseEvent) => {
-			if (!isDragging || !dragStart || !split || !selectedSplits) return;
+			if (!isDragging || !dragStart || !split) return;
 
 			const rect = event.target as SVGRectElement;
 			const range = rect.getAttribute("data-range");
 			if (!range) return;
 
 			const currentRange = JSON.parse(range) as [number, number];
-			const ranges: [number, number][] = [];
+			
+			const startIdx = Math.min(dragStart[0], currentRange[0]);
+			const endIdx = Math.max(dragStart[1], currentRange[1]);
 
-			const minSplit = Math.min(...selectedSplits);
-			const maxSplit = Math.max(...selectedSplits);
-
-			const startIdx = Math.max(minSplit, Math.min(dragStart[0], currentRange[0]));
-			const endIdx = Math.min(maxSplit, Math.max(dragStart[1], currentRange[1]));
-
-			for (let i = 0; i < split.length - 1; i++) {
-				if (split[i] >= startIdx && split[i + 1] <= endIdx && split[i] >= minSplit && split[i + 1] <= maxSplit) {
-					ranges.push([split[i], split[i + 1]]);
-				}
+			if (!splits.length) {
+				d3.selectAll(".split-interaction rect").attr("fill", function () {
+					const rangeAttr = (this as SVGRectElement)?.getAttribute?.("data-range");
+					if (!rangeAttr) return "transparent";
+					const [s, e] = JSON.parse(rangeAttr);
+					return s >= startIdx && e <= endIdx ? "#3331" : "transparent";
+				});
+				return;
 			}
 
+			const minSplit = Math.min(...selectedSplits!);
+			const maxSplit = Math.max(...selectedSplits!);
+			
 			d3.selectAll(".split-interaction rect").attr("fill", function () {
 				const rangeAttr = (this as SVGRectElement)?.getAttribute?.("data-range");
 				if (!rangeAttr) return "transparent";
 				const [s, e] = JSON.parse(rangeAttr);
-				return s >= startIdx && e <= endIdx && s >= minSplit && e <= maxSplit ? (event.shiftKey || event.ctrlKey ? "#00800033" : "#1890ff33") : selectedSplits.includes(s) && selectedSplits.includes(e) ? "#3331" : "transparent";
+				return s >= startIdx && e <= endIdx && s >= minSplit && e <= maxSplit 
+					? (event.shiftKey || event.ctrlKey ? "#00800033" : "#1890ff33") 
+					: selectedSplits?.includes(s) && selectedSplits?.includes(e) 
+						? "#3331" 
+						: "transparent";
 			});
 		},
-		[isDragging, dragStart, split, selectedSplits]
+		[isDragging, dragStart, split, selectedSplits, splits]
 	);
 
 	const handleMouseUp = useCallback(
 		(event: MouseEvent) => {
-			if (!isDragging || !dragStart || !split || !selectedSplits) return;
+			if (!isDragging || !dragStart || !split) return;
 			const isRelation = event.shiftKey || event.ctrlKey;
 
 			const rect = event.target as SVGRectElement;
@@ -330,11 +341,22 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 			if (!range) return;
 
 			const currentRange = JSON.parse(range) as [number, number];
+			
+			if (!splits.length) {
+				const startIdx = Math.min(dragStart[0], currentRange[0]);
+				const endIdx = Math.max(dragStart[1], currentRange[1]);
+				const splits = split.filter((s) => s >= startIdx && s <= endIdx);
+				setUserSplits(splits);
+				onSplitSelect?.(splits);
+				setIsDragging(false);
+				setDragStart(null);
+				return;
+			}
+
+			if (!selectedSplits) return;
 			const ranges: [number, number][] = [];
-
-			const minSplit = Math.min(...selectedSplits);
-			const maxSplit = Math.max(...selectedSplits);
-
+			const minSplit = Math.min(...selectedSplits!);
+			const maxSplit = Math.max(...selectedSplits!);
 			const startIdx = Math.max(minSplit, Math.min(dragStart[0], currentRange[0]));
 			const endIdx = Math.min(maxSplit, Math.max(dragStart[1], currentRange[1]));
 
@@ -460,7 +482,7 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 			setIsDragging(false);
 			setDragStart(null);
 		},
-		[isDragging, dragStart, split, selectedSplits, relationIds, svgRef, intentions]
+		[isDragging, dragStart, split, selectedSplits, relationIds, svgRef, intentions, splits, onSplitSelect]
 	);
 
 	const handleDelete = useCallback(() => {
@@ -1302,7 +1324,7 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 					content={renderPopover()}
 					trigger="click"
 				>
-					<div style={{ width: "0", height: "0", position: "absolute", left: `${popoverPosition.x - popoverPosition.rectWidth / 2}px`, top: `${popoverPosition.y}px` }}></div>
+					<div style={{ width: "0", height: "0", position: "absolute", left: `${popoverPosition.x}px`, top: `${popoverPosition.y}px` }}></div>
 				</Popover>
 			)}
 		</>
