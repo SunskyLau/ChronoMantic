@@ -44,7 +44,10 @@ def create_scope_condition(value: float | None, unit: str = "second") -> Dict[st
     if value is None:
         return {}
 
-    scope_condition = {"max": {"value": value * (1 + FUZZY_FACTOR), "inclusive": True}, "min": {"value": value * (1 - FUZZY_FACTOR), "inclusive": True}}
+    val1 = round(value * (1 + FUZZY_FACTOR), 2)
+    val2 = round(value * (1 - FUZZY_FACTOR), 2)
+
+    scope_condition = {"max": {"value": val1 if val1 > val2 else val2, "inclusive": True}, "min": {"value": val2 if val1 > val2 else val1, "inclusive": True}}
     if unit:
         scope_condition["unit"] = unit
     return scope_condition
