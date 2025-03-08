@@ -4,9 +4,9 @@ import "./index.css";
 import LineChart from "../LineChart";
 import { useAppDispatch, useAppSelector } from "../../app/hooks";
 import { setBrushPosition, setDefaultSplits, setRange, setSelectedSplits, setSelectPosition } from "../../app/slice/selectSlice";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { getModifyPrompt } from "../../api";
-import { setColorMap, setNLQuery, setQuery } from "../../app/slice/stateSlice";
+import { resetOriginalQuery, setColorMap, setNLQuery, setQuery } from "../../app/slice/stateSlice";
 import { getColorFromMap } from "../../utils/color";
 import LevelController from "../LevelController";
 import { deepClone } from "../../utils/deepclone";
@@ -88,6 +88,13 @@ export default function DetailView() {
 
 	const defaultSplits = useAppSelector((state) => state.select.defaultSplits);
 	const selectedSplits = useAppSelector((state) => state.select.selectedSplits);
+
+	useEffect(() => {
+		if (!defaultSplits.length) {
+			dispatch(resetOriginalQuery());
+		}
+	}, [dispatch, defaultSplits]);
+
 	const handleSplitSelect = useCallback(
 		(splits: number[]) => {
 			dispatch(setSelectedSplits(splits));
@@ -147,7 +154,7 @@ export default function DetailView() {
 							onSubmitIntentions={(intentions) => {
 								setIsRequesting(true);
 								getModifyPrompt(
-									defaultSplits.length ? originalQuery : null,
+									originalQuery,
 									segments
 										.filter((item) => {
 											return item.start_idx >= selectedSplits[0] && item.end_idx <= selectedSplits[selectedSplits.length - 1];
