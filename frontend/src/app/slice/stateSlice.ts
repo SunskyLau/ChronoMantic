@@ -52,6 +52,9 @@ const stateSlice = createSlice({
       state.NLQuery = action.payload;
     },
     setQuery: (state, action: PayloadAction<QuerySpecWithSource | null>) => {
+      if (!state.originalQuery) {
+        state.originalQuery = action.payload;
+      }
       state.query = action.payload;
     },
     resetOriginalQuery: (state) => {
