@@ -21,14 +21,8 @@ parse_nl_cases = f"""## 示例1
 modify_nl_cases = f"""## 示例1
 {ModifyNL_Cases.case1}
 
-## 示例2
-{ModifyNL_Cases.case2}
-
-## 示例3
-{ModifyNL_Cases.case3}
-
-## 示例4
-{ModifyNL_Cases.case4}
+## 示例5
+{ModifyNL_Cases.case5}
 """
 
 
@@ -63,15 +57,8 @@ def create_parse_nl_prompt(dataset_info: str) -> str:
 def create_modify_nl_prompt() -> str:
     modify_nl_prompt = f"""你正在为一个自然语言驱动的时间序列查询系统提供自然语言查询的自动化调整服务。以下是关于你的任务的背景和知识。
 
-# Segment接口定义
-```{Segment_info}
-```
-
-# SegmentGroup接口定义
-```{SegmentGroup_info}
-```
-
 # 带文本来源的结构化查询接口定义
+你只需要关注`QuerySpecWithSource`中的`original_text`，`text_sources`，以及各项属性中的`text_source_id`，不要关注其他属性。
 ```{QuerySpecWithSource_info}
 ```
 
@@ -89,10 +76,10 @@ def create_modify_nl_prompt() -> str:
 {modify_nl_logic_info}
 
 # 任务描述
-你的任务是根据原始的`old_queryspec_with_source`，用户指定的连续时间序列片段`segments`，用户指定的时间序列片段组`segment_groups`，以及用户的调整意图`intentions`，根据用户意图输出调整后的`new_queryspec_with_source`。
+你的任务是根据原始的`old_queryspec_with_source`，调整意图`intentions`以及调整之后的`new_queryspec_with_source_without_text_sources`，生成并输出调整后的`new_queryspec_with_source`。
 要求:
-    1. 准确严格地遵循`new_queryspec_with_source`的数据结构定义`QuerySpecWithSource`，不要出现非法输出，输出前请检查
-    2. 有且仅输出json字典，不要添加代码块或者```，也不要添加注释。
+    1. 准确严格地遵循`new_queryspec_with_source`的数据结构定义`QuerySpecWithSource`，不要出现其他任何推理，不要出现非法输出，输出前请检查。
+    2. 你仅需要输出json对象，不要添加代码块或者```，也不要添加注释。
 
 # 示例
 {modify_nl_cases}

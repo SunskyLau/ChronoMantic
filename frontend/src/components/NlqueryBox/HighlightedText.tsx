@@ -24,22 +24,24 @@ const HighlightedText = memo(({ text, colorMap, query, onToggleDisabled }: Highl
 
         const regex = new RegExp(textSource.text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "g");
         let match;
-        let count = 0;
+        const matches: number[] = [];
 
         while ((match = regex.exec(text)) !== null) {
-            if (count === textSource.index) {
-                acc.push({
-                    index: match.index,
-                    length: textSource.text.length,
-                    text: textSource.text,
-                    color: textSource.disabled ? "#eee" : getColorFromMap(colorMap, parseInt(text_source_id)),
-                    text_source_id: parseInt(text_source_id),
-                    disabled: textSource.disabled || false,
-                });
-                break;
-            }
-            count++;
+            matches.push(match.index);
         }
+
+        if (matches.length > 0) {
+            const targetIndex = matches.length <= textSource.index ? matches.length - 1 : textSource.index;
+            acc.push({
+                index: matches[targetIndex],
+                length: textSource.text.length,
+                text: textSource.text,
+                color: textSource.disabled ? "#eee" : getColorFromMap(colorMap, parseInt(text_source_id)),
+                text_source_id: parseInt(text_source_id),
+                disabled: textSource.disabled || false,
+            });
+        }
+        
         return acc;
     }, []);
 

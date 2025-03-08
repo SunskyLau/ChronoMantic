@@ -233,19 +233,35 @@ parse_nl_logic_info = f"""
 modify_nl_logic_info = """
 输入参数
 - `old_queryspec_with_source: QuerySpecWithSource`：原始的查询规范
-- `segments:Segment[]`：用户选择的连续时间序列片段
-- `intentions:Intentions`：用户对于查询调整的意图
+- `intentions: Intentions`：调整意图，可以供用户进行比对哪些属性发生了改变，进而生成新的符合条件的original_text
+- `new_queryspec_with_source_without_text_sources: QuerySpecWithSource`：根据调整意图调整后的查询规范，不包含original_text，text_sources，以及各项属性中的text_source_id
 输出参数
-- `new_queryspec_with_source: QuerySpecWithSource`：调整后的查询规范
+- `new_queryspec_with_source: QuerySpecWithSource`：调整后的`new_queryspec_with_source_without_text_sources`，里面添加了修改后的original_text，text_sources，以及各项属性中的text_source_id
 
-1. 总体来说，你需要根据以上输入参数，输出调整后的`new_queryspec_with_source`，需要进行调整的地方依据`intentions`，具体如何调整依据`segments`中涉及的属性数值，根据相应的数值提供一定的范围性条件。
-2. TextSource的text只能是来源original_text的连续子文本，必须与original_text中的文本严格一一对应。text_sources数组中的元素应该严格遵循原文中的顺序，不重叠地输出。解析出来的text_source必须是被使用的，否则不应该出现在text_sources中。如果没有在QuerySpecWithSource中的属性出现，则不应该添加到text_sources中。
-3. 调整需要同时体现在original_text和QuerySpec的修改需要有严格的对应关系。新增的条件应该也对应到text中描述的新增，修改的条件应该也对应到text中描述的修改，删除的条件应该也对应到text中描述的删除。
-4. 你只需要关注intentions中涉及到的调整意图，不涉及调整意图的所有原始字段需要保持不变，正确保留原始old_queryspec_with_source中的原始字段。
-5. 尽可能保证调整后的original_text和调整前不发生太大变化。
-6. `new_queryspec_with_source`中的text_sources要保证是来自于new_queryspec_with_source的original_text的连续子文本，你需要先生成对应的文本，再生成text_sources，确保text_sources是来自于original_text的连续子文本，并且text_sources数组中的元素应该严格遵循原文中的顺序，不重叠地输出。如果没有在`new_queryspec_with_source`中的属性出现，则不应该添加到text_sources中。
-7. 对于`SingleRelationIntention`中，需要根据具体的`relation_choices`，选择相应的`segments`中对应的属性进行精确比较，然后对QuerySpecWithSource进行调整， 同时符合相应的语义。不属于`SingleRelationIntention`的属性不需要进行调整。它的相关属性single_relations中，你不能修改除了single_relations以外的其他属性的属性。同样的，对于`GroupRelationIntention`，你不能修改除了group_relations以外的其他属性的属性。对于`single_segment_intentions`，你不能修改除了trends中特定id对应trend以外的其他属性的属性。对于`segment_group_intentions`，你不能修改除了trend_groups中特定id对应trend_group以外的其他属性的属性。
-8. 你需要关注所有的segments，并需要关注segment的source和category，确保这些片段被正确解析到trends中并设置正确的category。如果source是`result`，则表示该segment来源于查询结果，代表他在old_queryspec_with_source中已经出现了，如果source是`user`，则表示该segment来源于用户指定，你需要把他添加到合适的位置。如果所有值都是`user`，代表这是一段用户自定义的片段，用户需要你从segment中根据他的意图intentions生成QuerySpecWithSource。
-9. 对于`single_segment_intentions`，你需要关注`segments`中所有`id`，并根据`intentions`中`single_segment_intentions`的`id`，调整`trends`中`id`对应内容，如果用户intentions中没有传递任何内容，你只需要关心category，不要关心任何其他内容。其中slope对应`slope_scope_condition`，`relative_slope`对应`relative_slope_scope_condition`，`duration`对应`duration_condition`。如果用户没有传递这些intention，则不需要进行任何调整。
-10. 用户可能会在任何地方添加需要的字段，你需要合理调整语序。例如，用户输入一个“find a double top trend”，然后选择了之前的一段上升片段，则需要改为“find rising trend followed by a double top trend”。
+为了实现上述目标，你需要实现三步。
+1. 第一步是根据`intentions`意图以及`new_queryspec_with_source_without_text_sources`中的各项属性（trends，single_relations，trend_groups，group_relations）以及`old_queryspec_with_source`中的original_text生成`new_queryspec_with_source`中新的original_text。
+  1.1 注意：尽可能保证调整后的original_text和调整前不发生太大变化。
+  1.2 注意：生成的original_text必须是符合当前新的`new_queryspec_with_source`属性的，不能遗漏属性，也不能随意添加属性。
+2. 第二步是根据`new_queryspec_with_source_without_text_sources`中的original_text生成text_sources。这个转化过程可以参考部分`old_queryspec_with_source`中的text_sources，例如原文和转化后的文本都含有`double top`，那么他们都是一个text_source。
+  2.1 注意：text_sources的text只能是来源新的original_text的连续子文本，必须与original_text中的文本严格一一对应。
+  2.2 注意：text_sources数组中的元素应该严格遵循原文中的顺序，不重叠地输出。如果有重复的内容，则需要通过设置index来区分，这个index是文本中出现该单词的位置。
+    2.2.1 举例：
+    - 原文："rise then rise then rise"
+    - 解释："rise"出现了3次，所以有3个text_source，index分别是0,1,2
+    - text_sources：[{"text": "rise", "index": 0}, {"text": "rise", "index": 1}, {"text": "rise", "index": 2}]
+    2.2.2 举例：
+    - 原文："rise then fall then rose"
+    - 解释：按照出现顺序添加，"rise"出现了1次，"fall"出现了1次，"rose"出现了1次，所以有3个text_source，index分别是0,0,0
+    - text_sources：[{"text": "rise", "index": 0}, {"text": "fall", "index": 0}, {"text": "rose", "index": 0}]
+  2.3 注意：解析出来的text_source必须是被使用的，否则不应该出现在text_sources中。如果没有在QuerySpecWithSource中的属性出现，则不应该添加到text_sources中。
+3. 第三步是根据生成出来的`text_sources`，生成`new_queryspec_with_source`中各项属性的text_source_id。需要指定为前面出现的索引。需要保证text_source_id的顺序与text_sources的顺序一致。
+  3.1 注意：你必须保证每个属性都具有text_source_id，不能遗漏。
+  3.2 举例：
+    3.2.1 原文："rise then rise then rise"
+    - text_sources：[{"text": "rise", "index": 0}, {"text": "rise", "index": 1}, {"text": "rise", "index": 2}]
+    - trends：[{"category": "up", "text_source_id": 0}, {"category": "up", "text_source_id": 1}, {"category": "up", "text_source_id": 2}]
+    3.2.2 原文："rise then fall then rose"
+    - text_sources：[{"text": "rise", "index": 0}, {"text": "fall", "index": 0}, {"text": "rose", "index": 0}]
+    - trends：[{"category": "up", "text_source_id": 0}, {"category": "down", "text_source_id": 1}, {"category": "up", "text_source_id": 2}]
+4. 调整需要总是体现在original_text中。新增的条件应该也对应到original_text中描述的新增，修改的条件应该也对应到original_text中描述的修改，删除的条件应该也对应到original_text中描述的删除。
 """
