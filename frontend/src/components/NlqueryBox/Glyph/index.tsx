@@ -1,4 +1,5 @@
-import { Comparator, GroupRelationWithSource, QuerySpecWithSource, ScopeConditionWithSource, ScopeConditionWithSourceWithUnit, SingleAttribute, SingleRelationWithSource, TargetWithSource, TrendGroupWithSource, TrendTextMap, TrendWithSource } from "../../../types/QuerySpec";
+import { Comparator, GroupRelationWithSource, QuerySpecWithSource, ScopeConditionWithSource, ScopeConditionWithSourceWithUnit, SingleAttribute, SingleRelationWithSource, TargetWithSource, TrendGroupWithSource, TrendWithSource } from "../../../types/QuerySpec";
+import { TrendTextMap } from "../../../utils/query-spec";
 import * as d3 from "d3";
 import { useEffect, useRef, useState } from "react";
 import type { DefaultArcObject } from "d3-shape";
@@ -355,8 +356,10 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 
 	const trendLines = trends.map((trend, i) => getTrend(trend, i));
 
-	baseY1.current = Math.min(...points.current.map((point) => point?.y1 ?? 0), ...points.current.map((point) => point?.y2 ?? 0));
-	baseY2.current = Math.max(...points.current.map((point) => point?.y1 ?? 0), ...points.current.map((point) => point?.y2 ?? 0));
+	useEffect(() => {
+		baseY1.current = Math.min(...points.current.map((point) => point?.y1 ?? 0), ...points.current.map((point) => point?.y2 ?? 0));
+		baseY2.current = Math.max(...points.current.map((point) => point?.y1 ?? 0), ...points.current.map((point) => point?.y2 ?? 0));
+	}, [trends]);
 
 	const drawCircle = (x: number, y: number, r: number = 1.5, color: string = "#000", disabled: boolean = false) => {
 		return (

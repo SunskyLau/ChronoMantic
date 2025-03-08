@@ -7,8 +7,9 @@ import { useAppDispatch, useAppSelector } from "../../../app/hooks";
 import { setCurTrend } from "../../../app/slice/stateSlice";
 import { classnames } from "../../../utils/classname";
 import { getColorFromMap } from "../../../utils/color";
-import { TrendCategory, TrendTextMap } from "../../../types/QuerySpec";
+import { TrendCategory } from "../../../types/QuerySpec";
 import SpanWithUnit from "../SpanWithUnit";
+import { TrendTextMap } from "../../../utils/query-spec";
 
 interface TrendProps {
 	title?: string;

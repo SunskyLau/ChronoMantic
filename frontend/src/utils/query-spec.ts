@@ -1,5 +1,12 @@
 import { QuerySpec, QuerySpecWithSource, ScopeCondition, ScopeConditionWithSource, ScopeConditionWithSourceWithUnit, ThresholdCondition, Unit, Trend, TrendWithSource, SingleRelation, SingleRelationWithSource, TrendGroup, TrendGroupWithSource, GroupRelation, GroupRelationWithSource, TrendCategory } from "../types/QuerySpec";
 
+export const TrendTextMap: Record<keyof Trend, string> = {
+	"slope_scope_condition": "Slope",
+	"relative_slope_scope_condition": "Relative Slope",
+	"duration_condition": "Duration",
+	"category": "Category",
+}
+
 export function getSecondsOfUnit(unit?: Unit): number {
     if (!unit) return 1;
     switch (unit) {

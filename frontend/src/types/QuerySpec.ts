@@ -94,13 +94,6 @@ export interface Trend {
   duration_condition?: ScopeCondition;
 }
 
-export const TrendTextMap: Record<keyof Trend, string> = {
-	"slope_scope_condition": "Slope",
-	"relative_slope_scope_condition": "Relative Slope",
-	"duration_condition": "Duration",
-	"category": "Category",
-}
-
 // 单趋势可比较属性
 export enum SingleAttribute {
   SLOPE = "slope",

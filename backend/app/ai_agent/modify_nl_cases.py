@@ -2,224 +2,145 @@ from .constant import FUZZY_FACTOR
 
 
 class ModifyNL_Cases:
-    case1 = (
-        """## 示例1
+    case1 = """## 示例1
 输入：
 old_queryspec_with_source
-```
-{
-  "original_text": "Find periods in AMZN when price first fell then presented a flat trend",
-  "text_sources": [
+```{
+  "group_relations": [],
+  "original_text": "find a double top trend",
+  "single_relations": [
     {
-      "text": "AMZN",
-      "index": 0
-    },  
-    {
-      "text": "fell",
-      "index": 0
-    },
-    {
-      "text": "a flat trend",
-      "index": 0
-    }
-  ],
-  "targets": [
-    {
-      "target": "AMZN",
+      "attribute": "end_value",
+      "comparator": "~=",
+      "id1": 1,
+      "id2": 3,
       "text_source_id": 0
     }
   ],
-  "trends": [
+  "targets": [],
+  "text_sources": [
     {
-      "category": {
-        "category": "down",
-        "text_source_id": 1
-      }
-    },
-    {
-      "category": {
-        "category": "flat",
-        "text_source_id": 2
-      }
+      "index": 0,
+      "text": "double top"
     }
   ],
   "trend_groups": [],
-  "single_relations": [],
-  "group_relations": []
-}
-```
-
-segments
-```
-[{'source': 'result', 'relative_slope': 2.0044006295398686, 'end_time': 1397174400, 'end_value': 311.730011, 'slope': -2.79, 'start_time': 1395100800, 'start_value': 378.769989, 'duration': 24.0, 'category': 'down', 'unit': 'day'}, {'source': 'result', 'relative_slope': 0.00012242216338669335, 'end_time': 1422489600, 'end_value': 311.779999, 'slope': 0.0, 'start_time': 1397174400, 'start_value': 311.730011, 'duration': 293.0, 'category': 'flat', 'unit': 'day'}, {'source': 'user', 'relative_slope': 30.67595048894415, 'end_time': 1422576000, 'end_value': 354.529999, 'slope': 42.75, 'start_time': 1422489600, 'start_value': 311.779999, 'duration': 1.0, 'category': 'up', 'unit': 'day'}]
-```
-
-intentions
-```
-{
-  "single_segment_intentions": [
-    {
-      "id": 0,
-      "single_choices":["relative_slope"]
-    },
-    {
-      "id": 2,
-      "single_choices":["slope", "relative_slope"]
-    }
-  ],
-  "segment_group_intentions": [
-    {
-      "ids": [0, 1],
-      "group_choices":["duration"]
-    }
-  ],
-  "single_relation_intentions": [],
-  "group_relation_intentions": []
-}
-```
-
-解释：
-1. single_segment_intentions 中，需要关注所有segment的source和category，如果source是result，则不需要添加到trends中，保持不变即可，如果source是user，则需要添加到trends中，并设置category为up。
-  1.1 需要调整id为0的segment的relative_slope，所以应该设置relative_slope大约为2.00。这一段是来源是result，所以不需要添加到trends中。
-  1.2 需要调整id为1的segment，用户没有给出调整意图，所以只需要关注category，这一段是来源是result，所以不需要添加到trends中。
-  1.3 需要调整id为2的segment的slope，所以应该设置slope大约为42.75。这一段是来源是user，所以需要添加到trends中，并设置category为up。
-2. segment_group_intentions 中，需要设置ids为[0, 1]的segment_group的duration，这一段的时间为24 + 293 = 317天，大约为10个月。
-
-输出：
-{
-  "original_text": "Find periods in AMZN where the price first fell very slowly, then showed a flat trend for about 10 months, and finally rose moderately by about 30% and the slope of this trend is about 42.75 per day",
-  "text_sources": [
-    {
-      "text": "AMZN",
-      "index": 0
-    },
-    {
-      "text": "fell",
-      "index": 0
-    },
-    {
-      "text": "very slowly",
-      "index": 0
-    },
-    {
-      "text": "a flat trend",
-      "index": 0
-    },
-    {
-      "text": "about 10 months",
-      "index": 0
-    },
-    {
-      "text": "rose",
-      "index": 0
-    },
-    {
-      "text": "moderately by about 30%",
-      "index": 0
-    },
-    {
-      "text": "about 42/day",
-      "index": 0
-    }
-  ],
-  "targets": [
-    {
-      "target": "AMZN",
-      "text_source_id": 0
-    }
-  ],
   "trends": [
     {
       "category": {
-        "category": "down",
-        "text_source_id": 1
-      },
-      "relative_slope_scope_condition": {
-        "min": {
-          "value": """
-        + str(2 * (1 - FUZZY_FACTOR))
-        + """,
-          "inclusive": true
-        },
-        "max": {
-          "value": """
-        + str(2 * (1 + FUZZY_FACTOR))
-        + """,
-          "inclusive": false
-        },
-        "text_source_id": 2
-      }
-    },
-    {
-      "category": {
-        "category": "flat",
-        "text_source_id": 3
+        "category": "up"
       }
     },
     {
       "category": {
         "category": "up",
-        "text_source_id": 5
-      },
-      "slope_scope_condition": {
-        "min": {
-          "value": """
-        + str(42 * (1 - FUZZY_FACTOR))
-        + """,
-          "inclusive": true
-        },
-        "max": {
-          "value": """
-        + str(42 * (1 + FUZZY_FACTOR))
-        + """,
-          "inclusive": true
-        },
-        "unit": "day",
-        "text_source_id": 7
-      },
-      "relative_slope_scope_condition": {
-        "min": {
-          "value": """
-        + str(30 * (1 - FUZZY_FACTOR))
-        + """,
-          "inclusive": true
-        },
-        "max": {
-          "value": """
-        + str(30 * (1 + FUZZY_FACTOR))
-        + """,
-          "inclusive": false
-        },
-        "text_source_id": 6
+        "text_source_id": 0
       }
-    }
-  ],
-  "single_relations": [],
-  "trend_groups": [
+    },
     {
-      "ids": [0, 1],
-      "duration_condition": {
-        "min": {
-          "value": """
-        + str(10 * (1 - FUZZY_FACTOR))
-        + """,
-          "inclusive": true
-        },
-        "max": {
-          "value": """
-        + str(10 * (1 + FUZZY_FACTOR))
-        + """,
-          "inclusive": false
-        },
-        "unit": "month",
-        "text_source_id": 4
+      "category": {
+        "category": "down",
+        "text_source_id": 0
+      }
+    },
+    {
+      "category": {
+        "category": "up",
+        "text_source_id": 0
+      }
+    },
+    {
+      "category": {
+        "category": "down",
+        "text_source_id": 0
       }
     }
+  ]
+}
+```
+
+intentions
+```
+{
+  "single_segment_intentions": [],
+  "segment_group_intentions": [],
+  "single_relation_intentions": [],
+  "group_relation_intentions": []
+}
+```
+
+new_queryspec_with_source_without_text_sources
+```
+{
+  "group_relations": [],
+  "original_text": "",
+  "single_relations": [{'attribute': 'end_value', 'comparator': '~=', 'id1': 1, 'id2': 3}],
+  "targets": [],
+  "text_sources": [],
+  "trend_groups": [],
+  "trends": [{'category': {'category': 'up'}}, {'category': {'category': 'up'}}, {'category': {'category': 'down'}}, {'category': {'category': 'up'}}, {'category': {'category': 'down'}}}
+}
+```
+
+输出：
+{
+  "original_text": "find a rising trend followed by a double top trend",
+  "text_sources": [
+    {
+      "index": 0,
+      "text": "rising trend"
+    },
+    {
+      "index": 0,
+      "text": "double top"
+    }
   ],
-  "group_relations": []
+  "single_relations": [
+    {
+      "attribute": "end_value",
+      "comparator": "~=",
+      "id1": 1,
+      "id2": 3,
+      "text_source_id": 1
+    }
+  ],
+  "targets": [],
+  "trend_groups": [],
+  "group_relations": [],
+  "trends": [
+    {
+      "category": {
+        "category": "up",
+        "text_source_id": 0
+      }
+    },
+    {
+      "category": {
+        "category": "up",
+        "text_source_id": 1
+      }
+    },
+    {
+      "category": {
+        "category": "down",
+        "text_source_id": 1
+      }
+    },
+    {
+      "category": {
+        "category": "up",
+        "text_source_id": 1
+      }
+    },
+    {
+      "category": {
+        "category": "down",
+        "text_source_id": 1
+      }
+    }
+  ]
 }
     """
-    )
 
     case2 = (
         """## 示例2
@@ -906,3 +827,96 @@ intentions
 }
 """
     )
+
+    case5 = """## 示例5
+输入：
+old_queryspec_with_source
+```
+null
+```
+intentions
+```
+{
+  "single_segment_intentions": [],
+  "segment_group_intentions": [
+    { "ids": [1, 3], "group_choices": ["duration"] }
+  ],
+  "single_relation_intentions": [],
+  "group_relation_intentions": []
+}
+```
+
+new_queryspec_with_source_without_text_sources
+```
+{'original_text': '', 'text_sources': [], 'targets': [], 'trends': [{'category': {'category': 'down'}}, {'category': {'category': 'up'}}, {'category': {'category': 'up'}}, {'category': {'category': 'up'}}, {'category': {'category': 'down'}}], 'single_relations': [], 'trend_groups': [{'ids': [1, 3], 'duration_condition': {'min': {'value': '22.5', 'inclusive': true}, 'max': {'value': '27.5', 'inclusive': true}, 'unit': 'day'}}], 'group_relations': []}
+```
+
+输出：
+{
+  "original_text": "find a trend that falls then rises three times with a duration of about 25 days and falls again",
+  "text_sources": [
+    {
+      "index": 0,
+      "text": "falls"
+    },
+    {
+      "index": 0,
+      "text": "rises three times"
+    },
+    {
+      "index": 0,
+      "text": "about 25 days"
+    },
+    {
+      "index": 1,
+      "text": "falls"
+    }
+  ],
+  "targets": [],
+  "trends": [
+    {
+      "category": {
+        "category": "down",
+        "text_source_id": 0
+      }
+    },
+    {
+      "category": {
+        "category": "up",
+        "text_source_id": 1
+      }
+    },
+    {
+      "category": {
+        "category": "up",
+        "text_source_id": 1
+      }
+    },
+    {
+      "category": {
+        "category": "up",
+        "text_source_id": 1
+      }
+    },
+    {
+      "category": {
+        "category": "down",
+        "text_source_id": 3
+      }
+    }
+  ],
+  "trend_groups": [
+    {
+      "ids": [1, 3],
+      "duration_condition": {
+        "min": { "value": "22.5", "inclusive": true },
+        "max": { "value": "27.5", "inclusive": true },
+        "unit": "day",
+        "text_source_id": 2
+      }
+    }
+  ],
+  "single_relations": [],
+  "group_relations": []
+}
+"""
