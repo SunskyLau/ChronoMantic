@@ -152,11 +152,7 @@ def modify_queryspec_by_intentions(old_queryspec_with_source: Dict[str, Any], se
             continue
 
         segment = segments[segment_id]
-        adjusted_segment_id = segment_id + inserted_count
-        if adjusted_segment_id >= len(new_queryspec["trends"]):
-            continue
-
-        trend = new_queryspec["trends"][adjusted_segment_id]
+        trend = new_queryspec["trends"][segment_id]
         for choice in intention["single_choices"]:
             if choice in ["slope", "relative_slope", "duration"]:
                 condition_key = f"{choice}_scope_condition" if choice != "duration" else "duration_condition"

@@ -2,8 +2,7 @@ from .constant import FUZZY_FACTOR
 
 
 class ModifyNL_Cases:
-    case1 = """## 示例1
-输入：
+    case1 = """输入：
 old_queryspec_with_source
 ```{
   "group_relations": [],
@@ -828,8 +827,7 @@ intentions
 """
     )
 
-    case5 = """## 示例5
-输入：
+    case5 = """输入：
 old_queryspec_with_source
 ```
 null
