@@ -162,6 +162,7 @@ intentions_info = """
  */
 
 export enum SingleChoice {
+  CATEGORY = "category", // 趋势类别
   SLOPE = "slope", // 斜率属性
   RELATIVE_SLOPE = "relative_slope", // 斜率占比属性,单位是%
   DURATION = "duration", // 时间跨度属性,单位是秒
@@ -206,7 +207,7 @@ export interface GroupRelationIntention {
 }
 
 export interface Intentions {
-  single_segment_intentions: SingleSegmentIntention[]; // 单个Segment的意图列表，你只需要关心这个id所在的segment的属性，不需要关心与他相关的relation或者segment_group的属性
+  single_segment_intentions: SingleSegmentIntention[]; // 单个Segment的意图列表，你只需要关心这个id所在的segment的属性，不需要关心与他相关的relation或者segment_group的属性，你需要始终考虑这个trend的category
   segment_group_intentions: SegmentGroupIntention[]; // Segment组合的意图列表，你只需要关心这个ids所在的组合的属性，不需要关心这其中每一个segment的属性
   single_relation_intentions: SingleRelationIntention[]; // 两个Segment关系的意图列表，你只需要关心这个id1和id2所在的relation的各项属性，不需要关心其他group_relation或者segment_group或者segment的属性
   group_relation_intentions: GroupRelationIntention[]; // 两个Segment组合关系的意图列表，你只需要关心这个group1和group2所在的relation的各项属性，不需要关心其他group_relation或者segment_group或者segment的属性

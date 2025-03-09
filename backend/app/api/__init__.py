@@ -19,7 +19,7 @@ from ..shared_data import (
     parse_nl_agent,
     modify_nl_agent,
 )
-from app.utils.queryspec import modify_queryspec_by_intentions, get_segment_info
+from app.utils.queryspec import add_category_to_intentions, modify_queryspec_by_intentions, get_segment_info
 
 bus_bp = Blueprint("bus", __name__)
 
@@ -208,6 +208,7 @@ def modify_nl_query():
     segments = get_segment_info(segments)
     intentions = request.json.get("intentions")
     new_queryspec_with_source = modify_queryspec_by_intentions(old_queryspec_with_source, segments, intentions)
+    intentions["single_segment_intentions"] = add_category_to_intentions(segments, intentions["single_segment_intentions"])
 
     old_queryspec_with_source_str = json.dumps(old_queryspec_with_source, indent=2)
     intentions_str = json.dumps(intentions, indent=2)
@@ -224,7 +225,6 @@ new_queryspec_with_source_without_text_sources
 ```{new_queryspec_with_source}
 ```"""
     new_queryspec_with_source_str = modify_nl_agent.send_prompt(input, False)
-    # # 将字符串解析为Python字典
     new_queryspec_with_source = json.loads(new_queryspec_with_source_str)
     return jsonify({"code": 200, "message": "Modify nl query successful", "results": new_queryspec_with_source})
 
