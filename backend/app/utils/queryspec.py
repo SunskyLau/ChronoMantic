@@ -95,21 +95,18 @@ def remove_text_source_id(data: Any) -> Any:
 
 def _shift_ids(queryspec: Dict[str, Any], shift_amount: int, start_pos: int) -> None:
     """Shift all ids in queryspec that are >= start_pos by shift_amount"""
-    # Adjust single_relations
     for relation in queryspec["single_relations"]:
         if relation["id1"] >= start_pos:
             relation["id1"] += shift_amount
         if relation["id2"] >= start_pos:
             relation["id2"] += shift_amount
 
-    # Adjust trend_groups
     for group in queryspec["trend_groups"]:
         if group["ids"][0] >= start_pos:
             group["ids"][0] += shift_amount
         if group["ids"][1] >= start_pos:
             group["ids"][1] += shift_amount
 
-    # Adjust group_relations
     for relation in queryspec["group_relations"]:
         if relation["group1"][0] >= start_pos:
             relation["group1"][0] += shift_amount

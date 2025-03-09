@@ -228,41 +228,112 @@ parse_nl_logic_info = f"""
 7. 对于自然语言中存在的持续时间描述，你需要判断使用整体的duration_condition，还是使用trend_group中的duration_condition，抑或是使用trend中的duration_condition。如果是对于整体时间的描述，则使用整体duration_condition；如果是对于组合时间的描述，则使用trend_group中的duration_condition，如果是对于单个trend的持续时间描述，则使用trend中的duration_condition。 
 8. 尽可能保证多轮对话解析中的稳定性和一致性。
 9. 趋势有上升下降的区别，所以在处理斜率（slope）时，需要区分上升和下降的斜率，上升的时候应该使用正斜率；下降的时候应该使用负斜率。并注意设置大小关系，例如，"each trend's slope should be steeper than 10 per month"，这意味着每个趋势的斜率应该大于10，所以当趋势上升应该设置min为10，max为无穷大；当趋势下降应该设置max为-10，min为无穷小。
-10. 对于趋势的描述，如果用户没有明确给出单位，默认使用秒，如果用户给出单位，例如“falling almost 20/year”，则需要根据模糊程度：{FUZZY_FACTOR}，解析成min对应{(1 + FUZZY_FACTOR) * (-20)}，max对应{(1 - FUZZY_FACTOR) * (-20)}，单位是“year”的ScopeConditionWithSourceWithUnit。
+10. 对于趋势的描述，如果用户没有明确给出单位，默认使用秒，如果用户给出单位，例如"falling almost 20/year"，则需要根据模糊程度：{FUZZY_FACTOR}，解析成min对应{(1 + FUZZY_FACTOR) * (-20)}，max对应{(1 - FUZZY_FACTOR) * (-20)}，单位是"year"的ScopeConditionWithSourceWithUnit。
 """
 
 modify_nl_logic_info = """
-输入参数
-- `old_queryspec_with_source: QuerySpecWithSource`：原始的查询规范
-- `intentions: Intentions`：调整意图，可以供用户进行比对哪些属性发生了改变，进而生成新的符合条件的original_text
-- `new_queryspec_with_source_without_text_sources: QuerySpecWithSource`：根据调整意图调整后的查询规范，不包含original_text，text_sources，以及各项属性中的text_source_id
-输出参数
-- `new_queryspec_with_source: QuerySpecWithSource`：调整后的`new_queryspec_with_source_without_text_sources`，里面添加了修改后的original_text，text_sources，以及各项属性中的text_source_id
+## 任务说明
+你需要根据调整意图(intentions)和新的查询规范，为时间序列查询生成合适的文本描述和文本来源映射。这个过程需要保持查询语义的一致性，同时确保文本描述的自然性。
 
-为了实现上述目标，你需要实现三步。
-1. 第一步是根据`intentions`意图以及`new_queryspec_with_source_without_text_sources`中的各项属性（trends，single_relations，trend_groups，group_relations）以及`old_queryspec_with_source`中的original_text生成`new_queryspec_with_source`中新的original_text。
-  1.1 注意：尽可能保证调整后的original_text和调整前不发生太大变化。
-  1.2 注意：生成的original_text必须是符合当前新的`new_queryspec_with_source`属性的，不能遗漏属性，也不能随意添加属性。
-2. 第二步是根据`new_queryspec_with_source_without_text_sources`中的original_text生成text_sources。这个转化过程可以参考部分`old_queryspec_with_source`中的text_sources，例如原文和转化后的文本都含有`double top`，那么他们都是一个text_source。
-  2.1 注意：text_sources的text只能是来源新的original_text的连续子文本，必须与original_text中的文本严格一一对应。
-  2.2 注意：text_sources数组中的元素应该严格遵循原文中的顺序，不重叠地输出。如果有重复的内容，则需要通过设置index来区分，这个index是文本中出现该单词的位置。
-    2.2.1 举例：
-    - 原文："rise then rise then rise"
-    - 解释："rise"出现了3次，所以有3个text_source，index分别是0,1,2
-    - text_sources：[{"text": "rise", "index": 0}, {"text": "rise", "index": 1}, {"text": "rise", "index": 2}]
-    2.2.2 举例：
-    - 原文："rise then fall then rose"
-    - 解释：按照出现顺序添加，"rise"出现了1次，"fall"出现了1次，"rose"出现了1次，所以有3个text_source，index分别是0,0,0
-    - text_sources：[{"text": "rise", "index": 0}, {"text": "fall", "index": 0}, {"text": "rose", "index": 0}]
-  2.3 注意：解析出来的text_source必须是被使用的，否则不应该出现在text_sources中。如果没有在QuerySpecWithSource中的属性出现，则不应该添加到text_sources中。
-3. 第三步是根据生成出来的`text_sources`，生成`new_queryspec_with_source`中各项属性的text_source_id。需要指定为前面出现的索引。需要保证text_source_id的顺序与text_sources的顺序一致。
-  3.1 注意：你必须保证每个属性都具有text_source_id，不能遗漏。
-  3.2 举例：
-    3.2.1 原文："rise then rise then rise"
-    - text_sources：[{"text": "rise", "index": 0}, {"text": "rise", "index": 1}, {"text": "rise", "index": 2}]
-    - trends：[{"category": "up", "text_source_id": 0}, {"category": "up", "text_source_id": 1}, {"category": "up", "text_source_id": 2}]
-    3.2.2 原文："rise then fall then rose"
-    - text_sources：[{"text": "rise", "index": 0}, {"text": "fall", "index": 0}, {"text": "rose", "index": 0}]
-    - trends：[{"category": "up", "text_source_id": 0}, {"category": "down", "text_source_id": 1}, {"category": "up", "text_source_id": 2}]
-4. 调整需要总是体现在original_text中。新增的条件应该也对应到original_text中描述的新增，修改的条件应该也对应到original_text中描述的修改，删除的条件应该也对应到original_text中描述的删除。
+## 输入输出
+输入:
+- old_queryspec_with_source: 原始查询规范，包含原始文本和映射关系
+- intentions: 调整意图，指明需要关注和修改的属性
+- new_queryspec_with_source_without_text_sources: 新的查询规范(不含文本相关字段)
+
+输出:
+- new_queryspec_with_source: 完整的新查询规范，需要补充:
+  - original_text: 描述查询意图的自然语言文本
+  - text_sources: 文本片段来源数组
+  - text_source_id: 各属性对应的文本来源索引
+
+## 处理步骤
+
+### 1. 生成 original_text
+要求:
+- 参考原始文本(old_queryspec_with_source.original_text)
+- 根据 intentions 和新规范的属性变化进行调整
+- 保持语言表达的自然性和连贯性
+- 确保完整表达所有新规范中的属性
+- 避免引入未在新规范中定义的属性
+
+### 2. 构建 text_sources
+规则:
+- 必须是 original_text 中的连续子文本
+- 按在原文中的顺序排列，不允许重叠
+- 只保留被属性引用的文本片段
+- 使用 index 区分重复文本的不同出现位置
+
+### 3. 分配 text_source_id
+要求:
+- 为每个属性分配正确的 text_source_id
+- text_source_id 必须对应已定义的 text_sources 索引
+- 确保所有属性都有对应的 text_source_id，并且为最符合语义的text_source_id
+
+## 关键规则和示例
+
+### 文本映射规则
+
+1. 重复文本处理:
+```json
+// 原文: "rise then rise then rise"
+{
+    "text_sources": [
+        {"text": "rise", "index": 0},
+        {"text": "rise", "index": 1},
+        {"text": "rise", "index": 2}
+    ],
+    "trends": [
+        {"category": "up", "text_source_id": 0},
+        {"category": "up", "text_source_id": 1},
+        {"category": "up", "text_source_id": 2}
+    ]
+}
+```
+
+2. 不同文本处理:
+```json
+// 原文: "rise then fall then rose"
+{
+    "text_sources": [
+        {"text": "rise", "index": 0},
+        {"text": "fall", "index": 0},
+        {"text": "rose", "index": 0}
+    ],
+    "trends": [
+        {"category": "up", "text_source_id": 0},
+        {"category": "down", "text_source_id": 1},
+        {"category": "up", "text_source_id": 2}
+    ]
+}
+```
+
+### 属性变更原则
+
+1. 新增属性:
+   - 在 original_text 中添加对应描述
+   - 确保新描述与现有文本自然衔接
+
+2. 修改属性:
+   - 在 original_text 中更新对应描述
+   - 尽可能保持原有文本结构
+
+3. 删除属性:
+   - 从 original_text 中移除对应描述
+   - 确保剩余文本保持连贯
+
+### 注意事项
+
+1. 文本一致性:
+   - text_sources 必须是 original_text 的连续子串
+   - 保持文本片段的原始顺序
+   - 避免文本重叠
+
+2. 索引完整性:
+   - 每个属性都必须有对应的 text_source_id
+   - text_source_id 必须指向有效的 text_sources 索引
+
+3. 语义准确性:
+   - 确保生成的文本准确表达查询意图
+   - 避免引入歧义或冗余描述
 """
