@@ -1133,7 +1133,7 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 				submitButton
 					.on("click", () => {
 						if (!isRequesting && onSubmitIntentions) {
-							onSubmitIntentions(intentions);
+							onSubmitIntentions(intentions, !!defaultSplits?.length);
 						}
 					})
 					.on("mouseenter", function () {

@@ -49,7 +49,10 @@ export interface LineChartProps {
     isSelectable?: boolean;
     onSplitSelect?: (splits: number[]) => void;
     onCancelSplit?: () => void;
-    onSubmitIntentions?: (intentions: Intentions) => void;
+    /**
+     * @param mode true 表示 refine，false 表示 author
+     */
+    onSubmitIntentions?: (intentions: Intentions, mode?: boolean) => void;
 }
 
 export interface PopoverPosition {
