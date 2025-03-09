@@ -69,10 +69,10 @@ export default function DetailView() {
 	const handleScroll = useCallback(
 		(val: number, position: number) => {
 			const delta = val;
-			const leftRatio = 0.5 + (position * 0.5);
+			const leftRatio = 0.5 + position * 0.5;
 			const rightRatio = 1 - leftRatio;
-			const range1 = Math.max(0, Math.round(range[0] - (delta * leftRatio)));
-			const range2 = Math.max(0, Math.min(Math.round(range[1] + (delta * rightRatio)), timeValues.length - 1));
+			const range1 = Math.max(0, Math.round(range[0] - delta * leftRatio));
+			const range2 = Math.max(0, Math.min(Math.round(range[1] + delta * rightRatio), timeValues.length - 1));
 
 			if (Math.abs(range1 - range2) < 2) return;
 			if (range1 > range2) {
@@ -151,10 +151,10 @@ export default function DetailView() {
 							isRequesting={isRequesting}
 							isSelectable={isTarget}
 							onCancelSplit={handleCancelSplit}
-							onSubmitIntentions={(intentions) => {
+							onSubmitIntentions={(intentions, mode) => {
 								setIsRequesting(true);
 								getModifyPrompt(
-									originalQuery,
+									mode ? originalQuery ?? query : originalQuery,
 									segments
 										.filter((item) => {
 											return item.start_idx >= selectedSplits[0] && item.end_idx <= selectedSplits[selectedSplits.length - 1];
