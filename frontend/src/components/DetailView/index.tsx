@@ -90,10 +90,10 @@ export default function DetailView() {
 	const selectedSplits = useAppSelector((state) => state.select.selectedSplits);
 
 	useEffect(() => {
-		if (!defaultSplits.length) {
+		if (!defaultSplits.length && !Object.keys(memoQueryResults).length) {
 			dispatch(resetOriginalQuery());
 		}
-	}, [dispatch, defaultSplits]);
+	}, [dispatch, selectedSplits, defaultSplits, memoQueryResults]);
 
 	const handleSplitSelect = useCallback(
 		(splits: number[]) => {
