@@ -4,6 +4,21 @@ from app.utils.time_units import get_appropriate_unit_and_value, get_seconds_of_
 from app.ai_agent.constant import FUZZY_FACTOR
 
 
+def add_category_to_intentions(segments: List[dict], segment_intentions: List[dict]) -> None:
+    """
+    Add user specified trend's category to intentions
+    """
+    for idx in range(len(segments)):
+        if segments[idx]["source"] == "user":
+            for intention in segment_intentions:
+                if intention["id"] == idx:
+                    intention["single_choices"].append("category")
+                    break
+            else:
+                segment_intentions.append({"id": idx, "single_choices": ["category"]})
+    return segment_intentions
+
+
 def _get_segment_category(segment: dict) -> str:
     if segment["relative_slope"] <= FLAT_THRESHOLD:
         return "flat"
