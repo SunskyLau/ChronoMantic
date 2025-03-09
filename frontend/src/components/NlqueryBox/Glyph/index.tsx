@@ -243,6 +243,10 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 
 	const points = useRef<{ x1: number; y1: number; x2: number; y2: number; isUp: boolean; isDown: boolean }[]>(Array(trends.length).fill(null));
 
+	useEffect(() => {
+		points.current = Array(trends.length).fill(null);
+	}, [trends]);
+
 	const getTrend = (trend: TrendWithSource, i: number, showIndex = false) => {
 		if (!query) return null;
 		const { isUp, isDown } = getTrendInfo(trend);
