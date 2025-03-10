@@ -154,7 +154,7 @@ export default function DetailView() {
 							onSubmitIntentions={(intentions, mode) => {
 								setIsRequesting(true);
 								getModifyPrompt(
-									mode ? originalQuery ?? query : originalQuery,
+									mode ? originalQuery ?? query : null,
 									segments
 										.filter((item) => {
 											return item.start_idx >= selectedSplits[0] && item.end_idx <= selectedSplits[selectedSplits.length - 1];
