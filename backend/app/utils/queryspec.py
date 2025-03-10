@@ -2,6 +2,7 @@ from typing import List, Dict, Any, Union, TypedDict, Optional
 from app.query.config import APPROXIMATELY_EQUAL_THRESHOLD, FLAT_THRESHOLD
 from app.utils.time_units import get_appropriate_unit_and_value, get_seconds_of_unit
 from app.ai_agent.constant import FUZZY_FACTOR
+from copy import deepcopy
 
 
 def add_category_to_intentions(segments: List[dict], segment_intentions: List[dict]) -> None:
@@ -133,7 +134,7 @@ def modify_queryspec_by_intentions(old_queryspec_with_source: Dict[str, Any], se
             "group_relations": [],
         }
     else:
-        new_queryspec = old_queryspec_with_source.copy()
+        new_queryspec = deepcopy(old_queryspec_with_source)
 
     new_queryspec["original_text"] = ""
     new_queryspec["text_sources"] = []
@@ -213,7 +214,25 @@ def modify_queryspec_by_intentions(old_queryspec_with_source: Dict[str, Any], se
 
 
 if __name__ == "__main__":
-    example_queryspec = None
+    example_queryspec = {
+        "group_relations": [],
+        "original_text": "Find a head-and-shoulders pattern.",
+        "single_relations": [
+            {"attribute": "end_value", "comparator": "<", "id1": 0, "id2": 2, "text_source_id": 0},
+            {"attribute": "end_value", "comparator": ">", "id1": 2, "id2": 4, "text_source_id": 0},
+        ],
+        "targets": [],
+        "text_sources": [{"index": 0, "text": "head-and-shoulders"}],
+        "trend_groups": [],
+        "trends": [
+            {"category": {"category": "up", "text_source_id": 0}},
+            {"category": {"category": "down", "text_source_id": 0}},
+            {"category": {"category": "up", "text_source_id": 0}},
+            {"category": {"category": "down", "text_source_id": 0}},
+            {"category": {"category": "up", "text_source_id": 0}},
+            {"category": {"category": "down", "text_source_id": 0}},
+        ],
+    }
 
     example_segments = get_segment_info(
         [
@@ -226,8 +245,38 @@ if __name__ == "__main__":
                 "min_value": 613,
                 "r2": 1,
                 "relative_slope": 40.4040404040404,
-                "slope": -8,
+                "slope": 8,
                 "source": "user",
+                "start_idx": 168,
+                "start_time": 840,
+                "start_value": 653,
+            },
+            {
+                "duration": 5,
+                "end_idx": 169,
+                "end_time": 845,
+                "end_value": 613,
+                "max_value": 653,
+                "min_value": 613,
+                "r2": 1,
+                "relative_slope": 40.4040404040404,
+                "slope": 8,
+                "source": "result",
+                "start_idx": 168,
+                "start_time": 840,
+                "start_value": 653,
+            },
+            {
+                "duration": 5,
+                "end_idx": 169,
+                "end_time": 845,
+                "end_value": 613,
+                "max_value": 653,
+                "min_value": 613,
+                "r2": 1,
+                "relative_slope": 40.4040404040404,
+                "slope": 8,
+                "source": "result",
                 "start_idx": 168,
                 "start_time": 840,
                 "start_value": 653,
@@ -242,7 +291,7 @@ if __name__ == "__main__":
                 "r2": 1,
                 "relative_slope": 16.161616161616163,
                 "slope": 3.2,
-                "source": "user",
+                "source": "result",
                 "start_idx": 169,
                 "start_time": 845,
                 "start_value": 613,
@@ -256,8 +305,8 @@ if __name__ == "__main__":
                 "min_value": 629,
                 "r2": 1,
                 "relative_slope": 26.262626262626267,
-                "slope": 5.2,
-                "source": "user",
+                "slope": -5.2,
+                "source": "result",
                 "start_idx": 170,
                 "start_time": 850,
                 "start_value": 629,
@@ -272,7 +321,7 @@ if __name__ == "__main__":
                 "r2": 1,
                 "relative_slope": 19.19191919191919,
                 "slope": 3.8,
-                "source": "user",
+                "source": "result",
                 "start_idx": 171,
                 "start_time": 855,
                 "start_value": 655,
@@ -287,7 +336,7 @@ if __name__ == "__main__":
                 "r2": 1,
                 "relative_slope": 30.303030303030305,
                 "slope": -6,
-                "source": "user",
+                "source": "result",
                 "start_idx": 172,
                 "start_time": 860,
                 "start_value": 674,
@@ -304,5 +353,7 @@ if __name__ == "__main__":
 
     # Run the example
     result = modify_queryspec_by_intentions(example_queryspec, example_segments, example_intentions)
+    print("Example QuerySpec:")
+    print(example_queryspec)
     print("Modified QuerySpec:")
     print(result)
