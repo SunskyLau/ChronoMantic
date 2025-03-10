@@ -156,7 +156,7 @@ const calculateTimeRangeLevels = (trends: TrendWithSource[], trend_groups: Trend
 	return timeRanges;
 };
 
-const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_relations = [], height = 32, onClick, curRelation, query, colorMap = {}, targets = [] }: GlyphProps) => {
+const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_relations = [], height = 32, onClick, curTrend, curRelation, query, colorMap = {}, targets = [] }: GlyphProps) => {
 	const trendLength = height;
 	const disabled = curRelation !== -1;
 	const width = trends.length * trendLength;
@@ -298,6 +298,14 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 				key={i}
 				onClick={() => onClick?.("Trend", i)}
 			>
+				<rect
+					x={x1}
+					y={Math.min(currentPoint.y1, currentPoint.y2)}
+					width={currentPoint.x2 - currentPoint.x1}
+					height={Math.abs(currentPoint.y2 - currentPoint.y1)}
+					fill={curTrend === i ? color : "#0000"}
+					fillOpacity={0.3}
+				/>
 				<defs>
 					<marker
 						id={`arrow-${id}-${i}`}
@@ -378,7 +386,7 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 		);
 	};
 
-	const drawConnect = (x1: number, y1: number, x2: number, y2: number, v: number, index: number, text?: Comparator, reverse: boolean = false, color: string = DEFAULT_COLOR, disabled: boolean = false, strokeWidth: number = 1) => {
+	const drawConnect = (x1: number, y1: number, x2: number, y2: number, v: number, index: number, text?: Comparator, reverse: boolean = false, color: string = DEFAULT_COLOR, strokeWidth: number = 1) => {
 		if (x1 > x2) {
 			[x1, x2] = [x2, x1];
 			[y1, y2] = [y2, y1];
@@ -392,7 +400,7 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 				<path
 					onClick={() => onClick?.("Relation", index)}
 					d={`M${x1},${y1} V${v} H${midX - textWidth / 2}`}
-					stroke={isCurRelation ? color.slice(0, 7) : disabled ? DISABLED_COLOR : color}
+					stroke={isCurRelation ? color.slice(0, 7) : color}
 					style={{
 						animation: isCurRelation ? "dashFlow 1s linear infinite" : "none",
 					}}
@@ -404,7 +412,7 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 				<path
 					onClick={() => onClick?.("Relation", index)}
 					d={`M${midX + textWidth / 2},${v} H${x2} V${y2}`}
-					stroke={isCurRelation ? color.slice(0, 7) : disabled ? DISABLED_COLOR : color}
+					stroke={isCurRelation ? color.slice(0, 7) : color}
 					style={{
 						animation: isCurRelation ? "dashFlow 1s linear infinite" : "none",
 					}}
@@ -413,12 +421,12 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 					strokeLinecap="round"
 					strokeWidth={strokeWidth}
 				/>
-				{text && drawComparator(midX, v, text, index, reverse, color, disabled, strokeWidth)}
+				{text && drawComparator(midX, v, text, index, reverse, color, strokeWidth)}
 			</>
 		);
 	};
 
-	const drawComparator = (x: number, y: number, comparator: Comparator, index: number, reverse: boolean = false, color: string = "#000", disabled: boolean = false, strokeWidth: number = 1) => {
+	const drawComparator = (x: number, y: number, comparator: Comparator, index: number, reverse: boolean = false, color: string = "#000", strokeWidth: number = 1) => {
 		if (isNaN(x) || isNaN(y)) return null;
 		const newComparator = reverse && comparatorMap[comparator] ? comparatorMap[comparator] : comparator;
 		const isCurRelation = curRelation === index;
@@ -428,7 +436,7 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 				x={x}
 				y={y}
 				fontSize={(height / 4) * strokeWidth}
-				fill={isCurRelation ? color.slice(0, 7) : disabled ? DISABLED_COLOR : color}
+				fill={isCurRelation ? color.slice(0, 7) : color}
 				fontWeight={700}
 				textAnchor="middle"
 				dominantBaseline="middle"
@@ -461,7 +469,7 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 
 			return (
 				<g key={i}>
-					{drawConnect(x1, y1, x2, y2, v, i, relation.comparator, isReverse, relationColor, disabled)}
+					{drawConnect(x1, y1, x2, y2, v, i, relation.comparator, isReverse, relationColor)}
 					{drawCircle(x1, y1, 2, activeColor)}
 					{drawCircle(x2, y2, 2, activeColor)}
 				</g>
@@ -480,7 +488,7 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 				<g key={i}>
 					{drawTimeIndicator({ startX: x11, endX: x12, textY: y, timeColor: relationColor, disabled, index: i })}
 					{drawTimeIndicator({ startX: x21, endX: x22, textY: y, timeColor: relationColor, disabled, index: i })}
-					{drawConnect((x12 + x11) / 2, y, (x21 + x22) / 2, y, v, i, relation.comparator, isReverse, relationColor, disabled)}
+					{drawConnect((x12 + x11) / 2, y, (x21 + x22) / 2, y, v, i, relation.comparator, isReverse, relationColor)}
 				</g>
 			);
 		} else {
@@ -517,7 +525,7 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 						stroke={isActive ? relationColor.slice(0, 7) : disabled ? DISABLED_COLOR : relationColor}
 						fill="none"
 					/>
-					{drawConnect(x11 + arcRadius / 2, y11, x21 + arcRadius / 2, y21, v, i, relation.comparator, isReverse, relationColor, disabled)}
+					{drawConnect(x11 + arcRadius / 2, y11, x21 + arcRadius / 2, y21, v, i, relation.comparator, isReverse, relationColor)}
 				</g>
 			);
 		}
@@ -551,7 +559,7 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 			<g key={`group-${i}`}>
 				{drawTimeIndicator({ startX: group1Info.start, endX: group1Info.end, textY: rangeY, timeColor: relationColor, disabled, index })}
 				{drawTimeIndicator({ startX: group2Info.start, endX: group2Info.end, textY: rangeY, timeColor: relationColor, disabled, index })}
-				{drawConnect(group1Info.center, rangeY, group2Info.center, rangeY, v, index, relation.comparator, false, relationColor, disabled, strokeWidth)}
+				{drawConnect(group1Info.center, rangeY, group2Info.center, rangeY, v, index, relation.comparator, false, relationColor, strokeWidth)}
 			</g>
 		);
 	};
