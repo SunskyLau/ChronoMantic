@@ -565,11 +565,6 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 	useEffect(() => {
 		if (!svgRef.current || !gRef.current) return;
 
-		if (!query) {
-			setLastTransform(null);
-			return;
-		}
-
 		const svg = d3.select(svgRef.current);
 		const g = d3.select(gRef.current);
 		const bbox = g.node()?.getBBox();
@@ -603,7 +598,11 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 		return () => {
 			svg.on("zoom", null);
 		};
-	}, [trends, single_relations, group_relations, lastTransform, query]);
+	}, [trends, single_relations, group_relations, lastTransform]);
+
+	useEffect(() => {
+		setLastTransform(null);
+	}, [query]);
 
 	const drawTimeRangeIndicator = (params: { type: "trend" | "group" | "global"; index: number; level: number; condition?: ScopeConditionWithSourceWithUnit; ids?: [number, number] }) => {
 		const { type, index, level, condition, ids } = params;
