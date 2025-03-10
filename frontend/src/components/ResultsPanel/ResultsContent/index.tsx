@@ -388,8 +388,23 @@ export default function ResultsContent() {
 	}, [sortConfig]);
 
 	useEffect(() => {
-		handleAttributeSelect(permanentAttributes);
-	}, [permanentAttributes, handleAttributeSelect]);
+		if (!queryResults) {
+			handleAttributeSelect(permanentAttributes);
+		}
+	}, [permanentAttributes, handleAttributeSelect, queryResults]);
+
+	const cascaderValue = useMemo(() => {
+		return selectedAttributes
+			.filter(attr => !attr.permanent)
+			.map(attr => {
+				if (attr.scope === 'global') {
+					return ['global', attr.id];
+				} else if (attr.segmentIndex !== undefined) {
+					return [`segment_${attr.segmentIndex}`, attr.id];
+				}
+				return [];
+			});
+	}, [selectedAttributes]);
 
 	return (
 		<>
@@ -480,6 +495,7 @@ export default function ResultsContent() {
 							options={options}
 							onChange={handleCascaderChange}
 							multiple
+							value={cascaderValue}
 						>
 							<div className="header-column-item add-icon">
 								<AddIcon />

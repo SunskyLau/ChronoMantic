@@ -103,6 +103,7 @@ export default function NlqueryBox() {
 					.then((res) => {
 						dispatch(setQuery(res));
 						dispatch(setColorMap(res));
+						dispatch(setQueryResults(null));
 					})
 					.finally(() => {
 						dispatch(setIsRequesting(false));

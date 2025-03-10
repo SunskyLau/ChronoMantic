@@ -10,7 +10,7 @@ import { resetOriginalQuery, setColorMap, setNLQuery, setQuery } from "../../app
 import { getColorFromMap } from "../../utils/color";
 import LevelController from "../LevelController";
 import { deepClone } from "../../utils/deepclone";
-import { setLevel } from "../../app/slice/approximation";
+import { setLevel, setQueryResults } from "../../app/slice/approximation";
 import { getSplit } from "../../utils/split";
 import { Source } from "../../types/QuerySpec";
 
@@ -164,6 +164,7 @@ export default function DetailView() {
 									intentions
 								)
 									.then((results) => {
+										dispatch(setQueryResults(null));
 										dispatch(setNLQuery(results.original_text));
 										dispatch(setQuery(results));
 										dispatch(setColorMap(results));
