@@ -1,7 +1,6 @@
 export function getColor(index: number) {
     const colors = [
         "#FFA07A",
-        "#7FFFD4",
         "#6A5ACD",
         "#FFD700",
         "#FF69B4",
