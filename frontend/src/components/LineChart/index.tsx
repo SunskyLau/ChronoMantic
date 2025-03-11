@@ -15,6 +15,10 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 	const isTime = useMemo(() => xDataType !== "number", [xDataType]);
 	const [userSplits, setUserSplits] = useState<number[]>([]);
 
+	const isMargin = useMemo(() => isXAxisVisible || isXAxisTextVisible || isYAxisVisible || isYAxisTextVisible, [isXAxisVisible, isXAxisTextVisible, isYAxisVisible, isYAxisTextVisible]);
+	const timeStampData = useMemo(() => (xData.every((x) => typeof x === "string") ? xData.map((d) => new Date(d).getTime()) : xData.slice()), [xData]);
+	const computedMargin = useMemo(() => ({ top: isMargin ? margin?.top ?? 30 : 0, right: isMargin ? margin?.right ?? 40 : 0, bottom: isMargin ? margin?.bottom ?? 30 : 0, left: isMargin ? margin?.left ?? 40 : 0 }), [isMargin, margin]);
+
 	useEffect(() => {
 		setUserSplits([]);
 	}, [xData, yData]);
@@ -41,13 +45,15 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 			event.preventDefault();
 			const rect = svgRef.current?.getBoundingClientRect();
 			if (!rect) return;
-			const relativeX = (event.clientX - rect.left) / rect.width;
-			const normalizedPosition = (relativeX * 2) - 1;
+			const effectiveWidth = rect.width - computedMargin.left - computedMargin.right;
+			const relativeX = (event.clientX - rect.left - computedMargin.left) / effectiveWidth;
+			const clampedX = Math.max(0, Math.min(1, relativeX));
+			const normalizedPosition = (clampedX * 2) - 1;
 			const total = range ? range?.[1] - range?.[0] : xData.length;
 			const step = Math.max(1, Math.round(total / 10));
 			onScroll(event.deltaY > 0 ? step : -step, normalizedPosition);
 		},
-		[onScroll, range, xData.length]
+		[onScroll, range, xData.length, computedMargin]
 	);
 
 	useEffect(() => {
@@ -524,10 +530,6 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 		setIntentions(newIntentions);
 		handlePopoverClose();
 	}, [popoverPosition, intentions, selectedSplits, handlePopoverClose]);
-
-	const isMargin = useMemo(() => isXAxisVisible || isXAxisTextVisible || isYAxisVisible || isYAxisTextVisible, [isXAxisVisible, isXAxisTextVisible, isYAxisVisible, isYAxisTextVisible]);
-	const timeStampData = useMemo(() => (xData.every((x) => typeof x === "string") ? xData.map((d) => new Date(d).getTime()) : xData.slice()), [xData]);
-	const computedMargin = useMemo(() => ({ top: isMargin ? margin?.top ?? 30 : 0, right: isMargin ? margin?.right ?? 40 : 0, bottom: isMargin ? margin?.bottom ?? 30 : 0, left: isMargin ? margin?.left ?? 40 : 0 }), [isMargin, margin]);
 
 	const draw = useCallback(() => {
 		if (!svgRef.current || xData?.length === 0 || yData?.length === 0) return;
