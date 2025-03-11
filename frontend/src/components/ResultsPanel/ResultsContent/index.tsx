@@ -395,10 +395,10 @@ export default function ResultsContent() {
 
 	const cascaderValue = useMemo(() => {
 		return selectedAttributes
-			.filter(attr => !attr.permanent)
-			.map(attr => {
-				if (attr.scope === 'global') {
-					return ['global', attr.id];
+			.filter((attr) => !attr.permanent)
+			.map((attr) => {
+				if (attr.scope === "global") {
+					return ["global", attr.id];
 				} else if (attr.segmentIndex !== undefined) {
 					return [`segment_${attr.segmentIndex}`, attr.id];
 				}
@@ -427,14 +427,18 @@ export default function ResultsContent() {
 								<div className="header-column-group-content">
 									{groupedAttributes.global.map((attr) => (
 										<div
-											className="header-column-group-item pointer"
+											className="header-column-group-item"
 											key={attr.id}
-											onClick={() => handleSort(attr.id)}
 										>
 											{filteredResults.length > 0 ? (
 												<>
 													<div className="header-column-group-item-title">
-														<span className={classnames("header-column-group-item-title-icon")}>{sortConfig.key !== attr.id || sortConfig.direction === null ? <UnorderedListOutlined /> : sortConfig.direction === "asc" ? <SortAscendingOutlined /> : <SortDescendingOutlined />}</span>
+														<span
+															onClick={() => handleSort(attr.id)}
+															className={classnames("header-column-group-item-title-icon", "pointer")}
+														>
+															{sortConfig.key !== attr.id || sortConfig.direction === null ? <UnorderedListOutlined /> : sortConfig.direction === "asc" ? <SortAscendingOutlined /> : <SortDescendingOutlined />}
+														</span>
 														<span className="header-column-group-item-title-text">{attr.label}</span>
 													</div>
 													<SelectChart
@@ -466,12 +470,16 @@ export default function ResultsContent() {
 										<div className="header-column-group-content">
 											{segmentAttrs.map((attr) => (
 												<div
-													className="header-column-group-item pointer"
+													className="header-column-group-item"
 													key={attr.id}
-													onClick={() => handleSort(attr.id)}
 												>
 													<div className="header-column-group-item-title">
-														<span className={classnames("header-column-group-item-title-icon")}>{sortConfig.key !== attr.id || sortConfig.direction === null ? <UnorderedListOutlined /> : sortConfig.direction === "asc" ? <SortAscendingOutlined /> : <SortDescendingOutlined />}</span>
+														<span
+															onClick={() => handleSort(attr.id)}
+															className={classnames("header-column-group-item-title-icon", "pointer")}
+														>
+															{sortConfig.key !== attr.id || sortConfig.direction === null ? <UnorderedListOutlined /> : sortConfig.direction === "asc" ? <SortAscendingOutlined /> : <SortDescendingOutlined />}
+														</span>
 														<span className="header-column-group-item-title-text">{attr.label}</span>
 													</div>
 													<div className="header-column-group-item-value">
