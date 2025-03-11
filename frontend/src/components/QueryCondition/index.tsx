@@ -4,16 +4,15 @@ import { useAppDispatch, useAppSelector } from "../../app/hooks";
 import { useMemo } from "react";
 import { setQuery } from "../../app/slice/stateSlice";
 import { deepClone } from "../../utils/deepclone";
-import Target from "../NlqueryBox/Target";
-import Scope from "../NlqueryBox/Scope";
-import Relation from "../NlqueryBox/Relation";
-import Trend from "../NlqueryBox/Trend";
-import TrendGroup from "../NlqueryBox/TrendGroup";
-import GroupRelation from "../NlqueryBox/GroupRelation";
+import Target from "./Target";
+import Scope from "./Scope";
+import Relation from "./Relation";
+import Trend from "./Trend";
+import TrendGroup from "./TrendGroup";
+import GroupRelation from "./GroupRelation";
+import SpanWithUnit from "./SpanWithUnit";
 import { getColorFromMap } from "../../utils/color";
-import { QuerySpecWithSource, ScopeConditionWithSource, ScopeConditionWithSourceWithUnit, Unit } from "../../types/QuerySpec";
-import { getSecondsOfUnit } from "../../utils/query-spec";
-import SpanWithUnit from "../NlqueryBox/SpanWithUnit";
+import { QuerySpecWithSource, ScopeConditionWithSource, ScopeConditionWithSourceWithUnit, ThresholdCondition, Unit } from "../../types/QuerySpec";
 
 const emptyQuerySpec: QuerySpecWithSource = {
 	original_text: "",
@@ -37,10 +36,10 @@ const emptyQuerySpec: QuerySpecWithSource = {
 	},
 };
 
-const updateScopeCondition = (condition: ScopeConditionWithSourceWithUnit, min: number | null, max: number | null, minInclusive: boolean, maxInclusive: boolean): ScopeConditionWithSourceWithUnit => {
+const updateScopeCondition = (condition: ScopeConditionWithSourceWithUnit, min: ThresholdCondition | null, max: ThresholdCondition | null): ScopeConditionWithSourceWithUnit => {
 	return {
-		min: typeof min === "number" ? { value: min, inclusive: minInclusive } : undefined,
-		max: typeof max === "number" ? { value: max, inclusive: maxInclusive } : undefined,
+		min: min ?? undefined,
+		max: max ?? undefined,
 		text_source_id: condition.text_source_id,
 		unit: condition.unit,
 	};
@@ -59,9 +58,8 @@ export default function QueryCondition() {
 	const maxDate = date.reduce((max, curr) => (curr > max ? curr : max), date[0]);
 	const curRelation = useAppSelector((state) => state.states.curRelation);
 	const colorMap = useAppSelector((state) => state.states.colorMap);
-	const timeStampColumnType = useAppSelector((state) => state.dataset.dataset?.timeStampColumnType) ?? "number";
-	const timeStampColumnUnit = useMemo(() => getSecondsOfUnit(timeStampColumnType as Unit), [timeStampColumnType]);
-	const timeStampColumnUnitText = useMemo(() => (timeStampColumnType === "number" ? undefined : timeStampColumnType), [timeStampColumnType]);
+	const timeStampColumnType = useAppSelector((state) => state.dataset.dataset?.timeStampColumnType);
+	const timeStampColumnUnitText = useMemo(() => (timeStampColumnType === Unit.NUMBER ? undefined : timeStampColumnType), [timeStampColumnType]);
 
 	const scopeConfigs = [
 		{
@@ -96,7 +94,7 @@ export default function QueryCondition() {
 					colorMap={colorMap}
 					sources={memoizedQuery?.targets.map((target) => target.text_source_id)}
 					onChange={(val) => {
-						const newQuery = deepClone(memoizedQuery);
+						const newQuery = { ...memoizedQuery };
 						newQuery.targets = val.map((target) => ({ target, text_source_id: query?.targets.find((source) => source.target === target)?.text_source_id ?? -1 }));
 						dispatch(setQuery(newQuery));
 					}}
@@ -109,12 +107,11 @@ export default function QueryCondition() {
 					isEdit={true}
 					trends={memoizedQuery.trends || []}
 					onChange={(trends) => {
-						const newQuery = deepClone(memoizedQuery);
+						const newQuery = { ...memoizedQuery };
 						newQuery.trends = trends;
 						dispatch(setQuery(newQuery));
 					}}
 					timeStampColumnType={timeStampColumnType}
-					timeStampColumnUnit={timeStampColumnUnit}
 				/>
 			</section>
 
@@ -125,7 +122,7 @@ export default function QueryCondition() {
 					relations={memoizedQuery.single_relations || []}
 					idLength={memoizedQuery.trends?.length || 0}
 					onChange={(relations) => {
-						const newQuery = deepClone(memoizedQuery);
+						const newQuery = { ...memoizedQuery };
 						newQuery.single_relations = relations;
 						dispatch(setQuery(newQuery));
 					}}
@@ -138,12 +135,11 @@ export default function QueryCondition() {
 					groups={memoizedQuery.trend_groups || []}
 					idLength={memoizedQuery.trends?.length || 0}
 					onChange={(groups) => {
-						const newQuery = deepClone(memoizedQuery);
+						const newQuery = { ...memoizedQuery };
 						newQuery.trend_groups = groups;
 						dispatch(setQuery(newQuery));
 					}}
 					timeStampColumnType={timeStampColumnType}
-					timeStampColumnUnit={timeStampColumnUnit}
 				/>
 				{memoizedQuery.trend_groups.length <= 0 && <Divider />}
 			</section>
@@ -154,7 +150,7 @@ export default function QueryCondition() {
 					relations={memoizedQuery.group_relations || []}
 					trends={memoizedQuery.trends || []}
 					onChange={(relations) => {
-						const newQuery = deepClone(memoizedQuery);
+						const newQuery = { ...memoizedQuery };
 						newQuery.group_relations = relations;
 						dispatch(setQuery(newQuery));
 					}}
@@ -171,11 +167,11 @@ export default function QueryCondition() {
 					minInclusive={!!memoizedQuery.duration_condition?.min?.inclusive}
 					maxInclusive={!!memoizedQuery.duration_condition?.max?.inclusive}
 					unit={memoizedQuery.duration_condition?.unit ?? timeStampColumnUnitText}
-					onChange={({ min, max, unit }) => {
-						const newQuery = deepClone(memoizedQuery);
+					onChange={(min, max, unit) => {
+						const newQuery = { ...memoizedQuery };
 						newQuery.duration_condition = {
-							min,
-							max,
+							min: min ?? undefined,
+							max: max ?? undefined,
 							unit,
 							text_source_id: memoizedQuery.duration_condition?.text_source_id ?? -1,
 						};
@@ -195,10 +191,10 @@ export default function QueryCondition() {
 						minInclusive={!!condition?.min?.inclusive}
 						maxInclusive={!!condition?.max?.inclusive}
 						{...props}
-						onChange={(min, max, minInclusive, maxInclusive) => {
-							const newQuery = deepClone(memoizedQuery);
+						onChange={(min, max) => {
+							const newQuery = { ...memoizedQuery };
 							const key = (title.toLowerCase().replace(/\s/g, "_") + "_condition") as ScopeConditionKeys;
-							newQuery[key] = updateScopeCondition(condition || ({} as ScopeConditionWithSource), min, max, minInclusive, maxInclusive);
+							newQuery[key] = updateScopeCondition(condition || ({} as ScopeConditionWithSource), min, max);
 							dispatch(setQuery(newQuery));
 						}}
 					/>

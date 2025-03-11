@@ -1,18 +1,18 @@
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import * as d3 from "d3";
-import { deepClone, deepEqual } from "../../utils/deepclone";
+import { deepEqual } from "../../utils/deepclone";
 import { Popover } from "antd";
-import { GroupChoice, GroupRelationChoice, Intentions, SingleChoice, SingleRelationChoice } from "../../types/QuerySpec";
+import { GroupChoice, GroupRelationChoice, Intentions, SingleChoice, SingleRelationChoice, Unit } from "../../types/QuerySpec";
 import { flushSync } from "react-dom";
 import { formatTime } from "../../utils/time";
 import IntentionPopover from "./IntentionPopover";
 import { IntentionLine, LineChartProps, PopoverPosition } from "./types";
 import { generateId } from "../../utils/id";
 
-function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVisible = false, isYAxisVisible = false, isXAxisTextVisible = false, isYAxisTextVisible = false, isBrush = false, onBrush, onBrushEnd, range, height, split, isSplitMask = false, brushPosition, isExpand = true, isShowRange = true, isActive, children, onScroll, onContextMenu, xAxisColor = "#C5C5C5", yAxisColor = "#C5C5C5", lineColor = "#A6A6A6", textColor = "#C5C5C5", xAxisFormatter = (date: Date) => formatTime(date, xDataType === "number" ? undefined : xDataType), brushColor = "#546BB633", resultsSplit, selectedSplits, defaultSplits = [], isSelectable = false, onSplitSelect, onSubmitIntentions, margin, isHoverable = false, xDataType = "number", isRequesting = false, onCancelSplit }: LineChartProps) {
+function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVisible = false, isYAxisVisible = false, isXAxisTextVisible = false, isYAxisTextVisible = false, isBrush = false, onBrush, onBrushEnd, range, height, split, brushPosition, isExpand = true, isShowRange = true, isActive, children, onScroll, onContextMenu, xAxisColor = "#C5C5C5", yAxisColor = "#C5C5C5", lineColor = "#A6A6A6", textColor = "#C5C5C5", xAxisFormatter = (date: Date) => formatTime(date, xDataType === Unit.NUMBER ? undefined : xDataType), brushColor = "#546BB633", resultsSplit, selectedSplits, defaultSplits = [], isSelectable = false, onSplitSelect, onSubmitIntentions, margin, isHoverable = false, xDataType = Unit.NUMBER, isRequesting = false, onCancelSplit }: LineChartProps) {
 	const svgRef = useRef<SVGSVGElement>(null);
 	const id = generateId();
-	const isTime = useMemo(() => xDataType !== "number", [xDataType]);
+	const isTime = useMemo(() => xDataType !== Unit.NUMBER, [xDataType]);
 	const [userSplits, setUserSplits] = useState<number[]>([]);
 
 	const isMargin = useMemo(() => isXAxisVisible || isXAxisTextVisible || isYAxisVisible || isYAxisTextVisible, [isXAxisVisible, isXAxisTextVisible, isYAxisVisible, isYAxisTextVisible]);
@@ -48,7 +48,7 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 			const effectiveWidth = rect.width - computedMargin.left - computedMargin.right;
 			const relativeX = (event.clientX - rect.left - computedMargin.left) / effectiveWidth;
 			const clampedX = Math.max(0, Math.min(1, relativeX));
-			const normalizedPosition = (clampedX * 2) - 1;
+			const normalizedPosition = clampedX * 2 - 1;
 			const total = range ? range?.[1] - range?.[0] : xData.length;
 			const step = Math.max(1, Math.round(total / 10));
 			onScroll(event.deltaY > 0 ? step : -step, normalizedPosition);
@@ -151,7 +151,7 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 		if (!popoverPosition) return;
 
 		const { type, ranges, groups } = popoverPosition;
-		const newIntentions = deepClone(intentions);
+		const newIntentions = { ...intentions };
 
 		switch (type) {
 			case "SingleSegment": {
@@ -306,7 +306,7 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 			if (!range) return;
 
 			const currentRange = JSON.parse(range) as [number, number];
-			
+
 			const startIdx = Math.min(dragStart[0], currentRange[0]);
 			const endIdx = Math.max(dragStart[1], currentRange[1]);
 
@@ -322,16 +322,12 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 
 			const minSplit = Math.min(...selectedSplits!);
 			const maxSplit = Math.max(...selectedSplits!);
-			
+
 			d3.selectAll(".split-interaction rect").attr("fill", function () {
 				const rangeAttr = (this as SVGRectElement)?.getAttribute?.("data-range");
 				if (!rangeAttr) return "transparent";
 				const [s, e] = JSON.parse(rangeAttr);
-				return s >= startIdx && e <= endIdx && s >= minSplit && e <= maxSplit 
-					? (event.shiftKey || event.ctrlKey ? "#00800033" : "#1890ff33") 
-					: selectedSplits?.includes(s) && selectedSplits?.includes(e) 
-						? "#3331" 
-						: "transparent";
+				return s >= startIdx && e <= endIdx && s >= minSplit && e <= maxSplit ? (event.shiftKey || event.ctrlKey ? "#00800033" : "#1890ff33") : selectedSplits?.includes(s) && selectedSplits?.includes(e) ? "#3331" : "transparent";
 			});
 		},
 		[isDragging, dragStart, split, selectedSplits, splits]
@@ -347,7 +343,7 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 			if (!range) return;
 
 			const currentRange = JSON.parse(range) as [number, number];
-			
+
 			if (!splits.length) {
 				const startIdx = Math.min(dragStart[0], currentRange[0]);
 				const endIdx = Math.max(dragStart[1], currentRange[1]);
@@ -494,7 +490,7 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 	const handleDelete = useCallback(() => {
 		if (!popoverPosition) return;
 		const { type, ranges, groups } = popoverPosition;
-		const newIntentions = deepClone(intentions);
+		const newIntentions = { ...intentions };
 
 		switch (type) {
 			case "SingleSegment": {
@@ -752,16 +748,9 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 		}
 
 		if (split && keyData.length > 2) {
-			const splitLinesG = g
-				.append("g")
-				.attr("class", "split-lines")
-				.attr("clip-path", isSplitMask ? `url(#clip-path-${id})` : null);
+			const splitLinesG = g.append("g").attr("class", "split-lines").attr("clip-path", `url(#clip-path-${id})`);
 
-			const splitInteractionG = g
-				.append("g")
-				.attr("class", "split-interaction")
-				.attr("clip-path", isSplitMask ? `url(#clip-path-${id})` : null)
-				.style("pointer-events", "all");
+			const splitInteractionG = g.append("g").attr("class", "split-interaction").attr("clip-path", `url(#clip-path-${id})`).style("pointer-events", "all");
 
 			const color = d3.color(lineColor);
 			const darkerColor = color ? d3.hsl(color).darker(10).toString() : lineColor;
@@ -1226,7 +1215,7 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 			svg.selectAll("*").remove();
 			d3.selectAll(`.tooltip-${id}`).remove();
 		};
-	}, [xData, yData, ratio, title, isXAxisVisible, isYAxisVisible, isXAxisTextVisible, isYAxisTextVisible, isBrush, onBrush, isFill, range, height, split, isSplitMask, brushPosition, isExpand, isShowRange, id, onBrushEnd, isActive, xAxisColor, yAxisColor, lineColor, textColor, xAxisFormatter, brushColor, resultsSplit, handleSplitClick, selectedSplits, popoverPosition, handleMouseMove, handleMouseUp, intentions, defaultSplits, onSubmitIntentions, relationIds, computedMargin, isHoverable, timeStampData, isTime, isRequesting, isSelectable, onSplitSelect, onCancelSplit]);
+	}, [xData, yData, ratio, title, isXAxisVisible, isYAxisVisible, isXAxisTextVisible, isYAxisTextVisible, isBrush, onBrush, isFill, range, height, split, brushPosition, isExpand, isShowRange, id, onBrushEnd, isActive, xAxisColor, yAxisColor, lineColor, textColor, xAxisFormatter, brushColor, resultsSplit, handleSplitClick, selectedSplits, popoverPosition, handleMouseMove, handleMouseUp, intentions, defaultSplits, onSubmitIntentions, relationIds, computedMargin, isHoverable, timeStampData, isTime, isRequesting, isSelectable, onSplitSelect, onCancelSplit]);
 
 	useEffect(() => {
 		const cancle = draw();

@@ -6,6 +6,12 @@
     margin-right: 8px;
 }
 
+.level-controller .level-controller-title,
+.level-controller .level-controller-value {
+    font-size: 16px;
+    white-space: nowrap;
+}
+
 .level-controller .ant-slider {
     width: 100px;
 }

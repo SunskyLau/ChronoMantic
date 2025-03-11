@@ -7,7 +7,7 @@ import SubmitIcon from "../../icons/Submit";
 import { LoadingOutlined } from "@ant-design/icons";
 import { classnames } from "../../utils/classname";
 import type { SpeechRecognitionType } from "../../types";
-import { addChatHistory, getFragmentsBySpec, getQuerySpecRequest } from "../../api";
+import { chatApi, queryApi } from "../../api";
 import { setQueryResults } from "../../app/slice/approximation";
 import { setIsRequesting } from "../../app/slice/resultsSlice";
 import { QuerySpecWithSource } from "../../types/QuerySpec";
@@ -85,8 +85,8 @@ export default function NlqueryBox() {
 		const querySpec = formatQuerySpec(query);
 		dispatch(setQuerySpec(querySpec));
 		dispatch(setOriginalQuery(query));
-		addChatHistory(NLQuery, JSON.stringify(query));
-		const res = await getFragmentsBySpec(querySpec);
+		chatApi.addHistory(NLQuery, JSON.stringify(query));
+		const res = await queryApi.getFragmentsBySpec(querySpec);
 		dispatch(setQueryResults(res));
 	}, [NLQuery, query, dispatch]);
 
@@ -99,7 +99,7 @@ export default function NlqueryBox() {
 				setIsEdit(false);
 				dispatch(setQuery(null));
 				dispatch(setColorMap(null));
-				getQuerySpecRequest(NLQuery)
+				queryApi.getQuerySpec(NLQuery)
 					.then((res) => {
 						dispatch(setQuery(res));
 						dispatch(setColorMap(res));

@@ -1,22 +1,26 @@
 .header {
+  --header-bg: #619CD3;
+  --header-text: #fff;
+  --icon-size: 32px;
+  --title-size: 48px;
+
   width: 100%;
   height: var(--header-height);
   line-height: var(--header-height);
   position: relative;
-  margin: 0 auto;
-  font-size: 48px;
+  font-size: var(--title-size);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  color: #fff;
-  background-color: #619CD3;
+  color: var(--header-text);
+  background-color: var(--header-bg);
 }
 
 .header .header-title {
   text-align: center;
   margin: 0;
   font-family: Arial;
-  font-size: 48px;
+  font-size: var(--title-size);
   font-style: italic;
   font-weight: 700;
 }
@@ -29,20 +33,5 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  font-size: 32px;
-}
-
-.header .header-right .icon {
-  font-size: 24px;
-  margin-right: 12px;
-}
-
-.header .header-right .ant-typography {
-  color: #fff;
-  font-size: 20px;
-  white-space: nowrap;
-}
-
-.header .header-right .icon.active {
-  transform: rotate(180deg);
+  font-size: var(--icon-size);
 }
