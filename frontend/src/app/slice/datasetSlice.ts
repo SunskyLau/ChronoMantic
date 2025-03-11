@@ -5,7 +5,7 @@ export type ColumnType = string | number;
 
 export interface DatasetColumn {
   timeStampColumn: string;
-  timeStampColumnType: "number" | Unit;
+  timeStampColumnType: Unit;
   valueColumns: string[];
 }
 

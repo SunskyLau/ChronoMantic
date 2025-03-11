@@ -2,7 +2,7 @@ import { GroupChoice, GroupRelationChoice, Intentions, SingleChoice, SingleRelat
 
 export interface LineChartProps {
     xData: number[] | string[];
-    xDataType?: "number" | Unit;
+    xDataType?: Unit;
     yData: number[];
     ratio?: number;
     height?: number | string;
@@ -25,7 +25,6 @@ export interface LineChartProps {
     range?: [number, number];
     isShowRange?: boolean;
     split?: number[];
-    isSplitMask?: boolean;
     isExpand?: boolean;
     isZoom?: boolean;
     isActive?: boolean;
@@ -55,10 +54,12 @@ export interface LineChartProps {
     onSubmitIntentions?: (intentions: Intentions, mode?: boolean) => void;
 }
 
+export type ChoiceType = "SingleSegment" | "SegmentGroup" | "SingleRelation" | "GroupRelation";
+
 export interface PopoverPosition {
     x: number;
     y: number;
-    type: "SingleSegment" | "SegmentGroup" | "SingleRelation" | "GroupRelation";
+    type: ChoiceType;
     ranges: [number, number][];
     groups?: [[number, number][], [number, number][]];
     rectWidth: number;
@@ -66,14 +67,14 @@ export interface PopoverPosition {
 }
 
 export interface IntentionLine {
-    type: "SingleSegment" | "SegmentGroup" | "SingleRelation" | "GroupRelation";
+    type: ChoiceType;
     level: number;
     ranges: [number, number][];
     choices: (SingleChoice | GroupChoice | SingleRelationChoice | GroupRelationChoice)[];
 }
 
 export interface IntentionPopoverProps<T extends SingleChoice | GroupChoice | SingleRelationChoice | GroupRelationChoice> {
-    type: "SingleSegment" | "SegmentGroup" | "SingleRelation" | "GroupRelation";
+    type: ChoiceType;
     choices: T[];
     selected: T[];
     onChange: (choice: T) => void;

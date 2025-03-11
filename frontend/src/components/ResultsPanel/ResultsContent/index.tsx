@@ -13,6 +13,7 @@ import AddIcon from "../../../icons/Add";
 import { SortAscendingOutlined, SortDescendingOutlined, UnorderedListOutlined } from "@ant-design/icons";
 import { formatTime } from "../../../utils/time";
 import { getColorFromMap } from "../../../utils/color";
+import { getSecondsByUnit } from "../../../utils/query-spec";
 
 export interface DataType {
 	date: Date;
@@ -76,8 +77,8 @@ export default function ResultsContent() {
 	const current = useAppSelector((state) => state.approximation.current);
 	const defaultSplits = useAppSelector((state) => state.select.defaultSplits);
 	const timeStampColumnType = useAppSelector((state) => state.dataset.dataset?.timeStampColumnType);
-	const timeStampColumnUnit = useMemo(() => (timeStampColumnType === "day" ? 86400 : timeStampColumnType === "hour" ? 3600 : timeStampColumnType === "minute" ? 60 : 1), [timeStampColumnType]);
-	const timeStampColumnUnitText = useMemo(() => (timeStampColumnType === "number" ? "" : timeStampColumnType), [timeStampColumnType]);
+	const timeStampColumnUnit = useMemo(() => getSecondsByUnit(timeStampColumnType), [timeStampColumnType]);
+	const timeStampColumnUnitText = useMemo(() => (timeStampColumnType === Unit.NUMBER ? "" : timeStampColumnType), [timeStampColumnType]);
 
 	const attributeOptions: AttributeOption[] = useMemo(
 		() => [
@@ -104,7 +105,7 @@ export default function ResultsContent() {
 				key: "start_time",
 				label: "Start Time",
 				scope: "global",
-				format: (value) => (timeStampColumnType === "number" ? value.toString() : formatTime(new Date(value * 1000), timeStampColumnType as Unit)),
+				format: (value) => (timeStampColumnType === Unit.NUMBER ? value.toString() : formatTime(new Date(value * 1000), timeStampColumnType)),
 				getValue: (segments) => segments[0]?.start_time ?? 0,
 			},
 			{
@@ -112,7 +113,7 @@ export default function ResultsContent() {
 				key: "end_time",
 				label: "End Time",
 				scope: "global",
-				format: (value) => (timeStampColumnType === "number" ? value.toString() : formatTime(new Date(value * 1000), timeStampColumnType as Unit)),
+				format: (value) => (timeStampColumnType === Unit.NUMBER ? value.toString() : formatTime(new Date(value * 1000), timeStampColumnType)),
 				getValue: (segments) => segments[segments.length - 1]?.end_time ?? 0,
 			},
 			{

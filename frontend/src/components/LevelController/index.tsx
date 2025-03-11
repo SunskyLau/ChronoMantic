@@ -12,14 +12,14 @@ export default function LevelController({level, disabled, maxLevel, onChange}: L
 	return (
 		<ConfigProvider theme={{ components: { Slider: { railSize: 10, railBg: "#E0E0E0", railHoverBg: "#E0E0E0", handleColor: "#666" } } }}>
 			<div className="level-controller">
-				<span className="level-controller-title" style={{ fontSize: "16px" }}>Approximation Level</span>
+				<span className="level-controller-title">Approximation Level</span>
 				<Slider
 					disabled={disabled}
 					value={level}
 					max={maxLevel}
 					onChange={onChange}
 				></Slider>
-				<span style={{ fontSize: "16px" }}>{level}</span>
+				<span className="level-controller-value">{level}</span>
 			</div>
 		</ConfigProvider>
 	);

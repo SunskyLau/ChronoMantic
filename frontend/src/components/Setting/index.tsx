@@ -5,15 +5,16 @@ import SettingIcon from "../../icons/Setting";
 import Panel from "../Panel";
 import "./index.css";
 import { Button, InputNumber } from "antd";
+import { createPortal } from "react-dom";
 
-export default function Setting() {
-    const dispatch = useAppDispatch()
-    const r2 = useAppSelector((state) => state.setting.r2)
-    const [r2State, setR2State] = useState(r2)
-    const handleSubmit = () => {
-        dispatch(setIsSettingShow(false))
-        dispatch(setR2(r2State))
-    }
+function SettingComponent() {
+	const dispatch = useAppDispatch();
+	const r2 = useAppSelector((state) => state.setting.r2);
+	const [r2State, setR2State] = useState(r2);
+	const handleSubmit = () => {
+		dispatch(setIsSettingShow(false));
+		dispatch(setR2(r2State));
+	};
     return (
         <div className="setting">
             <div className="modal" onClick={() => dispatch(setIsSettingShow(false))}></div>
@@ -30,4 +31,8 @@ export default function Setting() {
             </Panel>
         </div>
     )
+}
+
+export default function Setting() {
+	return createPortal(<SettingComponent />, document.body);
 }

@@ -172,6 +172,7 @@ export interface CategoryWithSource extends WithSource {
 
 // 单位
 export enum Unit {
+  NUMBER = "number",
   SECOND = "second",
   MINUTE = "minute",
   HOUR = "hour",

@@ -4,9 +4,10 @@ import { useRef } from "react";
 import { useAppDispatch } from "../../app/hooks";
 import { setDataset, Dataset, ColumnType } from "../../app/slice/datasetSlice";
 import UploadIcon from "../../icons/Upload";
-import { processDataset, uploadCsvFile } from "../../api";
+import { datasetApi } from "../../api";
 import { setQueryResults, setResults } from "../../app/slice/approximation";
 import { Unit } from "../../types/QuerySpec";
+import { getUnitBySeconds } from "../../utils/query-spec";
 
 function CsvLoader() {
 	const dispatch = useAppDispatch();
@@ -26,7 +27,7 @@ function CsvLoader() {
 	};
 
 	const parseCSV = (file: File) => {
-		uploadCsvFile(file).then((res) => {
+		datasetApi.uploadCsvFile(file).then((res) => {
 			Papa.parse<Record<string, ColumnType>>(file, {
 				header: true,
 				dynamicTyping: true,
@@ -35,7 +36,7 @@ function CsvLoader() {
 						filename: res.filename,
 						data: {},
 						timeStampColumn: result.meta.fields?.[0] ?? "",
-						timeStampColumnType: "number",
+						timeStampColumnType: Unit.NUMBER,
 						valueColumns: result.meta.fields?.slice(1) ?? [],
 					};
 
@@ -50,28 +51,14 @@ function CsvLoader() {
 								const timeStamp = new Date(value).getTime();
 								const delta = timeStamp - lastTimeStamp;
 								lastTimeStamp = timeStamp;
-								if (delta >= 86400000 * 365) {
-									dataset.timeStampColumnType = Unit.YEAR;
-								} else if (delta >= 86400000 * 30) {
-									dataset.timeStampColumnType = Unit.MONTH;
-								} else if (delta >= 86400000 * 7) {
-									dataset.timeStampColumnType = Unit.WEEK;
-								} else if (delta >= 86400000) {
-									dataset.timeStampColumnType = Unit.DAY;
-								} else if (delta >= 3600000) {
-									dataset.timeStampColumnType = Unit.HOUR;
-								} else if (delta >= 60000) {
-									dataset.timeStampColumnType = Unit.MINUTE;
-								} else if (delta >= 1000) {
-									dataset.timeStampColumnType = Unit.SECOND;
-								}
+								dataset.timeStampColumnType = getUnitBySeconds(delta / 1000);
 							}
 							dataset.data[key].push(value);
 						}
 					});
 					dispatch(setDataset(dataset));
 					dispatch(setQueryResults({}));
-					processDataset({ time_column: dataset.timeStampColumn, value_columns: dataset.valueColumns }).then((res) => {
+					datasetApi.processDataset({ time_column: dataset.timeStampColumn, value_columns: dataset.valueColumns }).then((res) => {
 						dispatch(setResults(res));
 					});
 				},

@@ -7,7 +7,7 @@ export const TrendTextMap: Record<keyof Trend, string> = {
 	"category": "Category",
 }
 
-export function getSecondsOfUnit(unit?: Unit): number {
+export function getSecondsByUnit(unit?: Unit): number {
     if (!unit) return 1;
     switch (unit) {
         case Unit.SECOND: return 1;
@@ -21,15 +21,15 @@ export function getSecondsOfUnit(unit?: Unit): number {
     }
 }
 
-
-export function getUnitOfSeconds(seconds: number): Unit {
+export function getUnitBySeconds(seconds: number): Unit {
     if (seconds >= 86400 * 365) return Unit.YEAR;
     if (seconds >= 86400 * 30) return Unit.MONTH;
     if (seconds >= 86400 * 7) return Unit.WEEK;
     if (seconds >= 86400) return Unit.DAY;
     if (seconds >= 3600) return Unit.HOUR;
     if (seconds >= 60) return Unit.MINUTE;
-    return Unit.SECOND;
+    if (seconds >= 1) return Unit.SECOND;
+    return Unit.NUMBER;
 }
 
 export function formatQuerySpec(query: QuerySpecWithSource): QuerySpec {
@@ -44,7 +44,7 @@ export function formatQuerySpec(query: QuerySpecWithSource): QuerySpec {
 
             if (unit) {
                 return {
-                    value: formatter(threshold.value, getSecondsOfUnit(unit)),
+                    value: formatter(threshold.value, getSecondsByUnit(unit)),
                     inclusive: threshold.inclusive
                 };
             }
