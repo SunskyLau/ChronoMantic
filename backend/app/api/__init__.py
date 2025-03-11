@@ -217,13 +217,14 @@ def modify_nl_query():
 ```{old_queryspec_with_source_str}
 ```
 
+new_queryspec_with_source_without_text_sources
+```{new_queryspec_with_source}
+```
+
 intentions
 ```{intentions_str}
 ```
-
-new_queryspec_with_source_without_text_sources
-```{new_queryspec_with_source}
-```"""
+    """
     new_queryspec_with_source_str = modify_nl_agent.send_prompt(input, False)
     new_queryspec_with_source = json.loads(new_queryspec_with_source_str)
     new_queryspec_with_source = fix_text_source_id(new_queryspec_with_source)

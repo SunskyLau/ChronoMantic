@@ -247,6 +247,7 @@ modify_nl_logic_info = """
   - original_text: 描述查询意图的自然语言文本
   - text_sources: 文本片段来源数组
   - text_source_id: 各属性对应的文本来源索引
+- 除了这三个内容需要调整，其他内容需要和 new_queryspec_with_source_without_text_sources 保持完全一致，不允许出现任何差异
 
 ## 处理步骤
 
@@ -294,16 +295,16 @@ modify_nl_logic_info = """
 ```json
 // 原文: "rise then rise then rise"
 {
-    "text_sources": [
-        {"text": "rise", "index": 0},
-        {"text": "rise", "index": 1},
-        {"text": "rise", "index": 2}
-    ],
-    "trends": [
-        {"category": "up", "text_source_id": 0},
-        {"category": "up", "text_source_id": 1},
-        {"category": "up", "text_source_id": 2}
-    ]
+  "text_sources": [
+    {"text": "rise", "index": 0},
+    {"text": "rise", "index": 1},
+    {"text": "rise", "index": 2}
+  ],
+  "trends": [
+    {"category": "up", "text_source_id": 0},
+    {"category": "up", "text_source_id": 1},
+    {"category": "up", "text_source_id": 2}
+  ]
 }
 ```
 
@@ -311,16 +312,38 @@ modify_nl_logic_info = """
 ```json
 // 原文: "rise then fall then rose"
 {
-    "text_sources": [
-        {"text": "rise", "index": 0},
-        {"text": "fall", "index": 0},
-        {"text": "rose", "index": 0}
-    ],
-    "trends": [
-        {"category": "up", "text_source_id": 0},
-        {"category": "down", "text_source_id": 1},
-        {"category": "up", "text_source_id": 2}
-    ]
+  "text_sources": [
+    {"text": "rise", "index": 0},
+    {"text": "fall", "index": 0},
+    {"text": "rose", "index": 0}
+  ],
+  "trends": [
+    {"category": "up", "text_source_id": 0},
+    {"category": "down", "text_source_id": 1},
+    {"category": "up", "text_source_id": 2}
+  ]
+}
+```
+
+3. 特殊形状描述：
+```json
+// 原文: "Find periods when price presented a head-and-shoulders shape"
+{
+  "text_sources": [
+    {"text": "head-and-shoulders", "index": 0}
+  ],
+  "trends": [
+    {"category": "up", "text_source_id": 0},
+    {"category": "down", "text_source_id": 0},
+    {"category": "up", "text_source_id": 0},
+    {"category": "down", "text_source_id": 0},
+    {"category": "up", "text_source_id": 0},
+    {"category": "down", "text_source_id": 0}
+  ],
+  "single_relations": [
+    {"id1": 0, "id2": 2, "attribute": "end_value", "comparator": "<"},
+    {"id1": 2, "id2": 4, "attribute": "end_value", "comparator": ">"}
+  ]
 }
 ```
 
