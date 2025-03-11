@@ -610,7 +610,9 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 	}, [trends, single_relations, group_relations, lastTransform]);
 
 	useEffect(() => {
-		setLastTransform(null);
+		if (!query) {
+			setLastTransform(null);
+		}
 	}, [query]);
 
 	const drawTimeRangeIndicator = (params: { type: "trend" | "group" | "global"; index: number; level: number; condition?: ScopeConditionWithSourceWithUnit; ids?: [number, number] }) => {
