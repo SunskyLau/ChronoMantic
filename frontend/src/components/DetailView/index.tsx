@@ -164,10 +164,14 @@ export default function DetailView() {
 									intentions
 								)
 									.then((results) => {
+										dispatch(setQuery(null));
+										dispatch(setColorMap(null));
 										dispatch(setQueryResults(null));
 										dispatch(setNLQuery(results.original_text));
-										dispatch(setQuery(results));
-										dispatch(setColorMap(results));
+										requestAnimationFrame(() => {
+											dispatch(setQuery(results));
+											dispatch(setColorMap(results));
+										});
 									})
 									.catch(() => {})
 									.finally(() => {
