@@ -162,7 +162,8 @@ intentions_info = """
  */
 
 export enum SingleChoice {
-  CATEGORY = "category", // 趋势类别
+  USER = "user", // 用户指定的，需要添加相关描述
+  RESULT = "result", // 结果生成的，不需要添加相关描述，已经在原有查询规范中，只需要对应text_source_id
   SLOPE = "slope", // 斜率属性
   RELATIVE_SLOPE = "relative_slope", // 斜率占比属性,单位是%
   DURATION = "duration", // 时间跨度属性,单位是秒
@@ -238,8 +239,8 @@ modify_nl_logic_info = """
 ## 输入输出
 输入:
 - old_queryspec_with_source: 原始查询规范，包含原始文本和映射关系
-- intentions: 调整意图，指明需要关注和修改的属性
 - new_queryspec_with_source_without_text_sources: 新的查询规范(不含文本相关字段)
+- intentions: 调整意图，指明需要关注和修改的属性
 
 输出:
 - new_queryspec_with_source: 完整的新查询规范，需要补充:
@@ -252,17 +253,32 @@ modify_nl_logic_info = """
 ### 1. 生成 original_text
 要求:
 - 参考原始文本(old_queryspec_with_source.original_text)
-- 根据 intentions 和新规范的属性变化进行调整
+- 关注 intentions 中标记为 user 的趋势，这些属性需要添加到 original_text 中
+- 原始文本中已有内容需要尽可能全部保留
+- 需要根据新规范的属性变化和 intentions 进行调整
 - 保持语言表达的自然性和连贯性
 - 确保完整表达所有新规范中的属性
 - 避免引入未在新规范中定义的属性
 
 ### 2. 构建 text_sources
 规则:
-- 必须是 original_text 中的连续子文本
-- 按在原文中的顺序排列，不允许重叠
-- 只保留被属性引用的文本片段
-- 使用 index 区分重复文本的不同出现位置
+1. 文本来源要求:
+  - text_sources 中的每个 text 必须是 original_text 中的连续子文本
+  - 不允许对原文进行任何修改或重组
+
+2. 顺序和重叠规则:
+  - text_sources 数组中的元素必须按照它们在 original_text 中出现的顺序排列
+  - 不同的 text_sources 之间不允许有重叠部分
+
+3. 文本复用处理:
+  - 当相同的文本片段在 original_text 中多次出现时:
+    - 使用 index 字段区分不同位置的相同文本
+    - index 从 0 开始计数
+    - 第一次出现 index=0，第二次出现 index=1，以此类推
+   
+4. 有效性原则:
+  - 只保留被实际引用的文本片段
+  - 如果某个文本片段没有被任何属性引用，不应该出现在 text_sources 中
 
 ### 3. 分配 text_source_id
 要求:

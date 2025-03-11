@@ -10,14 +10,35 @@ def add_category_to_intentions(segments: List[dict], segment_intentions: List[di
     Add user specified trend's category to intentions
     """
     for idx in range(len(segments)):
-        if segments[idx]["source"] == "user":
-            for intention in segment_intentions:
-                if intention["id"] == idx:
-                    intention["single_choices"].append("category")
-                    break
-            else:
-                segment_intentions.append({"id": idx, "single_choices": ["category"]})
+        for intention in segment_intentions:
+            if intention["id"] == idx:
+                intention["single_choices"].append(segments[idx]["source"])
+                break
+        else:
+            segment_intentions.append({"id": idx, "single_choices": [segments[idx]["source"]]})
     return segment_intentions
+
+
+def fix_text_source_id(queryspec: dict) -> dict:
+    original_text: str = queryspec["original_text"]
+    text_sources: List[dict] = queryspec["text_sources"]
+    occurrence_count = {}
+    start_pos = 0
+
+    for text_source in text_sources:
+        text = text_source["text"]
+        new_pos = original_text.find(text, start_pos)
+        if new_pos == -1:
+            break
+        start_pos = new_pos + 1
+        if text not in occurrence_count:
+            occurrence_count[text] = 0
+        else:
+            occurrence_count[text] += 1
+        if occurrence_count[text] >= text_source["index"]:
+            text_source["index"] = occurrence_count[text]
+
+    return queryspec
 
 
 def _get_segment_category(segment: dict) -> str:

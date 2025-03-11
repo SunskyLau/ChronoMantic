@@ -19,7 +19,7 @@ from ..shared_data import (
     parse_nl_agent,
     modify_nl_agent,
 )
-from app.utils.queryspec import add_category_to_intentions, modify_queryspec_by_intentions, get_segment_info
+from app.utils.queryspec import add_category_to_intentions, fix_text_source_id, modify_queryspec_by_intentions, get_segment_info
 
 bus_bp = Blueprint("bus", __name__)
 
@@ -226,6 +226,7 @@ new_queryspec_with_source_without_text_sources
 ```"""
     new_queryspec_with_source_str = modify_nl_agent.send_prompt(input, False)
     new_queryspec_with_source = json.loads(new_queryspec_with_source_str)
+    new_queryspec_with_source = fix_text_source_id(new_queryspec_with_source)
     return jsonify({"code": 200, "message": "Modify nl query successful", "results": new_queryspec_with_source})
 
 
