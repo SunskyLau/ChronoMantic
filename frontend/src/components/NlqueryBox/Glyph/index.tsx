@@ -589,6 +589,7 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 			.zoom<SVGSVGElement, unknown>()
 			.scaleExtent([1, 10])
 			.on("zoom", (event) => {
+				if (!event.transform) return;
 				g.attr("transform", event.transform);
 				if (event.sourceEvent) {
 					setLastTransform(event.transform);
