@@ -22,7 +22,7 @@ const HighlightedText = memo(({ text, colorMap, query, onToggleDisabled }: Highl
     }>>((acc, [text_source_id, textSource]) => {
         if (!colorMap[text_source_id]) return acc;
 
-        const regex = new RegExp(textSource.text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "g");
+        const regex = new RegExp(`\\b${textSource.text.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&')}\\b`, 'g');
         let match;
         const matches: number[] = [];
 
