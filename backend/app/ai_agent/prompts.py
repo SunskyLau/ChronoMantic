@@ -26,6 +26,9 @@ modify_nl_cases = f"""## 示例1
 
 ## 示例3
 {ModifyNL_Cases.case3}
+
+## 示例4
+{ModifyNL_Cases.case4}
 """
 
 
@@ -63,8 +66,8 @@ def create_modify_nl_prompt() -> str:
 # 核心任务
 输入:
 - old_queryspec_with_source: 原始查询规范
-- intentions: 调整意图
 - new_queryspec_with_source_without_text_sources: 新查询规范(不含文本相关字段)
+- intentions: 调整意图
 
 输出:
 - new_queryspec_with_source: 完整的新查询规范，包含:
