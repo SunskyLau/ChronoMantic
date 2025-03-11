@@ -250,6 +250,24 @@ intentions
 }
 ```
 
+解释：
+1. 分析输入数据:
+  - old_queryspec_with_source 包含原始的 "double top" 形态
+  - new_queryspec_with_source_without_text_sources 包含5个趋势段
+  - intentions 显示趋势段的来源(user/result)
+
+2. 分析趋势段来源:
+  - id 0: user 指定的新增趋势
+  - id 1-4: result 标记，与原始 double top 形态匹配
+
+3. 分析关系:
+  - single_relations 保持不变，因为它们来自原始的 double top 形态
+  - text_source_id 需要更新以匹配新的文本源
+
+4. 生成自然语言描述:
+  - 开始: 描述 user 指定的上升趋势
+  - 中间: 保持原始的 double top 形态描述
+
 输出：
 {
   "original_text": "find a rising trend followed by a double top trend",
@@ -377,7 +395,7 @@ intentions
 4. 生成自然语言描述:
   - 开始: 描述 user 指定的上升和下降趋势
   - 中间: 保持原始的 head-and-shoulders 形态描述
-  - 结束: 描述 user 指定的最后一个上升趋势
+  - 结束: 描述 user 指定的上升趋势
 
 输出：
 {
