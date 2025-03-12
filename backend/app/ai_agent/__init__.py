@@ -6,7 +6,7 @@ from openai.types.chat import ChatCompletion
 from typing import List, Dict, Optional
 from groq import Groq
 
-from .prompts import create_parse_nl_prompt, create_modify_nl_prompt
+from .prompts import create_parse_nl_info, create_modify_nl_info, parse_nl_system_prompt, modify_nl_system_prompt
 from .constant import (
     Azure,
     DeepSeek,
@@ -69,7 +69,7 @@ class myAIClient:
                 messages=messages,
                 model=self.model,
                 temperature=0,
-                max_tokens=4096,
+                max_tokens=1024,
                 top_p=1,
                 frequency_penalty=0.1,
                 presence_penalty=0.1,
@@ -97,11 +97,10 @@ class myAIClient:
 def test_parse_nl_query():
     # client = myAIClient(model=Azure.MODELS.GPT_4O, platform=Platforms.AZURE)
     dataset_info = """{"time_column": "Date", "value_columns": ["AMZN", "DPZ", "BTC", "NFLX"]}"""
-    system_prompt = create_parse_nl_prompt(dataset_info)
+    parse_nl_info = create_parse_nl_info(dataset_info)
     # client = myAIClient(model=Qwen.MODELS.QWEN_MAX, platform=Platforms.QWEN)
     client = myAIClient(model=GroqPlatform.MODELS.LLAMA3_3, platform=Platforms.GROQ)
-
-    client.set_system_prompt(system_prompt)
+    client.set_system_prompt(parse_nl_system_prompt)
     # nl_query = "Find periods in AMZN when price first rose sharply then fell gradually"
     # nl_query = "Find periods in DPZ when price first fall sharply then rise gradually, and the whole duration is about 3 months"
     # nl_query = "Find periods in AMZN when price presented a head-and-shoulders shape"
@@ -114,22 +113,24 @@ def test_parse_nl_query():
     # nl_query = "Look up a high plateau pattern"
     # nl_query = "Look up a flat basin pattern in Amazon and Netflix"
     # nl_query = "Look up a flat basin pattern"
-    # nl_query_1 = "Find periods when price rose sharply with a duration of about 4 days"
-    nl_query_2 = "Find periods when price rose sharply with a duration of about 4 days, then fell gradually"
-    # nl_query_3 = "Find periods when price present a head-and-shoulders shape"
-    # nl_query_4 = "Find periods when price first rise then present a head-and-shoulders shape then fell"
+    # nl_query = "Find periods when price rose sharply with a duration of about 4 days"
+    nl_query = "Find periods when price rose sharply with a duration of about 4 days, then fell gradually"
+    # nl_query = "Find periods when price present a head-and-shoulders shape"
+    # nl_query = "Find periods when price first rise then present a head-and-shoulders shape then fell"
     # print(system_prompt)
     # response = client.send_prompt(nl_query_1, False)
     # response = client.send_prompt(nl_query_2, False)
     # response = client.send_prompt(nl_query_3, False)
-    response = client.send_prompt(nl_query_2, False)
+    parse_nl_user_prompt = parse_nl_info + "\n" + "输入：" + nl_query + "\n" + "输出："
+    response = client.send_prompt(parse_nl_user_prompt, False)
 
 
 def test_modify_nl_query():
     client = myAIClient(model=Qwen.MODELS.QWEN_MAX, platform=Platforms.QWEN)
-    system_prompt = create_modify_nl_prompt()
-    client.set_system_prompt(system_prompt)
-    modify_prompt = """
+    client.set_system_prompt(modify_nl_system_prompt)
+    modify_nl_info = create_modify_nl_info()
+    modify_prompt = modify_nl_info + "\n"  + """
+输入：
 old_queryspec_with_source:
 ```
 {
@@ -232,8 +233,9 @@ intentions:
   "group_relation_intentions": []
 }
 ```
+输出：
     """
-    response = client.send_prompt(system_prompt, modify_prompt, False)
+    response = client.send_prompt(modify_prompt, False)
     print(response)
 
 

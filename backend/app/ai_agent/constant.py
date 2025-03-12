@@ -64,6 +64,5 @@ class GroqPlatform:
 PROMPT_SPLITTER = "\n\n"
 NOW = datetime.now().strftime("%Y-%m-%d")
 
-
 if __name__ == "__main__":
     pass
