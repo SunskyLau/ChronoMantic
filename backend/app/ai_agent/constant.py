@@ -59,6 +59,7 @@ class GroqPlatform:
 
     class MODELS:
         LLAMA3_3 = "llama-3.3-70b-versatile"
+        QWEN2_5_32B = "qwen-2.5-32b"
 
 PROMPT_SPLITTER = "\n\n"
 NOW = datetime.now().strftime("%Y-%m-%d")
