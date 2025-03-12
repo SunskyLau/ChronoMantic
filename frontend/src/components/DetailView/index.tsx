@@ -5,14 +5,14 @@ import LineChart from "../LineChart";
 import { useAppDispatch, useAppSelector } from "../../app/hooks";
 import { setBrushPosition, setDefaultSplits, setRange, setSelectedSplits, setSelectPosition } from "../../app/slice/selectSlice";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { getModifyPrompt } from "../../api";
+import { queryApi } from "../../api";
 import { resetOriginalQuery, setColorMap, setNLQuery, setQuery } from "../../app/slice/stateSlice";
 import { getColorFromMap } from "../../utils/color";
 import LevelController from "../LevelController";
 import { deepClone } from "../../utils/deepclone";
 import { setLevel, setQueryResults } from "../../app/slice/approximation";
 import { getSplit } from "../../utils/split";
-import { Source } from "../../types/QuerySpec";
+import { Intentions, Source } from "../../types/QuerySpec";
 
 export default function DetailView() {
 	const data = useAppSelector((state) => state.dataset.dataset?.data) || {};
@@ -68,21 +68,14 @@ export default function DetailView() {
 
 	const handleScroll = useCallback(
 		(val: number, position: number) => {
-			const [start, end] = range[0] === 0 && range[1] === 0 
-				? [0, timeValues.length - 1] 
-				: range;
+			const [start, end] = range[0] === 0 && range[1] === 0 ? [0, timeValues.length - 1] : range;
 			const leftRatio = 0.5 + position * 0.5;
 			const rightRatio = 1 - leftRatio;
 			const newStart = Math.max(0, Math.round(start - val * leftRatio));
-			const newEnd = Math.min(
-				Math.round(end + val * rightRatio), 
-				timeValues.length - 1
-			);
+			const newEnd = Math.min(Math.round(end + val * rightRatio), timeValues.length - 1);
 			if (Math.abs(newStart - newEnd) < 2) return;
-			const [finalStart, finalEnd] = newStart <= newEnd 
-				? [newStart, newEnd]
-				: [newEnd, newStart];
-			
+			const [finalStart, finalEnd] = newStart <= newEnd ? [newStart, newEnd] : [newEnd, newStart];
+
 			handleBrush(finalStart, finalEnd);
 			handleBrushEnd(finalStart, finalEnd);
 		},
@@ -113,6 +106,37 @@ export default function DetailView() {
 	const originalQuery = useAppSelector((state) => state.states.originalQuery);
 	const [isRequesting, setIsRequesting] = useState(false);
 
+	const handleSubmitIntentions = useCallback(
+		(intentions: Intentions, mode?: boolean) => {
+			setIsRequesting(true);
+			queryApi
+				.modifyQuerySpec(
+					mode ? originalQuery ?? query : null,
+					segments
+						.filter((item) => {
+							return item.start_idx >= selectedSplits[0] && item.end_idx <= selectedSplits[selectedSplits.length - 1];
+						})
+						.map((segment) => ({ ...segment, source: segment.start_idx >= defaultSplits[0] && segment.end_idx <= defaultSplits[defaultSplits.length - 1] ? Source.RESULT : Source.USER })),
+					intentions
+				)
+				.then((results) => {
+					dispatch(setQuery(null));
+					dispatch(setColorMap(null));
+					dispatch(setQueryResults(null));
+					dispatch(setNLQuery(results.original_text));
+					requestAnimationFrame(() => {
+						dispatch(setQuery(results));
+						dispatch(setColorMap(results));
+					});
+				})
+				.catch(() => {})
+				.finally(() => {
+					setIsRequesting(false);
+				});
+		},
+		[dispatch, originalQuery, query, selectedSplits, defaultSplits, segments]
+	);
+
 	return (
 		<Panel
 			className="main-view"
@@ -142,7 +166,6 @@ export default function DetailView() {
 							range={range}
 							height={"100%"}
 							split={split}
-							isSplitMask={true}
 							onScroll={handleScroll}
 							title={source}
 							isXAxisTextVisible
@@ -154,33 +177,7 @@ export default function DetailView() {
 							isRequesting={isRequesting}
 							isSelectable={isTarget}
 							onCancelSplit={handleCancelSplit}
-							onSubmitIntentions={(intentions, mode) => {
-								setIsRequesting(true);
-								getModifyPrompt(
-									mode ? originalQuery ?? query : null,
-									segments
-										.filter((item) => {
-											return item.start_idx >= selectedSplits[0] && item.end_idx <= selectedSplits[selectedSplits.length - 1];
-										})
-										.map((segment) => ({ ...segment, source: segment.start_idx >= defaultSplits[0] && segment.end_idx <= defaultSplits[defaultSplits.length - 1] ? Source.RESULT : Source.USER })),
-									intentions.segment_group_intentions.map((intention) => [intention.ids[0], intention.ids[1]]),
-									intentions
-								)
-									.then((results) => {
-										dispatch(setQuery(null));
-										dispatch(setColorMap(null));
-										dispatch(setQueryResults(null));
-										dispatch(setNLQuery(results.original_text));
-										requestAnimationFrame(() => {
-											dispatch(setQuery(results));
-											dispatch(setColorMap(results));
-										});
-									})
-									.catch(() => {})
-									.finally(() => {
-										setIsRequesting(false);
-									});
-							}}
+							onSubmitIntentions={handleSubmitIntentions}
 						></LineChart>
 					</div>
 					<div className="bg overview">

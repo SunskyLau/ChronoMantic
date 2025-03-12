@@ -3,13 +3,7 @@
     height: 100%;
 }
 
-.table-upload {
-    height: 100%;
-    width: 100%;
-}
-
-.table-upload .csv-loader {
-    font-size: 128px;
+.table-empty {
     height: 100%;
     width: 100%;
     display: flex;
