@@ -2,7 +2,7 @@ from typing import List, Optional
 import pandas as pd
 
 from ..ai_agent import myAIClient
-from ..ai_agent.constant import Platforms, Qwen
+from ..ai_agent.constant import Platforms, Qwen, GroqPlatform
 from ..MyTypes import ApproximationSegmentsContainer, DatasetInfo
 
 
@@ -42,5 +42,7 @@ class APPROXIMATION_SEGMENTS_CONTAINERS_CONTAINER:
 dataset_info_container = DATASET_INFO_CONTAINER()
 dataset_container = DATASET_CONTAINER()
 approximation_segments_containers_container = APPROXIMATION_SEGMENTS_CONTAINERS_CONTAINER()
-parse_nl_agent = myAIClient(model=Qwen.MODELS.QWEN_MAX, platform=Platforms.QWEN)
-modify_nl_agent = myAIClient(model=Qwen.MODELS.QWEN_MAX, platform=Platforms.QWEN)
+# parse_nl_agent = myAIClient(model=Qwen.MODELS.QWEN_MAX, platform=Platforms.QWEN)
+# modify_nl_agent = myAIClient(model=Qwen.MODELS.QWEN_MAX, platform=Platforms.QWEN)
+parse_nl_agent = myAIClient(model=GroqPlatform.MODELS.LLAMA3_3, platform=Platforms.GROQ)
+modify_nl_agent = myAIClient(model=GroqPlatform.MODELS.LLAMA3_3, platform=Platforms.GROQ)
