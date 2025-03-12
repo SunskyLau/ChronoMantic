@@ -4,11 +4,13 @@ from typeguard import typechecked
 from openai import OpenAI, AzureOpenAI
 from openai.types.chat import ChatCompletion
 from typing import List, Dict, Optional
+from groq import Groq
 
 from .prompts import create_parse_nl_prompt, create_modify_nl_prompt
 from .constant import (
     Azure,
     DeepSeek,
+    GroqPlatform,
     SiliconFlow,
     Qwen,
     Platforms,
@@ -28,7 +30,7 @@ class myAIClient:
     def set_system_prompt(self, system_prompt: str):
         self.chatHistory.append({"role": "system", "content": system_prompt})
 
-    def _initialize_client(self, platform: str) -> OpenAI | AzureOpenAI:
+    def _initialize_client(self, platform: str) -> OpenAI | AzureOpenAI | Groq:
         """Initialize the appropriate client based on platform"""
         if platform == Platforms.AZURE:
             return AzureOpenAI(
@@ -44,6 +46,8 @@ class myAIClient:
             return OpenAI(api_key=Qwen.API_KEY, base_url=Qwen.BASE_URL)
         elif platform == Platforms.TENCENT:
             return OpenAI(api_key=Tencent.API_KEY, base_url=Tencent.BASE_URL)
+        elif platform == Platforms.GROQ:
+            return Groq(api_key=GroqPlatform.API_KEY)
         else:
             raise ValueError(f"Invalid platform: {platform}")
 
@@ -94,7 +98,9 @@ def test_parse_nl_query():
     # client = myAIClient(model=Azure.MODELS.GPT_4O, platform=Platforms.AZURE)
     dataset_info = """{"time_column": "Date", "value_columns": ["AMZN", "DPZ", "BTC", "NFLX"]}"""
     system_prompt = create_parse_nl_prompt(dataset_info)
-    client = myAIClient(model=Qwen.MODELS.QWEN_MAX, platform=Platforms.QWEN)
+    # client = myAIClient(model=Qwen.MODELS.QWEN_MAX, platform=Platforms.QWEN)
+    client = myAIClient(model=GroqPlatform.MODELS.LLAMA3_3, platform=Platforms.GROQ)
+
     client.set_system_prompt(system_prompt)
     # nl_query = "Find periods in AMZN when price first rose sharply then fell gradually"
     # nl_query = "Find periods in DPZ when price first fall sharply then rise gradually, and the whole duration is about 3 months"
@@ -108,15 +114,15 @@ def test_parse_nl_query():
     # nl_query = "Look up a high plateau pattern"
     # nl_query = "Look up a flat basin pattern in Amazon and Netflix"
     # nl_query = "Look up a flat basin pattern"
-    nl_query_1 = "Find periods when price rose sharply with a duration of about 4 days"
+    # nl_query_1 = "Find periods when price rose sharply with a duration of about 4 days"
     nl_query_2 = "Find periods when price rose sharply with a duration of about 4 days, then fell gradually"
-    nl_query_3 = "Find periods when price present a head-and-shoulders shape"
-    nl_query_4 = "Find periods when price first rise then present a head-and-shoulders shape then fell"
+    # nl_query_3 = "Find periods when price present a head-and-shoulders shape"
+    # nl_query_4 = "Find periods when price first rise then present a head-and-shoulders shape then fell"
     # print(system_prompt)
     # response = client.send_prompt(nl_query_1, False)
     # response = client.send_prompt(nl_query_2, False)
-    response = client.send_prompt(nl_query_3, False)
-    response = client.send_prompt(nl_query_4, False)
+    # response = client.send_prompt(nl_query_3, False)
+    response = client.send_prompt(nl_query_2, False)
 
 
 def test_modify_nl_query():

@@ -9,7 +9,7 @@ class Platforms:
     SILIICONFLOW = "siliconflow"
     QWEN = "qwen"
     TENCENT = "tencent"
-
+    GROQ = "groq"
 
 class Azure:
     API_KEY = "c1812815d31d45aa9b450a22fc875845"
@@ -53,6 +53,12 @@ class Tencent:
     class MODELS:
         DEEPSEEK_V3 = "deepseek-v3"
 
+class GroqPlatform:
+    API_KEY = "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"
+    BASE_URL = "https://api.groq.com/v1"
+
+    class MODELS:
+        LLAMA3_3 = "llama-3.3-70b-versatile"
 
 PROMPT_SPLITTER = "\n\n"
 NOW = datetime.now().strftime("%Y-%m-%d")
