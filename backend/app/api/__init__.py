@@ -1,6 +1,6 @@
 import json
 from typing import List, Tuple
-from app.ai_agent.prompts import create_parse_nl_prompt, create_modify_nl_prompt
+from app.ai_agent.prompts import create_parse_nl_info, create_modify_nl_info
 from flask import Blueprint
 from app.query import query
 from ..config import Config
@@ -119,11 +119,6 @@ def upload_csv_file():
 @bus_bp.route("/process_dataset", methods=["POST"])
 def process_dataset():
     dataset_info = DatasetInfo.from_dict(request.json.get("datasetInfo"))
-    dataset_info_str = json.dumps(dataset_info.to_dict(), cls=CustomJSONEncoder)
-    parse_nl_system_prompt = create_parse_nl_prompt(dataset_info_str)
-    parse_nl_agent.set_system_prompt(parse_nl_system_prompt)
-    modify_nl_system_prompt = create_modify_nl_prompt()
-    modify_nl_agent.set_system_prompt(modify_nl_system_prompt)
     dataset_info_container.set_data(dataset_info)
     dataset = dataset_container.get_data()
     approxiamation_segments_containers = approximate_dataset(dataset, dataset_info)
@@ -181,8 +176,16 @@ def parse_nl_query():
     | results | QuerySpecWithSource | 解析后的结构化查询 |
     """
     nl_query = request.json.get("nl_query")
-    queryspec_with_source_str = parse_nl_agent.send_prompt(nl_query, False)
-    # 将字符串解析为Python字典
+    dataset_info_str = json.dumps(dataset_info_container.get_data().to_dict(), cls=CustomJSONEncoder)
+    parse_nl_info = create_parse_nl_info(dataset_info_str)
+    parse_nl_user_prompt = parse_nl_info + "\n" + "输入：" + nl_query + "\n" + "输出："
+    queryspec_with_source_str = parse_nl_agent.send_prompt(parse_nl_user_prompt, False)
+    if queryspec_with_source_str.startswith("```"):
+        # Extract content between code fence markers
+        lines = queryspec_with_source_str.split("\n")
+        if len(lines) >= 2:
+            # Skip first line (which may contain language identifier) and last line (closing fence)
+            queryspec_with_source_str = "\n".join(lines[1:-1]).strip()
     queryspec_with_source = json.loads(queryspec_with_source_str)
     return jsonify({"code": 200, "message": "Parse nl query successful", "results": filter_json(queryspec_with_source)})
 
@@ -203,6 +206,7 @@ def modify_nl_query():
     | message | str | 状态信息 |
     | results | QuerySpecWithSource | 修改后的结构化查询 |
     """
+    modify_nl_info = create_modify_nl_info()
     old_queryspec_with_source = request.json.get("old_queryspec_with_source")
     segments = request.json.get("segments")
     segments = get_segment_info(segments)
@@ -213,7 +217,8 @@ def modify_nl_query():
     old_queryspec_with_source_str = json.dumps(old_queryspec_with_source, indent=2)
     intentions_str = json.dumps(intentions, indent=2)
 
-    input = f"""old_queryspec_with_source
+    input = modify_nl_info + "\n" + f"""输入：
+old_queryspec_with_source
 ```{old_queryspec_with_source_str}
 ```
 
@@ -224,7 +229,9 @@ new_queryspec_with_source_without_text_sources
 intentions
 ```{intentions_str}
 ```
-    """
+
+输出：
+"""
     new_queryspec_with_source_str = modify_nl_agent.send_prompt(input, False)
     new_queryspec_with_source = json.loads(new_queryspec_with_source_str)
     new_queryspec_with_source = fix_text_source_id(new_queryspec_with_source)

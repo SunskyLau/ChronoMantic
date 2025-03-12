@@ -31,9 +31,11 @@ modify_nl_cases = f"""## 示例1
 {ModifyNL_Cases.case4}
 """
 
+parse_nl_system_prompt = "你是一个自然语言解析器，你正在为一个自然语言驱动的时间序列片段查询工具服提供自然语言到结构化查询的解析服务。"
+modify_nl_system_prompt = "你是一个专门处理时间序列查询文本调整的AI助手。你需要根据用户的调整意图，生成新的查询文本并建立文本映射关系。"
 
-def create_parse_nl_prompt(dataset_info: str) -> str:
-    system_prompt = f"""你正在为一个自然语言驱动的时间序列片段查询工具服提供自然语言到结构化查询的解析服务。以下是相关背景和知识
+def create_parse_nl_info(dataset_info: str) -> str:
+    parse_nl_info = f"""以下是你的自然语言解析任务的相关背景和知识
 	
 # 带文本来源的结构化查询接口
 ```{QuerySpecWithSource_info}
@@ -57,13 +59,11 @@ def create_parse_nl_prompt(dataset_info: str) -> str:
 # 示例
 {parse_nl_cases}
 """
-    return system_prompt
+    return parse_nl_info
 
 
-def create_modify_nl_prompt() -> str:
-    modify_nl_prompt = f"""你是一个专门处理时间序列查询文本调整的AI助手。你需要根据用户的调整意图，生成新的查询文本并建立文本映射关系。
-
-# 核心任务
+def create_modify_nl_info() -> str:
+    modify_nl_info = f"""# 核心任务
 输入:
 - old_queryspec_with_source: 原始查询规范
 - new_queryspec_with_source_without_text_sources: 新查询规范(不含文本相关字段)
@@ -99,7 +99,4 @@ def create_modify_nl_prompt() -> str:
 4. 不要添加任何注释
 5. 输出前检查数据完整性和合法性
 """
-    return modify_nl_prompt
-
-
-# print(create_modify_nl_prompt())
+    return modify_nl_info
