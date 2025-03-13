@@ -10,6 +10,8 @@ class Platforms:
     QWEN = "qwen"
     TENCENT = "tencent"
     GROQ = "groq"
+    OLLAMA = "ollama"
+
 
 class Azure:
     API_KEY = "c1812815d31d45aa9b450a22fc875845"
@@ -53,6 +55,7 @@ class Tencent:
     class MODELS:
         DEEPSEEK_V3 = "deepseek-v3"
 
+
 class GroqPlatform:
     API_KEY = "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"
     BASE_URL = "https://api.groq.com/v1"
@@ -60,6 +63,17 @@ class GroqPlatform:
     class MODELS:
         LLAMA3_3 = "llama-3.3-70b-versatile"
         QWEN2_5_32B = "qwen-2.5-32b"
+
+
+class Ollama:
+    BASE_URL = "http://localhost:11434/v1"
+    API_KEY = "ollama"
+
+    class MODELS:
+        LLAMA3_3 = "llama3.3"
+        QWEN2_5_32B = "qwen2.5:32b-instruct-fp16"
+        GEMMA3_12B = "gemma3:12b-it-fp16"
+
 
 PROMPT_SPLITTER = "\n\n"
 NOW = datetime.now().strftime("%Y-%m-%d")

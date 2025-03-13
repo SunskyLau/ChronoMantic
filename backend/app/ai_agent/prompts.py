@@ -40,7 +40,7 @@ modify_nl_system_prompt = "你是一个专门处理时间序列查询文本调�
 
 def create_parse_nl_info(dataset_info: str) -> str:
     parse_nl_info = f"""
-# Structured Query Interface with Text Sources
+# Structured QuerySpecWithSource Interface
 {QuerySpecWithSource_info}
 
 # Dataset Information
