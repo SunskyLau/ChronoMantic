@@ -1,9 +1,10 @@
-import { Button, Divider, Empty, Flex, Select, Typography } from "antd";
+import { Button, Divider, Empty, Flex, Select } from "antd";
 import { Comparator, GroupAttribute, GroupRelationWithSource, TrendWithSource } from "../../../types/QuerySpec";
 import { MinusOutlined, PlusOutlined, SwapRightOutlined } from "@ant-design/icons";
 import { deepClone } from "../../../utils/deepclone";
 import { getColorFromMap } from "../../../utils/color";
 import { useAppSelector } from "../../../app/hooks";
+import TitleCondition from "../TitleCondition";
 
 interface GroupRelationProps {
 	isEdit?: boolean;
@@ -23,28 +24,24 @@ export default function GroupRelation({ relations, trends = [], onChange, isEdit
 				justify="space-between"
 				align="center"
 			>
-				<Typography.Title
-					level={4}
-					keyboard
-				>
-					Group Relations
-				</Typography.Title>
-				{isEdit && !disabled && (
-					<Button
-						icon={<PlusOutlined />}
-						onClick={() => {
-							const newRelations = [...allRelations];
-							newRelations.push({
-								group1: [0, 0],
-								group2: [0, 0],
-								comparator: Comparator.GREATER,
-								attribute: GroupAttribute.DURATION,
-								text_source_id: -1,
-							});
-							onChange(newRelations);
-						}}
-					/>
-				)}
+				<TitleCondition title="Group Relations">
+					{isEdit && !disabled && (
+						<Button
+							icon={<PlusOutlined />}
+							onClick={() => {
+								const newRelations = [...allRelations];
+								newRelations.push({
+									group1: [0, 0],
+									group2: [0, 0],
+									comparator: Comparator.GREATER,
+									attribute: GroupAttribute.DURATION,
+									text_source_id: -1,
+								});
+								onChange(newRelations);
+							}}
+						/>
+					)}
+				</TitleCondition>
 			</Flex>
 
 			{!relations.length ? (

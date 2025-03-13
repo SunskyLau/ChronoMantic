@@ -9,8 +9,8 @@ import { formatTime } from "../../utils/time";
 
 type ClickType = "Trend" | "Relation" | "GroupRelation";
 
-const DISABLED_COLOR = "#0001";
-const DEFAULT_COLOR = "#0002";
+const DISABLED_COLOR = "#00000011";
+const DEFAULT_COLOR = "#00000022";
 
 interface GlyphProps {
 	targets?: TargetWithSource[];
@@ -516,13 +516,13 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 					<path
 						d={createArc(0)}
 						transform={`translate(${x11},${y11})`}
-						stroke={isActive ? relationColor.slice(0, 7) : disabled ? DISABLED_COLOR : relationColor}
+						stroke={isActive ? relationColor.slice(0, 7) : relationColor}
 						fill="none"
 					/>
 					<path
 						d={createArc(1)}
 						transform={`translate(${x21},${y21})`}
-						stroke={isActive ? relationColor.slice(0, 7) : disabled ? DISABLED_COLOR : relationColor}
+						stroke={isActive ? relationColor.slice(0, 7) : relationColor}
 						fill="none"
 					/>
 					{drawConnect(x11 + arcRadius / 2, y11, x21 + arcRadius / 2, y21, v, i, relation.comparator, isReverse, relationColor)}
@@ -821,6 +821,26 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 		);
 	};
 
+	const drawComparatorBetweenStartEndValue = () => {
+		if (!query?.comparator_between_start_end_value) return null;
+		const color = getColorWithDisabled(colorMap, query, query.comparator_between_start_end_value.text_source_id);
+		const comparator = query.comparator_between_start_end_value.comparator;
+		const x1 = 0;
+		const y1 = points.current[0].y1;
+		const x2 = width;
+		const y2 = points.current[points.current.length - 1].y2;
+		const level = getLevel(x1, x2);
+		const v = getV(level);
+		const i = single_relations.length + group_relations.length + 1;
+		return (
+			<g key={i}>
+				{drawConnect(x1, y1, x2, y2, v, i, comparator, false, color)}
+				{drawCircle(x1, y1, 2, color)}
+				{drawCircle(x2, y2, 2, color)}
+			</g>
+		);
+	};
+
 	return (
 		<svg
 			ref={svgRef}
@@ -836,6 +856,7 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 				{drawYValueScopeCondition(0, baseY1.current, maxScopeCondition)}
 				{drawYValueScopeCondition(0, baseY2.current, minScopeCondition)}
 				{groupRelationLines}
+				{drawComparatorBetweenStartEndValue()}
 			</g>
 		</svg>
 	);

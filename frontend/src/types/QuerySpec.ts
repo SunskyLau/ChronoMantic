@@ -149,6 +149,7 @@ export interface QuerySpec {
   time_scope_condition?: ScopeCondition;
   max_value_scope_condition?: ScopeCondition;
   min_value_scope_condition?: ScopeCondition;
+  comparator_between_start_end_value?: Comparator;
 }
 
 /**
@@ -215,6 +216,10 @@ export interface TargetWithSource extends WithSource {
   target: string; // 目标时间序列名
 }
 
+export interface ComparatorWithSource extends WithSource {
+  comparator: Comparator; // 比较关系
+}
+
 export interface QuerySpecWithSource {
   original_text: string; // 原始查询文本
   text_sources: TextSource[]; // QuerySpec中涉及到的所有文本来源
@@ -227,6 +232,7 @@ export interface QuerySpecWithSource {
   time_scope_condition?: ScopeConditionWithSource; // 时间范围的范围条件
   max_value_scope_condition?: ScopeConditionWithSource; // 最大值的范围条件
   min_value_scope_condition?: ScopeConditionWithSource; // 最小值的范围条件
+  comparator_between_start_end_value?: ComparatorWithSource; // 起始值和结束值的比较关系
 }
 
 

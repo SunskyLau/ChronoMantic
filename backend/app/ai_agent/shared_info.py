@@ -119,6 +119,9 @@ export interface GroupRelationWithSource extends GroupRelation, WithSource {}
 export interface TargetWithSource extends WithSource {
   target: string; // Target time series name
 }
+export interface ComparatorWithSource extends WithSource {
+  comparator: Comparator; // The comparator
+}
 // QuerySpecWithSource interface definition, You should output `json` format of this interface.
 export interface QuerySpecWithSource {
   original_text: string; // Original query text
@@ -132,6 +135,7 @@ export interface QuerySpecWithSource {
   time_scope_condition?: ScopeConditionWithSource; // Time range condition
   max_value_scope_condition?: ScopeConditionWithSource; // Maximum value range condition
   min_value_scope_condition?: ScopeConditionWithSource; // Minimum value range condition
+  comparator_between_start_end_value?: ComparatorWithSource; // The comparator between start_value and end_value
 }
 ```
 """

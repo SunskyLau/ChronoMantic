@@ -132,6 +132,7 @@ export function formatQuerySpec(query: QuerySpecWithSource): QuerySpec {
         duration_condition: formatScopeCondition(query.duration_condition),
         time_scope_condition: formatScopeCondition(query.time_scope_condition),
         max_value_scope_condition: formatScopeCondition(query.max_value_scope_condition),
-        min_value_scope_condition: formatScopeCondition(query.min_value_scope_condition)
+        min_value_scope_condition: formatScopeCondition(query.min_value_scope_condition),
+        comparator_between_start_end_value: query.comparator_between_start_end_value?.comparator,
     };
 }
