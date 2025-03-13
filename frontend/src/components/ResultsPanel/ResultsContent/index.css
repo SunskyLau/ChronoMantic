@@ -190,4 +190,5 @@
   white-space: nowrap;
   display: flex;
   align-items: center;
+  width: 0;
 }
