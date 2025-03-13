@@ -42,10 +42,12 @@ export interface ThresholdCondition {
   value: number; // Threshold value used to define specific numeric ranges
   inclusive: boolean; // Whether the threshold is inclusive, true means inclusive, false means exclusive
 }
+
 export interface ScopeCondition {
   max?: ThresholdCondition; // Maximum value condition of the range, optional
   min?: ThresholdCondition; // Minimum value condition of the range, optional
 }
+
 export enum SingleAttribute {
   SLOPE = "slope", // Slope attribute, used to compare trend slopes
   START_VALUE = "start_value", // Start value attribute, used to compare starting point values of trends
@@ -53,9 +55,11 @@ export enum SingleAttribute {
   DURATION = "duration", // Time span attribute, used to compare duration of trends
   RELATIVE_SLOPE = "relative_slope" // Relative slope percentage attribute, unit is %
 }
+
 export enum GroupAttribute {
   DURATION = "duration", // Time span attribute
 }
+
 export enum Comparator {
   GREATER = ">", // Greater than comparison operator
   LESS = "<", // Less than comparison operator
@@ -64,18 +68,21 @@ export enum Comparator {
   NO_LESS = ">=", // Greater than or equal to comparison operator
   APPROXIMATELY_EQUAL_TO = "~=", // Approximately equal to comparison operator
 }
+
 export interface SingleRelation {
   id1: number; // ID identifier for the first trend used in relation comparisons
   id2: number; // ID identifier for the second trend used in relation comparisons
   attribute: SingleAttribute; // Attribute type to be compared
   comparator: Comparator; // Comparison relationship operator
 }
+
 export interface GroupRelation {
   group1: [number, number]; // First trend group's ID list, group1[1] >= group1[0], indicating all segments from group1[0] to group1[1], e.g., [1,4] includes segments 1, 2, 3, 4
   group2: [number, number]; // Second trend group's ID list, group2[1] >= group2[0], indicating all segments from group2[0] to group2[1], e.g., [2,3] includes segments 2, 3
   attribute: GroupAttribute; // Attribute type to be compared
   comparator: Comparator; // Comparison relationship operator
 }
+
 /**
  * QuerySpecWithSource - Interface definition for query specifications with text source information
  */
@@ -83,23 +90,30 @@ export interface TextSource {
   text: string; // Original text fragment
   index: number; // Used to distinguish text fragments that are the same but different in position within the original text; index=0 indicates the first, index=1 indicates the second, etc.
 }
+
 export interface WithSource {
   text_source_id: number; // Source from which TextSource array element this originates
 }
+
 export enum TrendCategory {
   FLAT = "flat", // Flat
   UP = "up", // Upward
   DOWN = "down" // Downward
 }
+
 // Unit types
 export type Unit = "number" | "second" | "minute" | "hour" | "day" | "week" | "month" | "year";   
+
 export interface WithUnit {
   unit?: Unit; // Unit
 }
+
 // ScopeCondition WithSource version
 export interface ScopeConditionWithSource extends WithSource, ScopeCondition {}
+
 // ScopeCondition WithSource and WithUnit version
 export interface ScopeConditionWithSourceWithUnit extends ScopeConditionWithSource, WithUnit {}   
+
 // Single trend WithSource version
 export interface TrendWithSource {
   category: CategoryWithSource; // Trend category, can be "flat" (steady), "up" (rising), "down" (falling)
@@ -107,21 +121,27 @@ export interface TrendWithSource {
   relative_slope_scope_condition?: ScopeConditionWithSource; // Range condition for relative slope among all slopes, limiting the relative slope size of the trend, unit is %, e.g., 30 represents 30%
   duration_condition?: ScopeConditionWithSourceWithUnit; // Range condition for time span, limiting the duration of the trend
 }
+
 // Single trend relation WithSource version
 export interface SingleRelationWithSource extends SingleRelation, WithSource {}
+
 // Trend group WithSource version
 export interface TrendGroupWithSource {
   ids: [number, number]; // List of trend IDs within the group, ids[1] >= ids[0]
   duration_condition?: ScopeConditionWithSource; // Time span condition for the group
 }
+
 // Group relation WithSource version
 export interface GroupRelationWithSource extends GroupRelation, WithSource {}
+
 export interface TargetWithSource extends WithSource {
   target: string; // Target time series name
 }
+
 export interface ComparatorWithSource extends WithSource {
   comparator: Comparator; // The comparator
 }
+
 // QuerySpecWithSource interface definition, You should output `json` format of this interface.
 export interface QuerySpecWithSource {
   original_text: string; // Original query text

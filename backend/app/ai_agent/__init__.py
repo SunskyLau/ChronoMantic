@@ -1,5 +1,6 @@
 import json
 import os
+from app.MyTypes import QuerySpecWithSource
 from typeguard import typechecked
 from openai import OpenAI, AzureOpenAI
 from openai.types.chat import ChatCompletion
@@ -7,15 +8,7 @@ from typing import List, Dict, Optional
 from groq import Groq
 
 from .prompts import create_parse_nl_info, create_modify_nl_info, parse_nl_system_prompt, modify_nl_system_prompt
-from .constant import (
-    Azure,
-    DeepSeek,
-    GroqPlatform,
-    SiliconFlow,
-    Qwen,
-    Platforms,
-    Tencent,
-)
+from .constant import Azure, DeepSeek, GroqPlatform, SiliconFlow, Qwen, Platforms, Tencent, Ollama
 from .debugger import debugger
 
 
@@ -31,6 +24,7 @@ class myAIClient:
         self.chatHistory.append({"role": "system", "content": system_prompt})
 
     def _initialize_client(self, platform: str) -> OpenAI | AzureOpenAI | Groq:
+        self.platform = platform
         """Initialize the appropriate client based on platform"""
         if platform == Platforms.AZURE:
             return AzureOpenAI(
@@ -46,6 +40,8 @@ class myAIClient:
             return OpenAI(api_key=Qwen.API_KEY, base_url=Qwen.BASE_URL)
         elif platform == Platforms.TENCENT:
             return OpenAI(api_key=Tencent.API_KEY, base_url=Tencent.BASE_URL)
+        elif platform == Platforms.OLLAMA:
+            return OpenAI(api_key=Ollama.API_KEY, base_url=Ollama.BASE_URL)
         elif platform == Platforms.GROQ:
             return Groq(api_key=GroqPlatform.API_KEY)
         else:
@@ -65,17 +61,30 @@ class myAIClient:
         messages = self.chatHistory.copy()
         messages.append({"role": "user", "content": user_prompt})
         try:
-            response = self.client.chat.completions.create(
-                messages=messages,
-                model=self.model,
-                temperature=0,
-                max_tokens=1024,
-                top_p=1,
-                frequency_penalty=0.1,
-                presence_penalty=0.1,
-                stop=None,
-                response_format={"type": "json_object"} if if_json_format else None,
-            )
+            if self.platform == Platforms.OLLAMA:
+                response = self.client.beta.chat.completions.parse(
+                    messages=messages,
+                    model=self.model,
+                    temperature=0,
+                    max_tokens=4096,
+                    top_p=1,
+                    frequency_penalty=0.1,
+                    presence_penalty=0.1,
+                    stop=None,
+                    response_format=QuerySpecWithSource if if_json_format else {"type": "json_object"},
+                )
+            else:
+                response = self.client.chat.completions.create(
+                    messages=messages,
+                    model=self.model,
+                    temperature=0,
+                    max_tokens=1024,
+                    top_p=1,
+                    frequency_penalty=0.1,
+                    presence_penalty=0.1,
+                    stop=None,
+                    response_format={"type": "json_object"} if if_json_format else None,
+                )
         except Exception as e:
             debugger.error(f"[sendPrompt] {e}")
             return ""
@@ -100,6 +109,7 @@ def test_parse_nl_query():
     parse_nl_info = create_parse_nl_info(dataset_info)
     client = myAIClient(model=Qwen.MODELS.QWEN_MAX, platform=Platforms.QWEN)
     # client = myAIClient(model="qwen-turbo-latest", platform=Platforms.QWEN)
+    # client = myAIClient(model=Ollama.MODELS.QWEN2_5_32B, platform=Platforms.OLLAMA)
     client.set_system_prompt(parse_nl_system_prompt)
     # nl_query = "Find periods in AMZN when price first rose sharply then fell gradually"
     # nl_query = "Find periods in DPZ when price first fall sharply then rise gradually, and the whole duration is about 3 months"
@@ -121,7 +131,7 @@ def test_parse_nl_query():
     # response = client.send_prompt(nl_query_1, False)
     # response = client.send_prompt(nl_query_2, False)
     # response = client.send_prompt(nl_query_3, False)
-    parse_nl_user_prompt = parse_nl_info + "\n\n" + "Input:\n" + nl_query + "\n\n" + "Output:"
+    parse_nl_user_prompt = parse_nl_info + "Input:\n" + nl_query + "\n\n" + "Output:"
     response = client.send_prompt(parse_nl_user_prompt, False)
 
 

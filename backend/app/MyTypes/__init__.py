@@ -2,6 +2,7 @@ from dataclasses import dataclass, asdict, fields
 from enum import Enum
 from typing import Dict, List, Optional, Tuple, Union, get_type_hints
 from .DictMixin import DictMixin
+from pydantic import BaseModel
 
 
 """Foundamental Data"""
@@ -141,3 +142,94 @@ class QuerySpec(DictMixin):
     max_value_scope_condition: Optional[ScopeCondition] = None  # 最大值的范围条件
     min_value_scope_condition: Optional[ScopeCondition] = None  # 最小值的范围条件
     comparator_between_start_end_value: Optional[Comparator] = None  # 起始值和结束值的比较关系
+
+
+class TextSource(BaseModel):
+    text: str  # 原始文本片段
+    index: int  # 用于区分text相同但是在原文中位置不同的文本片段
+
+
+class WithSource(BaseModel):
+    text_source_id: int
+
+
+class CategoryWithSource(BaseModel):
+    text_source_id: int
+    category: TrendCategory
+
+
+class Unit(Enum):
+    NUMBER = "number"
+    SECOND = "second"
+    MINUTE = "minute"
+    HOUR = "hour"
+    DAY = "day"
+    WEEK = "week"
+    MONTH = "month"
+    YEAR = "year"
+
+
+class ScopeConditionWithSource(BaseModel):
+    text_source_id: int  # 从 WithSource 继承
+    max: Optional[ThresholdCondition] = None  # 从 ScopeCondition 继承
+    min: Optional[ThresholdCondition] = None  # 从 ScopeCondition 继承
+
+
+class ScopeConditionWithSourceWithUnit(BaseModel):
+    text_source_id: int  # 从 WithSource 继承
+    max: Optional[ThresholdCondition] = None  # 从 ScopeCondition 继承
+    min: Optional[ThresholdCondition] = None  # 从 ScopeCondition 继承
+    unit: Optional[Unit] = None  # 从 WithUnit 继承
+
+
+class TrendWithSource(BaseModel):
+    category: CategoryWithSource
+    slope_scope_condition: Optional[ScopeConditionWithSourceWithUnit] = None
+    relative_slope_scope_condition: Optional[ScopeConditionWithSource] = None
+    duration_condition: Optional[ScopeConditionWithSourceWithUnit] = None
+
+
+class SingleRelationWithSource(BaseModel):
+    text_source_id: int  # 从 WithSource 继承
+    id1: int  # 从 SingleRelation 继承
+    id2: int  # 从 SingleRelation 继承
+    attribute: SingleAttribute  # 从 SingleRelation 继承
+    comparator: Comparator  # 从 SingleRelation 继承
+
+
+class TrendGroupWithSource(BaseModel):
+    ids: Tuple[int, int]
+    duration_condition: Optional[ScopeConditionWithSourceWithUnit] = None
+
+
+class GroupRelationWithSource(BaseModel):
+    text_source_id: int  # 从 WithSource 继承
+    group1: Tuple[int, int]  # 从 GroupRelation 继承
+    group2: Tuple[int, int]  # 从 GroupRelation 继承
+    comparator: Comparator  # 从 GroupRelation 继承
+    attribute: GroupAttribute  # 从 GroupRelation 继承
+
+
+class TargetWithSource(BaseModel):
+    text_source_id: int  # 从 WithSource 继承
+    target: str
+
+
+class ComparatorWithSource(BaseModel):
+    text_source_id: int  # 从 WithSource 继承
+    comparator: Comparator
+
+
+class QuerySpecWithSource(BaseModel):
+    original_text: str  # 原始查询文本
+    text_sources: List[TextSource]  # QuerySpec中涉及到的所有文本来源
+    targets: List[TargetWithSource]  # 查询目标列表
+    trends: List[TrendWithSource]  # 趋势列表
+    single_relations: List[SingleRelationWithSource]  # 单趋势关系列表
+    trend_groups: List[TrendGroupWithSource]  # 趋势组合列表
+    group_relations: List[GroupRelationWithSource]  # 组合关系列表
+    duration_condition: Optional[ScopeConditionWithSourceWithUnit] = None  # 总时间跨度的范围条件
+    time_scope_condition: Optional[ScopeConditionWithSource] = None  # 时间范围的范围条件
+    max_value_scope_condition: Optional[ScopeConditionWithSource] = None  # 最大值的范围条件
+    min_value_scope_condition: Optional[ScopeConditionWithSource] = None  # 最小值的范围条件
+    comparator_between_start_end_value: Optional[ComparatorWithSource] = None  # 起始值和结束值的比较关系
