@@ -53,7 +53,7 @@ def update_relative_slope(approximation_segments_container: ApproximationSegment
 
 
 if __name__ == "__main__":
-    df = pd.read_csv("../portfolio_data.csv")
-    dataset_info = DatasetInfo(time_column="Date", value_columns=["AMZN", "DPZ"], column_ratio_dict={"AMZN": 1, "DPZ": 1})
+    df = pd.read_csv("../datasets/portfolio_data.csv")
+    dataset_info = DatasetInfo(time_column="Date", value_columns=["AMZN", "DPZ"])
     approxiamation_segments_containers = approximate_dataset(df, dataset_info)
     print(approxiamation_segments_containers)
