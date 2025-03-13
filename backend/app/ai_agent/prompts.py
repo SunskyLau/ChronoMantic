@@ -2,61 +2,61 @@ from .modify_nl_cases import ModifyNL_Cases
 from .parse_nl_cases import ParseNL_Cases
 from .shared_info import QuerySpecWithSource_info, SegmentGroup_info, parse_nl_logic_info, Segment_info, modify_nl_logic_info, intentions_info
 
-parse_nl_cases = f"""## 示例1
+parse_nl_cases = f"""## Example 1
 {ParseNL_Cases.case1}
 
-## 示例2
+## Example 2
 {ParseNL_Cases.case2}
 
-## 示例3
+## Example 3
 {ParseNL_Cases.case3}
 
-## 示例4
+## Example 4
 {ParseNL_Cases.case4}
 
-## 示例5
+## Example 5
 {ParseNL_Cases.case5}
+
+## Example 6
+{ParseNL_Cases.case6}
 """
 
-modify_nl_cases = f"""## 示例1
+modify_nl_cases = f"""## Example 1
 {ModifyNL_Cases.case1}
 
-## 示例2
+## Example 2
 {ModifyNL_Cases.case2}
 
-## 示例3
+## Example 3
 {ModifyNL_Cases.case3}
 
-## 示例4
+## Example 4
 {ModifyNL_Cases.case4}
 """
 
-parse_nl_system_prompt = "你是一个自然语言解析器，你正在为一个自然语言驱动的时间序列片段查询工具服提供自然语言到结构化查询的解析服务。"
+parse_nl_system_prompt = "You are providing a natural language to structured query parsing service for a natural language-driven time series segment querying tool. Below is the relevant background and knowledge."
 modify_nl_system_prompt = "你是一个专门处理时间序列查询文本调整的AI助手。你需要根据用户的调整意图，生成新的查询文本并建立文本映射关系。"
 
+
 def create_parse_nl_info(dataset_info: str) -> str:
-    parse_nl_info = f"""以下是你的自然语言解析任务的相关背景和知识
-	
-# 带文本来源的结构化查询接口
-```{QuerySpecWithSource_info}
-```
+    parse_nl_info = f"""
+# Structured Query Interface with Text Sources
+{QuerySpecWithSource_info}
 
-# 数据集信息
-用户上传的是一个股票价格数据集，包含了多个公司的股票数据。
-以下是用户要查询的时间序列数据集的基本信息：
-{dataset_info}
-你只需要关注其中的value_columns信息，其中包含了时间序列的列名信息，是你之后解析出target字段的来源。
+# Dataset Information
+The user has uploaded a dataset containing the following columns of time series: {dataset_info}. The target you parse can only be selected from these contents and cannot be chosen from other contents. If the user does not explicitly specify the target, simply return an empty array.
 
-# 自然语言解析逻辑
+# Natural Language Parsing Logic
 {parse_nl_logic_info}
 
-# 任务：
-根据以上的背景和知识，将用户对时间序列片段的自然语言查询解析为QuerySpecWithSource的json字典形式。
-要求:
-    1. 准确严格地遵循QuerySpecWithSource的结构化查询接口定义，不要出现非法输出，输出前请检查
-    2. 有且仅输出json字典，不要添加代码块或者```，也不要添加注释。
+# Task:
+Based on the above background and knowledge, parse the user's natural language query about time series segments into a JSON dictionary format following the `QuerySpecWithSource` structure.
+Requirements:
+    1. Accurately and strictly follow the `QuerySpecWithSource` structured query interface definition without illegal outputs. Check before outputting.
+    2. Output only the JSON dictionary without code blocks, comments, or additional annotations.
 
-# 示例
+# Reference
+## Parse Natural Language Examples
 {parse_nl_cases}
 """
     return parse_nl_info

@@ -176,9 +176,9 @@ def parse_nl_query():
     | results | QuerySpecWithSource | 解析后的结构化查询 |
     """
     nl_query = request.json.get("nl_query")
-    dataset_info_str = json.dumps(dataset_info_container.get_data().to_dict(), cls=CustomJSONEncoder)
+    dataset_info_str = dataset_info_container.get_data().value_columns
     parse_nl_info = create_parse_nl_info(dataset_info_str)
-    parse_nl_user_prompt = parse_nl_info + "\n" + "输入：" + nl_query + "\n" + "输出："
+    parse_nl_user_prompt = parse_nl_info + "\n\n" + "Input:" + nl_query + "\n\n" + "Output:"
     queryspec_with_source_str = parse_nl_agent.send_prompt(parse_nl_user_prompt, False)
     if queryspec_with_source_str.startswith("```"):
         # Extract content between code fence markers
@@ -217,7 +217,10 @@ def modify_nl_query():
     old_queryspec_with_source_str = json.dumps(old_queryspec_with_source, indent=2)
     intentions_str = json.dumps(intentions, indent=2)
 
-    input = modify_nl_info + "\n" + f"""输入：
+    input = (
+        modify_nl_info
+        + "\n"
+        + f"""Input:
 old_queryspec_with_source
 ```{old_queryspec_with_source_str}
 ```
@@ -230,8 +233,8 @@ intentions
 ```{intentions_str}
 ```
 
-输出：
-"""
+Output:"""
+    )
     new_queryspec_with_source_str = modify_nl_agent.send_prompt(input, False)
     new_queryspec_with_source = json.loads(new_queryspec_with_source_str)
     new_queryspec_with_source = fix_text_source_id(new_queryspec_with_source)
