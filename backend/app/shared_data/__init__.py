@@ -35,7 +35,7 @@ class APPROXIMATION_SEGMENTS_CONTAINERS_CONTAINER:
 
     def get_data(self):
         return self.data
- 
+
     def set_data(self, data):
         self.data = data
 
@@ -45,11 +45,11 @@ dataset_container = DATASET_CONTAINER()
 approximation_segments_containers_container = APPROXIMATION_SEGMENTS_CONTAINERS_CONTAINER()
 # parse_nl_agent = myAIClient(model="qwen2.5-72b-instruct", platform=Platforms.QWEN)
 # modify_nl_agent = myAIClient(model="qwen2.5-72b-instruct", platform=Platforms.QWEN)
-parse_nl_agent = myAIClient(model=Qwen.MODELS.QWEN_MAX, platform=Platforms.QWEN)
-modify_nl_agent = myAIClient(model=Qwen.MODELS.QWEN_MAX, platform=Platforms.QWEN)
+# parse_nl_agent = myAIClient(model=Qwen.MODELS.QWEN_MAX, platform=Platforms.QWEN)
+# modify_nl_agent = myAIClient(model=Qwen.MODELS.QWEN_MAX, platform=Platforms.QWEN)
 # parse_nl_agent = myAIClient(model=GroqPlatform.MODELS.LLAMA3_3, platform=Platforms.GROQ)
 # modify_nl_agent = myAIClient(model=GroqPlatform.MODELS.LLAMA3_3, platform=Platforms.GROQ)
-# parse_nl_agent = myAIClient(model=GroqPlatform.MODELS.QWEN2_5_32B, platform=Platforms.GROQ)
-# modify_nl_agent = myAIClient(model=GroqPlatform.MODELS.QWEN2_5_32B, platform=Platforms.GROQ)
+parse_nl_agent = myAIClient(model=GroqPlatform.MODELS.QWEN2_5_32B, platform=Platforms.GROQ)
+modify_nl_agent = myAIClient(model=GroqPlatform.MODELS.QWEN2_5_32B, platform=Platforms.GROQ)
 parse_nl_agent.set_system_prompt(parse_nl_system_prompt)
 modify_nl_agent.set_system_prompt(modify_nl_system_prompt)
