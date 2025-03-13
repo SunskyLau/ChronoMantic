@@ -439,7 +439,7 @@ export default function ResultsContent() {
 				<div className="result-header">
 					<div className="header-column">
 						<div className="header-column-group">
-							<div className="header-column-group-title">Count: {filteredResults.length}</div>
+							<div className="header-column-group-title">Count: {sortedResults.length}</div>
 							<div className="header-column-group-content">
 								<div className="header-column-item">Source</div>
 								<div className="header-column-item glyph-column">Graph</div>
