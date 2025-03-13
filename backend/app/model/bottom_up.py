@@ -68,33 +68,113 @@ def calculate_percentage_metrics(start_value: float, end_value: float, duration:
     return delta_percentage, daily_average_delta_percentage
 
 
+def calculate_segment_score(x: np.ndarray, y: np.ndarray, segment: Segment) -> float:
+    """计算segment的分数
+    
+    对于上升趋势：end_time接近max_time且start_time接近min_time时分数高
+    对于下降趋势：end_time接近min_time且start_time接近max_time时分数高
+    
+    返回值范围：[0, 1]，越接近1表示时间匹配度越好
+    """
+    # 获取segment内的所有时间点和值
+    start_idx = segment.start_idx
+    end_idx = segment.end_idx + 1
+    
+    # 确保使用numpy数组切片
+    segment_x = x[start_idx:end_idx]
+    segment_y = y[start_idx:end_idx]
+    
+    if len(segment_y) <= 1:
+        return 1.0
+    
+    # 找到最大值和最小值的时间点
+    max_value_idx = start_idx + np.argmax(segment_y)
+    min_value_idx = start_idx + np.argmin(segment_y)
+    max_time = x[max_value_idx]
+    min_time = x[min_value_idx]
+    
+    # 计算时间跨度
+    time_span = segment.end_time - segment.start_time
+    if time_span == 0:
+        return 1.0
+        
+    # 根据斜率判断趋势
+    if segment.slope > 0:  # 上升趋势
+        end_score = 1 - abs(max_time - segment.end_time) / time_span
+        start_score = 1 - abs(min_time - segment.start_time) / time_span
+    else:  # 下降趋势
+        end_score = 1 - abs(min_time - segment.end_time) / time_span
+        start_score = 1 - abs(max_time - segment.start_time) / time_span
+    
+    # 综合得分
+    final_score = (end_score + start_score) / 2
+    return max(0.0, min(1.0, final_score))  # 确保分数在0-1之间
+
+
+def create_segment(x: np.ndarray, y: np.ndarray, start_idx: int, end_idx: int) -> Segment:
+    """创建一个线段，避免重复计算"""
+    start_value = y[start_idx]
+    end_value = y[end_idx]
+    start_time = x[start_idx]
+    end_time = x[end_idx]
+    duration = end_time - start_time
+    slope = (end_value - start_value) / (end_time - start_time)
+    
+    # 获取线段内的所有值
+    segment_y = y[start_idx:end_idx + 1]
+    max_value = max(segment_y)
+    min_value = min(segment_y)
+    
+    # 计算R2值
+    _, r2 = segment_error(x, y, start_idx, end_idx)
+    
+    # 创建临时段用于计算分数
+    temp_segment = Segment(
+        start_idx=start_idx,
+        end_idx=end_idx,
+        slope=slope,
+        start_value=start_value,
+        end_value=end_value,
+        max_value=max_value,
+        min_value=min_value,
+        start_time=start_time,
+        end_time=end_time,
+        duration=duration,
+        r2=r2
+    )
+    
+    # 计算分数
+    score = calculate_segment_score(x, y, temp_segment)
+    
+    # 创建完整的段
+    return Segment(
+        start_idx=start_idx,
+        end_idx=end_idx,
+        slope=slope,
+        start_value=start_value,
+        end_value=end_value,
+        max_value=max_value,
+        min_value=min_value,
+        start_time=start_time,
+        end_time=end_time,
+        duration=duration,
+        r2=r2,
+        score=score
+    )
+
+
 def bottom_up_merge(value_column: str, x: np.ndarray, y: np.ndarray, k: int):
     """自底向上分段合并"""
     n = len(y)
     if k >= n:
         raise ValueError("k不能大于或等于数据长度")
 
+    # 初始化每个点之间的线段
     segments: List[Segment] = []
     for i in range(n - 1):
-        duration = x[i + 1] - x[i]
-        _, r2 = segment_error(x, y, i, i + 1)
+        segments.append(create_segment(x, y, i, i + 1))
 
-        segments.append(
-            Segment(
-                start_idx=i,
-                end_idx=i + 1,
-                slope=(y[i + 1] - y[i]) / (x[i + 1] - x[i]),
-                start_value=y[i],
-                end_value=y[i + 1],
-                max_value=max(y[i], y[i + 1]),
-                min_value=min(y[i], y[i + 1]),
-                start_time=x[i],
-                end_time=x[i + 1],
-                duration=duration,
-                r2=r2,
-            )
-        )
-
+    # 初始化合并代价堆
     cost_heap: List[CostWrapper] = []
 
     def update_costs(i: int):
@@ -103,59 +183,59 @@ def bottom_up_merge(value_column: str, x: np.ndarray, y: np.ndarray, k: int):
             cost = calculate_merge_cost(x, y, segments[i], segments[i + 1])
             heapq.heappush(cost_heap, CostWrapper(cost, segments[i], segments[i + 1]))
 
+    # 初始化所有相邻段的合并代价
     for i in range(len(segments) - 1):
         update_costs(i)
 
-    approximation_segments_list: List[ApproximationSegments] = [ApproximationSegments(segments=segments.copy(), approximation_level=0)]
+    # 保存不同近似级别的分段结果
+    approximation_segments_list: List[ApproximationSegments] = [
+        ApproximationSegments(segments=segments.copy(), approximation_level=0)
+    ]
     current_segments_length = len(segments)
     current_level = 0
 
+    # 合并段直到达到目标数量k
     while len(segments) > k:
+        # 找到代价最小的合并操作
         while cost_heap:
             wrapper = heapq.heappop(cost_heap)
             seg1, seg2 = wrapper.seg1, wrapper.seg2
             if seg1 in segments and seg2 in segments and seg1.end_idx == seg2.start_idx:
                 break
         else:
-            cost_heap: List[CostWrapper] = []
+            # 如果没有找到有效的合并操作，重新计算所有合并代价
+            cost_heap = []
             for i in range(len(segments) - 1):
                 update_costs(i)
             continue
 
+        # 获取要合并的段的索引
         i = segments.index(seg1)
         j = segments.index(seg2)
 
-        duration = x[seg2.end_idx] - x[seg1.start_idx]
-        _, r2 = segment_error(x, y, seg1.start_idx, seg2.end_idx)
-
-        segments[i] = Segment(
-            start_idx=seg1.start_idx,
-            end_idx=seg2.end_idx,
-            slope=(y[seg2.end_idx] - y[seg1.start_idx]) / (x[seg2.end_idx] - x[seg1.start_idx]),
-            start_value=seg1.start_value,
-            end_value=seg2.end_value,
-            max_value=max(seg1.max_value, seg2.max_value),
-            min_value=min(seg1.min_value, seg2.min_value),
-            start_time=x[seg1.start_idx],
-            end_time=x[seg2.end_idx],
-            duration=duration,
-            relative_slope=None,
-            r2=r2,
-        )
+        # 合并两个段
+        segments[i] = create_segment(x, y, seg1.start_idx, seg2.end_idx)
         segments.pop(j)
 
+        # 当段数减半时，保存当前近似级别的结果
         if len(segments) == current_segments_length // 2:
             current_level += 1
-            approximation_segments_list.append(ApproximationSegments(segments=segments.copy(), approximation_level=current_level))
+            approximation_segments_list.append(
+                ApproximationSegments(segments=segments.copy(), approximation_level=current_level)
+            )
             current_segments_length = len(segments)
 
+        # 更新受影响的合并代价
         if i > 0:
             update_costs(i - 1)
         if i < len(segments) - 1:
             update_costs(i)
 
+    # 创建结果容器
     approximation_segments_container = ApproximationSegmentsContainer(
-        source=value_column, approximation_segments_list=approximation_segments_list, max_approximation_level=current_level
+        source=value_column, 
+        approximation_segments_list=approximation_segments_list, 
+        max_approximation_level=current_level
     )
 
     return approximation_segments_container

@@ -34,6 +34,7 @@ class Segment(DictMixin):
     duration: Optional[int] = None
     source: Optional[Source] = None
     r2: Optional[float] = None
+    score: Optional[float] = None
 
 
 @dataclass
