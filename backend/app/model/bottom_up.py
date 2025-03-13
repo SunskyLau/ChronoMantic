@@ -70,28 +70,28 @@ def calculate_percentage_metrics(start_value: float, end_value: float, duration:
 
 def calculate_segment_score(x: np.ndarray, y: np.ndarray, segment: Segment) -> float:
     """计算segment的分数
-    
+
     对于上升趋势：
     - end_time接近max_time且start_time接近min_time时分数高
     - end_value接近max_value且start_value接近min_value时分数高
-    
+
     对于下降趋势：
     - end_time接近min_time且start_time接近max_time时分数高
     - end_value接近min_value且start_value接近max_value时分数高
-    
+
     返回值范围：[0, 1]，越接近1表示匹配度越好
     """
     # 获取segment内的所有时间点和值
     start_idx = segment.start_idx
     end_idx = segment.end_idx + 1
-    
+
     # 确保使用numpy数组切片
     segment_x = x[start_idx:end_idx]
     segment_y = y[start_idx:end_idx]
-    
+
     if len(segment_y) <= 1:
         return 1.0
-    
+
     # 找到最大值和最小值的时间点
     max_value_idx = start_idx + np.argmax(segment_y)
     min_value_idx = start_idx + np.argmin(segment_y)
@@ -99,23 +99,23 @@ def calculate_segment_score(x: np.ndarray, y: np.ndarray, segment: Segment) -> f
     min_time = x[min_value_idx]
     max_value = y[max_value_idx]
     min_value = y[min_value_idx]
-    
+
     # 计算时间跨度和值跨度
     time_span = segment.end_time - segment.start_time
     value_span = max_value - min_value
-    
+
     if time_span == 0:
         return 1.0
-    
+
     if value_span == 0:
         value_span = 1.0  # 避免除以零
-        
+
     # 根据斜率判断趋势
     if segment.slope > 0:  # 上升趋势
         # 时间匹配度评分
         end_time_score = 1 - abs(max_time - segment.end_time) / time_span
         start_time_score = 1 - abs(min_time - segment.start_time) / time_span
-        
+
         # 值匹配度评分
         end_value_score = 1 - abs(max_value - segment.end_value) / value_span if value_span > 0 else 1.0
         start_value_score = 1 - abs(min_value - segment.start_value) / value_span if value_span > 0 else 1.0
@@ -123,16 +123,16 @@ def calculate_segment_score(x: np.ndarray, y: np.ndarray, segment: Segment) -> f
         # 时间匹配度评分
         end_time_score = 1 - abs(min_time - segment.end_time) / time_span
         start_time_score = 1 - abs(max_time - segment.start_time) / time_span
-        
+
         # 值匹配度评分
         end_value_score = 1 - abs(min_value - segment.end_value) / value_span if value_span > 0 else 1.0
         start_value_score = 1 - abs(max_value - segment.start_value) / value_span if value_span > 0 else 1.0
-    
+
     # 综合得分 (时间匹配度和值匹配度各占50%)
     time_score = (end_time_score + start_time_score) / 2
     value_score = (end_value_score + start_value_score) / 2
     final_score = time_score * value_score
-    
+
     return max(0.0, min(1.0, final_score))  # 确保分数在0-1之间
 
 
@@ -144,15 +144,15 @@ def create_segment(x: np.ndarray, y: np.ndarray, start_idx: int, end_idx: int) -
     end_time = x[end_idx]
     duration = end_time - start_time
     slope = (end_value - start_value) / (end_time - start_time)
-    
+
     # 获取线段内的所有值
-    segment_y = y[start_idx:end_idx + 1]
+    segment_y = y[start_idx : end_idx + 1]
     max_value = max(segment_y)
     min_value = min(segment_y)
-    
+
     # 计算R2值
     _, r2 = segment_error(x, y, start_idx, end_idx)
-    
+
     # 创建临时段用于计算分数
     temp_segment = Segment(
         start_idx=start_idx,
@@ -165,12 +165,12 @@ def create_segment(x: np.ndarray, y: np.ndarray, start_idx: int, end_idx: int) -
         start_time=start_time,
         end_time=end_time,
         duration=duration,
-        r2=r2
+        r2=r2,
     )
-    
+
     # 计算分数
     score = calculate_segment_score(x, y, temp_segment)
-    
+
     # 创建完整的段
     return Segment(
         start_idx=start_idx,
@@ -184,7 +184,7 @@ def create_segment(x: np.ndarray, y: np.ndarray, start_idx: int, end_idx: int) -
         end_time=end_time,
         duration=duration,
         r2=r2,
-        score=score
+        score=score,
     )
 
 
@@ -213,9 +213,7 @@ def bottom_up_merge(value_column: str, x: np.ndarray, y: np.ndarray, k: int):
         update_costs(i)
 
     # 保存不同近似级别的分段结果
-    approximation_segments_list: List[ApproximationSegments] = [
-        ApproximationSegments(segments=segments.copy(), approximation_level=0)
-    ]
+    approximation_segments_list: List[ApproximationSegments] = [ApproximationSegments(segments=segments.copy(), approximation_level=0)]
     current_segments_length = len(segments)
     current_level = 0
 
@@ -245,9 +243,7 @@ def bottom_up_merge(value_column: str, x: np.ndarray, y: np.ndarray, k: int):
         # 当段数减半时，保存当前近似级别的结果
         if len(segments) == current_segments_length // 2:
             current_level += 1
-            approximation_segments_list.append(
-                ApproximationSegments(segments=segments.copy(), approximation_level=current_level)
-            )
+            approximation_segments_list.append(ApproximationSegments(segments=segments.copy(), approximation_level=current_level))
             current_segments_length = len(segments)
 
         # 更新受影响的合并代价
@@ -258,9 +254,7 @@ def bottom_up_merge(value_column: str, x: np.ndarray, y: np.ndarray, k: int):
 
     # 创建结果容器
     approximation_segments_container = ApproximationSegmentsContainer(
-        source=value_column, 
-        approximation_segments_list=approximation_segments_list, 
-        max_approximation_level=current_level
+        source=value_column, approximation_segments_list=approximation_segments_list, max_approximation_level=current_level
     )
 
     return approximation_segments_container
