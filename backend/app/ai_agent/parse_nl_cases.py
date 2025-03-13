@@ -3,10 +3,10 @@ from .constant import FUZZY_FACTOR
 
 class ParseNL_Cases:
     case1 = """
-输入：
+Input:
 Find periods in AMZN when price first rose sharply then fell gradually and the price was higher than 100
 
-输出：
+Output:
 {
   "original_text": "Find periods in AMZN when price first rose sharply then fell gradually and the price was higher than 100",
   "text_sources": [
@@ -83,13 +83,15 @@ Find periods in AMZN when price first rose sharply then fell gradually and the p
 """
 
     case2 = """
-输入：
+Input:
 Find periods in DPZ when price presented a double-bottom shape where the first bottom's slope was steeper than the second bottom's slope
 
-解释：
-double-top代表有两次的上升下降趋势，所以应该解析为up->down->up->down；double-bottom代表有两次的下降上升趋势，所以应该解析为down->up->down->up。如果用户输入triple-bottom，则应该解析三组这样的下降上升为down->up->down->up->down->up，同理，triple-top代表有三次的上升下降趋势，所以应该解析为up->down->up->down->up->down。
+Explanation:
+1. Double-bottom represents two falling-rising trends, so it should be parsed as down->up->down->up.
+2. The user's query is about a double-bottom shape where the first bottom's slope was steeper than the second bottom's slope, so it means the slope of `trend_id=0` < `trend_id=2` and `trend_id=1` > `trend_id=3`.
+3. Note: If the user inputs triple-bottom, it should be parsed as three groups of such falling-rising patterns: down->up->down->up->down->up.
 
-输出：
+Output:
 {
   "original_text": "Find periods in DPZ when price presented a double-bottom shape where the first bottom's slope was steeper than the second bottom's slope",
   "text_sources": [
@@ -154,8 +156,8 @@ double-top代表有两次的上升下降趋势，所以应该解析为up->down->
       "text_source_id": 2
     },
     {
-      "id1": 2,
-      "id2": 4,
+      "id1": 1,
+      "id2": 3,
       "attribute": "slope",
       "comparator": ">",
       "text_source_id": 2
@@ -166,13 +168,14 @@ double-top代表有两次的上升下降趋势，所以应该解析为up->down->
 }
     """
     case3 = """
-输入：
+Input:
 Find the time periods in Amazon stock when the price showed three consecutive peaks and the peaks got higher and higher and each trend's slope should be steeper than 10 per month
 
-解释：
-three consecutive peaks代表有三个连续的上升下降趋势，所以应该解析为up->down->up->down->up->down。趋势有上升下降的区别，所以在处理斜率（slope）时，需要区分上升和下降的斜率，上升的时候应该使用正斜率，并设置最小值为10；下降的时候应该使用负斜率，并设置最大值为-10。
+Explanation:
+1. Three consecutive peaks represent three consecutive rising-falling trends, so it should be parsed as up->down->up->down->up->down.
+2. Trends have distinctions between rising and falling, so when dealing with slopes (`slope`), differentiate between upward and downward slopes. For upward trends, use positive slopes and set the minimum value to 10. For downward trends, use negative slopes and set the maximum value to -10.
 
-输出：
+Output:
 {
   "original_text": "Find the time periods in Amazon stock when the price showed three consecutive peaks and the peaks got higher and higher and each trend's slope should be steeper than 10 per month",
   "text_sources": [
@@ -306,13 +309,15 @@ three consecutive peaks代表有三个连续的上升下降趋势，所以应该
 }
     """
     case4 = """
-输入：
+Input:
 Find periods in AMZN when price presented a head-and-shoulders shape followed by a cup-with-handle shape
 
-解释：
-head-and-shoulders是头肩形，形状为up->down->up->down->up->down；cup-with-handle是杯柄形，形状为down->down->up->up->down，所以解析出来应该是up->down->up->down->up->down->down->down->up->up->down。
+Explanation:
+1. Head-and-shoulders is a head-and-shoulders pattern, shaped as up->down->up->down->up->down, with the "head" (`trend_id=2`) being higher than the "shoulders" (`trend_id=0` and `trend_id=4`).
+2. Cup-with-handle is a cup-and-handle pattern, shaped as down->down->up->up->down, with the "handle" (`trend_id=5`) being higher than the "cup" (`trend_id=3`).
+3. The user's query is about a head-and-shoulders shape followed by a cup-with-handle shape, so it should be parsed as up->down->up->down->up->down->down->down->up->up->down.
 
-输出：
+Output:
 {
   "original_text": "Find periods in AMZN when price presented a head-and-shoulders shape followed by a cup-with-handle shape",
   "text_sources": [
@@ -421,14 +426,14 @@ head-and-shoulders是头肩形，形状为up->down->up->down->up->down；cup-wit
     {
       "id1": 6,
       "id2": 7,
-      "attribute": "slope",
-      "comparator": "<",
+      "attribute": "relative_slope",
+      "comparator": ">",
       "text_source_id": 2
     },
     {
       "id1": 8,
       "id2": 9,
-      "attribute": "slope",
+      "attribute": "relative_slope",
       "comparator": "<",
       "text_source_id": 2
     },
@@ -447,10 +452,16 @@ head-and-shoulders是头肩形，形状为up->down->up->down->up->down；cup-wit
 
     case5 = (
         """
-输入：
+Input:
 Find periods in AMZN when price first presented a double-bottom shape with a duration of about a week and then presented a double-top shape with a duration higher than the first double-bottom's duration
 
-输出：
+Explanation:
+1. The user's query is about a double-bottom shape, which means a consecutive downtrend followed by a consecutive rising trend (down->up->down->up).
+2. The user's query is also about a double-top shape, which means a consecutive rising trend followed by a consecutive falling trend (up->down->up->down).
+3. The user's query is about a duration of about a week, which means the duration of the first double-bottom shape(trend_id=0 to trend_id=3) is about a week.
+4. The user's query is also about a duration higher than the first double-bottom's duration, which means the duration of the second double-top shape(trend_id=4 to trend_id=7) is higher than the first double-bottom shape(trend_id=0 to trend_id=3).
+
+Output:
 {
   "original_text": "Find periods in AMZN when price first presented a double-bottom shape with a duration of about a week and then presented a double-top shape with a duration higher than the first double-bottom's duration",
   "text_sources": [
@@ -583,13 +594,14 @@ Find periods in AMZN when price first presented a double-bottom shape with a dur
 
     case6 = (
         """
-输入：
-Find periods when price presented a high plateau shape with a slope of downtrend is about 20%/week
+Input:
+Find periods when price presented a high plateau shape with a slope of downtrend is about 20%/week, and totally the start value is approximately equal to the end value
 
-解释：
-趋势需要区分上升和下降，下降的时候应该使用负斜率，并根据模糊程度进行设置。
+Explanation:
+1. The user's query is about a high plateau shape, which means a rising trend followed by a flat trend followed by a downtrend (up->flat->down).
+2. Trends need to be distinguished between rising and falling, and negative slopes should be used when falling. Because user didn't specify the slope, the slope should be set according to the fuzzy factor.
 
-输出：
+Output:
 {
   "original_text": "Find periods when price presented a high plateau shape with a slope of downtrend is about 20%/week",
   "text_sources": [
@@ -599,6 +611,10 @@ Find periods when price presented a high plateau shape with a slope of downtrend
     },
     {
       "text": "a slope of downtrend is about 20%/week",
+      "index": 0
+    },
+    {
+      "text": "totally the start value is approximately equal to the end value",
       "index": 0
     }
   ],
@@ -641,7 +657,11 @@ Find periods when price presented a high plateau shape with a slope of downtrend
   ],
   "single_relations": [],
   "trend_groups": [],
-  "group_relations": []
+  "group_relations": [],
+  "comparator_between_start_end_value": {
+    "comparator": "~=",
+    "text_source_id": 2
+  }
 }
 """
     )

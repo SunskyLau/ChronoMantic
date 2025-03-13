@@ -96,10 +96,10 @@ class myAIClient:
 
 def test_parse_nl_query():
     # client = myAIClient(model=Azure.MODELS.GPT_4O, platform=Platforms.AZURE)
-    dataset_info = """{"time_column": "Date", "value_columns": ["AMZN", "DPZ", "BTC", "NFLX"]}"""
+    dataset_info = """["AMZN", "DPZ", "BTC", "NFLX"]"""
     parse_nl_info = create_parse_nl_info(dataset_info)
-    # client = myAIClient(model=Qwen.MODELS.QWEN_MAX, platform=Platforms.QWEN)
-    client = myAIClient(model=GroqPlatform.MODELS.LLAMA3_3, platform=Platforms.GROQ)
+    client = myAIClient(model=Qwen.MODELS.QWEN_MAX, platform=Platforms.QWEN)
+    # client = myAIClient(model="qwen-turbo-latest", platform=Platforms.QWEN)
     client.set_system_prompt(parse_nl_system_prompt)
     # nl_query = "Find periods in AMZN when price first rose sharply then fell gradually"
     # nl_query = "Find periods in DPZ when price first fall sharply then rise gradually, and the whole duration is about 3 months"
@@ -114,14 +114,14 @@ def test_parse_nl_query():
     # nl_query = "Look up a flat basin pattern in Amazon and Netflix"
     # nl_query = "Look up a flat basin pattern"
     # nl_query = "Find periods when price rose sharply with a duration of about 4 days"
-    nl_query = "Find periods when price rose sharply with a duration of about 4 days, then fell gradually"
+    # nl_query = "Find periods when price rose sharply with a duration of about 4 days, then fell gradually"
     # nl_query = "Find periods when price present a head-and-shoulders shape"
-    # nl_query = "Find periods when price first rise then present a head-and-shoulders shape then fell"
+    nl_query = "Find periods when price first rise then present a head-and-shoulders shape about 4 weeks then fell"
     # print(system_prompt)
     # response = client.send_prompt(nl_query_1, False)
     # response = client.send_prompt(nl_query_2, False)
     # response = client.send_prompt(nl_query_3, False)
-    parse_nl_user_prompt = parse_nl_info + "\n" + "输入：" + nl_query + "\n" + "输出："
+    parse_nl_user_prompt = parse_nl_info + "\n\n" + "Input:\n" + nl_query + "\n\n" + "Output:"
     response = client.send_prompt(parse_nl_user_prompt, False)
 
 
@@ -129,7 +129,10 @@ def test_modify_nl_query():
     client = myAIClient(model=Qwen.MODELS.QWEN_MAX, platform=Platforms.QWEN)
     client.set_system_prompt(modify_nl_system_prompt)
     modify_nl_info = create_modify_nl_info()
-    modify_prompt = modify_nl_info + "\n"  + """
+    modify_prompt = (
+        modify_nl_info
+        + "\n"
+        + """
 输入：
 old_queryspec_with_source:
 ```
@@ -235,6 +238,7 @@ intentions:
 ```
 输出：
     """
+    )
     response = client.send_prompt(modify_prompt, False)
     print(response)
 

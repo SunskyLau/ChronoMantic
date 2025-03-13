@@ -35,6 +35,7 @@ interface SegmentAttribute {
 	format: (value: number) => string;
 	getValue: (segments: Segment[], index?: number, result?: ApproximationLevelResult) => number;
 	scope: "global" | "segment";
+	fixedRange?: [number, number];
 }
 
 interface AttributeStats {
@@ -82,6 +83,16 @@ export default function ResultsContent() {
 
 	const attributeOptions: AttributeOption[] = useMemo(
 		() => [
+			{
+				id: "average_score",
+				key: "average_score",
+				label: "Average Score",
+				scope: "global",
+				permanent: true,
+				format: (value) => value.toFixed(2),
+				getValue: (segments) => segments.reduce((sum, segment) => sum + (segment.score ?? 0), 0) / segments.length,
+				fixedRange: [0, 1],
+			},
 			{
 				id: "duration",
 				key: "duration",
@@ -146,6 +157,7 @@ export default function ResultsContent() {
 				segmentIndex,
 				format: (value) => value.toFixed(3),
 				getValue: (segments) => segments[segmentIndex]?.r2 ?? 0,
+				fixedRange: [0, 1],
 			},
 			{
 				id: `segment_${segmentIndex}_slope`,
@@ -177,6 +189,16 @@ export default function ResultsContent() {
 					return (segment.duration ?? 0) / timeStampColumnUnit;
 				},
 			},
+			{
+				id: `segment_${segmentIndex}_score`,
+				key: "score",
+				label: "Score",
+				scope: "segment",
+				segmentIndex,
+				format: (value) => value.toFixed(2),
+				getValue: (segments) => segments[segmentIndex]?.score ?? 0,
+				fixedRange: [0, 1],
+			},
 		],
 		[timeStampColumnUnit, timeStampColumnUnitText]
 	);
@@ -200,10 +222,14 @@ export default function ResultsContent() {
 				values.set(roundedValue, (values.get(roundedValue) || 0) + 1);
 				array.push(value);
 			});
+
+			const min = 0;
+			const max = attr.fixedRange ? attr.fixedRange[1] : Math.max(...array);
+
 			stats[attr.id] = {
 				map: Object.fromEntries([...values.entries()]),
-				max: Math.max(...array),
-				min: Math.min(...array),
+				max,
+				min,
 				array,
 			};
 		});
@@ -412,11 +438,13 @@ export default function ResultsContent() {
 			<div className="results-content">
 				<div className="result-header">
 					<div className="header-column">
-						<div className="header-column-item">Source</div>
-					</div>
-
-					<div className="header-column">
-						<div className="header-column-item glyph-column">Graph</div>
+						<div className="header-column-group">
+							<div className="header-column-group-title">Count: {sortedResults.length}</div>
+							<div className="header-column-group-content">
+								<div className="header-column-item">Source</div>
+								<div className="header-column-item glyph-column">Graph</div>
+							</div>
+						</div>
 					</div>
 
 					{groupedAttributes.global.length > 0 && (

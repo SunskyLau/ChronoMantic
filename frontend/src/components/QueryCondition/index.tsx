@@ -12,7 +12,8 @@ import TrendGroup from "./TrendGroup";
 import GroupRelation from "./GroupRelation";
 import SpanWithUnit from "./SpanWithUnit";
 import { getColorFromMap } from "../../utils/color";
-import { QuerySpecWithSource, ScopeConditionWithSource, ScopeConditionWithSourceWithUnit, ThresholdCondition, Unit } from "../../types/QuerySpec";
+import { Comparator, QuerySpecWithSource, ScopeConditionWithSource, ScopeConditionWithSourceWithUnit, ThresholdCondition, Unit } from "../../types/QuerySpec";
+import SelectChoice from "./SelectChoice";
 
 const emptyQuerySpec: QuerySpecWithSource = {
 	original_text: "",
@@ -175,6 +176,23 @@ export default function QueryCondition() {
 							unit,
 							text_source_id: memoizedQuery.duration_condition?.text_source_id ?? -1,
 						};
+						dispatch(setQuery(newQuery));
+					}}
+				/>
+				<Divider />
+			</section>
+
+			<section>
+				<SelectChoice
+					title="Start Value and End Value"
+					value={memoizedQuery.comparator_between_start_end_value?.comparator}
+					options={Object.values(Comparator)}
+					onChange={(comparator) => {
+						const newQuery = { ...memoizedQuery };
+						newQuery.comparator_between_start_end_value = comparator ? {
+							comparator: comparator,
+							text_source_id: memoizedQuery.duration_condition?.text_source_id ?? -1,
+						} : undefined;
 						dispatch(setQuery(newQuery));
 					}}
 				/>

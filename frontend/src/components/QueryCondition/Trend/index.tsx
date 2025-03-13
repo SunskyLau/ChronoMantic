@@ -10,6 +10,8 @@ import { TrendCategory } from "../../../types/QuerySpec";
 import SpanWithUnit from "../SpanWithUnit";
 import { TrendTextMap } from "../../../utils/query-spec";
 import Span from "../Span";
+import TitleCondition from "../TitleCondition";
+import Title from "../Title";
 
 interface TrendProps {
 	title?: string;
@@ -38,10 +40,12 @@ export default function Trend({ title, trends, onChange, start = 0, isEdit, disa
 	}, [curTrend]);
 
 	const getAvailableOptions = () => {
-		return Object.entries(TrendTextMap).filter(([key]) => key !== "category").map(([key, value]) => ({
-			label: value,
-			value: key,
-		}));
+		return Object.entries(TrendTextMap)
+			.filter(([key]) => key !== "category")
+			.map(([key, value]) => ({
+				label: value,
+				value: key,
+			}));
 	};
 
 	return (
@@ -50,27 +54,23 @@ export default function Trend({ title, trends, onChange, start = 0, isEdit, disa
 				justify="space-between"
 				align="center"
 			>
-				<Typography.Title
-					level={4}
-					keyboard
-				>
-					{title ?? "Trend"}
-				</Typography.Title>
-				{isEdit && !disabled && (
-					<Button
-						icon={<PlusOutlined />}
-						onClick={() => {
-							const newTrends = [...allTrends];
-							newTrends.push({
-								category: {
-									category: TrendCategory.ARBITRARY,
-									text_source_id: -1,
-								}
-							});
-							onChange(newTrends);
-						}}
-					></Button>
-				)}
+				<TitleCondition title={title ?? "Trend"}>
+					{isEdit && !disabled && (
+						<Button
+							icon={<PlusOutlined />}
+							onClick={() => {
+								const newTrends = [...allTrends];
+								newTrends.push({
+									category: {
+										category: TrendCategory.ARBITRARY,
+										text_source_id: -1,
+									},
+								});
+								onChange(newTrends);
+							}}
+						></Button>
+					)}
+				</TitleCondition>
 			</Flex>
 			{!trends.length ? (
 				<Empty description="no trends"></Empty>
@@ -90,7 +90,7 @@ export default function Trend({ title, trends, onChange, start = 0, isEdit, disa
 									justify="space-between"
 									align="center"
 								>
-									<Typography.Title level={5}>No.{index + start}</Typography.Title>
+									<Title title={`No.${index + start}`} level={5}></Title>
 									{isEdit && !disabled && (
 										<Flex
 											gap={4}
@@ -189,31 +189,33 @@ export default function Trend({ title, trends, onChange, start = 0, isEdit, disa
 															max: max ?? undefined,
 															unit: unit,
 															text_source_id: condition?.text_source_id,
-														}
+														};
 														onChange(newTrends);
 													}}
 												/>
 											);
 											break;
 										case "relative_slope_scope_condition":
-											components.push(<Span
-												disabled={disabled}
-												min={condition?.min?.value ?? null}
-												max={condition?.max?.value ?? null}
-												activeColor={getColorFromMap(colorMap, condition?.text_source_id)}
-												minInclusive={!!condition?.min?.inclusive}
-												maxInclusive={!!condition?.max?.inclusive}
-												addonAfter={"%"}
-												onChange={(min, max) => {
-													const newTrends = [...allTrends];
-													newTrends[index][k] = {
-														min: min ?? undefined,
-														max: max ?? undefined,
-														text_source_id: condition?.text_source_id,
-													};
-													onChange(newTrends);
-												}}
-											/>);
+											components.push(
+												<Span
+													disabled={disabled}
+													min={condition?.min?.value ?? null}
+													max={condition?.max?.value ?? null}
+													activeColor={getColorFromMap(colorMap, condition?.text_source_id)}
+													minInclusive={!!condition?.min?.inclusive}
+													maxInclusive={!!condition?.max?.inclusive}
+													addonAfter={"%"}
+													onChange={(min, max) => {
+														const newTrends = [...allTrends];
+														newTrends[index][k] = {
+															min: min ?? undefined,
+															max: max ?? undefined,
+															text_source_id: condition?.text_source_id,
+														};
+														onChange(newTrends);
+													}}
+												/>
+											);
 											break;
 										default:
 											break;

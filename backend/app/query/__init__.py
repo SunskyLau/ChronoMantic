@@ -114,6 +114,12 @@ def satisfies_all_conditions(sequence: List[Segment], query_spec: QuerySpec, df_
     if query_spec.duration_condition and not satisfies_duration_condition(sequence, query_spec.duration_condition):
         return False
 
+    # 检查起始值和结束值的比较关系
+    if query_spec.comparator_between_start_end_value and not satisfies_comparator_between_start_end_value(
+        sequence, query_spec.comparator_between_start_end_value
+    ):
+        return False
+
     return True
 
 
@@ -323,6 +329,16 @@ def satisfies_duration_condition(segments: List[Segment], condition: ScopeCondit
     """检查段序列是否满足总持续时间条件"""
     total_duration = segments[-1].end_time - segments[0].start_time
     return check_single_threshold_condition(total_duration, condition.min, condition.max)
+
+
+@typechecked
+def satisfies_comparator_between_start_end_value(segments: List[Segment], comparator: Comparator) -> bool:
+    """检查段序列是否满足起始值和结束值的比较关系"""
+    start_value = segments[0].start_value
+    end_value = segments[-1].end_value
+    max_value = max([segment.max_value for segment in segments])
+    min_value = min([segment.min_value for segment in segments])
+    return compare_values(float(start_value), float(end_value), comparator, float(max_value - min_value) * APPROXIMATELY_EQUAL_THRESHOLD)
 
 
 @typechecked
