@@ -1,10 +1,11 @@
-import { Button, Divider, Empty, Flex, Select, Typography } from "antd";
+import { Button, Divider, Empty, Flex, Select } from "antd";
 import { TrendGroupWithSource, Unit } from "../../../types/QuerySpec";
 import { MinusOutlined, PlusOutlined } from "@ant-design/icons";
 import { deepClone } from "../../../utils/deepclone";
 import { getColorFromMap } from "../../../utils/color";
 import { useAppSelector } from "../../../app/hooks";
 import SpanWithUnit from "../SpanWithUnit";
+import TitleCondition from "../TitleCondition";
 
 interface TrendGroupProps {
 	isEdit?: boolean;
@@ -25,27 +26,23 @@ export default function TrendGroup({ groups, idLength, onChange, isEdit, disable
 				justify="space-between"
 				align="center"
 			>
-				<Typography.Title
-					level={4}
-					keyboard
-				>
-					Trend Groups
-				</Typography.Title>
-				{isEdit && !disabled && (
-					<Button
-						icon={<PlusOutlined />}
-						onClick={() => {
-							const newGroups = [...allGroups];
-							newGroups.push({
-								ids: [0, 0],
-								duration_condition: {
-									text_source_id: -1,
-								},
-							});
-							onChange(newGroups);
-						}}
-					/>
-				)}
+				<TitleCondition title="Trend Groups">
+					{isEdit && !disabled && (
+						<Button
+							icon={<PlusOutlined />}
+							onClick={() => {
+								const newGroups = [...allGroups];
+								newGroups.push({
+									ids: [0, 0],
+									duration_condition: {
+										text_source_id: -1,
+									},
+								});
+								onChange(newGroups);
+							}}
+						/>
+					)}
+				</TitleCondition>
 			</Flex>
 
 			{!groups.length ? (

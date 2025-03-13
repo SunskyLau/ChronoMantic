@@ -1,5 +1,6 @@
-import { Flex, Select, SelectProps, Tag, Typography } from "antd";
+import { Flex, Select, SelectProps, Tag } from "antd";
 import { getColorFromMap } from "../../../utils/color";
+import TitleCondition from "../TitleCondition";
 
 interface TargetProps {
 	title?: string;
@@ -41,14 +42,8 @@ export default function Target({ disabled, title, value, options, onChange, colo
 			justify="space-between"
 			gap={16}
 		>
-			<Typography.Title
-				level={4}
-				keyboard
-				style={{ marginBottom: 0 }}
-			>
-				{title ?? "Target"}
-			</Typography.Title>
-			<Flex className="active-component">
+			<TitleCondition title={title ?? "Target"}>
+				<Flex className="active-component">
 				<Select
 					disabled={disabled}
 					allowClear
@@ -58,8 +53,9 @@ export default function Target({ disabled, title, value, options, onChange, colo
 					value={value}
 					onChange={onChange}
 					options={options.map((value) => ({ value: value }))}
-				></Select>
-			</Flex>
+					></Select>
+				</Flex>
+			</TitleCondition>	
 		</Flex>
 	);
 }

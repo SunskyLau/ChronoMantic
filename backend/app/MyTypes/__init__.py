@@ -140,3 +140,4 @@ class QuerySpec(DictMixin):
     time_scope_condition: Optional[ScopeCondition] = None  # 时间范围的范围条件
     max_value_scope_condition: Optional[ScopeCondition] = None  # 最大值的范围条件
     min_value_scope_condition: Optional[ScopeCondition] = None  # 最小值的范围条件
+    comparator_between_start_end_value: Optional[Comparator] = None  # 起始值和结束值的比较关系

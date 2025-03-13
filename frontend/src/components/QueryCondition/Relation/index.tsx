@@ -1,4 +1,4 @@
-import { Button, Divider, Empty, Flex, Select, Typography } from "antd";
+import { Button, Divider, Empty, Flex, Select } from "antd";
 import { Comparator, SingleAttribute, SingleRelationWithSource } from "../../../types/QuerySpec";
 import { MinusOutlined, PlusOutlined } from "@ant-design/icons";
 import { classnames } from "../../../utils/classname";
@@ -6,6 +6,7 @@ import { useEffect, useRef } from "react";
 import { useAppDispatch, useAppSelector } from "../../../app/hooks";
 import { setCurRelation } from "../../../app/slice/stateSlice";
 import { getColorFromMap } from "../../../utils/color";
+import TitleCondition from "../TitleCondition";
 
 interface RelationProps {
 	title?: string;
@@ -34,22 +35,18 @@ export default function Relation({ title, relations, idLength, isEdit, onChange,
 				justify="space-between"
 				align="center"
 			>
-				<Typography.Title
-					level={4}
-					keyboard
-				>
-					{title ?? "Relation"}
-				</Typography.Title>
-				{isEdit && !disabled && (
-					<Button
-						icon={<PlusOutlined />}
-						onClick={() => {
-							const newRelations = [...relations];
-							newRelations.push({} as SingleRelationWithSource);
-							onChange(newRelations);
-						}}
-					></Button>
-				)}
+				<TitleCondition title={title ?? "Relation"}>
+					{isEdit && !disabled && (
+						<Button
+							icon={<PlusOutlined />}
+							onClick={() => {
+								const newRelations = [...relations];
+								newRelations.push({} as SingleRelationWithSource);
+								onChange(newRelations);
+							}}
+						></Button>
+					)}
+				</TitleCondition>
 			</Flex>
 			{!relations.length ? (
 				<Empty description="no relations"></Empty>

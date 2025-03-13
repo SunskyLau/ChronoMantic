@@ -595,7 +595,7 @@ Output:
     case6 = (
         """
 Input:
-Find periods when price presented a high plateau shape with a slope of downtrend is about 20%/week
+Find periods when price presented a high plateau shape with a slope of downtrend is about 20%/week, and totally the start value is approximately equal to the end value
 
 Explanation:
 1. The user's query is about a high plateau shape, which means a rising trend followed by a flat trend followed by a downtrend (up->flat->down).
@@ -611,6 +611,10 @@ Output:
     },
     {
       "text": "a slope of downtrend is about 20%/week",
+      "index": 0
+    },
+    {
+      "text": "totally the start value is approximately equal to the end value",
       "index": 0
     }
   ],
@@ -653,7 +657,11 @@ Output:
   ],
   "single_relations": [],
   "trend_groups": [],
-  "group_relations": []
+  "group_relations": [],
+  "comparator_between_start_end_value": {
+    "comparator": "~=",
+    "text_source_id": 2
+  }
 }
 """
     )
