@@ -260,19 +260,47 @@ export default function ResultsContent() {
 	}, [selectedAttributes]);
 
 	const [sortConfig, setSortConfig] = useState<{
-		key: string;
-		direction: "asc" | "desc" | null;
+		keys: Array<{
+			key: string;
+			direction: "asc" | "desc";
+		}>;
 	}>({
-		key: "",
-		direction: null,
+		keys: [],
 	});
 
 	const handleSort = useCallback((attrId: string) => {
-		setSortConfig((prevConfig) => ({
-			key: attrId,
-			direction: prevConfig.key === attrId && prevConfig.direction === "asc" ? "desc" : prevConfig.key === attrId && prevConfig.direction === "desc" ? null : "asc",
-		}));
+		setSortConfig((prevConfig) => {
+			const existingIndex = prevConfig.keys.findIndex(item => item.key === attrId);
+			const newKeys = [...prevConfig.keys];
+
+			if (existingIndex !== -1) {
+				if (newKeys[existingIndex].direction === "asc") {
+					newKeys[existingIndex].direction = "desc";
+				} else {
+					newKeys.splice(existingIndex, 1);
+				}
+			} else {
+				newKeys.push({ key: attrId, direction: "asc" });
+			}
+
+			return { keys: newKeys };
+		});
 	}, []);
+
+	const renderSortIcon = useCallback((attrId: string) => {
+		const sortIndex = sortConfig.keys.findIndex(item => item.key === attrId);
+		if (sortIndex === -1) {
+			return <UnorderedListOutlined />;
+		}
+		
+		const direction = sortConfig.keys[sortIndex].direction;
+		return (
+			<span className="sort-indicator">
+				{direction === "asc" ? <SortAscendingOutlined /> : <SortDescendingOutlined />}
+				{sortConfig.keys.length > 1 && <sup>{sortIndex + 1}</sup>}
+			</span>
+		);
+	}, [sortConfig.keys]);
 
 	const permanentAttributes = useMemo(() => {
 		return attributeOptions.filter((attr) => attr.permanent);
@@ -389,16 +417,23 @@ export default function ResultsContent() {
 			return attrCondition;
 		});
 
-		if (sortConfig.key && sortConfig.direction) {
-			const attr = [...groupedAttributes.global, ...groupedAttributes.segments.flat()].find((attr) => attr.id === sortConfig.key);
-
-			if (attr) {
-				results = results.sort((a, b) => {
-					const valueA = attr.getValue(a.segments, attr.segmentIndex, a);
-					const valueB = attr.getValue(b.segments, attr.segmentIndex, b);
-					return sortConfig.direction === "asc" ? valueA - valueB : valueB - valueA;
-				});
-			}
+		if (sortConfig.keys.length > 0) {
+			results = results.sort((a, b) => {
+				for (const { key, direction } of sortConfig.keys) {
+					const attr = [...groupedAttributes.global, ...groupedAttributes.segments.flat()]
+						.find(attr => attr.id === key);
+					
+					if (attr) {
+						const valueA = attr.getValue(a.segments, attr.segmentIndex, a);
+						const valueB = attr.getValue(b.segments, attr.segmentIndex, b);
+						
+						if (valueA !== valueB) {
+							return direction === "asc" ? valueA - valueB : valueB - valueA;
+						}
+					}
+				}
+				return 0;
+			});
 		}
 
 		return results;
@@ -406,7 +441,7 @@ export default function ResultsContent() {
 
 	const resultList = useRef<HTMLDivElement>(null);
 	useEffect(() => {
-		if (sortConfig.key && sortConfig.direction !== null) {
+		if (sortConfig.keys.length > 0) {
 			setCount(20);
 			if (resultList.current) {
 				resultList.current.scrollTop = 0;
@@ -466,7 +501,7 @@ export default function ResultsContent() {
 															onClick={() => handleSort(attr.id)}
 															className={classnames("header-column-group-item-title-icon", "pointer")}
 														>
-															{sortConfig.key !== attr.id || sortConfig.direction === null ? <UnorderedListOutlined /> : sortConfig.direction === "asc" ? <SortAscendingOutlined /> : <SortDescendingOutlined />}
+															{renderSortIcon(attr.id)}
 														</span>
 														<span className="header-column-group-item-title-text">{attr.label}</span>
 													</div>
@@ -507,7 +542,7 @@ export default function ResultsContent() {
 															onClick={() => handleSort(attr.id)}
 															className={classnames("header-column-group-item-title-icon", "pointer")}
 														>
-															{sortConfig.key !== attr.id || sortConfig.direction === null ? <UnorderedListOutlined /> : sortConfig.direction === "asc" ? <SortAscendingOutlined /> : <SortDescendingOutlined />}
+															{renderSortIcon(attr.id)}
 														</span>
 														<span className="header-column-group-item-title-text">{attr.label}</span>
 													</div>

@@ -91,6 +91,8 @@
 .result-header .header-column .header-column-group .header-column-group-item .header-column-group-item-title .header-column-group-item-title-icon {
   color: var(--color);
   font-size: 16px;
+  height: 16px;
+  position: relative;
 }
 
 .result-header .header-column .header-column-group .header-column-group-item .header-column-group-item-title .header-column-group-item-title-text {
@@ -191,4 +193,19 @@
   display: flex;
   align-items: center;
   width: 0;
+}
+
+.sort-indicator {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.sort-indicator sup {
+  font-size: 10px;
+  position: absolute;
+  top: 0;
+  height: 8px;
+  right: -8px;
+  color: #1890ff;
 }
