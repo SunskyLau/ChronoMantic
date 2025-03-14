@@ -161,6 +161,14 @@ def query_by_specification():
     #     return jsonify({"code": 500, "message": f"Error processing query: {str(e)}"}), 500
 
 
+def remove_code_fence(text: str) -> str:
+    if text.startswith("```"):
+        lines = text.split("\n")
+        if len(lines) >= 2:
+            return "\n".join(lines[1:-1]).strip()
+    return text
+
+
 @bus_bp.route("/parse_nl_query", methods=["POST"])
 def parse_nl_query():
     """将自然语言查询解析为结构化查询
@@ -180,12 +188,7 @@ def parse_nl_query():
     parse_nl_info = create_parse_nl_info(dataset_info_str)
     parse_nl_user_prompt = parse_nl_info + "\n\n" + "Input:" + nl_query + "\n\n" + "Output:"
     queryspec_with_source_str = parse_nl_agent.send_prompt(parse_nl_user_prompt, False)
-    if queryspec_with_source_str.startswith("```"):
-        # Extract content between code fence markers
-        lines = queryspec_with_source_str.split("\n")
-        if len(lines) >= 2:
-            # Skip first line (which may contain language identifier) and last line (closing fence)
-            queryspec_with_source_str = "\n".join(lines[1:-1]).strip()
+    queryspec_with_source_str = remove_code_fence(queryspec_with_source_str)
     queryspec_with_source = json.loads(queryspec_with_source_str)
     return jsonify({"code": 200, "message": "Parse nl query successful", "results": filter_json(queryspec_with_source)})
 
@@ -213,7 +216,6 @@ def modify_nl_query():
     intentions = request.json.get("intentions")
     new_queryspec_with_source = modify_queryspec_by_intentions(old_queryspec_with_source, segments, intentions)
     intentions["single_segment_intentions"] = add_category_to_intentions(segments, intentions["single_segment_intentions"])
-
     old_queryspec_with_source_str = json.dumps(old_queryspec_with_source, indent=2)
     intentions_str = json.dumps(intentions, indent=2)
 
@@ -236,6 +238,7 @@ intentions
 Output:"""
     )
     new_queryspec_with_source_str = modify_nl_agent.send_prompt(input, False)
+    new_queryspec_with_source_str = remove_code_fence(new_queryspec_with_source_str)
     new_queryspec_with_source = json.loads(new_queryspec_with_source_str)
     new_queryspec_with_source = fix_text_source_id(new_queryspec_with_source)
     return jsonify({"code": 200, "message": "Modify nl query successful", "results": new_queryspec_with_source})

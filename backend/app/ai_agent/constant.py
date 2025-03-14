@@ -46,6 +46,9 @@ class Qwen:
 
     class MODELS:
         QWEN_MAX = "qwen-max-2025-01-25"
+        QWEN_TURBO = "qwen-turbo-latest"
+        QWEN_2_5_32B = "qwen2.5-32b"
+        QWEN_2_5_32B_INSTRUCT = "qwen2.5-32b-instruct"
 
 
 class Tencent:
@@ -57,7 +60,8 @@ class Tencent:
 
 
 class GroqPlatform:
-    API_KEY = "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"
+    # API_KEY = "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"
+    API_KEY = "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"
     BASE_URL = "https://api.groq.com/v1"
 
     class MODELS:

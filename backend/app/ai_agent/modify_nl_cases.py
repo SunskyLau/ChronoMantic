@@ -170,7 +170,7 @@ from .constant import FUZZY_FACTOR
 
 
 class ModifyNL_Cases:
-    case1 = """输入：
+    case1 = """Input:
 old_queryspec_with_source
 ```{
   "group_relations": [],
@@ -226,11 +226,11 @@ new_queryspec_with_source_without_text_sources
 {
   "group_relations": [],
   "original_text": "",
-  "single_relations": [{'attribute': 'end_value', 'comparator': '~=', 'id1': 1, 'id2': 3}],
+  "single_relations": [{'attribute': 'end_value', 'comparator': '~=', 'id1': 2, 'id2': 4}],
   "targets": [],
   "text_sources": [],
   "trend_groups": [],
-  "trends": [{'category': {'category': 'up'}}, {'category': {'category': 'up'}}, {'category': {'category': 'down'}}, {'category': {'category': 'up'}}, {'category': {'category': 'down'}}}
+  "trends": [{'category': {'category': 'down'}}, {'category': {'category': 'up'}}, {'category': {'category': 'up'}}, {'category': {'category': 'down'}}, {'category': {'category': 'up'}}, {'category': {'category': 'down'}}}
 }
 ```
 
@@ -239,10 +239,11 @@ intentions
 {
   "single_segment_intentions": [
     { "id": 0, "single_choices": ["user"] },
-    { "id": 1, "single_choices": ["result"] },
+    { "id": 1, "single_choices": ["user"] },
     { "id": 2, "single_choices": ["result"] },
     { "id": 3, "single_choices": ["result"] },
-    { "id": 4, "single_choices": ["result"] }
+    { "id": 4, "single_choices": ["result"] },
+    { "id": 5, "single_choices": ["result"] }
   ],
   "segment_group_intentions": [],
   "single_relation_intentions": [],
@@ -250,31 +251,35 @@ intentions
 }
 ```
 
-解释：
-1. 分析输入数据:
-  - old_queryspec_with_source 包含原始的 "double top" 形态
-  - new_queryspec_with_source_without_text_sources 包含5个趋势段
-  - intentions 显示趋势段的来源(user/result)
+Explanation:
+1. Analyze input data:
+  - old_queryspec_with_source contains the original "double top" pattern
+  - new_queryspec_with_source_without_text_sources contains six trend segments
+  - intentions show the source of the trend segments (user/result)
 
-2. 分析趋势段来源:
-  - id 0: user 指定的新增趋势
-  - id 1-4: result 标记，与原始 double top 形态匹配
+2. Analyze the source of trend segments:
+  - id 0-1: A new trend specified by the user
+  - id 2-5: Marked as result, matching the original double top pattern
 
-3. 分析关系:
-  - single_relations 保持不变，因为它们来自原始的 double top 形态
-  - text_source_id 需要更新以匹配新的文本源
+3. Analyze relationships:
+    - single_relations remain unchanged because they originate from the original double top pattern
+    - text_source_id needs to be updated to match the new text sources
 
-4. 生成自然语言描述:
-  - 开始: 描述 user 指定的上升趋势
-  - 中间: 保持原始的 double top 形态描述
+4. Generate natural language description:
+  - Beginning: Describe the upward trend specified by the user
+  - Middle: Retain the description of the original double top pattern
 
-输出：
+Output:
 {
-  "original_text": "find a rising trend followed by a double top trend",
+  "original_text": "find a rising trend then falls followed by a double top trend",
   "text_sources": [
     {
       "index": 0,
       "text": "rising trend"
+    },
+    {
+      "index": 0,
+      "text": "falls"
     },
     {
       "index": 0,
@@ -285,9 +290,9 @@ intentions
     {
       "attribute": "end_value",
       "comparator": "~=",
-      "id1": 1,
-      "id2": 3,
-      "text_source_id": 1
+      "id1": 2,
+      "id2": 4,
+      "text_source_id": 2
     }
   ],
   "targets": [],
@@ -302,12 +307,6 @@ intentions
     },
     {
       "category": {
-        "category": "up",
-        "text_source_id": 1
-      }
-    },
-    {
-      "category": {
         "category": "down",
         "text_source_id": 1
       }
@@ -315,20 +314,32 @@ intentions
     {
       "category": {
         "category": "up",
-        "text_source_id": 1
+        "text_source_id": 2
       }
     },
     {
       "category": {
         "category": "down",
-        "text_source_id": 1
+        "text_source_id": 2
+      }
+    },
+    {
+      "category": {
+        "category": "up",
+        "text_source_id": 2
+      }
+    },
+    {
+      "category": {
+        "category": "down",
+        "text_source_id": 2
       }
     }
   ]
 }
     """
 
-    case2 = """输入：
+    case2 = """Input:
 old_queryspec_with_source
 ```
 {
@@ -377,27 +388,27 @@ intentions
 }
 ```
 
-解释：
-1. 分析输入数据:
-  - old_queryspec_with_source 包含原始的 "head-and-shoulders" 形态
-  - new_queryspec_with_source_without_text_sources 包含9个趋势段
-  - intentions 显示趋势段的来源(user/result)
+Explanation:
+1. Analyze input data:
+   - old_queryspec_with_source contains the original "head-and-shoulders" pattern
+   - new_queryspec_with_source_without_text_sources contains nine trend segments
+   - intentions show the source of the trend segments (user/result)
 
-2. 分析趋势段来源:
-  - id 0-1: user 指定的新增趋势
-  - id 2-7: result 标记，与原始 head-and-shoulders 形态匹配
-  - id 8: user 指定的新增趋势
+2. Analyze the source of trend segments:
+   - id 0-1: New trends specified by the user
+   - id 2-7: Marked as result, matching the original head-and-shoulders pattern
+   - id 8: A new trend specified by the user
 
-3. 分析关系:
-  - single_relations 保持不变，因为它们来自原始的 head-and-shoulders 形态
-  - text_source_id 需要更新以匹配新的文本源
+3. Analyze relationships:
+   - single_relations remain unchanged because they originate from the original head-and-shoulders pattern
+   - text_source_id needs to be updated to match the new text sources
 
-4. 生成自然语言描述:
-  - 开始: 描述 user 指定的上升和下降趋势
-  - 中间: 保持原始的 head-and-shoulders 形态描述
-  - 结束: 描述 user 指定的上升趋势
+4. Generate natural language description:
+   - Beginning: Describe the upward and downward trends specified by the user
+   - Middle: Retain the description of the original head-and-shoulders pattern
+   - End: Describe the upward trend specified by the user
 
-输出：
+Output:
 {
   "original_text": "find a trend that rises, then falls, followed by a head-and-shoulders shape, and ending with a final rise",
   "targets": [],
@@ -427,7 +438,7 @@ intentions
 }
 """
 
-    case3 = """输入：
+    case3 = """Input:
 old_queryspec_with_source
 ```
 null
@@ -455,7 +466,7 @@ intentions
 }
 ```
 
-输出：
+Output:
 {
   "original_text": "find a trend that falls then rises three times with a duration of about 25 days and falls again",
   "text_sources": [
@@ -525,7 +536,7 @@ intentions
 }
 """
 
-    case4 = """输入：
+    case4 = """Input:
 old_queryspec_with_source
 ```
 null
@@ -546,7 +557,7 @@ intentions
 }
 ```
 
-输出：
+Output:
 {
   "original_text": "find a trend that rises, then falls with a slope between -34.52 and -28.24 per week over 4.5 to 5.5 weeks, then rises again, and finally falls, where the first rising trend's relative slope is greater than the third rising trend's and the total duration of the first to the last trends is about 43 weeks, while the duration of the first two trends is shorter than the duration of the last two trends",
   "targets": [],
