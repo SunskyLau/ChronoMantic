@@ -128,9 +128,8 @@ def calculate_segment_score(x: np.ndarray, y: np.ndarray, segment: Segment) -> f
         end_value_score = 1 - abs(min_value - segment.end_value) / value_span if value_span > 0 else 1.0
         start_value_score = 1 - abs(max_value - segment.start_value) / value_span if value_span > 0 else 1.0
     
-    # 综合得分 (时间匹配度和值匹配度各占50%)
-    time_score = (end_time_score + start_time_score) / 2
-    value_score = (end_value_score + start_value_score) / 2
+    time_score = end_time_score * start_time_score
+    value_score = end_value_score * start_value_score
     final_score = time_score * value_score
     
     return max(0.0, min(1.0, final_score))  # 确保分数在0-1之间
