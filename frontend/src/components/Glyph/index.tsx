@@ -187,7 +187,7 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 	};
 
 	const getV = (level: number, negative: boolean = false) => {
-		return negative ? baseY2.current - (level) * 12 : baseY1.current - (level + 1) * 12;
+		return negative ? baseY2.current - level * 12 : baseY1.current - (level + 1) * 12;
 	};
 
 	const drawTimeIndicator = ({ startX, endX, textY, timeColor, timeText, key, strokeWidth = 1, disabled = false, index }: { startX: number; endX: number; textY: number; timeColor: string; timeText?: string; key?: string; strokeWidth?: number; disabled?: boolean; index?: number }) => {
@@ -231,6 +231,8 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 					y2={textY}
 					stroke={color}
 					strokeWidth={strokeWidth}
+					strokeDasharray={isActive ? "1,1" : "none"}
+					style={{ animation: isActive ? "dashFlow 5s linear infinite" : "none" }}
 				/>
 				<line
 					x1={Math.min(endX, (startX + endX + textWidth) / 2)}
@@ -239,6 +241,8 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 					y2={textY}
 					stroke={color}
 					strokeWidth={strokeWidth}
+					strokeDasharray={isActive ? "1,1" : "none"}
+					style={{ animation: isActive ? "dashFlow 5s linear infinite" : "none" }}
 				/>
 			</g>
 		);
@@ -433,19 +437,23 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 		if (isNaN(x) || isNaN(y)) return null;
 		const newComparator = reverse && comparatorMap[comparator] ? comparatorMap[comparator] : comparator;
 		const isCurRelation = curRelation === index;
+		const fontSize = (height / 4) * strokeWidth;
 		return (
-			<text
-				onClick={() => onClick?.("Relation", index)}
-				x={x}
-				y={y}
-				fontSize={(height / 4) * strokeWidth}
-				fill={isCurRelation ? color.slice(0, 7) : color}
-				fontWeight={700}
-				textAnchor="middle"
-				dominantBaseline="middle"
-			>
-				{newComparator}
-			</text>
+			<>
+				<rect fill="#fff" x={x - fontSize * newComparator.length / 2} y={y - fontSize / 4} width={fontSize * newComparator.length} height={fontSize / 2}></rect>
+				<text
+					onClick={() => onClick?.("Relation", index)}
+					x={x}
+					y={y}
+					fontSize={fontSize}
+					fill={isCurRelation ? color.slice(0, 7) : color}
+					fontWeight={700}
+					textAnchor="middle"
+					dominantBaseline="middle"
+				>
+					{newComparator}
+				</text>
+			</>
 		);
 	};
 
@@ -603,7 +611,7 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 				break;
 		}
 
-		const textY = baseY2.current + (type === "global" ? level + 1 : level) * 5 + 3;
+		const textY = baseY2.current + (type === "global" ? level + 1 : level) * 6;
 		const timeColor = getColorWithDisabled(colorMap, query, condition.text_source_id);
 		const timeText = getScopeText(condition);
 
@@ -659,7 +667,7 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 
 	const drawGroupRelation = (relation: GroupRelationWithSource, i: number, trendLength: number, trends: TrendWithSource[], strokeWidth: number = 1) => {
 		if (!query) return null;
-		const offset = (maxLevel + 2) * 5 + 3;
+		const offset = (maxLevel + 2) * 6;
 		const getGroupInfo = (ids: [number, number]) => {
 			if (ids[0] === undefined || ids[1] === undefined || ids[0] >= trends.length || ids[1] >= trends.length) return null;
 			const x1 = ids[0] * trendLength;
@@ -675,18 +683,16 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 		const group2Info = getGroupInfo(relation.group2);
 
 		if (!group1Info || !group2Info) return null;
-		const rangeY = baseY2.current + offset;
-
-		const relationColor = getColorWithDisabled(colorMap, query, relation.text_source_id);
 		const level = getLevel(group1Info.start, group2Info.end, true);
-		const v = getV(level, true) + offset;
+		const rangeY = baseY2.current + offset - (level + 1) * 6;
+		const relationColor = getColorWithDisabled(colorMap, query, relation.text_source_id);
 		const index = i + single_relations.length;
 
 		return (
 			<g key={`group-${i}`}>
 				{drawTimeIndicator({ startX: group1Info.start, endX: group1Info.end, textY: rangeY, timeColor: relationColor, index })}
 				{drawTimeIndicator({ startX: group2Info.start, endX: group2Info.end, textY: rangeY, timeColor: relationColor, index })}
-				{drawConnect(group1Info.center, rangeY, group2Info.center, rangeY, v, index, relation.comparator, false, relationColor, strokeWidth)}
+				{drawConnect(group1Info.end, rangeY, group2Info.start, rangeY, rangeY, index, relation.comparator, false, relationColor, strokeWidth)}
 			</g>
 		);
 	};
