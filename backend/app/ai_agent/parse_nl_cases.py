@@ -169,15 +169,14 @@ Output:
     """
     case3 = """
 Input:
-Find the time periods in Amazon stock when the price showed three consecutive peaks and the peaks got higher and higher and each trend's slope should be steeper than 10 per month
+Find the time periods in Amazon stock when the price showed three consecutive peaks with the first rising trend's end value is greater than the last falling trend's start value and each trend's slope should be steeper than 10 per month
 
 Explanation:
 1. Three consecutive peaks represent three consecutive rising-falling trends, so it should be parsed as up->down->up->down->up->down.
-2. Trends have distinctions between rising and falling, so when dealing with slopes (`slope`), differentiate between upward and downward slopes. For upward trends, use positive slopes and set the minimum value to 10. For downward trends, use negative slopes and set the maximum value to -10.
 
 Output:
 {
-  "original_text": "Find the time periods in Amazon stock when the price showed three consecutive peaks and the peaks got higher and higher and each trend's slope should be steeper than 10 per month",
+  "original_text": "Find the time periods in Amazon stock when the price showed three consecutive peaks with the first rising trend's end value is greater than the last falling trend's start value and each trend's slope should be steeper than 10 per month",
   "text_sources": [
     {
       "text": "Amazon stock",
@@ -188,7 +187,11 @@ Output:
       "index": 0
     },
     {
-      "text": "peaks got higher and higher",
+      "text": "the first rising trend's end value is greater than the last falling trend's start value",
+      "index": 0
+    },
+    {
+      "text": "each trend's slope should be steeper than 10 per month",
       "index": 0
     },
     {
@@ -288,19 +291,11 @@ Output:
       }
     }
   ],
-  "single_relations": [
-    {
-      "id1": 0,
-      "id2": 2,
-      "attribute": "end_value",
-      "comparator": "<",
-      "text_source_id": 2
-    },
-    {
-      "id1": 2,
-      "id2": 4,
-      "attribute": "end_value",
-      "comparator": "<",
+  "single_relations": [{
+      "id1": 1,
+      "id2": 5,
+      "attribute": "start_value",
+      "comparator": ">",
       "text_source_id": 2
     }
   ],
@@ -453,17 +448,17 @@ Output:
     case5 = (
         """
 Input:
-Find periods in AMZN when price first presented a double-bottom shape with a duration of about a week and then presented a double-top shape with a duration higher than the first double-bottom's duration
+Find periods in AMZN when price first presented a double-bottom shape with a duration of about two weeks and then presented a double-top shape with a duration higher than the first double-bottom's duration
 
 Explanation:
-1. The user's query is about a double-bottom shape, which means a consecutive downtrend followed by a consecutive rising trend (down->up->down->up).
-2. The user's query is also about a double-top shape, which means a consecutive rising trend followed by a consecutive falling trend (up->down->up->down).
-3. The user's query is about a duration of about a week, which means the duration of the first double-bottom shape(trend_id=0 to trend_id=3) is about a week.
+1. The user's query is about a double-bottom shape, which means a downtrend followed by a rising trend repeated twice (down->up->down->up).
+2. The user's query is also about a double-top shape, which means a rising trend followed by a falling trend repeated twice (up->down->up->down).
+3. The user's query is about a duration of about two weeks, which means the duration of the first double-bottom shape(trend_id=0 to trend_id=3) is about two weeks.
 4. The user's query is also about a duration higher than the first double-bottom's duration, which means the duration of the second double-top shape(trend_id=4 to trend_id=7) is higher than the first double-bottom shape(trend_id=0 to trend_id=3).
 
 Output:
 {
-  "original_text": "Find periods in AMZN when price first presented a double-bottom shape with a duration of about a week and then presented a double-top shape with a duration higher than the first double-bottom's duration",
+  "original_text": "Find periods in AMZN when price first presented a double-bottom shape with a duration of about two weeks and then presented a double-top shape with a duration higher than the first double-bottom's duration",
   "text_sources": [
     {
       "text": "AMZN",
@@ -474,7 +469,7 @@ Output:
       "index": 0
     },
     {
-      "text": "with a duration of about a week",
+      "text": "with a duration of about two weeks",
       "index": 0
     },
     {
@@ -564,13 +559,13 @@ Output:
       "duration_condition": {
         "min": {
           "value": """
-        + str(1 - FUZZY_FACTOR)
+        + str(2 * (1 - FUZZY_FACTOR))
         + """,
           "inclusive": true
         },
         "max": {
           "value": """
-        + str(1 + FUZZY_FACTOR)
+        + str(2 * (1 + FUZZY_FACTOR))
         + """,
           "inclusive": true
         },
@@ -595,11 +590,12 @@ Output:
     case6 = (
         """
 Input:
-Find periods when price presented a high plateau shape with a slope of downtrend is about 20%/week, and totally the start value is approximately equal to the end value
+Find periods when price presented a high plateau shape with a slope of downtrend is about 20%/week, and totally the uptrend's start value is approximately equal to the end value of the downtrend
 
 Explanation:
 1. The user's query is about a high plateau shape, which means a rising trend followed by a flat trend followed by a downtrend (up->flat->down).
 2. Trends need to be distinguished between rising and falling, and negative slopes should be used when falling. Because user didn't specify the slope, the slope should be set according to the fuzzy factor.
+3. You can't find a valid trend of other trend_id(uptrend's previous id is equal to -1, and downtrend's next id is out of range), so you should set compare_between_start_end_value.
 
 Output:
 {
@@ -614,7 +610,7 @@ Output:
       "index": 0
     },
     {
-      "text": "totally the start value is approximately equal to the end value",
+      "text": "totally the uptrend's start value is approximately equal to the end value of the downtrend",
       "index": 0
     }
   ],

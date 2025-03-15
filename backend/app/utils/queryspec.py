@@ -32,10 +32,14 @@ def fix_text_source_id(queryspec: dict) -> dict:
         if new_pos == -1:
             break
         start_pos = new_pos + 1
-        if text not in occurrence_count:
-            occurrence_count[text] = 0
-        else:
+        if text in occurrence_count:
             occurrence_count[text] += 1
+        else:
+            max_count = 0
+            for existing_text in occurrence_count:
+                if text in existing_text:
+                    max_count = max(max_count, occurrence_count[existing_text])
+            occurrence_count[text] = max_count + 1 if max_count > 0 else 0
         if occurrence_count[text] >= text_source["index"]:
             text_source["index"] = occurrence_count[text]
 

@@ -165,26 +165,29 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 	const baseY2 = useRef(height);
 	const fontSize = 4;
 
-	const getLevel = (x1: number, x2: number) => {
-		let level = 0;
+	const getLevel = (x1: number, x2: number, negative: boolean = false) => {
+		let level = negative ? -1 : 0;
 		const min = Math.min(x1, x2);
 		const max = Math.max(x1, x2);
 		while (true) {
 			if (!levelMap[level]) {
 				levelMap[level] = [];
 			}
-			if (levelMap[level].some((line) => hasOverlap(line, [min, max]))) {
-				level++;
-			} else {
+			if (!levelMap[level].some((line) => hasOverlap(line, [min, max]))) {
 				break;
+			}
+			if (negative) {
+				level--;
+			} else {
+				level++;
 			}
 		}
 		levelMap[level].push([x1, x2]);
 		return level;
 	};
 
-	const getV = (level: number) => {
-		return baseY1.current - (level + 1) * 12;
+	const getV = (level: number, negative: boolean = false) => {
+		return negative ? baseY2.current - (level) * 12 : baseY1.current - (level + 1) * 12;
 	};
 
 	const drawTimeIndicator = ({ startX, endX, textY, timeColor, timeText, key, strokeWidth = 1, disabled = false, index }: { startX: number; endX: number; textY: number; timeColor: string; timeText?: string; key?: string; strokeWidth?: number; disabled?: boolean; index?: number }) => {
@@ -531,41 +534,6 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 		}
 	});
 
-	const drawGroupRelation = (relation: GroupRelationWithSource, i: number, trendLength: number, trends: TrendWithSource[], strokeWidth: number = 1) => {
-		if (!query) return null;
-		const getGroupInfo = (ids: [number, number]) => {
-			if (ids[0] === undefined || ids[1] === undefined || ids[0] >= trends.length || ids[1] >= trends.length) return null;
-			const x1 = ids[0] * trendLength;
-			const x2 = ids[1] * trendLength + trendLength;
-			return {
-				center: (x1 + x2) / 2,
-				start: x1,
-				end: x2,
-			};
-		};
-
-		const group1Info = getGroupInfo(relation.group1);
-		const group2Info = getGroupInfo(relation.group2);
-
-		if (!group1Info || !group2Info) return null;
-		const rangeY = baseY1.current;
-
-		const relationColor = getColorWithDisabled(colorMap, query, relation.text_source_id);
-		const level = getLevel(group1Info.start, group2Info.end);
-		const v = getV(level);
-		const index = i + single_relations.length;
-
-		return (
-			<g key={`group-${i}`}>
-				{drawTimeIndicator({ startX: group1Info.start, endX: group1Info.end, textY: rangeY, timeColor: relationColor, disabled, index })}
-				{drawTimeIndicator({ startX: group2Info.start, endX: group2Info.end, textY: rangeY, timeColor: relationColor, disabled, index })}
-				{drawConnect(group1Info.center, rangeY, group2Info.center, rangeY, v, index, relation.comparator, false, relationColor, strokeWidth)}
-			</g>
-		);
-	};
-
-	const groupRelationLines = group_relations.map((relation, i) => drawGroupRelation(relation, i, trendLength, trends));
-
 	const svgRef = useRef<SVGSVGElement>(null);
 	const gRef = useRef<SVGGElement>(null);
 	const [lastTransform, setLastTransform] = useState<ZoomTransform | null>(null);
@@ -651,10 +619,10 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 		});
 	};
 
-	const timeIndicators = () => {
-		const timeRangeLevels = calculateTimeRangeLevels(trends, trend_groups, trendLength);
-		const maxLevel = Math.max(0, ...timeRangeLevels.map((item) => item.level));
+	const timeRangeLevels = calculateTimeRangeLevels(trends, trend_groups, trendLength);
+	const maxLevel = Math.max(-1, ...timeRangeLevels.map((item) => item.level));
 
+	const timeIndicators = () => {
 		return (
 			<>
 				{trends.map(
@@ -688,6 +656,42 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 			</>
 		);
 	};
+
+	const drawGroupRelation = (relation: GroupRelationWithSource, i: number, trendLength: number, trends: TrendWithSource[], strokeWidth: number = 1) => {
+		if (!query) return null;
+		const offset = (maxLevel + 2) * 5 + 3;
+		const getGroupInfo = (ids: [number, number]) => {
+			if (ids[0] === undefined || ids[1] === undefined || ids[0] >= trends.length || ids[1] >= trends.length) return null;
+			const x1 = ids[0] * trendLength;
+			const x2 = ids[1] * trendLength + trendLength;
+			return {
+				center: (x1 + x2) / 2,
+				start: x1,
+				end: x2,
+			};
+		};
+
+		const group1Info = getGroupInfo(relation.group1);
+		const group2Info = getGroupInfo(relation.group2);
+
+		if (!group1Info || !group2Info) return null;
+		const rangeY = baseY2.current + offset;
+
+		const relationColor = getColorWithDisabled(colorMap, query, relation.text_source_id);
+		const level = getLevel(group1Info.start, group2Info.end, true);
+		const v = getV(level, true) + offset;
+		const index = i + single_relations.length;
+
+		return (
+			<g key={`group-${i}`}>
+				{drawTimeIndicator({ startX: group1Info.start, endX: group1Info.end, textY: rangeY, timeColor: relationColor, index })}
+				{drawTimeIndicator({ startX: group2Info.start, endX: group2Info.end, textY: rangeY, timeColor: relationColor, index })}
+				{drawConnect(group1Info.center, rangeY, group2Info.center, rangeY, v, index, relation.comparator, false, relationColor, strokeWidth)}
+			</g>
+		);
+	};
+
+	const groupRelationLines = group_relations.map((relation, i) => drawGroupRelation(relation, i, trendLength, trends));
 
 	const drawTarget = (targets: TargetWithSource[]) => {
 		if (!targets.length) return null;

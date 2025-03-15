@@ -34,69 +34,76 @@ modify_nl_cases = f"""## Example 1
 {ModifyNL_Cases.case4}
 """
 
-parse_nl_system_prompt = "You are providing a natural language to structured query parsing service for a natural language-driven time series segment querying tool. Below is the relevant background and knowledge."
-modify_nl_system_prompt = "你是一个专门处理时间序列查询文本调整的AI助手。你需要根据用户的调整意图，生成新的查询文本并建立文本映射关系。"
+parse_nl_system_prompt = f"""You are providing a natural language to structured query(type: QuerySpecWithSource) parsing service for a natural language-driven time series segment querying tool. Below is the relevant background and knowledge.
+"""
+modify_nl_system_prompt = "You are an AI assistant specialized in handling textual adjustments for time series queries. You need to generate new query text and establish text mapping relationships based on the user's adjustment intentions."
 
 
 def create_parse_nl_info(dataset_info: str) -> str:
-    parse_nl_info = f"""
-# Structured QuerySpecWithSource Interface
+    parse_nl_info = f"""# QuerySpecWithSource Interface Definition
 {QuerySpecWithSource_info}
 
-# Dataset Information
-The user has uploaded a dataset containing the following columns of time series: {dataset_info}. The target you parse can only be selected from these contents and cannot be chosen from other contents. If the user does not explicitly specify the target, simply return an empty array.
+# Dataset Constraints
+- Available time series columns: {dataset_info}
+- Target selection rules:
+  1. MUST ONLY use columns from the provided list
+  2. If user doesn't specify target explicitly, return empty array
+  3. Reject any target not present in dataset
 
-# Natural Language Parsing Logic
+# Parsing Protocol
 {parse_nl_logic_info}
 
-# Task:
-Based on the above background and knowledge, parse the user's natural language query about time series segments into a JSON dictionary format following the `QuerySpecWithSource` structure.
-Requirements:
-    1. Accurately and strictly follow the `QuerySpecWithSource` structured query interface definition without illegal outputs. Check before outputting.
-    2. Output only the JSON dictionary without code blocks, comments, or additional annotations.
+# Execution Requirements
+1. STRICT compliance with QuerySpecWithSource schema
+2. ZERO additional content (no explanations/comments/code blocks)
+3. MANDATORY output format validation before returning result
 
-# Reference
-## Parse Natural Language Examples
+# Output Validation Checklist
+✅ JSON structure matches QuerySpecWithSource
+✅ All targets exist in dataset columns
+✅ No extra fields or annotations
+
+# Reference Examples
 {parse_nl_cases}
 """
     return parse_nl_info
 
 
 def create_modify_nl_info() -> str:
-    modify_nl_info = f"""# 核心任务
-输入:
-- old_queryspec_with_source: 原始查询规范
-- new_queryspec_with_source_without_text_sources: 新查询规范(不含文本相关字段)
-- intentions: 调整意图
+    modify_nl_info = f"""# Core Task
+Input:
+- old_queryspec_with_source: Original query specification
+- new_queryspec_with_source_without_text_sources: New query specification (excluding text-related fields)
+- intentions: Adjustment intents
 
-输出:
-- new_queryspec_with_source: 完整的新查询规范，包含:
-  - original_text: 新的查询文本
-  - text_sources: 文本片段来源
-  - text_source_id: 属性与文本的映射关系
+Output:
+- new_queryspec_with_source: Complete new query specification, including:
+  - original_text: New query text
+  - text_sources: Text fragment sources
+  - text_source_id: Mapping relationship between attributes and text
 
-# 关键接口定义
-## QuerySpecWithSource 结构
+# Key Interface Definitions
+## QuerySpecWithSource Structure
 ```{QuerySpecWithSource_info}```
 
-## Intentions 结构
+## Intentions Structure
 ```{intentions_info}```
 
-# 文本调整规则
+# Text Adjustment Rules
 {modify_nl_logic_info}
 
-# 参考信息
-## 解析规则
+# Reference Information
+## Parsing Rules
 {parse_nl_logic_info}
 
-## 示例
+## Examples
 {modify_nl_cases}
 
-# 输出要求
-1. 严格遵循 QuerySpecWithSource 数据结构
-2. 仅输出 JSON 对象
-3. 不要添加代码块标记(```)
-4. 不要添加任何注释
-5. 输出前检查数据完整性和合法性
+# Output Requirements
+1. Strictly adhere to the QuerySpecWithSource data structure
+2. Output only a JSON object
+3. Do not include code block markers (``` )
+4. Do not add any comments
+5. Check data integrity and validity before output
 """
     return modify_nl_info

@@ -7,7 +7,7 @@ from openai.types.chat import ChatCompletion
 from typing import List, Dict, Optional
 from groq import Groq
 
-from .prompts import create_parse_nl_info, create_modify_nl_info, parse_nl_system_prompt, modify_nl_system_prompt
+from .prompts import create_parse_nl_info, create_modify_nl_info, parse_nl_system_prompt, modify_nl_system_prompt, QuerySpecWithSource_info
 from .constant import Azure, DeepSeek, GroqPlatform, SiliconFlow, Qwen, Platforms, Tencent, Ollama
 from .debugger import debugger
 
@@ -108,12 +108,9 @@ def test_parse_nl_query():
     dataset_info = """["AMZN", "DPZ", "BTC", "NFLX"]"""
     parse_nl_info = create_parse_nl_info(dataset_info)
     client = myAIClient(model=Qwen.MODELS.QWEN_MAX, platform=Platforms.QWEN)
-    # client = myAIClient(model="qwen-turbo-latest", platform=Platforms.QWEN)
-    # client = myAIClient(model=Ollama.MODELS.QWEN2_5_32B, platform=Platforms.OLLAMA)
     client.set_system_prompt(parse_nl_system_prompt)
     # nl_query = "Find periods in AMZN when price first rose sharply then fell gradually"
     # nl_query = "Find periods in DPZ when price first fall sharply then rise gradually, and the whole duration is about 3 months"
-    # nl_query = "Find periods in AMZN when price presented a head-and-shoulders shape"
     # nl_query = "Find periods in DPZ when price presented a triple-tops shape"
     # nl_query = "Find the time periods in Amazon stock when the price showed three consecutive peaks and the peaks got lower and lower"
     # nl_query = "Find periods in Amazon stock where prices rose slowly, then rose quickly"
@@ -126,13 +123,12 @@ def test_parse_nl_query():
     # nl_query = "Find periods when price rose sharply with a duration of about 4 days"
     # nl_query = "Find periods when price rose sharply with a duration of about 4 days, then fell gradually"
     # nl_query = "Find periods when price present a head-and-shoulders shape"
-    nl_query = "Find periods when price first rise then present a head-and-shoulders shape about 4 weeks then fell"
+    # nl_query = "Find periods when price first rise then present a head-and-shoulders shape about 4 weeks then fell"
+    # nl_query = "Find periods when price first rise then present a consecutive peaks shape about 4 weeks then fell"
+    # nl_query = "找两个连续的上升趋势，第一个上升趋势的斜率大于第二个上升趋势的斜率"
+    nl_query = "Find periods when price first rise then fall sharply then rise where the first segment's start value is less than the end of the second segment"
     # print(system_prompt)
-    # response = client.send_prompt(nl_query_1, False)
-    # response = client.send_prompt(nl_query_2, False)
-    # response = client.send_prompt(nl_query_3, False)
     parse_nl_user_prompt = parse_nl_info + "Input:\n" + nl_query + "\n\n" + "Output:"
-    response = client.send_prompt(parse_nl_user_prompt, False)
 
 
 def test_modify_nl_query():

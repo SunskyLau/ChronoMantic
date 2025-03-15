@@ -25,7 +25,6 @@ class ChatAgent:
     def add_message(self, role: str, content: str) -> None:
         """
         添加消息到对话历史
-
         Args:
             role (str): 消息角色 ('system', 'user' 或 'assistant')
             content (str): 消息内容

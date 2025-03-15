@@ -7,7 +7,7 @@ import SubmitIcon from "../../icons/Submit";
 import { LoadingOutlined } from "@ant-design/icons";
 import { classnames } from "../../utils/classname";
 import type { SpeechRecognitionType } from "../../types";
-import { chatApi, queryApi } from "../../api";
+import { queryApi } from "../../api";
 import { setQueryResults } from "../../app/slice/approximation";
 import { setIsRequesting } from "../../app/slice/resultsSlice";
 import { QuerySpecWithSource } from "../../types/QuerySpec";
@@ -15,6 +15,7 @@ import { deepClone } from "../../utils/deepclone";
 import HighlightedText from './HighlightedText';
 import AudioIcon from "../../icons/Audio";
 import { formatQuerySpec } from "../../utils/query-spec";
+import store from "../../app/store";
 
 // 语音识别配置
 const initSpeechRecognition = () => {
@@ -85,10 +86,18 @@ export default function NlqueryBox() {
 		const querySpec = formatQuerySpec(query);
 		dispatch(setQuerySpec(querySpec));
 		dispatch(setOriginalQuery(query));
-		chatApi.addHistory(NLQuery, JSON.stringify(query));
+		dispatch(setQueryResults(null));
 		const res = await queryApi.getFragmentsBySpec(querySpec);
 		dispatch(setQueryResults(res));
 	}, [NLQuery, query, dispatch]);
+
+	const handleSpeechResult = useCallback(({ results }: { results: SpeechRecognitionResultList }) => {
+		const currentQuery = store.getState().states.NLQuery;
+		const transcript = results[results.length - 1][0].transcript;
+		const sentence = transcript;
+		const newQuery = currentQuery ? `${currentQuery} ${sentence}` : sentence;
+		dispatch(setNLQuery(newQuery));
+	}, [dispatch]);
 
 	const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
 		if (e.key === "Enter") {
@@ -166,12 +175,7 @@ export default function NlqueryBox() {
 						return;
 					}
 					if (!isRecording) {
-						recognition.current.onresult = ({ results }: { results: SpeechRecognitionResultList }) => {
-							const transcript = results[0][0].transcript;
-							console.log("receive audio:", transcript);
-							const sentence = transcript.replace(/[^\w\s]/gi, "");
-							dispatch(setNLQuery(`${NLQuery} ${sentence}`));
-						};
+						recognition.current.onresult = handleSpeechResult;
 						recognition.current.onend = () => recognition.current.start();
 						recognition.current.start();
 					} else {
