@@ -1,2 +1,1 @@
-FLAT_THRESHOLD = 0.1  # 低于0.1%的斜率认为是平坦的
 APPROXIMATELY_EQUAL_THRESHOLD = 0.1  # 近似等于的阈值

@@ -3,7 +3,7 @@ import pandas as pd
 from typeguard import typechecked
 import matplotlib.pyplot as plt
 
-from .config import FLAT_THRESHOLD, APPROXIMATELY_EQUAL_THRESHOLD
+from .config import APPROXIMATELY_EQUAL_THRESHOLD
 from .utils import check_double_threshold_condition, check_single_threshold_condition, query_by_no_trends
 
 from ..model import approximate_dataset
@@ -13,7 +13,6 @@ from ..MyTypes import (
     ApproximationSegmentsContainer,
     Segment,
     ScopeCondition,
-    ThresholdCondition,
     Trend,
     SingleRelation,
     GroupRelation,
@@ -168,13 +167,13 @@ def match_trend_sequence(segments: List[Segment], trends: List[Trend]) -> bool:
 def match_single_trend(segment: Segment, trend: Trend) -> bool:
     """检查单个段是否匹配趋势模式"""
     if trend.category == TrendCategory.FLAT:
-        if not segment.relative_slope <= FLAT_THRESHOLD:
+        if not segment.category == TrendCategory.FLAT:
             return False
     elif trend.category == TrendCategory.UP:
-        if not (segment.slope > 0 and segment.relative_slope > FLAT_THRESHOLD):
+        if not (segment.category == TrendCategory.UP):
             return False
     elif trend.category == TrendCategory.DOWN:
-        if not (segment.slope < 0 and segment.relative_slope > FLAT_THRESHOLD):
+        if not (segment.category == TrendCategory.DOWN):
             return False
     elif trend.category == TrendCategory.ARBITRARY:
         pass  # 任意趋势，不需要检查趋势类型

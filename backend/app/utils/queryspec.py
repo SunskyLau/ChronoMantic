@@ -1,5 +1,6 @@
 from typing import List, Dict, Any, Union, TypedDict, Optional
-from app.query.config import APPROXIMATELY_EQUAL_THRESHOLD, FLAT_THRESHOLD
+from app.query.config import APPROXIMATELY_EQUAL_THRESHOLD
+from app.model.config import FLAT_THRESHOLD
 from app.utils.time_units import get_appropriate_unit_and_value, get_seconds_of_unit
 from app.ai_agent.constant import FUZZY_FACTOR
 from copy import deepcopy

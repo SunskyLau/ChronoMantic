@@ -20,6 +20,13 @@ class Source(Enum):
     USER = "user"  # 来源于用户指定
 
 
+class TrendCategory(Enum):
+    FLAT = "flat"  # 平坦
+    UP = "up"  # 上升
+    DOWN = "down"  # 下降
+    ARBITRARY = "arbitrary"  # 任意
+
+
 @dataclass
 class Segment(DictMixin):
     slope: float
@@ -36,6 +43,8 @@ class Segment(DictMixin):
     source: Optional[Source] = None
     r2: Optional[float] = None
     score: Optional[float] = None
+    category: Optional[TrendCategory] = None
+
 
 
 @dataclass
@@ -70,13 +79,6 @@ class ThresholdCondition(DictMixin):
 class ScopeCondition(DictMixin):
     max: Optional[ThresholdCondition] = None  # 最大值条件
     min: Optional[ThresholdCondition] = None  # 最小值条件
-
-
-class TrendCategory(Enum):
-    FLAT = "flat"  # 平坦
-    UP = "up"  # 上升
-    DOWN = "down"  # 下降
-    ARBITRARY = "arbitrary"  # 任意
 
 
 @dataclass

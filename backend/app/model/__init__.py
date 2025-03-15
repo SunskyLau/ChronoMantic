@@ -2,7 +2,9 @@ from typing import List
 from typeguard import typechecked
 import numpy as np
 import pandas as pd
-from ..MyTypes import ApproximationSegmentsContainer, DatasetInfo, Segment
+
+from .config import FLAT_THRESHOLD
+from ..MyTypes import ApproximationSegmentsContainer, DatasetInfo, Segment, TrendCategory
 from .bottom_up import bottom_up_merge
 
 
@@ -48,6 +50,13 @@ def update_relative_slope(approximation_segments_container: ApproximationSegment
                     segment.relative_slope = abs(segment.slope) / max_abs_slope * 100
                 else:
                     segment.relative_slope = 0
+                if segment.relative_slope <= FLAT_THRESHOLD:
+                    segment.category = TrendCategory.FLAT
+                elif segment.slope > 0:
+                    segment.category = TrendCategory.UP
+                else:
+                    segment.category = TrendCategory.DOWN
+
 
     return approximation_segments_container
 
