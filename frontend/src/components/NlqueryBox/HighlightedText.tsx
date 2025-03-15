@@ -12,8 +12,6 @@ interface HighlightedTextProps {
 const HighlightedText = memo(({ text, colorMap, query, onToggleDisabled }: HighlightedTextProps) => {
     if (!text || !colorMap || !query) return <>{text}</>;
 
-    const isEnglish = /^[a-zA-Z0-9 ,.\-!?;:'"()\\/&@#$%+=<>{}[\]|~`*]+$/.test(text);
-
     const highlights = Object.entries(query.text_sources).reduce<Array<{
         index: number;
         length: number;
@@ -23,7 +21,7 @@ const HighlightedText = memo(({ text, colorMap, query, onToggleDisabled }: Highl
         disabled: boolean;
     }>>((acc, [text_source_id, textSource]) => {
         if (!colorMap[text_source_id]) return acc;
-        const regex = isEnglish ? new RegExp(`\\b${textSource.text.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&')}\\b`, 'g') : new RegExp(`${textSource.text.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&')}`, 'g');
+        const regex = new RegExp(`${textSource.text.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&')}`, 'g');
         let match;
         const matches: number[] = [];
 

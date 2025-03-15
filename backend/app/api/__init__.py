@@ -184,7 +184,7 @@ def parse_nl_query():
     | results | QuerySpecWithSource | 解析后的结构化查询 |
     """
     nl_query = request.json.get("nl_query")
-    dataset_info_str = dataset_info_container.get_data().value_columns
+    dataset_info_str = dataset_info_container.get_data().value_columns if dataset_info_container.get_data() else "[]"
     parse_nl_info = create_parse_nl_info(dataset_info_str)
     parse_nl_user_prompt = parse_nl_info + "\n\n" + "Input:" + nl_query + "\n\n" + "Output:"
     queryspec_with_source_str = parse_nl_agent.send_prompt(parse_nl_user_prompt, False)

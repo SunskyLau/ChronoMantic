@@ -23,25 +23,13 @@ def add_category_to_intentions(segments: List[dict], segment_intentions: List[di
 def fix_text_source_id(queryspec: dict) -> dict:
     original_text: str = queryspec["original_text"]
     text_sources: List[dict] = queryspec["text_sources"]
-    occurrence_count = {}
     start_pos = 0
 
     for text_source in text_sources:
         text = text_source["text"]
-        new_pos = original_text.find(text, start_pos)
-        if new_pos == -1:
-            break
-        start_pos = new_pos + 1
-        if text in occurrence_count:
-            occurrence_count[text] += 1
-        else:
-            max_count = 0
-            for existing_text in occurrence_count:
-                if text in existing_text:
-                    max_count = max(max_count, occurrence_count[existing_text])
-            occurrence_count[text] = max_count + 1 if max_count > 0 else 0
-        if occurrence_count[text] >= text_source["index"]:
-            text_source["index"] = occurrence_count[text]
+        count = original_text[:start_pos].count(text)
+        start_pos = original_text.find(text, start_pos) + len(text)
+        text_source["index"] = count
 
     return queryspec
 

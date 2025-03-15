@@ -483,10 +483,10 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 			const x12 = x11 + offset;
 			const x21 = trendIndex2 * trendLength;
 			const x22 = x21 + offset;
-			const y = 0;
+			const y = baseY2.current;
 			const relationColor = getColorWithDisabled(colorMap, query, relation.text_source_id) || DEFAULT_COLOR;
-			const level = getLevel(x11, x22);
-			const v = getV(level);
+			const level = getLevel(x11, x22, true);
+			const v = getV(level, true);
 			return (
 				<g key={i}>
 					{drawTimeIndicator({ startX: x11, endX: x12, textY: y, timeColor: relationColor, disabled, index: i })}

@@ -341,18 +341,20 @@ Requirements:
 - Ensure grammatical correctness
 - Maintain technical terminology consistency
 - Preserve temporal relationships
-- When describing trends, use the same descriptive approach as much as possible 
+- Describing trends one by one, do not mix them together
+- DO NOT use `twice` or `four times` etc. to describe the consecutive trends
 
 ### Stage 2: Fragment Mapping
 Rules:
 1. Fragment Extraction:
 - text_sources elements MUST be contiguous substrings of original_text
+- the text Must be the same as the original text
 - Maintain original document order
 - Zero overlap between fragments
 
 2. Indexing Protocol:
 - Duplicate fragments receive incremental indices
-- Example: "rise then rise" → [{"text": "rise", "index": 0}, ...]
+- Example: "rise then rise" → [{"text": "rise", "index": 0}, {"text": "rise", "index": 1}]
 
 3. Validation:
 - Remove unreferenced fragments
@@ -375,12 +377,12 @@ Mapping Requirements:
 
 1. Handling Repeated Text:
 ```json
-// Original text: "rise then rise then rise"
+// Original text: "rise then rises then rise"
 {
   "text_sources": [
     {"text": "rise", "index": 0},
-    {"text": "rise", "index": 1},
-    {"text": "rise", "index": 2}
+    {"text": "rises", "index": 0},
+    {"text": "rise", "index": 1}
   ],
   "trends": [
     {"category": {"category": "up", "text_source_id": 0}},
@@ -392,12 +394,12 @@ Mapping Requirements:
 
 2. Handling Different Text:
 ```json
-// Original text: "rise then fall then rose"
+// Original text: "rises then fall then rise"
 {
   "text_sources": [
-    {"text": "rise", "index": 0},
+    {"text": "rises", "index": 0},
     {"text": "fall", "index": 0},
-    {"text": "rose", "index": 0}
+    {"text": "rise", "index": 0}
   ],
   "trends": [
     {"category": {"category": "up", "text_source_id": 0}},
@@ -425,6 +427,41 @@ Mapping Requirements:
   "single_relations": [
     {"id1": 0, "id2": 2, "attribute": "end_value", "comparator": "<"},
     {"id1": 2, "id2": 4, "attribute": "end_value", "comparator": ">"}
+  ]
+}
+```
+
+### ❌ Error Cases
+You MUST NOT generate the following text_sources:
+
+1. ❌ NOT describe trends with consecutive words
+// Explanation: You MUST describe trends one by one.
+```json
+❌ Error Case: "Find periods when price rises four consecutive times"
+✔️ Correct Case: "Find periods when price rises, then rises, then rises, then rises again"
+
+❌ Error Case: "Find periods with two rises"
+✔️ Correct Case: "Find periods when price rises then rises again"
+```
+
+2. ❌ Texts that are not related to the given text
+// Explanation: You MUST choose words that appear in the original text.
+```json
+// Original text: "rises followed by a rise then rise"
+❌ Error Case:
+{
+  "text_sources": [
+    {"text": "rises", "index": 0},
+    {"text": "rises", "index": 1},
+    {"text": "rises", "index": 2}
+  ]
+}
+✔️ Correct Case:
+{
+  "text_sources": [
+    {"text": "rises", "index": 0},
+    {"text": "rise", "index": 0},
+    {"text": "rise", "index": 1}
   ]
 }
 ```

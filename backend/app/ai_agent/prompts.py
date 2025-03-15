@@ -32,6 +32,9 @@ modify_nl_cases = f"""## Example 1
 
 ## Example 4
 {ModifyNL_Cases.case4}
+
+## Example 5
+{ModifyNL_Cases.case5}
 """
 
 parse_nl_system_prompt = f"""You are providing a natural language to structured query(type: QuerySpecWithSource) parsing service for a natural language-driven time series segment querying tool. Below is the relevant background and knowledge.
@@ -39,7 +42,7 @@ parse_nl_system_prompt = f"""You are providing a natural language to structured 
 modify_nl_system_prompt = "You are an AI assistant specialized in handling textual adjustments for time series queries. You need to generate new query text and establish text mapping relationships based on the user's adjustment intentions."
 
 
-def create_parse_nl_info(dataset_info: str) -> str:
+def create_parse_nl_info(dataset_info: str = "[]") -> str:
     parse_nl_info = f"""# QuerySpecWithSource Interface Definition
 {QuerySpecWithSource_info}
 
@@ -92,11 +95,7 @@ Output:
 # Text Adjustment Rules
 {modify_nl_logic_info}
 
-# Reference Information
-## Parsing Rules
-{parse_nl_logic_info}
-
-## Examples
+# Examples
 {modify_nl_cases}
 
 # Output Requirements
