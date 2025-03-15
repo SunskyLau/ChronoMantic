@@ -27,7 +27,7 @@ def fix_text_source_id(queryspec: dict) -> dict:
 
     for text_source in text_sources:
         text = text_source["text"]
-        count = original_text[:start_pos].count(text)
+        count = original_text.count(text, 0, start_pos)
         start_pos = original_text.find(text, start_pos) + len(text)
         text_source["index"] = count
 

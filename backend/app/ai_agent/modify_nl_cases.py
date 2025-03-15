@@ -129,7 +129,6 @@ old_queryspec_with_source
   "targets": [],
   "text_sources": [
     {
-      "index": 0,
       "text": "double top"
     }
   ],
@@ -215,18 +214,9 @@ Output:
 {
   "original_text": "find a rising trend then falls followed by a double top trend",
   "text_sources": [
-    {
-      "index": 0,
-      "text": "rising trend"
-    },
-    {
-      "index": 0,
-      "text": "falls"
-    },
-    {
-      "index": 0,
-      "text": "double top"
-    }
+    { "text": "rising trend" },
+    { "text": "falls" },
+    { "text": "double top" }
   ],
   "single_relations": [
     {
@@ -292,7 +282,7 @@ old_queryspec_with_source
       {"attribute": "end_value", "comparator": ">", "id1": 2, "id2": 4, "text_source_id": 0},
   ],
   "targets": [],
-  "text_sources": [{"index": 0, "text": "head-and-shoulders"}],
+  "text_sources": [{"text": "head-and-shoulders"}],
   "trend_groups": [],
   "trends": [
       {"category": {"category": "up", "text_source_id": 0}},
@@ -355,10 +345,10 @@ Output:
   "original_text": "find a trend that rises, then falls, followed by a head-and-shoulders shape, and ending with a final rise",
   "targets": [],
   "text_sources": [
-    {"index": 0, "text": "rises"},
-    {"index": 0, "text": "falls"},
-    {"index": 0, "text": "head-and-shoulders"},
-    {"index": 0, "text": "rise"}
+    {"text": "rises"},
+    {"text": "falls"},
+    {"text": "head-and-shoulders"},
+    {"text": "rise"}
   ],
   "trends": [
     {"category": {"category": "up", "text_source_id": 0}},
@@ -408,38 +398,16 @@ intentions
 }
 ```
 
-Explanation:
-1. `rises` is different from `rise`, so we need to set `index` separately for `rises` and `rise`.
-2. `falls` is different from `drop`, so we need to set `index` separately for `falls` and `drop`.
-
 Output:
 {
   "original_text": "Look for a trend that first falls, then rises, followed by a rise, and finally rises again, and these three trends last about 25 days in total, ending with a final drop.",
   "text_sources": [
-    {
-      "index": 0,
-      "text": "falls"
-    },
-    {
-      "index": 0,
-      "text": "rises"
-    },
-    {
-      "index": 0,
-      "text": "rise"
-    },
-    {
-      "index": 1,
-      "text": "rises"
-    },
-    {
-      "index": 0,
-      "text": "about 25 days"
-    },
-    {
-      "index": 0,
-      "text": "drop"
-    }
+    { "text": "falls" },
+    { "text": "rises" },
+    { "text": "rise" },
+    { "text": "rises" },
+    { "text": "about 25 days" },
+    { "text": "drop" }
   ],
   "targets": [],
   "trends": [
@@ -516,15 +484,15 @@ Output:
   "original_text": "find a trend that rises, then falls with a slope between -34.52 and -28.24 per week over about 5 weeks, then rises again, and finally falls, where the first trend's relative slope is greater than the third trend's and the total duration of the first trend to the last trend is about 43 weeks, while the duration of the first two trends is shorter than the duration of the last two trends",
   "targets": [],
   "text_sources": [
-    {"index": 0, "text": "rises"},
-    {"index": 0, "text": "falls"},
-    {"index": 0, "text": "a slope between -34.52 and -28.24 per week"},
-    {"index": 0, "text": "over about 5 weeks"},
-    {"index": 1, "text": "rises"},
-    {"index": 1, "text": "falls"},
-    {"index": 0, "text": "the first trend's relative slope is greater than the third trend's"},
-    {"index": 0, "text": "total duration of the first trend to the last trend is about 43 weeks"},
-    {"index": 0, "text": "the duration of the first two trends is shorter than the duration of the last two trends"},
+    {"text": "rises"},
+    {"text": "falls"},
+    {"text": "a slope between -34.52 and -28.24 per week"},
+    {"text": "over about 5 weeks"},
+    {"text": "rises"},
+    {"text": "falls"},
+    {"text": "the first trend's relative slope is greater than the third trend's"},
+    {"text": "total duration of the first trend to the last trend is about 43 weeks"},
+    {"text": "the duration of the first two trends is shorter than the duration of the last two trends"},
   ],
   "trends": [
     {"category": {"category": "up", "text_source_id": 0}},
@@ -577,30 +545,12 @@ Output:
 {
   "original_text": "Look for a trend that first falls, then rises, followed by a rise, then rises again, then with a another rise, finally ending with a final rise.",
   "text_sources": [
-    {
-      "index": 0,
-      "text": "falls"
-    },
-    {
-      "index": 0,
-      "text": "rises"
-    },
-    {
-      "index": 0,
-      "text": "rise"
-    },
-    {
-      "index": 1,
-      "text": "rises"
-    },
-    {
-      "index": 1,
-      "text": "rise"
-    },
-    {
-      "index": 2,
-      "text": "rise"
-    }
+    { "text": "falls" },
+    { "text": "rises" },
+    { "text": "rise" },
+    { "text": "rises" },
+    { "text": "rise" },
+    { "text": "rise" }
   ],
   "targets": [],
   "trends": [

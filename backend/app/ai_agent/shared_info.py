@@ -82,7 +82,6 @@ export interface GroupRelation {
 
 export interface TextSource {
   text: string; // Original text fragment
-  index: number; // Used to distinguish text fragments that are the same but different in position within the original text; index=0 indicates the first, index=1 indicates the second, etc.
 }
 
 export interface WithSource {
@@ -354,7 +353,7 @@ Rules:
 
 2. Indexing Protocol:
 - Duplicate fragments receive incremental indices
-- Example: "rise then rise" → [{"text": "rise", "index": 0}, {"text": "rise", "index": 1}]
+- Example: "rise then rise" → [{"text": "rise"}, {"text": "rise"}]
 
 3. Validation:
 - Remove unreferenced fragments
@@ -367,10 +366,6 @@ Mapping Requirements:
 - Prefer semantically closest fragment
 - Maintain legacy mappings where unchanged
 
-2. Index Validation:
-- All text_source_id MUST exist in text_sources
-- Enforce strict index boundaries
-
 ## Implementation Guidelines
 
 ### Text Mapping Rules
@@ -380,9 +375,9 @@ Mapping Requirements:
 // Original text: "rise then rises then rise"
 {
   "text_sources": [
-    {"text": "rise", "index": 0},
-    {"text": "rises", "index": 0},
-    {"text": "rise", "index": 1}
+    {"text": "rise"},
+    {"text": "rises"},
+    {"text": "rise"}
   ],
   "trends": [
     {"category": {"category": "up", "text_source_id": 0}},
@@ -397,9 +392,9 @@ Mapping Requirements:
 // Original text: "rises then fall then rise"
 {
   "text_sources": [
-    {"text": "rises", "index": 0},
-    {"text": "fall", "index": 0},
-    {"text": "rise", "index": 0}
+    {"text": "rises"},
+    {"text": "fall"},
+    {"text": "rise"}
   ],
   "trends": [
     {"category": {"category": "up", "text_source_id": 0}},
@@ -414,7 +409,7 @@ Mapping Requirements:
 // Original text: "Find periods when price presented a head-and-shoulders shape"
 {
   "text_sources": [
-    {"text": "head-and-shoulders", "index": 0}
+    {"text": "head-and-shoulders"}
   ],
   "trends": [
     {"category": {"category": "up", "text_source_id": 0}},
@@ -447,21 +442,21 @@ You MUST NOT generate the following text_sources:
 2. ❌ Texts that are not related to the given text
 // Explanation: You MUST choose words that appear in the original text.
 ```json
-// Original text: "rises followed by a rise then rise"
+// Original text: "rises followed by a rise then rising"
 ❌ Error Case:
 {
   "text_sources": [
-    {"text": "rises", "index": 0},
-    {"text": "rises", "index": 1},
-    {"text": "rises", "index": 2}
+    {"text": "rises"},
+    {"text": "rises"},
+    {"text": "rises"}
   ]
 }
 ✔️ Correct Case:
 {
   "text_sources": [
-    {"text": "rises", "index": 0},
-    {"text": "rise", "index": 0},
-    {"text": "rise", "index": 1}
+    {"text": "rises"},
+    {"text": "rise"},
+    {"text": "rising"}
   ]
 }
 ```
