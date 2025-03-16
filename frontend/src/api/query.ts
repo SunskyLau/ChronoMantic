@@ -57,5 +57,20 @@ export const queryApi = {
       console.error("Error sending modify_prompt request:", error);
       throw error;
     }
+  },
+
+  /**
+   * 获取segment比较结果
+   */
+  getSegmentComparison: async (segments: Segment[], ids: [number, number][]) => {
+    console.log("Sending segment comparison request");
+    try {
+      const response = await api.post(`/api/segment_comparison`, { segments, ids });
+      console.log(response.data);
+      return response.data.results;
+    } catch (error) {
+      console.error("Error sending segment comparison request:", error);
+      throw error;
+    }
   }
 }; 

@@ -165,6 +165,7 @@ export default function DetailView() {
 							isHoverable
 							range={range}
 							height={"100%"}
+							segments={segments}
 							split={split}
 							onScroll={handleScroll}
 							title={source}
