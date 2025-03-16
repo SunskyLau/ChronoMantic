@@ -19,7 +19,7 @@ from ..shared_data import (
     parse_nl_agent,
     modify_nl_agent,
 )
-from app.utils.queryspec import add_category_to_intentions, fix_text_source_id, modify_queryspec_by_intentions, get_segment_info
+from app.utils.queryspec import add_category_to_intentions, fix_text_source_id, modify_queryspec_by_intentions, get_segment_info, compare_segments
 
 bus_bp = Blueprint("bus", __name__)
 
@@ -282,3 +282,28 @@ def add_chat_history():
     parse_nl_agent.add_chat_history("user", user_prompt)
     parse_nl_agent.add_chat_history("assistant", assistant_prompt)
     return jsonify({"code": 200, "message": "Add chat history successful"})
+
+
+@bus_bp.route("/segment_comparison", methods=["POST"])
+def segment_comparison():
+    """比较两个segment的各项指标
+
+    | 参数名 | 类型 | 说明 |
+    |--------|------|------|
+    | segments | List[Segment] | 要比较的整体segment |
+    | ids | List[List[int]] | 要比较的segment的id |
+
+    | 返回字段 | 类型 | 说明 |
+    |----------|------|------|
+    | code | int | 状态码 |
+    | message | str | 状态信息 |
+    | results | Dict | 比较结果，包含各项指标的比较 |
+    """
+    try:
+        segments = request.json.get("segments")
+        ids = request.json.get("ids")
+        comparison_result = compare_segments(segments, ids)
+        print(comparison_result)
+        return jsonify({"code": 200, "message": "Segment comparison successful", "results": filter_json(comparison_result)})
+    except Exception as e:
+        return jsonify({"code": 500, "message": f"Error comparing segments: {str(e)}"}), 500

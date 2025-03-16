@@ -6,6 +6,54 @@ from app.ai_agent.constant import FUZZY_FACTOR
 from copy import deepcopy
 
 
+def compare_segments(segments: List[dict], ids: List[List[int]]) -> dict:
+    """比较两个segment的各项指标
+
+    Args:
+        segments: 要比较的整体segment
+        ids: 要比较的segment的id
+
+    Returns:
+        比较结果，包含各项指标的比较
+    """
+    comparisons = {}
+    segment1 = [segment for segment in segments if segment["start_idx"] >= ids[0][0] and segment["end_idx"] <= ids[0][1]]
+    segment2 = [segment for segment in segments if segment["start_idx"] >= ids[1][0] and segment["end_idx"] <= ids[1][1]]
+
+    if len(segment1) > 1 or len(segment2) > 1:
+        if "duration" in segment1[0] and "duration" in segment2[0]:
+            ranges = [segment["duration"] for segment in segments]
+            comparisons["duration"] = get_comparator(
+                sum(segment["duration"] for segment in segment1), sum(segment["duration"] for segment in segment2), max(ranges) - min(ranges)
+            )
+        return comparisons
+
+    segment1 = segment1[0]
+    segment2 = segment2[0]
+
+    if "slope" in segment1 and "slope" in segment2:
+        ranges = [segment["slope"] for segment in segments]
+        comparisons["slope"] = get_comparator(segment1["slope"], segment2["slope"], max(ranges) - min(ranges))
+
+    if "relative_slope" in segment1 and "relative_slope" in segment2:
+        ranges = [segment["relative_slope"] for segment in segments]
+        comparisons["relative_slope"] = get_comparator(segment1["relative_slope"], segment2["relative_slope"], max(ranges) - min(ranges))
+
+    if "duration" in segment1 and "duration" in segment2:
+        ranges = [segment["duration"] for segment in segments]
+        comparisons["duration"] = get_comparator(segment1["duration"], segment2["duration"], max(ranges) - min(ranges))
+
+    if "end_value" in segment1 and "end_value" in segment2:
+        ranges = [segment["end_value"] for segment in segments]
+        comparisons["end_value"] = get_comparator(segment1["end_value"], segment2["end_value"], max(ranges) - min(ranges))
+
+    if "start_value" in segment1 and "start_value" in segment2:
+        ranges = [segment["start_value"] for segment in segments]
+        comparisons["start_value"] = get_comparator(segment1["start_value"], segment2["start_value"], max(ranges) - min(ranges))
+
+    return comparisons
+
+
 def add_category_to_intentions(segments: List[dict], segment_intentions: List[dict]) -> None:
     """
     Add user specified trend's category to intentions
