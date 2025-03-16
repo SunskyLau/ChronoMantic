@@ -116,7 +116,7 @@ class ModifyNL_Cases:
 old_queryspec_with_source
 ```{
   "group_relations": [],
-  "original_text": "find a double top trend",
+  "original_text": "find a double top pattern",
   "single_relations": [
     {
       "attribute": "end_value",
@@ -212,7 +212,7 @@ Explanation:
 
 Output:
 {
-  "original_text": "find a rising trend then falls followed by a double top trend",
+  "original_text": "find a rising trend then falls followed by a double top pattern",
   "text_sources": [
     { "text": "rising trend" },
     { "text": "falls" },
@@ -342,7 +342,7 @@ Explanation:
 
 Output:
 {
-  "original_text": "find a trend that rises, then falls, followed by a head-and-shoulders shape, and ending with a final rise",
+  "original_text": "find a pattern that rises, then falls, followed by a head-and-shoulders shape, and ending with a final rise",
   "targets": [],
   "text_sources": [
     {"text": "rises"},
@@ -400,7 +400,7 @@ intentions
 
 Output:
 {
-  "original_text": "Look for a trend that first falls, then rises, followed by a rise, and finally rises again, and these three trends last about 25 days in total, ending with a final drop.",
+  "original_text": "Look for a pattern that first falls, then rises, followed by a rise, and finally rises again, and these three trends last about 25 days in total, ending with a final drop.",
   "text_sources": [
     { "text": "falls" },
     { "text": "rises" },
@@ -481,7 +481,7 @@ intentions
 
 Output:
 {
-  "original_text": "find a trend that rises, then falls with a slope between -34.52 and -28.24 per week over about 5 weeks, then rises again, and finally falls, where the first trend's relative slope is greater than the third trend's and the total duration of the first trend to the last trend is about 43 weeks, while the duration of the first two trends is shorter than the duration of the last two trends",
+  "original_text": "find a pattern that rises, then falls with a slope between -34.52 and -28.24 per week over about 5 weeks, then rises again, and finally falls, where the first trend's relative slope is greater than the third trend's and the total duration of the first trend to the last trend is about 43 weeks, while the duration of the first two trends is shorter than the duration of the last two trends",
   "targets": [],
   "text_sources": [
     {"text": "rises"},
@@ -543,7 +543,7 @@ intentions
 
 Output:
 {
-  "original_text": "Look for a trend that first falls, then rises, followed by a rise, then rises again, then with a another rise, finally ending with a final rise.",
+  "original_text": "Look for a pattern that first falls, then rises, followed by a rise, then rises again, then with a another rise, finally ending with a final rise.",
   "text_sources": [
     { "text": "falls" },
     { "text": "rises" },
