@@ -150,21 +150,12 @@ export default function ResultsContent() {
 	const getSegmentAttributeOptions = useCallback(
 		(segmentIndex: number): AttributeOption[] => [
 			{
-				id: `segment_${segmentIndex}_r2`,
-				key: "r2",
-				label: `R²`,
-				scope: "segment",
-				segmentIndex,
-				format: (value) => value.toFixed(3),
-				getValue: (segments) => segments[segmentIndex]?.r2 ?? 0,
-				fixedRange: [0, 1],
-			},
-			{
 				id: `segment_${segmentIndex}_slope`,
 				key: "slope",
 				label: `Slope`,
 				scope: "segment",
 				segmentIndex,
+				permanent: true,
 				format: (value) => value.toFixed(2),
 				getValue: (segments) => (segments[segmentIndex]?.slope ?? 0) * timeStampColumnUnit,
 			},
@@ -195,6 +186,7 @@ export default function ResultsContent() {
 				label: "Score",
 				scope: "segment",
 				segmentIndex,
+				permanent: true,
 				format: (value) => value.toFixed(2),
 				getValue: (segments) => segments[segmentIndex]?.score ?? 0,
 				fixedRange: [0, 1],
@@ -223,7 +215,7 @@ export default function ResultsContent() {
 				array.push(value);
 			});
 
-			const min = 0;
+			const min = attr.fixedRange ? attr.fixedRange[0] : Math.min(...array);
 			const max = attr.fixedRange ? attr.fixedRange[1] : Math.max(...array);
 
 			stats[attr.id] = {
@@ -270,7 +262,7 @@ export default function ResultsContent() {
 
 	const handleSort = useCallback((attrId: string) => {
 		setSortConfig((prevConfig) => {
-			const existingIndex = prevConfig.keys.findIndex(item => item.key === attrId);
+			const existingIndex = prevConfig.keys.findIndex((item) => item.key === attrId);
 			const newKeys = [...prevConfig.keys];
 
 			if (existingIndex !== -1) {
@@ -287,24 +279,35 @@ export default function ResultsContent() {
 		});
 	}, []);
 
-	const renderSortIcon = useCallback((attrId: string) => {
-		const sortIndex = sortConfig.keys.findIndex(item => item.key === attrId);
-		if (sortIndex === -1) {
-			return <UnorderedListOutlined />;
-		}
-		
-		const direction = sortConfig.keys[sortIndex].direction;
-		return (
-			<span className="sort-indicator">
-				{direction === "asc" ? <SortAscendingOutlined /> : <SortDescendingOutlined />}
-				{sortConfig.keys.length > 1 && <sup>{sortIndex + 1}</sup>}
-			</span>
-		);
-	}, [sortConfig.keys]);
+	const renderSortIcon = useCallback(
+		(attrId: string) => {
+			const sortIndex = sortConfig.keys.findIndex((item) => item.key === attrId);
+			if (sortIndex === -1) {
+				return <UnorderedListOutlined />;
+			}
+
+			const direction = sortConfig.keys[sortIndex].direction;
+			return (
+				<span className="sort-indicator">
+					{direction === "asc" ? <SortAscendingOutlined /> : <SortDescendingOutlined />}
+					{sortConfig.keys.length > 1 && <sup>{sortIndex + 1}</sup>}
+				</span>
+			);
+		},
+		[sortConfig.keys]
+	);
+
+	const segmentAttributeOptions = useMemo(() => {
+		return Array.from({ length: queryLevelResults?.[0]?.segments.length || 0 }, (_, index) => getSegmentAttributeOptions(index)).flat();
+	}, [queryLevelResults, getSegmentAttributeOptions]);
+
+	const allSegmentPermanentAttrs = segmentAttributeOptions.filter((attr) => attr.permanent);
+
+	console.log(allSegmentPermanentAttrs)
 
 	const permanentAttributes = useMemo(() => {
-		return attributeOptions.filter((attr) => attr.permanent);
-	}, [attributeOptions]);
+		return [...attributeOptions.filter((attr) => attr.permanent), ...allSegmentPermanentAttrs];
+	}, [attributeOptions, allSegmentPermanentAttrs]);
 
 	const handleCascaderChange = useCallback(
 		(value: string[][]) => {
@@ -328,7 +331,7 @@ export default function ResultsContent() {
 			const otherAttrs = newSelectedAttributes.filter((attr) => !attr.permanent);
 			handleAttributeSelect([...permanentAttributes, ...otherAttrs]);
 		},
-		[attributeOptions, handleAttributeSelect, getSegmentAttributeOptions, permanentAttributes]
+		[attributeOptions, handleAttributeSelect, permanentAttributes, getSegmentAttributeOptions]
 	);
 
 	const getCascaderOptions = useCallback(
@@ -347,10 +350,12 @@ export default function ResultsContent() {
 			const segmentOptions = Array.from({ length }, (_, index) => ({
 				value: `segment_${index}`,
 				label: `Segment ${index + 1}`,
-				children: getSegmentAttributeOptions(index).map((attr) => ({
-					value: attr.id,
-					label: attr.label,
-				})),
+				children: getSegmentAttributeOptions(index)
+					.filter((attr) => !attr.permanent)
+					.map((attr) => ({
+						value: attr.id,
+						label: attr.label,
+					})),
 			}));
 
 			return [globalOptions, ...segmentOptions];
@@ -420,13 +425,12 @@ export default function ResultsContent() {
 		if (sortConfig.keys.length > 0) {
 			results = results.sort((a, b) => {
 				for (const { key, direction } of sortConfig.keys) {
-					const attr = [...groupedAttributes.global, ...groupedAttributes.segments.flat()]
-						.find(attr => attr.id === key);
-					
+					const attr = [...groupedAttributes.global, ...groupedAttributes.segments.flat()].find((attr) => attr.id === key);
+
 					if (attr) {
 						const valueA = attr.getValue(a.segments, attr.segmentIndex, a);
 						const valueB = attr.getValue(b.segments, attr.segmentIndex, b);
-						
+
 						if (valueA !== valueB) {
 							return direction === "asc" ? valueA - valueB : valueB - valueA;
 						}
