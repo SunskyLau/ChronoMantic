@@ -298,12 +298,10 @@ export default function ResultsContent() {
 	);
 
 	const segmentAttributeOptions = useMemo(() => {
-		return Array.from({ length: queryLevelResults?.[0]?.segments.length || 0 }, (_, index) => getSegmentAttributeOptions(index)).flat();
+		return Array.from({ length: queryLevelResults?.[0]?.segments.length || 0 }, (_, index) => getSegmentAttributeOptions(index));
 	}, [queryLevelResults, getSegmentAttributeOptions]);
 
-	const allSegmentPermanentAttrs = segmentAttributeOptions.filter((attr) => attr.permanent);
-
-	console.log(allSegmentPermanentAttrs)
+	const allSegmentPermanentAttrs = useMemo(() => segmentAttributeOptions.flat().filter((attr) => attr.permanent), [segmentAttributeOptions]);
 
 	const permanentAttributes = useMemo(() => {
 		return [...attributeOptions.filter((attr) => attr.permanent), ...allSegmentPermanentAttrs];
@@ -454,10 +452,8 @@ export default function ResultsContent() {
 	}, [sortConfig]);
 
 	useEffect(() => {
-		if (!queryResults) {
-			handleAttributeSelect(permanentAttributes);
-		}
-	}, [permanentAttributes, handleAttributeSelect, queryResults]);
+		handleAttributeSelect(permanentAttributes);
+	}, [permanentAttributes, handleAttributeSelect]);
 
 	const cascaderValue = useMemo(() => {
 		return selectedAttributes
