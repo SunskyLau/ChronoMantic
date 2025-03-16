@@ -190,6 +190,7 @@ def parse_nl_query():
     queryspec_with_source_str = parse_nl_agent.send_prompt(parse_nl_user_prompt, False)
     queryspec_with_source_str = remove_code_fence(queryspec_with_source_str)
     queryspec_with_source = json.loads(queryspec_with_source_str)
+    queryspec_with_source = fix_text_source_id(queryspec_with_source)
     return jsonify({"code": 200, "message": "Parse nl query successful", "results": filter_json(queryspec_with_source)})
 
 

@@ -10,30 +10,12 @@ Output:
 {
   "original_text": "Find periods in AMZN when price first rose sharply then fell gradually and the price was higher than 100",
   "text_sources": [
-    {
-      "text": "AMZN",
-      "index": 0
-    },
-    {
-      "text": "rose",
-      "index": 0
-    },
-    {
-      "text": "sharply",
-      "index": 0
-    },
-    {
-      "text": "fell",
-      "index": 0
-    },
-    {
-      "text": "gradually",
-      "index": 0
-    },
-    {
-      "text": "higher than 100",
-      "index": 0
-    }
+    { "text": "AMZN" },
+    { "text": "rose" },
+    { "text": "sharply" },
+    { "text": "fell" },
+    { "text": "gradually" },
+    { "text": "higher than 100" }
   ],
   "targets": [
     {
@@ -95,18 +77,9 @@ Output:
 {
   "original_text": "Find periods in DPZ when price presented a double-bottom shape where the first bottom's slope was steeper than the second bottom's slope",
   "text_sources": [
-    {
-      "text": "DPZ",
-      "index": 0
-    },
-    {
-      "text": "double-bottom",
-      "index": 0
-    },
-    {
-      "text": "first bottom's slope was steeper than the second bottom's slope",
-      "index": 0
-    }
+    { "text": "DPZ" },
+    { "text": "double-bottom" },
+    { "text": "first bottom's slope was steeper than the second bottom's slope" }
   ],
   "targets": [
     {
@@ -178,26 +151,10 @@ Output:
 {
   "original_text": "Find the time periods in Amazon stock when the price showed three consecutive peaks with the first rising trend's end value is greater than the last falling trend's start value and each trend's slope should be steeper than 10 per month",
   "text_sources": [
-    {
-      "text": "Amazon stock",
-      "index": 0
-    },
-    {
-      "text": "three consecutive peaks",
-      "index": 0
-    },
-    {
-      "text": "the first rising trend's end value is greater than the last falling trend's start value",
-      "index": 0
-    },
-    {
-      "text": "each trend's slope should be steeper than 10 per month",
-      "index": 0
-    },
-    {
-      "text": "each trend's slope should be steeper than 10 per month",
-      "index": 0
-    }
+    { "text": "Amazon stock" },
+    { "text": "three consecutive peaks" },
+    { "text": "the first rising trend's end value is greater than the last falling trend's start value" },
+    { "text": "each trend's slope should be steeper than 10 per month" }
   ],
   "targets": [
     {
@@ -316,18 +273,9 @@ Output:
 {
   "original_text": "Find periods in AMZN when price presented a head-and-shoulders shape followed by a cup-with-handle shape",
   "text_sources": [
-    {
-      "text": "AMZN",
-      "index": 0
-    },
-    {
-      "text": "head-and-shoulders",
-      "index": 0
-    },
-    {
-      "text": "cup-with-handle",
-      "index": 0
-    }
+    { "text": "AMZN" },
+    { "text": "head-and-shoulders" },
+    { "text": "cup-with-handle" }
   ],
   "targets": [
     {
@@ -460,26 +408,11 @@ Output:
 {
   "original_text": "Find periods in AMZN when price first presented a double-bottom shape with a duration of about two weeks and then presented a double-top shape with a duration higher than the first double-bottom's duration",
   "text_sources": [
-    {
-      "text": "AMZN",
-      "index": 0
-    },
-    {
-      "text": "a double-bottom",
-      "index": 0
-    },
-    {
-      "text": "with a duration of about two weeks",
-      "index": 0
-    },
-    {
-      "text": "a double-top",
-      "index": 0
-    },
-    {
-      "text": "with a duration higher than the first double-bottom's duration",
-      "index": 0
-    }
+    { "text": "AMZN" },
+    { "text": "a double-bottom" },
+    { "text": "with a duration of about two weeks" },
+    { "text": "a double-top" },
+    { "text": "with a duration higher than the first double-bottom's duration" }
   ],
   "targets": [
     {
@@ -601,18 +534,9 @@ Output:
 {
   "original_text": "Find periods when price presented a high plateau shape with a slope of downtrend is about 20%/week",
   "text_sources": [
-    {
-      "text": "a high plateau shape",
-      "index": 0
-    },
-    {
-      "text": "a slope of downtrend is about 20%/week",
-      "index": 0
-    },
-    {
-      "text": "totally the uptrend's start value is approximately equal to the end value of the downtrend",
-      "index": 0
-    }
+    { "text": "a high plateau shape" },
+    { "text": "a slope of downtrend is about 20%/week" },
+    { "text": "totally the uptrend's start value is approximately equal to the end value of the downtrend" }
   ],
   "targets": [],
   "trends": [
