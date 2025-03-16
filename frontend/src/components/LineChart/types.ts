@@ -1,4 +1,4 @@
-import { GroupChoice, GroupRelationChoice, Intentions, SingleChoice, SingleRelationChoice, Unit } from "../../types/QuerySpec";
+import { Comparator, GroupChoice, GroupRelationChoice, Intentions, Segment, SingleChoice, SingleRelationChoice, Unit } from "../../types/QuerySpec";
 
 export interface LineChartProps {
     xData: number[] | string[];
@@ -41,6 +41,7 @@ export interface LineChartProps {
         segments: [number, number][][];
         colors: string[];
     };
+    segments?: Segment[];
     selectedSplits?: number[];
     defaultSplits?: number[];
     isHoverable?: boolean;
@@ -81,5 +82,8 @@ export interface IntentionPopoverProps<T extends SingleChoice | GroupChoice | Si
     onCancel?: () => void;
     onConfirm: () => void;
     onDelete?: () => void;
-    isExisting?: boolean;
+    isExisting: boolean;
+    segment?: Segment | [Segment, Segment];
+    xDataType?: Unit;
+    comparison?: Promise<Record<T, Comparator>>;
 } 
