@@ -198,6 +198,7 @@ export default function Trend({ title, trends, onChange, start = 0, isEdit, disa
 										case "relative_slope_scope_condition":
 											components.push(
 												<Span
+													key={k}
 													disabled={disabled}
 													min={condition?.min?.value ?? null}
 													max={condition?.max?.value ?? null}
