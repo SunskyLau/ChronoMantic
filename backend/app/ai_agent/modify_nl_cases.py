@@ -528,7 +528,7 @@ null
 
 new_queryspec_with_source_without_text_sources
 ```
-{'original_text': '', 'text_sources': [], 'targets': [], 'trends': [{'category': {'category': 'down'}}, {'category': {'category': 'up'}}, {'category': {'category': 'up'}}, {'category': {'category': 'up'}}, {'category': {'category': 'up'}}, {'category': {'category': 'up'}}], 'single_relations': [], 'trend_groups': [], 'group_relations': []}
+{'original_text': '', 'text_sources': [], 'targets': [], 'trends': [{'category': {'category': 'down'}}, {'category': {'category': 'up'}}, {'category': {'category': 'up'}}, {'category': {'category': 'up'}}, {'category': {'category': 'up'}}, {'category': {'category': 'up'}}], 'single_relations': [], 'trend_groups': [], 'group_relations': [], "comparator_between_start_end_value": {"comparator": ">"}, "duration_condition": {"max": {"inclusive": true, "value": 25}, "min": {"inclusive": true, "value": 20}, "unit": "month"}}
 ```
 
 intentions
@@ -537,20 +537,23 @@ intentions
   "single_segment_intentions": [{"id": 0, "single_choices": ["user"]}, {"id": 1, "single_choices": ["user"]}, {"id": 2, "single_choices": ["user"]}, {"id": 3, "single_choices": ["user"]}, {"id": 4, "single_choices": ["user"]}, {"id": 5, "single_choices": ["user"]}],
   "segment_group_intentions": [],
   "single_relation_intentions": [],
-  "group_relation_intentions": []
+  "group_relation_intentions": [],
+  "global_intentions": ["compare_start_end_value", "duration"]
 }
 ```
 
 Output:
 {
-  "original_text": "Look for a pattern that first falls, then rises, followed by a rise, then rises again, then with a another rise, finally ending with a final rise.",
+  "original_text": "Look for a pattern that first falls, then rises, followed by a rise, then rises again, then with a another rise, finally ending with a final rise, and the start value of this pattern is greater than the end value, and the duration of this pattern is about 22.5 months.",
   "text_sources": [
     { "text": "falls" },
     { "text": "rises" },
     { "text": "rise" },
     { "text": "rises" },
     { "text": "rise" },
-    { "text": "rise" }
+    { "text": "rise" },
+    { "text": "the start value of this pattern is greater than the end value" },
+    { "text": "about 22.5 months" }
   ],
   "targets": [],
   "trends": [
@@ -593,6 +596,8 @@ Output:
   ],
   "trend_groups": [],
   "single_relations": [],
-  "group_relations": []
+  "group_relations": [],
+  "comparator_between_start_end_value": {"comparator": ">", "text_source_id": 6},
+  "duration_condition": {"max": {"inclusive": true, "value": 25}, "min": {"inclusive": true, "value": 20}, "unit": "month", "text_source_id": 7}
 }
 """

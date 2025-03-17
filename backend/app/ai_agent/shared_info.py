@@ -164,7 +164,7 @@ intentions_info = """
  * Query Modification Intentions Schema
  */
 
-enum AttributeType {
+enum SingleChoice {
   // Single segment attributes
   USER = "user",            // User-specified description required
   RESULT = "result",        // Pre-existing in original query (no description needed)
@@ -173,11 +173,11 @@ enum AttributeType {
   DURATION = "duration",    // Time span (seconds)
 }
 
-enum GroupAttribute {
+enum GroupChoice {
   DURATION = "duration",    // Trend group duration condition
 }
 
-enum RelationAttribute {
+enum SingleRelationChoice {
   SLOPE = "slope",          // Slope relationship
   START_VALUE = "start_value",  // Initial value comparison
   END_VALUE = "end_value",  // Final value comparison
@@ -185,37 +185,43 @@ enum RelationAttribute {
   RELATIVE_SLOPE = "relative_slope",  // Slope percentage relationship
 }
 
-enum GroupRelation {
+enum GroupRelationChoice {
   DURATION = "duration",    // Group time span relationship
 }
 
 interface SingleSegmentIntention {
   id: number;               // Target segment ID
-  attributes: AttributeType[]; // Attributes to consider
+  attributes: SingleChoice[]; // Attributes to consider
 }
 
 interface SegmentGroupIntention {
-  range: [number, number];  // Segment ID range [start, end] (inclusive)
-  groupAttributes: GroupAttribute[]; // Group-level attributes
+  ids: [number, number];  // Segment ID range [start, end] (inclusive)
+  group_choices: GroupChoice[]; // Group-level attributes
 }
 
 interface SingleRelationIntention {
-  sourceId: number;         // First segment ID
-  targetId: number;         // Second segment ID
-  relations: RelationAttribute[]; // Comparative attributes
+  id1: number;         // First segment ID
+  id2: number;         // Second segment ID
+  relation_choices: SingleRelationChoice[]; // Comparative attributes
 }
 
 interface GroupRelationIntention {
   group1: [number, number]; // First segment range [start, end]
   group2: [number, number]; // Second segment range [start, end]
-  relations: GroupRelation[]; // Group comparison attributes
+  relation_choices: GroupRelationChoice[]; // Group comparison attributes
+}
+
+enum GlobalChoice {
+  DURATION = "duration",  // Total time span range condition
+  COMPARE_START_END_VALUE = "compare_start_end_value", // The comparator between start_value and end_value
 }
 
 interface Intentions {
-  singleSegments: SingleSegmentIntention[]; // Individual segment intentions
-  segmentGroups: SegmentGroupIntention[];   // Segment group intentions
-  singleRelations: SingleRelationIntention[]; // Pairwise segment relations
-  groupRelations: GroupRelationIntention[]; // Group-to-group relations
+  single_segment_intentions: SingleSegmentIntention[]; // Individual segment intentions
+  segment_group_intentions: SegmentGroupIntention[];   // Segment group intentions
+  single_relation_intentions: SingleRelationIntention[]; // Pairwise segment relations
+  group_relation_intentions: GroupRelationIntention[]; // Group-to-group relations
+  global_intentions: GlobalChoice[]; // Global intentions
 }
 """
 

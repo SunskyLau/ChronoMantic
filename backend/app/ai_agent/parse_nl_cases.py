@@ -585,3 +585,88 @@ Output:
 }
 """
     )
+
+    case7 = (
+        """
+Input:
+look for a pattern that rises, then rises again with a smaller relative slope and a smaller slope compared to the first rise, then rises once more with a duration approximately equal to the first rise, and the overall duration of the pattern is about 25 months, and the start value of this pattern is greater than the end value
+
+Output:
+{
+  "original_text": "look for a pattern that rises, then rises again with a smaller relative slope and a smaller slope compared to the first rise, then rises once more with a duration approximately equal to the first rise, and the overall duration of the pattern is about 25 months, and the start value of this pattern is greater than the end value",
+  "text_sources": [
+    { "text": "rises" },
+    { "text": "rises again with a smaller relative slope and a smaller slope compared to the first rise" },
+    { "text": "rises once more with a duration approximately equal to the first rise" },
+    { "text": "overall duration of the pattern is about 25 months" },
+    { "text": "the start value of this pattern is greater than the end value" }
+  ],
+  "targets": [],
+  "single_relations": [
+    {
+      "attribute": "relative_slope",
+      "comparator": ">",
+      "id1": 0,
+      "id2": 1,
+      "text_source_id": 1
+    },
+    {
+      "attribute": "slope",
+      "comparator": ">",
+      "id1": 0,
+      "id2": 1,
+      "text_source_id": 1
+    },
+    {
+      "attribute": "duration",
+      "comparator": "~=",
+      "id1": 0,
+      "id2": 2,
+      "text_source_id": 2
+    }
+  ],
+  "trend_groups": [],
+  "trends": [
+    {
+      "category": {
+        "category": "up",
+        "text_source_id": 0
+      }
+    },
+    {
+      "category": {
+        "category": "up",
+        "text_source_id": 1
+      }
+    },
+    {
+      "category": {
+        "category": "up",
+        "text_source_id": 2
+      }
+    }
+  ],
+  "duration_condition": {
+    "max": {
+      "inclusive": true,
+      "value": """
+        + str(25 * (1 + FUZZY_FACTOR))
+        + """
+    },
+    "min": {
+      "inclusive": true,
+      "value": """
+        + str(25 * (1 - FUZZY_FACTOR))
+        + """
+    },
+    "text_source_id": 3,
+    "unit": "month"
+  },
+  "comparator_between_start_end_value": {
+    "comparator": "<",
+    "text_source_id": 4
+  },
+  "group_relations": []
+}
+"""
+    )
