@@ -470,6 +470,10 @@ export default function ResultsContent() {
 			});
 	}, [selectedAttributes]);
 
+	if (queryLevelResults.length === 0) {
+		return <Empty />;
+	}
+
 	return (
 		<>
 			<div className="results-content">
@@ -626,7 +630,8 @@ export default function ResultsContent() {
 											xData={x}
 											range={[start, end]}
 											yData={(data?.[source] as number[]) || []}
-											height={40}
+											margin={{ top: 1, bottom: 1, right: 1, left: 1 }}
+											height={42}
 											split={splits}
 											isShowRange={false}
 											isExpand={false}

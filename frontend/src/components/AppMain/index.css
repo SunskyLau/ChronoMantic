@@ -27,8 +27,18 @@
     display: flex;
     flex: 2 1 0;
     flex-direction: column;
-    gap: var(--gap);
     min-width: 0;
+    background-color: #fff;
+    border-radius: 10px;
+}
+
+.main-right .ant-divider {
+    padding: 0 20px;
+    margin: 0;
+}
+
+.main-right .panel {
+    padding-bottom: 2px;
 }
 
 .main .panel {

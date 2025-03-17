@@ -1,6 +1,6 @@
 import "./index.css";
 import Papa from "papaparse";
-import { useRef } from "react";
+import { useRef, forwardRef, ForwardedRef } from "react";
 import { useAppDispatch } from "../../app/hooks";
 import { setDataset, Dataset, ColumnType } from "../../app/slice/datasetSlice";
 import UploadIcon from "../../icons/Upload";
@@ -9,7 +9,7 @@ import { setQueryResults, setResults } from "../../app/slice/approximation";
 import { Unit } from "../../types/QuerySpec";
 import { getUnitBySeconds } from "../../utils/query-spec";
 
-function CsvLoader() {
+const CsvLoader = forwardRef(function CsvLoader({ onClick }: { onClick?: () => void }, ref: ForwardedRef<HTMLDivElement>) {
 	const dispatch = useAppDispatch();
 	const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -71,8 +71,9 @@ function CsvLoader() {
 
 	return (
 		<div
+			ref={ref}
 			className="csv-loader"
-			onClick={handleClickLoadIcon}
+			onClick={onClick || handleClickLoadIcon}
 		>
 			<UploadIcon></UploadIcon>
 			<input
@@ -84,6 +85,6 @@ function CsvLoader() {
 			/>
 		</div>
 	);
-}
+});
 
 export default CsvLoader;

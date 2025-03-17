@@ -1,17 +1,21 @@
 .header {
-  --header-bg: #619CD3;
-  --header-text: #fff;
+  --header-bg: #fff;
+  --header-text: #0c0c0c;
   --icon-size: 32px;
-  --title-size: 48px;
+  --title-size: 30px;
 
-  width: 100%;
+  width: calc(100% - var(--gap) * 2);
+  box-sizing: border-box;
+  margin: var(--gap);
   height: var(--header-height);
   line-height: var(--header-height);
   position: relative;
   font-size: var(--title-size);
   display: flex;
+  border-radius: 999px;
   align-items: center;
   justify-content: space-between;
+  padding: 0 20px;
   color: var(--header-text);
   background-color: var(--header-bg);
 }
@@ -19,19 +23,56 @@
 .header .header-title {
   text-align: center;
   margin: 0;
-  font-family: Arial;
+  font-family: 'Jockey One';
   font-size: var(--title-size);
-  font-style: italic;
   font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  position: absolute;
 }
 
-.header .header-left,
-.header .header-right {
-  min-width: 90px;
-  padding: 0 12px;
-  height: 100%;
+.header .header-title .icon {
+  font-size: 25px;
+}
+
+.header .header-title .icon.text {
+  width: unset;
+}
+
+.header .header-center {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  font-size: var(--icon-size);
+  margin: auto;
+  gap: 12px;
+}
+
+.header .header-button {
+  width: 200px;
+  height: 36px;
+  border-radius: 999px;
+  border: unset;
+  background-color: #dfdfdf;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  font-size: 24px;
+  transition: all 0.2s ease-in-out;
+}
+
+.header .header-button:active {
+  transform: scale(0.98);
+}
+
+.header .header-button.header-button__upload {
+  background-color: var(--primary-color);
+  color: #fff;
+}
+
+.header .header-button b {
+  font-size: 20px;
+  font-weight: 500;
+  font-family: 'Roboto';
 }

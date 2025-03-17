@@ -13,7 +13,7 @@ import { setupTooltip } from "./hooks/useTooltip";
 import { useResize } from "./hooks/useResize";
 import { useScroll } from "./hooks/useScroll";
 
-function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVisible = false, isYAxisVisible = false, isXAxisTextVisible = false, isYAxisTextVisible = false, isBrush = false, onBrush, onBrushEnd, range, height, split, brushPosition, isExpand = true, isShowRange = true, isActive, children, onScroll, onContextMenu, xAxisColor = "#C5C5C5", yAxisColor = "#C5C5C5", lineColor = "#A6A6A6", textColor = "#C5C5C5", xAxisFormatter = (date: Date) => formatTime(date, xDataType === Unit.NUMBER ? undefined : xDataType), brushColor = "#546BB633", resultsSplit, selectedSplits, defaultSplits = [], isSelectable = false, onSplitSelect, onSubmitIntentions, margin, isHoverable = false, xDataType = Unit.NUMBER, isRequesting = false, onCancelSplit, segments = [] }: LineChartProps) {
+function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVisible = false, isYAxisVisible = false, isXAxisTextVisible = false, isYAxisTextVisible = false, isBrush = false, onBrush, onBrushEnd, range, height, split, brushPosition, isExpand = true, isShowRange = true, isActive, children, onScroll, onContextMenu, xAxisColor = "#C5C5C5", yAxisColor = "#C5C5C5", lineColor = "#A6A6A6", xAxisTextColor = "#C5C5C5", yAxisTextColor = "#C5C5C5", textColor = "#C5C5C5", xAxisFormatter = (date: Date) => formatTime(date, xDataType === Unit.NUMBER ? undefined : xDataType), brushColor = "#546BB633", resultsSplit, selectedSplits, defaultSplits = [], isSelectable = false, onSplitSelect, onSubmitIntentions, margin, isHoverable = false, xDataType = Unit.NUMBER, isRequesting = false, onCancelSplit, segments = [] }: LineChartProps) {
 	const svgRef = useRef<SVGSVGElement>(null);
 	const id = generateId();
 	const isTime = useMemo(() => xDataType !== Unit.NUMBER, [xDataType]);
@@ -732,7 +732,7 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 			.append("marker")
 			.attr("id", `arrow-${id}`)
 			.attr("viewBox", "0 -10 20 20")
-			.attr("refX", 14)
+			.attr("refX", 18)
 			.attr("refY", 0)
 			.attr("markerWidth", 8)
 			.attr("markerHeight", 8)
@@ -764,16 +764,16 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 				.call((g) => {
 					g.selectAll("path, line").attr("stroke", xAxisColor);
 					g.selectAll("text")
-						.attr("fill", xAxisColor)
+						.attr("fill", xAxisTextColor)
 						.style("display", isXAxisTextVisible ? "block" : "none");
 				});
 
 			xAxisG
 				.append("line")
 				.attr("x1", innerWidth)
-				.attr("y1", 0)
+				.attr("y1", 0.5)
 				.attr("x2", innerWidth + 10)
-				.attr("y2", 0)
+				.attr("y2", 0.5)
 				.attr("stroke", xAxisColor)
 				.attr("marker-end", `url(#arrow-${id})`);
 		}
@@ -791,11 +791,11 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 				.call((g) => {
 					g.selectAll("path, line").attr("stroke", yAxisColor);
 					g.selectAll("text")
-						.attr("fill", yAxisColor)
+						.attr("fill", yAxisTextColor)
 						.style("display", isYAxisTextVisible ? "block" : "none");
 				});
 
-			yAxisG.append("line").attr("x1", 0).attr("y1", 0).attr("x2", 0).attr("y2", -10).attr("stroke", yAxisColor).attr("marker-end", `url(#arrow-${id})`);
+			yAxisG.append("line").attr("x1", 0.5).attr("y1", 0).attr("x2", 0.5).attr("y2", -8).attr("stroke", yAxisColor).attr("marker-end", `url(#arrow-${id})`);
 		}
 
 		if ((range && start !== end) || !range) {
@@ -809,7 +809,7 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 				.attr("stroke", lineColor)
 				.attr("stroke-opacity", "0.7")
 				.attr("clip-path", `url(#clip-path-${id})`)
-				.attr("stroke-width", 1);
+				.attr("stroke-width", 0.5);
 
 			if (isHoverable) {
 				cleanups.push(setupTooltip(g, lineColor, keyData, valueData, x, y, isTime, xAxisFormatter, innerHeight, segments, timeStampData, xDataType));
@@ -841,7 +841,7 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 				const y1 = y(yData[split[i]]);
 				const y2 = y(yData[split[i + 1]]);
 
-				splitLinesG.append("line").attr("class", "split-line").attr("x1", x1).attr("x2", x2).attr("y1", y1).attr("y2", y2).attr("stroke", darkerColor).attr("stroke-opacity", "0.5").attr("stroke-width", 1).attr("pointer-events", "none");
+				splitLinesG.append("line").attr("class", "split-line").attr("x1", x1).attr("x2", x2).attr("y1", y1).attr("y2", y2).attr("stroke", darkerColor).attr("stroke-opacity", "0.5").attr("stroke-width", 2).attr("pointer-events", "none");
 
 				if (isSelectable && selectedSplits) {
 					splitInteractionG
@@ -886,7 +886,7 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 							.attr("clip-path", `url(#clip-path-${id})`)
 							.attr("stroke", resultsSplit.colors[j] || "#666")
 							.attr("stroke-opacity", defaultSplits.includes(resultsSplit.segments[i][j][0]) && defaultSplits.includes(resultsSplit.segments[i][j][1]) ? "1" : "0.7")
-							.attr("stroke-width", defaultSplits.includes(resultsSplit.segments[i][j][0]) && defaultSplits.includes(resultsSplit.segments[i][j][1]) ? 4 : 2);
+							.attr("stroke-width", defaultSplits.includes(resultsSplit.segments[i][j][0]) && defaultSplits.includes(resultsSplit.segments[i][j][1]) ? 4 : 2.5);
 					}
 				}
 			}
@@ -1309,7 +1309,7 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 			svg.selectAll("*").remove();
 			cleanups.forEach((cleanup) => cleanup());
 		};
-	}, [xData, yData, ratio, title, isXAxisVisible, isYAxisVisible, isXAxisTextVisible, isYAxisTextVisible, isBrush, onBrush, isFill, range, height, split, brushPosition, isExpand, isShowRange, id, onBrushEnd, isActive, xAxisColor, yAxisColor, lineColor, textColor, xAxisFormatter, brushColor, resultsSplit, handleSplitClick, selectedSplits, popoverPosition, handleMouseMove, handleMouseUp, intentions, defaultSplits, onSubmitIntentions, relationIds, computedMargin, isHoverable, timeStampData, isTime, isRequesting, isSelectable, onSplitSelect, onCancelSplit, segments, xDataType]);
+	}, [xData, yData, ratio, title, isXAxisVisible, isYAxisVisible, isXAxisTextVisible, isYAxisTextVisible, isBrush, onBrush, isFill, range, height, split, brushPosition, isExpand, isShowRange, id, onBrushEnd, isActive, xAxisColor, yAxisColor, lineColor, textColor, xAxisFormatter, brushColor, resultsSplit, handleSplitClick, selectedSplits, popoverPosition, handleMouseMove, handleMouseUp, intentions, defaultSplits, onSubmitIntentions, relationIds, computedMargin, isHoverable, timeStampData, isTime, isRequesting, isSelectable, onSplitSelect, onCancelSplit, segments, xDataType, xAxisTextColor, yAxisTextColor]);
 
 	useResize(draw);
 

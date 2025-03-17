@@ -2,7 +2,6 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import { useAppDispatch, useAppSelector } from "../../app/hooks";
 import "./index.css";
 import { setColorMap, setNLQuery, setOriginalQuery, setQuery, setQuerySpec } from "../../app/slice/stateSlice";
-import QueryIcon from "../../icons/Query";
 import SubmitIcon from "../../icons/Submit";
 import { LoadingOutlined } from "@ant-design/icons";
 import { classnames } from "../../utils/classname";
@@ -12,7 +11,7 @@ import { setQueryResults } from "../../app/slice/approximation";
 import { setIsRequesting } from "../../app/slice/resultsSlice";
 import { QuerySpecWithSource } from "../../types/QuerySpec";
 import { deepClone } from "../../utils/deepclone";
-import HighlightedText from './HighlightedText';
+import HighlightedText from "./HighlightedText";
 import AudioIcon from "../../icons/Audio";
 import { formatQuerySpec } from "../../utils/query-spec";
 import store from "../../app/store";
@@ -32,7 +31,7 @@ const TextSourceToggler = {
 	toggleSource: (query: QuerySpecWithSource, text_source_id: number) => {
 		if (!query.text_sources[text_source_id]) return;
 		query.text_sources[text_source_id].disabled = !query.text_sources[text_source_id].disabled;
-	}
+	},
 };
 
 const PLACEHOLDER = "Please enter your query...";
@@ -62,9 +61,7 @@ export default function NlqueryBox() {
 
 	useEffect(() => {
 		const handleClickOutside = (event: MouseEvent) => {
-			if (textareaRef.current && 
-				!textareaRef.current.contains(event.target as Node) && 
-				!document.querySelector(".ant-dropdown")?.contains(event.target as Node)) {
+			if (textareaRef.current && !textareaRef.current.contains(event.target as Node) && !document.querySelector(".ant-dropdown")?.contains(event.target as Node)) {
 				setIsEdit(false);
 			}
 		};
@@ -73,60 +70,74 @@ export default function NlqueryBox() {
 		return () => document.removeEventListener("mousedown", handleClickOutside, { capture: true });
 	}, []);
 
-	const toggleTextSourceDisabled = useCallback((text_source_id: number) => {
-		if (!query) return;
-		const newQuery = deepClone(query);
-		TextSourceToggler.toggleSource(newQuery, text_source_id);
-		dispatch(setQuery(newQuery));
-	}, [query, dispatch]);
+	const toggleTextSourceDisabled = useCallback(
+		(text_source_id: number) => {
+			if (!query) return;
+			const newQuery = deepClone(query);
+			TextSourceToggler.toggleSource(newQuery, text_source_id);
+			dispatch(setQuery(newQuery));
+		},
+		[query, dispatch]
+	);
 
-	const handleSubmit = useCallback(async (e: React.FormEvent) => {
-		e.preventDefault();
-		if (!NLQuery.trim() || !query) return;
-		const querySpec = formatQuerySpec(query);
-		dispatch(setQuerySpec(querySpec));
-		dispatch(setOriginalQuery(query));
-		dispatch(setQueryResults(null));
-		const res = await queryApi.getFragmentsBySpec(querySpec);
-		dispatch(setQueryResults(res));
-	}, [NLQuery, query, dispatch]);
-
-	const handleSpeechResult = useCallback(({ results }: { results: SpeechRecognitionResultList }) => {
-		const currentQuery = store.getState().states.NLQuery;
-		const transcript = results[results.length - 1][0].transcript;
-		const sentence = transcript;
-		const newQuery = currentQuery ? `${currentQuery} ${sentence}` : sentence;
-		dispatch(setNLQuery(newQuery));
-	}, [dispatch]);
-
-	const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
-		if (e.key === "Enter") {
+	const handleSubmit = useCallback(
+		async (e: React.FormEvent) => {
 			e.preventDefault();
 			dispatch(setIsRequesting(true));
-			if (textareaRef.current && NLQuery.trim()) {
-				textareaRef.current.blur();
-				setIsEdit(false);
-				dispatch(setQuery(null));
-				dispatch(setColorMap(null));
-				queryApi.getQuerySpec(NLQuery)
-					.then((res) => {
-						dispatch(setQuery(res));
-						dispatch(setColorMap(res));
-						dispatch(setQueryResults(null));
-					})
-					.finally(() => {
-						dispatch(setIsRequesting(false));
-					});
+			if (!NLQuery.trim() || !query) return;
+			const querySpec = formatQuerySpec(query);
+			dispatch(setQuerySpec(querySpec));
+			dispatch(setOriginalQuery(query));
+			dispatch(setQueryResults(null));
+			const res = await queryApi.getFragmentsBySpec(querySpec);
+			dispatch(setQueryResults(res));
+			dispatch(setIsRequesting(false));
+		},
+		[NLQuery, query, dispatch]
+	);
+
+	const handleSpeechResult = useCallback(
+		({ results }: { results: SpeechRecognitionResultList }) => {
+			const currentQuery = store.getState().states.NLQuery;
+			const transcript = results[results.length - 1][0].transcript;
+			const sentence = transcript;
+			const newQuery = currentQuery ? `${currentQuery} ${sentence}` : sentence;
+			dispatch(setNLQuery(newQuery));
+		},
+		[dispatch]
+	);
+
+	const handleKeyDown = useCallback(
+		(e: React.KeyboardEvent) => {
+			if (e.key === "Enter") {
+				e.preventDefault();
+				dispatch(setIsRequesting(true));
+				if (textareaRef.current && NLQuery.trim()) {
+					textareaRef.current.blur();
+					setIsEdit(false);
+					dispatch(setQuery(null));
+					dispatch(setColorMap(null));
+					queryApi
+						.getQuerySpec(NLQuery)
+						.then((res) => {
+							dispatch(setQuery(res));
+							dispatch(setColorMap(res));
+							dispatch(setQueryResults(null));
+						})
+						.finally(() => {
+							dispatch(setIsRequesting(false));
+						});
+				}
 			}
-		}
-	}, [NLQuery, dispatch]);
+		},
+		[NLQuery, dispatch]
+	);
 
 	return (
 		<form
 			className="nl-query-form"
 			onSubmit={handleSubmit}
 		>
-			<QueryIcon className="query-icon"></QueryIcon>
 			{isEdit ? (
 				<textarea
 					ref={textareaRef}
@@ -164,40 +175,44 @@ export default function NlqueryBox() {
 							query={query}
 							onToggleDisabled={toggleTextSourceDisabled}
 						/>
-					) : PLACEHOLDER}
-					{isRequesting && <LoadingOutlined style={{ marginLeft: 8 }} />}
+					) : (
+						PLACEHOLDER
+					)}
 				</div>
 			)}
-			<button
-				onClick={() => {
-					if (!SpeechRecognition) {
-						console.error("SpeechRecognition is not supported!");
-						return;
-					}
-					if (!isRecording) {
-						recognition.current.onresult = handleSpeechResult;
-						recognition.current.onend = () => recognition.current.start();
-						recognition.current.start();
-					} else {
-						recognition.current.onend = null;
-						recognition.current.onresult = null;
-						recognition.current.stop();
-					}
-					setIsRecording((prevIsRecording) => !prevIsRecording);
-				}}
-				className={classnames("btn audio", isRecording ? "active" : "")}
-				type="button"
-				disabled={isRequesting}
-			>
-				<AudioIcon></AudioIcon>
-			</button>
-			<button
-				className="btn send"
-				type="submit"
-				disabled={!NLQuery || isRequesting}
-			>
-				<SubmitIcon></SubmitIcon>
-			</button>
+			<div className="btns">
+				{isRequesting && <LoadingOutlined style={{ marginRight: 'auto', marginBottom: '6px' }} />}
+				<button
+					onClick={() => {
+						if (!SpeechRecognition) {
+							console.error("SpeechRecognition is not supported!");
+							return;
+						}
+						if (!isRecording) {
+							recognition.current.onresult = handleSpeechResult;
+							recognition.current.onend = () => recognition.current.start();
+							recognition.current.start();
+						} else {
+							recognition.current.onend = null;
+							recognition.current.onresult = null;
+							recognition.current.stop();
+						}
+						setIsRecording((prevIsRecording) => !prevIsRecording);
+					}}
+					className={classnames("btn audio", isRecording ? "active" : "")}
+					type="button"
+					disabled={isRequesting}
+				>
+					<AudioIcon></AudioIcon>
+				</button>
+				<button
+					className="btn send"
+					type="submit"
+					disabled={!NLQuery || isRequesting}
+				>
+					<SubmitIcon></SubmitIcon>
+				</button>
+			</div>
 		</form>
 	);
 }

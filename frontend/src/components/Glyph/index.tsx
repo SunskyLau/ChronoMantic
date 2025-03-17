@@ -332,7 +332,7 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 						${controlPoints.cp2x},${controlPoints.cp2y} 
 						${currentPoint.x2},${currentPoint.y2}`}
 					stroke={color}
-					strokeWidth={1.5}
+					strokeWidth={2}
 					fill="none"
 					markerEnd={`url(#arrow-${id}-${i})`}
 				/>

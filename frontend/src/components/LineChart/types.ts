@@ -36,6 +36,8 @@ export interface LineChartProps {
     xAxisColor?: string;
     yAxisColor?: string;
     lineColor?: string;
+    xAxisTextColor?: string;
+    yAxisTextColor?: string;
     textColor?: string;
     xAxisFormatter?: (date: Date) => string;
     brushColor?: string;

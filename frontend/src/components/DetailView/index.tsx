@@ -151,6 +151,12 @@ export default function DetailView() {
 				/>
 			}
 		>
+			<LevelController
+				level={level}
+				disabled={!current}
+				maxLevel={current?.max_approximation_level ?? 0}
+				onChange={(level) => dispatch(setLevel(level))}
+			/>
 			{timeCol && source ? (
 				<>
 					<div className="bg detail">
@@ -162,11 +168,18 @@ export default function DetailView() {
 							resultsSplit={resultsSplit}
 							isXAxisVisible={true}
 							isYAxisVisible={true}
+							xAxisColor="#666"
+							yAxisColor="#666"
+							xAxisTextColor="#666"
+							yAxisTextColor="#666"
+							textColor="#000"
 							isHoverable
 							range={range}
+							margin={{ top: 15, bottom: 30, right: 15, left: 50 }}
 							height={"100%"}
 							segments={segments}
 							split={split}
+							lineColor="#333"
 							onScroll={handleScroll}
 							title={source}
 							isXAxisTextVisible
@@ -187,6 +200,11 @@ export default function DetailView() {
 							yData={dataValues}
 							isBrush={true}
 							onBrush={handleBrush}
+							xAxisColor="#666"
+							yAxisColor="#666"
+							xAxisTextColor="#666"
+							yAxisTextColor="#666"
+							margin={{ top: 15, bottom: 25, right: 15, left: 50 }}
 							height={"100%"}
 							split={split}
 							brushPosition={brushPosition}

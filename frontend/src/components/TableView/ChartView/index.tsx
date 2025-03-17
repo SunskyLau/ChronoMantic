@@ -9,7 +9,6 @@ export function ChartView() {
 	const dataset = useAppSelector((state) => state.dataset.dataset);
 	const timeStampColumn = useAppSelector((state) => state.dataset.dataset?.timeStampColumn) || "";
 	const xData = (dataset?.data[timeStampColumn] || []) as string[];
-	const source = useAppSelector((state) => state.approximation.source);
 	const dispatch = useAppDispatch();
 	const results = useAppSelector((state) => state.approximation.results);
 	const level = useAppSelector((state) => state.dataset.level);
@@ -38,11 +37,16 @@ export function ChartView() {
 			>
 				<LineChart
 					isXAxisVisible
-					isActive={source === col}
 					height={80}
-					margin={{ top: 20, right: 30, bottom: 10, left: 50 }}
+					margin={{ top: 10, right: 15, bottom: 10, left: 40 }}
 					isYAxisVisible
 					title={col}
+					lineColor="#000"
+					xAxisColor="#E7E7E7"
+					xAxisTextColor="#6E6E6E"
+					yAxisColor="#E7E7E7"
+					yAxisTextColor="#6E6E6E"
+					textColor="#000"
 					xData={xData}
 					yData={dataset.data[col] as number[]}
 					split={getSplit(results?.find((result) => result.source === col)?.approximation_segments_list.find((item) => item.approximation_level === level)?.segments || [])}

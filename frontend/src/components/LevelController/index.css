@@ -1,19 +1,27 @@
 .level-controller {
     display: flex;
     align-items: center;
+    justify-content: flex-end;
     width: 100%;
-    gap: 8px;
-    margin-right: 8px;
+    box-sizing: border-box;
+    gap: 12px;
+    color: var(--primary-color);
 }
 
 .level-controller .level-controller-title,
 .level-controller .level-controller-value {
     font-size: 16px;
     white-space: nowrap;
+    color: #000;
+}
+
+.level-controller .level-controller-title {
+    color: var(--primary-color);
 }
 
 .level-controller .ant-slider {
     width: 100px;
+    margin: 0;
 }
 
 .level-controller .ant-slider .ant-slider-rail,

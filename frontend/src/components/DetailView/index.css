@@ -1,6 +1,7 @@
 .main-view {
     flex-basis: fit-content;
     flex-grow: 0;
+    padding-top: 10px;
 }
 
 .main-view .bg {

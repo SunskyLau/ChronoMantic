@@ -4,6 +4,7 @@ import DetailView from "../DetailView";
 import TableView from "../TableView";
 import "./index.css";
 import QueryPanel from "../QueryPanel";
+import { Divider } from "antd";
 
 export default function AppMain() {
 	return (
@@ -15,6 +16,7 @@ export default function AppMain() {
 				</section>
 				<section className={classnames("main-right")}>
 					<ResultsPanel className="main-results" />
+					<Divider style={{ borderWidth: 2 }}></Divider>
 					<DetailView></DetailView>
 				</section>
 			</main>

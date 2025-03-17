@@ -51,6 +51,12 @@ export default function TableView() {
 				/>
 			}
 		>
+			<LevelController
+				level={level}
+				disabled={!maxLevel}
+				maxLevel={maxLevel ?? 0}
+				onChange={(level) => dispatch(setLevel(level))}
+			/>
 			{renderComponent(state)}
 		</Panel>
 	);

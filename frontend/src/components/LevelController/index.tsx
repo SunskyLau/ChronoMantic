@@ -8,9 +8,22 @@ interface LevelControllerProps {
 	onChange: (value: number) => void;
 }
 
-export default function LevelController({level, disabled, maxLevel, onChange}: LevelControllerProps) {
+export default function LevelController({ level, disabled, maxLevel, onChange }: LevelControllerProps) {
 	return (
-		<ConfigProvider theme={{ components: { Slider: { railSize: 10, railBg: "#E0E0E0", railHoverBg: "#E0E0E0", handleColor: "#666" } } }}>
+		<ConfigProvider
+			theme={{
+				components: {
+					Slider: {
+						railSize: 8,
+						railBg: "#E0E0E0",
+						railHoverBg: "#E0E0E0",
+						handleColor: "var(--primary-color)",
+						trackBg: "var(--primary-color)",
+						trackHoverBg: "var(--primary-color)",
+					},
+				},
+			}}
+		>
 			<div className="level-controller">
 				<span className="level-controller-title">Approximation Level</span>
 				<Slider

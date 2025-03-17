@@ -11,6 +11,10 @@
     justify-content: center;
 }
 
+.table-view {
+    padding-top: 10px;
+}
+
 .table-view .panel-content {
     padding: 0;
 }
