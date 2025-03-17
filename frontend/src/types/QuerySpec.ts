@@ -32,6 +32,7 @@ export interface Segment {
   duration?: number; // 时间跨度,单位是秒
   r2?: number; // 拟合优度,范围是[0,1]
   score?: number; // 分数,范围是[0,1]
+  category?: TrendCategory; // 趋势类别
 }
 
 export interface SimplifiedSegment {

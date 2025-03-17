@@ -702,7 +702,7 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 				.attr("stroke-width", 1);
 
 			if (isHoverable) {
-				const tooltip = d3.select("body").append("div").attr("class", `tooltip-${id}`).style("position", "absolute").style("background", "#000a").style("color", "#fff").style("padding", "5px 10px").style("border", "1px solid #ccc").style("border-radius", "6px").style("pointer-events", "none").style("transform", "translate(-50%, -100%)").style("opacity", 0);
+				const tooltip = d3.select("body").append("div").attr("class", `tooltip-${id}`).style("position", "absolute").style("background", "#000a").style("color", "#fff").style("padding", "5px 10px").style("border", "1px solid #ccc").style("border-radius", "6px").style("pointer-events", "none").style("transform", "translate(-50%, -100%)").style("opacity", 0).style("font-weight", "200").style("font-size", "14px");
 
 				const hoverLine = pathG.append("line").attr("class", "hover-line").attr("stroke", lineColor).attr("stroke-opacity", 0.7).attr("stroke-width", 1.5).style("opacity", 0);
 
@@ -731,7 +731,7 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 						.attr("cx", x(isTime ? new Date(closestData[0]) : closestData[0]))
 						.attr("cy", y(closestData[1]))
 						.style("opacity", 1);
-					tooltip.transition().duration(100).style("opacity", 0.9);
+					tooltip.transition().duration(100).style("opacity", 0.7);
 					const tooltipWidth = tooltip.node()?.getBoundingClientRect().width || 0;
 					const tooltipHeight = tooltip.node()?.getBoundingClientRect().height || 0;
 					const left = Math.min(Math.max(event.pageX, 0), window.innerWidth - tooltipWidth / 2 - 10);
@@ -743,13 +743,14 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 
 					if (currentSegment) {
 						tooltipContent += `<br><br>Segment Info:<br>`;
-						tooltipContent += `Slope: ${(currentSegment.slope * unit).toFixed(4)}/${xDataType}<br>`;
-						tooltipContent += `Score: ${currentSegment.score?.toFixed(4) || "N/A"}<br>`;
+						tooltipContent += `<span style="margin-left: 10px;">Category: ${currentSegment.category}</span><br>`;
+						tooltipContent += `<span style="margin-left: 10px;">Slope: ${(currentSegment.slope * unit).toFixed(4)}/${xDataType}</span><br>`;
+						tooltipContent += `<span style="margin-left: 10px;">Score: ${currentSegment.score?.toFixed(4) || "N/A"}</span><br>`;
 						if (currentSegment.relative_slope !== undefined) {
-							tooltipContent += `Relative Slope: ${currentSegment.relative_slope.toFixed(4)}%<br>`;
+							tooltipContent += `<span style="margin-left: 10px;">Relative Slope: ${currentSegment.relative_slope.toFixed(4)}%</span><br>`;
 						}
 						if (currentSegment.duration !== undefined) {
-							tooltipContent += `Duration: ${currentSegment.duration / unit} ${xDataType}<br>`;
+							tooltipContent += `<span style="margin-left: 10px;">Duration: ${currentSegment.duration / unit} ${xDataType}</span><br>`;
 						}
 					}
 
