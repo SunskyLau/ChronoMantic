@@ -264,6 +264,11 @@ export enum GroupRelationChoice {
   DURATION = "duration", // 时间跨度关系
 }
 
+export enum GlobalChoice {
+  DURATION = "duration",
+  COMPARE_START_END_VALUE = "compare_start_end_value",
+}
+
 export interface SingleSegmentIntention {
   id: number; // 趋势的ID标识
   single_choices: SingleChoice[]; // 该趋势需要考虑的属性列表
@@ -293,4 +298,5 @@ export interface Intentions {
   segment_group_intentions: SegmentGroupIntention[]; // 趋势组合的意图列表
   single_relation_intentions: SingleRelationIntention[]; // 单个趋势关系的意图列表
   group_relation_intentions: GroupRelationIntention[]; // 趋势组合关系的意图列表
+  global_intentions: GlobalChoice[]; // 全局意图列表
 }

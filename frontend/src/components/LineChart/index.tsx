@@ -2,14 +2,16 @@ import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import * as d3 from "d3";
 import { deepEqual } from "../../utils/deepclone";
 import { Popover } from "antd";
-import { GroupChoice, GroupRelationChoice, Intentions, Segment, SingleChoice, SingleRelationChoice, Unit } from "../../types/QuerySpec";
+import { Comparator, GlobalChoice, GroupChoice, GroupRelationChoice, Intentions, Segment, SingleChoice, SingleRelationChoice, Unit } from "../../types/QuerySpec";
 import { flushSync } from "react-dom";
 import { formatTime } from "../../utils/time";
 import IntentionPopover from "./IntentionPopover";
 import { IntentionLine, LineChartProps, PopoverPosition } from "./types";
 import { generateId } from "../../utils/id";
-import { getSecondsByUnit } from "../../utils/query-spec";
 import { queryApi } from "../../api";
+import { setupTooltip } from "./hooks/useTooltip";
+import { useResize } from "./hooks/useResize";
+import { useScroll } from "./hooks/useScroll";
 
 function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVisible = false, isYAxisVisible = false, isXAxisTextVisible = false, isYAxisTextVisible = false, isBrush = false, onBrush, onBrushEnd, range, height, split, brushPosition, isExpand = true, isShowRange = true, isActive, children, onScroll, onContextMenu, xAxisColor = "#C5C5C5", yAxisColor = "#C5C5C5", lineColor = "#A6A6A6", textColor = "#C5C5C5", xAxisFormatter = (date: Date) => formatTime(date, xDataType === Unit.NUMBER ? undefined : xDataType), brushColor = "#546BB633", resultsSplit, selectedSplits, defaultSplits = [], isSelectable = false, onSplitSelect, onSubmitIntentions, margin, isHoverable = false, xDataType = Unit.NUMBER, isRequesting = false, onCancelSplit, segments = [] }: LineChartProps) {
 	const svgRef = useRef<SVGSVGElement>(null);
@@ -31,41 +33,22 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 	const [selectedGroups, setSelectedGroups] = useState<GroupChoice[]>([]);
 	const [selectedRelations, setSelectedRelations] = useState<SingleRelationChoice[]>([]);
 	const [selectedGroupRelations, setSelectedGroupRelations] = useState<GroupRelationChoice[]>([]);
+	const [selectedGlobal, setSelectedGlobal] = useState<GlobalChoice[]>([]);
 	const [dragStart, setDragStart] = useState<[number, number] | null>(null);
 	const [isDragging, setIsDragging] = useState(false);
+	const [segmentIds, setSegmentIds] = useState<number[][]>([]);
 	const [relationIds, setRelationIds] = useState<number[][]>([]);
 	const [intentions, setIntentions] = useState<Intentions>({
 		single_segment_intentions: [],
 		segment_group_intentions: [],
 		single_relation_intentions: [],
 		group_relation_intentions: [],
+		global_intentions: [],
 	});
 
-	const handleScroll = useCallback(
-		(event: WheelEvent) => {
-			if (!onScroll) return;
-			event.preventDefault();
-			const rect = svgRef.current?.getBoundingClientRect();
-			if (!rect) return;
-			const effectiveWidth = rect.width - computedMargin.left - computedMargin.right;
-			const relativeX = (event.clientX - rect.left - computedMargin.left) / effectiveWidth;
-			const clampedX = Math.max(0, Math.min(1, relativeX));
-			const normalizedPosition = clampedX * 2 - 1;
-			const total = range ? range?.[1] - range?.[0] : xData.length;
-			const step = Math.max(1, Math.round(total / 10));
-			onScroll(event.deltaY > 0 ? step : -step, normalizedPosition);
-		},
-		[onScroll, range, xData.length, computedMargin]
-	);
+	const [comparison, setComparison] = useState<Record<string, Comparator> | null>(null);
 
-	useEffect(() => {
-		if (!svgRef.current) return;
-		const svg = svgRef.current;
-		svg.addEventListener("wheel", handleScroll, { passive: false });
-		return () => {
-			svg?.removeEventListener("wheel", handleScroll);
-		};
-	}, [handleScroll]);
+	useScroll(onScroll, svgRef.current, range, computedMargin, xData.length);
 
 	const handleContextMenu = useCallback(
 		(event: MouseEvent) => {
@@ -92,7 +75,9 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 			segment_group_intentions: [],
 			single_relation_intentions: [],
 			group_relation_intentions: [],
+			global_intentions: [],
 		});
+		setComparison(null);
 	}, [splits, selectedSplits, xData, yData, split]);
 
 	const handleChoicesChange = useCallback((choice: SingleChoice) => {
@@ -131,8 +116,18 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 		});
 	}, []);
 
+	const handleGlobalChoicesChange = useCallback((choice: GlobalChoice) => {
+		setSelectedGlobal((prev) => {
+			if (prev.includes(choice)) {
+				return prev.filter((c) => c !== choice);
+			}
+			return [...prev, choice];
+		});
+	}, []);
+
 	const handlePopoverClose = useCallback(() => {
 		setPopoverPosition(null);
+		setComparison(null);
 	}, []);
 
 	const createIntention = useMemo(
@@ -186,6 +181,12 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 				}
 				break;
 			}
+			case "Global": {
+				if (selectedGlobal.length === 0) return;
+				newIntentions.global_intentions = selectedGlobal;
+				break;
+			}
+
 			case "SingleRelation": {
 				if (selectedRelations.length === 0) return;
 				const id1 = selectedSplits?.findIndex((split) => split === ranges[0][0]);
@@ -208,6 +209,7 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 				}
 				break;
 			}
+
 			case "GroupRelation": {
 				if (selectedGroupRelations.length === 0 || !groups?.length) return;
 				const [range1, range2] = groups;
@@ -243,8 +245,10 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 		setSelectedGroups([]);
 		setSelectedRelations([]);
 		setSelectedGroupRelations([]);
+		setSelectedGlobal([]);
 		setRelationIds([]);
-	}, [popoverPosition, intentions, selectedChoices, selectedGroups, createIntention, handlePopoverClose, selectedSplits, selectedRelations, selectedGroupRelations]);
+		setSegmentIds([]);
+	}, [popoverPosition, intentions, selectedChoices, selectedGroups, createIntention, handlePopoverClose, selectedSplits, selectedRelations, selectedGroupRelations, selectedGlobal]);
 
 	const handleSplitClick = useCallback(
 		(event: MouseEvent, clickRange: [number, number]) => {
@@ -299,9 +303,89 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 		[split, selectedSplits, splits, onSplitSelect, popoverPosition]
 	);
 
+	useEffect(() => {
+		const handleKeyDown = (event: KeyboardEvent) => {
+			const isRelation = event.shiftKey || event.ctrlKey;
+			if (isRelation && segmentIds.length > 0) {
+				const ranges = segmentIds;
+				setRelationIds(ranges);
+				setSegmentIds([]);
+				setPopoverPosition(null);
+			}
+		};
+
+		const handleKeyUp = (event: KeyboardEvent) => {
+			const isRelation = event.shiftKey || event.ctrlKey;
+			if (!isRelation && relationIds.length > 0) {
+				const ranges = relationIds as [number, number][];
+				setSegmentIds(ranges);
+				setRelationIds([]);
+
+				if (!selectedSplits) return;
+				const minSplit = Math.min(...selectedSplits!);
+				const maxSplit = Math.max(...selectedSplits!);
+				const highlightedRects = Array.from(d3.selectAll(".split-interaction rect").nodes()).filter((node) => {
+					const rangeAttr = (node as SVGRectElement).getAttribute("data-range");
+					if (!rangeAttr) return false;
+					const [s, e] = JSON.parse(rangeAttr);
+					return s >= ranges[0][0] && e <= ranges[ranges.length - 1][1] && s >= minSplit && e <= maxSplit;
+				}) as SVGRectElement[];
+
+				const svgRect = svgRef.current?.getBoundingClientRect();
+				if (svgRect && highlightedRects.length > 0) {
+					const bounds = highlightedRects.reduce(
+						(acc, rect) => {
+							const rectBounds = rect.getBoundingClientRect();
+							return {
+								left: Math.min(acc.left, rectBounds.left),
+								right: Math.max(acc.right, rectBounds.right),
+								top: Math.min(acc.top, rectBounds.top),
+								bottom: Math.max(acc.bottom, rectBounds.bottom),
+							};
+						},
+						{
+							left: Infinity,
+							right: -Infinity,
+							top: Infinity,
+							bottom: -Infinity,
+						}
+					);
+
+					const centerX = (bounds.left + bounds.right) / 2;
+					const centerY = bounds.top;
+
+					const existingIntentions = intentions.single_segment_intentions.filter((intention) => ranges[0][0] === selectedSplits[intention.id] && ranges[ranges.length - 1][1] === selectedSplits[intention.id + 1]);
+					const existingGroups = intentions.segment_group_intentions.filter((intention) => ranges[0][0] === selectedSplits[intention.ids[0]] && ranges[ranges.length - 1][0] === selectedSplits[intention.ids[1]]);
+
+					setSelectedChoices(existingIntentions.flatMap((intention) => intention.single_choices));
+					setSelectedGroups(existingGroups.flatMap((intention) => intention.group_choices));
+					setSelectedGlobal(intentions.global_intentions);
+
+					setPopoverPosition({
+						x: centerX - svgRect.left,
+						y: centerY - svgRect.top,
+						type: ranges.length === selectedSplits.length - 1 ? "Global" : ranges.length > 1 ? "SegmentGroup" : "SingleSegment",
+						ranges,
+						rectWidth: bounds.right - bounds.left,
+						rectHeight: bounds.bottom - bounds.top,
+					});
+				}
+			}
+		};
+
+		window.addEventListener("keydown", handleKeyDown);
+		window.addEventListener("keyup", handleKeyUp);
+
+		return () => {
+			window.removeEventListener("keydown", handleKeyDown);
+			window.removeEventListener("keyup", handleKeyUp);
+		};
+	}, [segmentIds, relationIds, selectedSplits, intentions, svgRef]);
+
 	const handleMouseMove = useCallback(
 		(event: MouseEvent) => {
 			if (!isDragging || !dragStart || !split) return;
+			setPopoverPosition(null);
 
 			const rect = event.target as SVGRectElement;
 			const range = rect.getAttribute("data-range");
@@ -329,10 +413,27 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 				const rangeAttr = (this as SVGRectElement)?.getAttribute?.("data-range");
 				if (!rangeAttr) return "transparent";
 				const [s, e] = JSON.parse(rangeAttr);
-				return s >= startIdx && e <= endIdx && s >= minSplit && e <= maxSplit ? (event.shiftKey || event.ctrlKey ? "#00800033" : "#1890ff33") : selectedSplits?.includes(s) && selectedSplits?.includes(e) ? "#3331" : "transparent";
+
+				if (relationIds.some((range) => range[0] === s && range[1] === e)) {
+					return "#00800033";
+				}
+
+				if (popoverPosition?.ranges.some(([rs, re]) => rs === s && re === e)) {
+					return popoverPosition.type === "SingleRelation" || popoverPosition.type === "GroupRelation" ? "#00800033" : "#1890ff33";
+				}
+
+				if (s >= startIdx && e <= endIdx && s >= minSplit && e <= maxSplit) {
+					return event.shiftKey || event.ctrlKey ? "#00800033" : "#1890ff33";
+				}
+
+				if (selectedSplits?.includes(s) && selectedSplits?.includes(e)) {
+					return "#3331";
+				}
+
+				return "transparent";
 			});
 		},
-		[isDragging, dragStart, split, selectedSplits, splits]
+		[isDragging, dragStart, split, selectedSplits, splits, relationIds, popoverPosition]
 	);
 
 	const handleMouseUp = useCallback(
@@ -375,6 +476,7 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 					if (relationIds.length === 0) {
 						setPopoverPosition(null);
 						setRelationIds([...ranges]);
+						setSegmentIds([]);
 					} else {
 						const allRanges = [[...relationIds], [...ranges]].sort((a, b) => a[0][0] - b[0][0]);
 						const isGroupRelation = allRanges.some((group) => group.length > 1);
@@ -428,6 +530,7 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 									rectHeight: bounds.bottom - bounds.top,
 								});
 								setRelationIds([]);
+								setSegmentIds([]);
 							}
 						}
 					}
@@ -470,11 +573,13 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 
 						setSelectedChoices(existingIntentions.flatMap((intention) => intention.single_choices));
 						setSelectedGroups(existingGroups.flatMap((intention) => intention.group_choices));
+						setSelectedGlobal(intentions.global_intentions);
+						setSegmentIds(ranges);
 
 						setPopoverPosition({
 							x: centerX - svgRect.left,
 							y: centerY - svgRect.top,
-							type: ranges.length > 1 ? "SegmentGroup" : "SingleSegment",
+							type: ranges.length === selectedSplits.length - 1 ? "Global" : ranges.length > 1 ? "SegmentGroup" : "SingleSegment",
 							ranges,
 							rectWidth: bounds.right - bounds.left,
 							rectHeight: bounds.bottom - bounds.top,
@@ -509,6 +614,10 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 				}
 				break;
 			}
+			case "Global": {
+				newIntentions.global_intentions = [];
+				break;
+			}
 			case "SingleRelation": {
 				const existingIndex = newIntentions.single_relation_intentions.findIndex((intention) => groups?.[0][0][0] === selectedSplits?.[intention.id1] && groups?.[1][0][0] === selectedSplits?.[intention.id2]);
 				if (existingIndex !== -1) {
@@ -531,6 +640,7 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 
 	const draw = useCallback(() => {
 		if (!svgRef.current || xData?.length === 0 || yData?.length === 0) return;
+		const cleanups: (() => void)[] = [];
 
 		let start = range?.[0] ?? 0;
 		let end = range?.[1] ? range[1] + 1 : xData.length;
@@ -702,67 +812,7 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 				.attr("stroke-width", 1);
 
 			if (isHoverable) {
-				const tooltip = d3.select("body").append("div").attr("class", `tooltip-${id}`).style("position", "absolute").style("background", "#000a").style("color", "#fff").style("padding", "5px 10px").style("border", "1px solid #ccc").style("border-radius", "6px").style("pointer-events", "none").style("transform", "translate(-50%, -100%)").style("opacity", 0).style("font-weight", "200").style("font-size", "14px");
-
-				const hoverLine = pathG.append("line").attr("class", "hover-line").attr("stroke", lineColor).attr("stroke-opacity", 0.7).attr("stroke-width", 1.5).style("opacity", 0);
-
-				const hoverCircle = pathG.append("circle").attr("r", 4).attr("fill", lineColor).style("opacity", 0);
-
-				g.on("mousemove", function (event) {
-					const [mouseX] = d3.pointer(event, this);
-					const xValue = x.invert(mouseX);
-					const closestIndex = d3.bisectCenter(keyData, isTime ? (xValue as Date).getTime() : (xValue as number));
-					const closestData = [keyData[closestIndex], valueData[closestIndex]] as [number, number];
-
-					const currentValue = isTime ? (xValue as Date).getTime() : (xValue as number);
-					const currentSegment = segments.find((seg) => {
-						const segStartValue = timeStampData[seg.start_idx];
-						const segEndValue = timeStampData[seg.end_idx];
-						return currentValue >= segStartValue && currentValue <= segEndValue;
-					});
-
-					hoverLine
-						.attr("x1", x(isTime ? new Date(closestData[0]) : closestData[0]))
-						.attr("x2", x(isTime ? new Date(closestData[0]) : closestData[0]))
-						.attr("y1", 0)
-						.attr("y2", innerHeight)
-						.style("opacity", 1);
-					hoverCircle
-						.attr("cx", x(isTime ? new Date(closestData[0]) : closestData[0]))
-						.attr("cy", y(closestData[1]))
-						.style("opacity", 1);
-					tooltip.transition().duration(100).style("opacity", 0.7);
-					const tooltipWidth = tooltip.node()?.getBoundingClientRect().width || 0;
-					const tooltipHeight = tooltip.node()?.getBoundingClientRect().height || 0;
-					const left = Math.min(Math.max(event.pageX, 0), window.innerWidth - tooltipWidth / 2 - 10);
-					const top = Math.min(Math.max(event.pageY - 10, 0), window.innerHeight - tooltipHeight);
-
-					const unit = getSecondsByUnit(xDataType);
-
-					let tooltipContent = `${isTime ? "Time" : "X"}: ${isTime ? xAxisFormatter(new Date(closestData[0])) : closestData[0]}<br>${isTime ? "Value" : "Y"}: ${closestData[1]}`;
-
-					if (currentSegment) {
-						tooltipContent += `<br><br>Segment Info:<br>`;
-						tooltipContent += `<span style="margin-left: 10px;">Category: ${currentSegment.category}</span><br>`;
-						tooltipContent += `<span style="margin-left: 10px;">Slope: ${(currentSegment.slope * unit).toFixed(4)}/${xDataType}</span><br>`;
-						tooltipContent += `<span style="margin-left: 10px;">Score: ${currentSegment.score?.toFixed(4) || "N/A"}</span><br>`;
-						if (currentSegment.relative_slope !== undefined) {
-							tooltipContent += `<span style="margin-left: 10px;">Relative Slope: ${currentSegment.relative_slope.toFixed(4)}%</span><br>`;
-						}
-						if (currentSegment.duration !== undefined) {
-							tooltipContent += `<span style="margin-left: 10px;">Duration: ${currentSegment.duration / unit} ${xDataType}</span><br>`;
-						}
-					}
-
-					tooltip
-						.html(tooltipContent)
-						.style("left", left + "px")
-						.style("top", top + "px");
-				}).on("mouseleave", function () {
-					hoverLine.style("opacity", 0);
-					hoverCircle.style("opacity", 0);
-					tooltip.transition().duration(500).style("opacity", 0);
-				});
+				cleanups.push(setupTooltip(g, pathG, lineColor, keyData, valueData, x, y, isTime, xAxisFormatter, innerHeight, segments, timeStampData, xDataType));
 			}
 		}
 
@@ -855,6 +905,7 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 		if (split && intentions && isSelectable && selectedSplits) {
 			const intentionLinesG = svg.append("g").attr("class", "intention-lines").attr("transform", `translate(${computedMargin.left},0)`).attr("clip-path", `url(#clip-path-${id})`);
 			const lines: Record<number, IntentionLine[]> = {};
+			let maxLevel = -1;
 
 			intentions.single_segment_intentions.forEach((intention) => {
 				const range = [selectedSplits[intention.id], selectedSplits[intention.id + 1]] as [number, number];
@@ -875,6 +926,7 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 					choices: intention.single_choices,
 					level,
 				});
+				maxLevel = Math.max(maxLevel, level);
 			});
 
 			function hasOverlap(ranges1: [number, number][], ranges2: [number, number][]) {
@@ -907,7 +959,19 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 					choices: intention.group_choices,
 					level,
 				});
+				maxLevel = Math.max(maxLevel, level);
 			});
+
+			if (intentions.global_intentions.length > 0) {
+				lines[maxLevel + 1] = [
+					{
+						type: "Global",
+						ranges: [[selectedSplits[0], selectedSplits[selectedSplits.length - 1]]],
+						choices: intentions.global_intentions,
+						level: maxLevel + 1,
+					},
+				];
+			}
 
 			intentions.single_relation_intentions.forEach((intention) => {
 				const range = [
@@ -1033,6 +1097,7 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 							setSelectedGroups([]);
 							setSelectedRelations([]);
 							setSelectedGroupRelations([]);
+							setSelectedGlobal([]);
 						}
 						function splitRanges(ranges: [number, number][], selectedSplit: number[]) {
 							return ranges.map(([start, end]) => {
@@ -1065,6 +1130,8 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 							setSelectedRelations(intention.choices as SingleRelationChoice[]);
 						} else if (intention.type === "GroupRelation") {
 							setSelectedGroupRelations(intention.choices as GroupRelationChoice[]);
+						} else if (intention.type === "Global") {
+							setSelectedGlobal(intention.choices as GlobalChoice[]);
 						}
 					});
 				});
@@ -1233,26 +1300,18 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 
 			brushG.select(".selection").attr("fill", brushColor).attr("clip-path", `url(#clip-path-${id})`).attr("stroke", "none").style("pointer-events", "all");
 
-			return () => {
+			cleanups.push(() => {
 				brush.on("brush", null).on("end", null);
-				svg.selectAll("*").remove();
-				d3.selectAll(`.tooltip-${id}`).remove();
-			};
+			});
 		}
+
 		return () => {
 			svg.selectAll("*").remove();
-			d3.selectAll(`.tooltip-${id}`).remove();
+			cleanups.forEach((cleanup) => cleanup());
 		};
 	}, [xData, yData, ratio, title, isXAxisVisible, isYAxisVisible, isXAxisTextVisible, isYAxisTextVisible, isBrush, onBrush, isFill, range, height, split, brushPosition, isExpand, isShowRange, id, onBrushEnd, isActive, xAxisColor, yAxisColor, lineColor, textColor, xAxisFormatter, brushColor, resultsSplit, handleSplitClick, selectedSplits, popoverPosition, handleMouseMove, handleMouseUp, intentions, defaultSplits, onSubmitIntentions, relationIds, computedMargin, isHoverable, timeStampData, isTime, isRequesting, isSelectable, onSplitSelect, onCancelSplit, segments, xDataType]);
 
-	useEffect(() => {
-		const cancle = draw();
-		window.addEventListener("resize", draw);
-		return () => {
-			window.removeEventListener("resize", draw);
-			cancle?.();
-		};
-	}, [draw]);
+	useResize(draw);
 
 	useEffect(() => {
 		if (!isDragging) return;
@@ -1266,8 +1325,28 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 		};
 	}, [isDragging, handleMouseMove, handleMouseUp]);
 
-	const comparison = useMemo(() => {
-		return popoverPosition?.groups && queryApi.getSegmentComparison(segments.filter((seg) => seg.start_idx >= (selectedSplits?.[0] ?? 0) && seg.end_idx <= (selectedSplits?.[selectedSplits.length - 1] ?? 0)), popoverPosition.groups.map((group) => [group[0][0], group[group.length - 1][1]]));
+	useEffect(() => {
+		if (!popoverPosition || !selectedSplits) return;
+		
+		const selectedSegments = segments.filter(
+			(seg) => seg.start_idx >= (selectedSplits[0] ?? 0) && 
+					 seg.end_idx <= (selectedSplits[selectedSplits.length - 1] ?? 0)
+		);
+
+		const fetchComparison = async () => {
+			if (popoverPosition.type === "Global") {
+				const result = await queryApi.getSegmentComparison(selectedSegments);
+				setComparison(result);
+			} else if (popoverPosition.groups) {
+				const result = await queryApi.getSegmentComparison(
+					selectedSegments,
+					popoverPosition.groups.map((group) => [group[0][0], group[group.length - 1][1]])
+				);
+				setComparison(result);
+			}
+		};
+
+		fetchComparison();
 	}, [popoverPosition, segments, selectedSplits]);
 
 	const group1Start = useMemo(() => popoverPosition?.groups?.[0]?.[0][0] ?? 0, [popoverPosition]);
@@ -1281,7 +1360,8 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 		const currentSegments = segments.filter((seg) => {
 			return popoverPosition.ranges[0][0] <= seg.start_idx && popoverPosition.ranges[popoverPosition.ranges.length - 1][1] >= seg.end_idx;
 		});
-		const currentSegment = currentSegments.length === 1 ? currentSegments[0] : ({ duration: currentSegments.reduce((acc, seg) => acc + (seg.duration ?? 0), 0) } as Segment);
+		if (currentSegments.length === 0) return null;
+		const currentSegment = currentSegments.length === 1 ? currentSegments[0] : ({ start_value: currentSegments[0].start_value, end_value: currentSegments[currentSegments.length - 1].end_value, duration: currentSegments.reduce((acc, seg) => acc + (seg.duration ?? 0), 0) } as Segment);
 		const groupSegments = [segments.filter((seg) => seg.start_idx >= group1Start && seg.end_idx <= group1End), segments.filter((seg) => seg.start_idx >= group2Start && seg.end_idx <= group2End)];
 		const currentGroupSegment: [Segment, Segment] = groupSegments.every((seg) => seg.length === 1) ? [groupSegments[0][0], groupSegments[1][0]] : [{ duration: groupSegments[0].reduce((acc, seg) => acc + (seg.duration ?? 0), 0) } as Segment, { duration: groupSegments[1].reduce((acc, seg) => acc + (seg.duration ?? 0), 0) } as Segment];
 
@@ -1332,11 +1412,11 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 						isExisting={isExisting}
 						segment={currentGroupSegment}
 						xDataType={xDataType}
-						comparison={comparison}
+						comparison={comparison as Record<SingleRelationChoice, Comparator>}
 					/>
 				);
 			case "GroupRelation":
-				isExisting = intentions.group_relation_intentions.some((intention) => group1Start === selectedSplits?.[intention.group1[0]] && group1End === selectedSplits?.[intention.group1[1]] && group2Start === selectedSplits?.[intention.group2[0]] && group2End === selectedSplits?.[intention.group2[1]]);
+				isExisting = intentions.group_relation_intentions.some((intention) => group1Start === selectedSplits?.[intention.group1[0]] && group1End === selectedSplits?.[intention.group1[1] + 1] && group2Start === selectedSplits?.[intention.group2[0]] && group2End === selectedSplits?.[intention.group2[1] + 1]);
 				return (
 					<IntentionPopover
 						type={popoverPosition.type}
@@ -1349,11 +1429,30 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 						isExisting={isExisting}
 						segment={currentGroupSegment}
 						xDataType={xDataType}
-						comparison={comparison}
+						comparison={comparison as Record<GroupRelationChoice, Comparator>}
 					/>
 				);
+			case "Global":
+				isExisting = intentions.global_intentions.length > 0;
+				return (
+					<IntentionPopover
+						type={popoverPosition.type}
+						choices={Object.values(GlobalChoice)}
+						selected={selectedGlobal}
+						onChange={handleGlobalChoicesChange}
+						onCancel={handlePopoverClose}
+						onConfirm={handleConfirm}
+						onDelete={isExisting ? handleDelete : undefined}
+						isExisting={isExisting}
+						segment={currentSegment}
+						xDataType={xDataType}
+						comparison={comparison as Record<GlobalChoice, Comparator>}
+					/>
+				);
+			default:
+				return null;
 		}
-	}, [popoverPosition, selectedChoices, selectedGroups, handleChoicesChange, handleGroupChoicesChange, handlePopoverClose, handleConfirm, handleDelete, intentions, selectedSplits, selectedRelations, selectedGroupRelations, handleRelationsChange, handleGroupRelationsChange, segments, xDataType, group1Start, group1End, group2Start, group2End, comparison]);
+	}, [popoverPosition, selectedChoices, selectedGroups, handleChoicesChange, handleGroupChoicesChange, handlePopoverClose, handleConfirm, handleDelete, intentions, selectedSplits, selectedRelations, selectedGroupRelations, handleRelationsChange, handleGroupRelationsChange, segments, xDataType, group1Start, group1End, group2Start, group2End, comparison, selectedGlobal, handleGlobalChoicesChange]);
 
 	return (
 		<>

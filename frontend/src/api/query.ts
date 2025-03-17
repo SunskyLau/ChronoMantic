@@ -62,7 +62,7 @@ export const queryApi = {
   /**
    * 获取segment比较结果
    */
-  getSegmentComparison: async (segments: Segment[], ids: [number, number][]) => {
+  getSegmentComparison: async (segments: Segment[], ids?: [number, number][]) => {
     console.log("Sending segment comparison request");
     try {
       const response = await api.post(`/api/segment_comparison`, { segments, ids });

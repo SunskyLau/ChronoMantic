@@ -6,7 +6,7 @@ from app.ai_agent.constant import FUZZY_FACTOR
 from copy import deepcopy
 
 
-def compare_segments(segments: List[dict], ids: List[List[int]]) -> dict:
+def compare_segments(segments: List[dict], ids: List[List[int]] | None = None) -> dict:
     """比较两个segment的各项指标
 
     Args:
@@ -17,6 +17,12 @@ def compare_segments(segments: List[dict], ids: List[List[int]]) -> dict:
         比较结果，包含各项指标的比较
     """
     comparisons = {}
+    if ids is None:
+        max_range = max([segment["max_value"] for segment in segments])
+        min_range = min([segment["min_value"] for segment in segments])
+        comparisons["compare_start_end_value"] = get_comparator(segments[0]["start_value"], segments[-1]["end_value"], max_range - min_range)
+        return comparisons
+
     segment1 = [segment for segment in segments if segment["start_idx"] >= ids[0][0] and segment["end_idx"] <= ids[0][1]]
     segment2 = [segment for segment in segments if segment["start_idx"] >= ids[1][0] and segment["end_idx"] <= ids[1][1]]
 
@@ -271,6 +277,14 @@ def modify_queryspec_by_intentions(old_queryspec_with_source: Dict[str, Any], se
             _update_or_append(
                 new_queryspec["group_relations"], new_relation, lambda x: x["group1"] == group1 and x["group2"] == group2 and x["attribute"] == choice
             )
+
+    for intention in intentions.get("global_intentions", []):
+        if intention == "duration":
+            new_queryspec["duration_condition"] = create_scope_condition(sum([segment["duration"] for segment in segments]), unit=segments[0]["unit"])
+        elif intention == "compare_start_end_value":
+            min_value = min([segment["min_value"] for segment in segments])
+            max_value = max([segment["max_value"] for segment in segments])
+            new_queryspec["comparator_between_start_end_value"] = get_comparator(segments[0]["start_value"], segments[-1]["end_value"], max_value - min_value)
 
     return remove_text_source_id(new_queryspec)
 

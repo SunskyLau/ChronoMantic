@@ -1,4 +1,11 @@
-import { Comparator, GroupChoice, GroupRelationChoice, Intentions, Segment, SingleChoice, SingleRelationChoice, Unit } from "../../types/QuerySpec";
+import { Comparator, GlobalChoice, GroupChoice, GroupRelationChoice, Intentions, Segment, SingleChoice, SingleRelationChoice, Unit } from "../../types/QuerySpec";
+
+export interface Margin {
+    top: number;
+    right: number;
+    bottom: number;
+    left: number;
+}
 
 export interface LineChartProps {
     xData: number[] | string[];
@@ -7,12 +14,7 @@ export interface LineChartProps {
     ratio?: number;
     height?: number | string;
     title?: string;
-    margin?: {
-        top: number;
-        right: number;
-        bottom: number;
-        left: number;
-    };
+    margin?: Margin;
     isXAxisVisible?: boolean;
     isYAxisVisible?: boolean;
     isXAxisTextVisible?: boolean;
@@ -55,7 +57,7 @@ export interface LineChartProps {
     onSubmitIntentions?: (intentions: Intentions, mode?: boolean) => void;
 }
 
-export type ChoiceType = "SingleSegment" | "SegmentGroup" | "SingleRelation" | "GroupRelation";
+export type ChoiceType = "SingleSegment" | "SegmentGroup" | "SingleRelation" | "GroupRelation" | "Global";
 
 export interface PopoverPosition {
     x: number;
@@ -71,10 +73,10 @@ export interface IntentionLine {
     type: ChoiceType;
     level: number;
     ranges: [number, number][];
-    choices: (SingleChoice | GroupChoice | SingleRelationChoice | GroupRelationChoice)[];
+    choices: (SingleChoice | GroupChoice | SingleRelationChoice | GroupRelationChoice | GlobalChoice)[];
 }
 
-export interface IntentionPopoverProps<T extends SingleChoice | GroupChoice | SingleRelationChoice | GroupRelationChoice> {
+export interface IntentionPopoverProps<T extends SingleChoice | GroupChoice | SingleRelationChoice | GroupRelationChoice | GlobalChoice> {
     type: ChoiceType;
     choices: T[];
     selected: T[];
@@ -85,5 +87,5 @@ export interface IntentionPopoverProps<T extends SingleChoice | GroupChoice | Si
     isExisting: boolean;
     segment?: Segment | [Segment, Segment];
     xDataType?: Unit;
-    comparison?: Promise<Record<T, Comparator>>;
+    comparison?: Record<T, Comparator>;
 } 
