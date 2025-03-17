@@ -10,10 +10,12 @@ import { setBrushPosition, setDefaultSplits, setRange, setSelectedSplits } from 
 import { classnames } from "../../../utils/classname";
 import { deepEqual } from "../../../utils/deepclone";
 import AddIcon from "../../../icons/Add";
-import { SortAscendingOutlined, SortDescendingOutlined, UnorderedListOutlined } from "@ant-design/icons";
 import { formatTime } from "../../../utils/time";
 import { getColorFromMap } from "../../../utils/color";
 import { getSecondsByUnit } from "../../../utils/query-spec";
+import SortAscending from "../../../icons/SortAscending";
+import SortDesending from "../../../icons/SortDesending";
+import GridIcon from "../../../icons/Grid";
 
 export interface DataType {
 	date: Date;
@@ -283,13 +285,13 @@ export default function ResultsContent() {
 		(attrId: string) => {
 			const sortIndex = sortConfig.keys.findIndex((item) => item.key === attrId);
 			if (sortIndex === -1) {
-				return <UnorderedListOutlined />;
+				return <SortAscending className="gray" />;
 			}
 
 			const direction = sortConfig.keys[sortIndex].direction;
 			return (
 				<span className="sort-indicator">
-					{direction === "asc" ? <SortAscendingOutlined /> : <SortDescendingOutlined />}
+					{direction === "asc" ? <SortAscending /> : <SortDesending />}
 					{sortConfig.keys.length > 1 && <sup>{sortIndex + 1}</sup>}
 				</span>
 			);
@@ -497,19 +499,23 @@ export default function ResultsContent() {
 											{filteredResults.length > 0 ? (
 												<>
 													<div className="header-column-group-item-title">
+														<span className="header-column-group-item-title-icon">
+															<GridIcon />
+														</span>
+														<span className="header-column-group-item-title-text">{attr.label}</span>
 														<span
 															onClick={() => handleSort(attr.id)}
 															className={classnames("header-column-group-item-title-icon", "pointer")}
 														>
 															{renderSortIcon(attr.id)}
 														</span>
-														<span className="header-column-group-item-title-text">{attr.label}</span>
 													</div>
 													<SelectChart
 														data={Object.entries(attributeStats[attr.id].map)
 															.sort(([a], [b]) => Number(a) - Number(b))
 															.map(([x, y]) => ({ x: Number(x), y }))}
 														onBrush={(min, max) => handleAttributeScaleChange(attr.id, [min, max])}
+														formatter={attr.format}
 													/>
 												</>
 											) : (
@@ -538,13 +544,16 @@ export default function ResultsContent() {
 													key={attr.id}
 												>
 													<div className="header-column-group-item-title">
+														<span className="header-column-group-item-title-icon">
+															<GridIcon />
+														</span>
+														<span className="header-column-group-item-title-text">{attr.label}</span>
 														<span
 															onClick={() => handleSort(attr.id)}
 															className={classnames("header-column-group-item-title-icon", "pointer")}
 														>
 															{renderSortIcon(attr.id)}
 														</span>
-														<span className="header-column-group-item-title-text">{attr.label}</span>
 													</div>
 													<div className="header-column-group-item-value">
 														<SelectChart
@@ -552,6 +561,7 @@ export default function ResultsContent() {
 																.sort(([a], [b]) => Number(a) - Number(b))
 																.map(([x, y]) => ({ x: Number(x), y }))}
 															onBrush={(min, max) => handleAttributeScaleChange(attr.id, [min, max])}
+															formatter={attr.format}
 														/>
 													</div>
 												</div>

@@ -3,126 +3,222 @@ import { memo, useCallback, useEffect, useRef } from "react";
 import { debounce } from "../../../../utils/debounce";
 
 interface DataPoint {
-    x: number;
-    y: number;
+	x: number;
+	y: number;
 }
 
 interface SelectChartProps {
-    data: DataPoint[];
-    title?: string;
-    onBrush?: (minX: number, maxX: number) => void;
+	data: DataPoint[];
+	title?: string;
+	onBrush?: (minX: number, maxX: number) => void;
+	scaleType?: "linear" | "log" | "normalized";
+	formatter?: (value: number) => string;
 }
 
-function SelectChart({ data, title, onBrush }: SelectChartProps) {
-    const svgRef = useRef<SVGSVGElement | null>(null);
+function normalizeData(data: DataPoint[]): DataPoint[] {
+	const maxY = Math.max(...data.map((d) => d.y));
+	const minY = Math.min(...data.map((d) => d.y));
+	const range = maxY - minY;
 
-    const draw = useCallback(() => {
-        if (svgRef.current && data.length > 0) {
-            const width = svgRef.current.clientWidth;
-            const height = svgRef.current.clientHeight;
-            const margin = { top: title ? 20 : 4, right: 1, bottom: 0, left: 1 };
-            const innerWidth = width - margin.left - margin.right;
-            const innerHeight = height - margin.top - margin.bottom;
+	return data.map((d) => ({
+		x: d.x,
+		y: range === 0 ? 1 : (d.y - minY) / range,
+	}));
+}
 
-            if (data.length === 1) {
-                data.push({ x: data[0].x + 1, y: data[0].y });
-            }
+function formatNumber(value: number): string {
+	if (value === 0) return "0";
 
-            const x = d3.scaleLinear()
-                .domain(d3.extent(data, (d) => d.x) as [number, number])
-                .range([0, innerWidth]);
+	const absValue = Math.abs(value);
+	if (absValue >= 1000000) {
+		return `${(value / 1000000).toFixed(2)}M`;
+	} else if (absValue >= 1000) {
+		return `${(value / 1000).toFixed(2)}k`;
+	} else if (absValue < 0.01) {
+		return value.toExponential(2);
+	} else {
+		return value.toFixed(2);
+	}
+}
 
-            const y = d3.scaleLinear()
-                .domain([0, d3.max(data, (d) => d.y) || 0])
-                .nice()
-                .range([innerHeight, 0]);
+function SelectChart({ data, title, onBrush, scaleType = "log", formatter = formatNumber }: SelectChartProps) {
+	const svgRef = useRef<SVGSVGElement | null>(null);
 
-            const line = d3.line<DataPoint>()
-                .x((d) => x(d.x))
-                .y((d) => y(d.y));
+	const draw = useCallback(() => {
+		if (svgRef.current && data.length > 0) {
+			const width = svgRef.current.clientWidth;
+			const height = svgRef.current.clientHeight;
+			const margin = { top: title ? 20 : 4, right: 2, bottom: 0, left: 2 };
+			const innerWidth = width - margin.left - margin.right;
+			const innerHeight = height - margin.top - margin.bottom;
 
-            const svg = d3.select(svgRef.current);
-            svg.selectAll('*').remove();
+			if (data.length === 1) {
+				data.push({ x: data[0].x + 1, y: data[0].y });
+			}
 
-            const g = svg.append('g').attr('transform', `translate(${margin.left},${margin.top})`);
+			const x = d3
+				.scaleLinear()
+				.domain(d3.extent(data, (d) => d.x) as [number, number])
+				.range([0, innerWidth]);
 
-            const areaGenerator = d3.area<DataPoint>()
-                .x(d => x(d.x))
-                .y0(y(0))
-                .y1(d => y(d.y));
+			const processedData = scaleType === "normalized" ? normalizeData(data) : data;
 
-            g.append("path")
-                .datum(data)
-                .attr("d", areaGenerator)
-                .attr("fill", "steelblue")
-                .attr("fill-opacity", 0.3);
+			const y = d3
+				.scaleLinear()
+				.domain(
+					(() => {
+						if (scaleType === "log") {
+							const minY = Math.max(d3.min(data, (d) => d.y) || 1, 1);
+							return [minY, d3.max(data, (d) => d.y) || minY];
+						} else if (scaleType === "normalized") {
+							return [0, 1];
+						} else {
+							return [0, d3.max(data, (d) => d.y) || 0];
+						}
+					})()
+				)
+				.nice()
+				.range([innerHeight, 0]);
 
-            svg.append('text')
-                .attr('x', innerWidth / 2)
-                .attr('y', 15)
-                .attr('text-anchor', 'middle')
-                .attr('font-size', '14px')
-                .attr('fill', '#808080')
-                .text(title ?? '');
+			const yScale =
+				scaleType === "log"
+					? d3
+							.scaleLog()
+							.domain([Math.max(d3.min(data, (d) => d.y) || 1, 1), d3.max(data, (d) => d.y) || 1])
+							.range([innerHeight, 0])
+					: y;
 
-            g.append('path')
-                .data([data])
-                .attr('class', 'line')
-                .attr('d', line)
-                .attr('fill', 'none')
-                .attr('stroke', 'steelblue')
-                .attr('stroke-width', 2);
+			const svg = d3.select(svgRef.current);
+			svg.selectAll("*").remove();
 
-            function brushFn(event: d3.D3BrushEvent<DataPoint>) {
-                svg.select(".area").remove()
-                if (data.length <= 2) {
-                    onBrush?.(0, data[0].x);
-                    return;
-                }
-                const selection = event.selection;
-                if (!selection) return;
-                const [x0, x1] = selection;
-                const [minX, maxX] = [x.invert(x0 as number), x.invert(x1 as number)];
-                onBrush?.(minX, maxX);
-            }
+			const g = svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
 
-            const debouncedBrushFn = debounce(brushFn, 100);
+			const areaGenerator = d3
+				.area<DataPoint>()
+				.x((d) => x(d.x))
+				.y0(yScale(scaleType === "log" ? 1 : 0))
+				.y1((d) => yScale(d.y));
 
-            const brush = d3.brushX()
-                .extent([[0, 0], [innerWidth, innerHeight]])
-                .on('brush', (event) => debouncedBrushFn(event))
-                .on('end', function (event) {
-                    const selection = event.selection;
-                    if (!selection) {
-                        svg.select(".area").remove()
-                        onBrush?.(d3.min(data, (d => d.x)) || 0, d3.max(data, (d) => d.x) || 0);
-                    }
-                });
+			g.append("path").datum(processedData).attr("class", "area").attr("d", areaGenerator).attr("fill", "steelblue").attr("fill-opacity", 0.3);
 
-            svg.append("g").attr('transform', `translate(${margin.left},${margin.top})`).attr("class", "brush").call(brush);
-            svg.select('.selection')
-                .attr('fill', '#0003')
-                .attr('stroke', 'none');
+			svg.append("text")
+				.attr("x", innerWidth / 2)
+				.attr("y", 15)
+				.attr("text-anchor", "middle")
+				.attr("font-size", "14px")
+				.attr("fill", "#808080")
+				.text(title ?? "");
 
-            return () => {
-                brush.on('brush', null).on('end', null);
-                svg.selectAll('*').remove();
-            };
-        }
-    }, [data, onBrush, title]);
+			function brushFn(event: d3.D3BrushEvent<DataPoint>) {
+				svg.selectAll(".area").remove();
+				svg.selectAll(".brush-label").remove();
 
-    useEffect(() => {
-        const cancel = draw();
-        window.addEventListener('resize', draw);
-        return () => {
-            window.removeEventListener('resize', draw);
-            cancel?.();
-        };
-    }, [draw]);
+				if (data.length <= 2) {
+					onBrush?.(0, data[0].x);
+					return;
+				}
+				const selection = event.selection;
+				if (!selection) return;
 
-    return (<svg ref={svgRef} width="100%" height="100%"></svg>);
+				g.append("path").datum(processedData).attr("class", "area").attr("d", areaGenerator).attr("fill", "lightgray").attr("fill-opacity", 0.3);
+
+				g.append("path").datum(processedData).attr("class", "area").attr("clip-path", `polygon(${selection[0]}px 0, ${selection[1]}px 0, ${selection[1]}px 100%, ${selection[0]}px 100%)`).attr("d", areaGenerator).attr("fill", "steelblue").attr("fill-opacity", 0.3);
+
+				const [x0, x1] = selection as [number, number];
+				const [minX, maxX] = [parseFloat(x.invert(x0).toFixed(2)), parseFloat(x.invert(x1).toFixed(2))];
+
+				const selectionWidth = (x1 as number) - (x0 as number);
+				const maxText = formatter(maxX);
+				const minText = formatter(minX);
+				const textLength = Math.max(maxText.length, minText.length);
+				const textWidth = textLength * 12 + 8;
+
+				if (selectionWidth < textWidth) {
+					const avgX = parseFloat(((minX + maxX) / 2).toFixed(2));
+					const centerX = (x0 + x1) / 2 + 2;
+					svg.append("text")
+						.attr("class", "brush-label")
+						.attr("x", centerX)
+						.attr("y", innerHeight)
+						.attr("text-anchor", "middle")
+						.attr("font-size", "12px")
+						.attr("fill", "#666")
+						.attr("pointer-events", "none")
+						.text(formatter(avgX));
+				} else {
+					svg.append("text")
+						.attr("class", "brush-label")
+						.attr("x", x0 + 5)
+						.attr("y", innerHeight)
+						.attr("text-anchor", "start")
+						.attr("font-size", "12px")
+						.attr("fill", "#666")
+						.attr("pointer-events", "none")
+						.text(minText);
+
+					svg.append("text")
+						.attr("class", "brush-label")
+						.attr("x", x1 - 3)
+						.attr("y", innerHeight)
+						.attr("text-anchor", "end")
+						.attr("font-size", "12px")
+						.attr("fill", "#666")
+						.attr("pointer-events", "none")
+						.text(maxText);
+				}
+
+				onBrush?.(minX, maxX);
+			}
+
+			const debouncedBrushFn = debounce(brushFn, 16);
+
+			const brush = d3
+				.brushX()
+				.extent([
+					[0, 0],
+					[innerWidth, innerHeight],
+				])
+				.on("brush", (event) => debouncedBrushFn(event))
+				.on("end", function (event) {
+					const selection = event.selection;
+					if (!selection) {
+						svg.selectAll(".area").remove();
+						svg.selectAll(".brush-label").remove();
+						g.append("path").datum(processedData).attr("class", "area").attr("d", areaGenerator).attr("fill", "steelblue").attr("fill-opacity", 0.3);
+						onBrush?.(d3.min(data, (d) => d.x) || 0, d3.max(data, (d) => d.x) || 0);
+					}
+				});
+
+			svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`).attr("class", "brush").call(brush);
+			svg.select(".selection").attr("fill", "none").attr("stroke", "none");
+
+			svg.selectAll(".handle").attr("fill", "steelblue").attr("stroke", "steelblue").attr("stroke-width", "1").attr("width", "0.5").style("width", "0.5px").style("transform", "translate(3px, 0)");
+
+			return () => {
+				brush.on("brush", null).on("end", null);
+				svg.selectAll("*").remove();
+			};
+		}
+	}, [data, onBrush, title, scaleType, formatter]);
+
+	useEffect(() => {
+		const cancel = draw();
+		window.addEventListener("resize", draw);
+		return () => {
+			window.removeEventListener("resize", draw);
+			cancel?.();
+		};
+	}, [draw]);
+
+	return (
+		<svg
+			ref={svgRef}
+			width="100%"
+			height="100%"
+		></svg>
+	);
 }
 
 export default memo(SelectChart, (prevProps, nextProps) => {
-    return JSON.stringify(prevProps.data) === JSON.stringify(nextProps.data) && prevProps.title === nextProps.title;
+	return JSON.stringify(prevProps.data) === JSON.stringify(nextProps.data) && prevProps.title === nextProps.title;
 });
