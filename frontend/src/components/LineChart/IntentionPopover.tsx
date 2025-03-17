@@ -29,6 +29,7 @@ function IntentionPopover<T extends SingleChoice | GroupChoice | SingleRelationC
 
 	const getSingleRelationInfo = (segments: Segment[], choice: SingleRelationChoice) => {
 		if (!segments[1]) return null;
+		if (!comparisonResult) return null;
 
 		const formatValue = (value: number | undefined, isPercentage = false) => {
 			if (value === undefined) return null;
@@ -36,23 +37,14 @@ function IntentionPopover<T extends SingleChoice | GroupChoice | SingleRelationC
 		};
 
 		const values = {
-			[SingleRelationChoice.SLOPE]: () => `(${formatSegmentValue(segments[0].slope, true)}/${xDataType})`,
-			[SingleRelationChoice.DURATION]: () => (segments[0].duration && segments[1].duration ? `(${formatSegmentValue(segments[0].duration)} ${xDataType})` : null),
-			[SingleRelationChoice.START_VALUE]: () => `(${formatValue(segments[0].start_value)})`,
-			[SingleRelationChoice.END_VALUE]: () => `(${formatValue(segments[0].end_value)})`,
-			[SingleRelationChoice.RELATIVE_SLOPE]: () => `(${formatValue(segments[0].relative_slope, true)})`,
+			[SingleRelationChoice.SLOPE]: (comparator: Comparator) => `(${formatSegmentValue(segments[0].slope, true)}${comparator}${formatSegmentValue(segments[1].slope, true)})[/${xDataType}]`,
+			[SingleRelationChoice.DURATION]: (comparator: Comparator) => (segments[0].duration && segments[1].duration ? `(${formatSegmentValue(segments[0].duration)}${comparator}${formatSegmentValue(segments[1].duration)})[${xDataType}]` : null),
+			[SingleRelationChoice.START_VALUE]: (comparator: Comparator) => `(${formatValue(segments[0].start_value)}${comparator}${formatValue(segments[1].start_value)})`,
+			[SingleRelationChoice.END_VALUE]: (comparator: Comparator) => `(${formatValue(segments[0].end_value)}${comparator}${formatValue(segments[1].end_value)})`,
+			[SingleRelationChoice.RELATIVE_SLOPE]: (comparator: Comparator) => `(${formatValue(segments[0].relative_slope, true)}${comparator}${formatValue(segments[1].relative_slope, true)})`,
 		};
 
-		const baseValue = values[choice]?.();
-		if (!baseValue || !comparisonResult) return baseValue;
-
-		const compareValue = choice === SingleRelationChoice.RELATIVE_SLOPE ? 
-			formatValue(segments[1].relative_slope, true) : 
-			choice === SingleRelationChoice.SLOPE ? 
-				formatSegmentValue(segments[1].slope, true) : 
-				formatValue(segments[1][choice]);
-
-		return `(${baseValue.slice(1, -1)} ${comparisonResult[choice as keyof typeof comparisonResult]} ${compareValue})`;
+		return values[choice]?.(comparisonResult[choice as keyof typeof comparisonResult]);
 	};
 
 	const getSegmentsInfo = (choice: T) => {
