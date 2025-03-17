@@ -11,19 +11,7 @@ interface SelectChartProps {
 	data: DataPoint[];
 	title?: string;
 	onBrush?: (minX: number, maxX: number) => void;
-	scaleType?: "linear" | "log" | "normalized";
 	formatter?: (value: number) => string;
-}
-
-function normalizeData(data: DataPoint[]): DataPoint[] {
-	const maxY = Math.max(...data.map((d) => d.y));
-	const minY = Math.min(...data.map((d) => d.y));
-	const range = maxY - minY;
-
-	return data.map((d) => ({
-		x: d.x,
-		y: range === 0 ? 1 : (d.y - minY) / range,
-	}));
 }
 
 function formatNumber(value: number): string {
@@ -41,7 +29,7 @@ function formatNumber(value: number): string {
 	}
 }
 
-function SelectChart({ data, title, onBrush, scaleType = "log", formatter = formatNumber }: SelectChartProps) {
+function SelectChart({ data, title, onBrush, formatter = formatNumber }: SelectChartProps) {
 	const svgRef = useRef<SVGSVGElement | null>(null);
 
 	const draw = useCallback(() => {
@@ -61,22 +49,21 @@ function SelectChart({ data, title, onBrush, scaleType = "log", formatter = form
 				.domain(d3.extent(data, (d) => d.x) as [number, number])
 				.range([0, innerWidth]);
 
-			const processedData = scaleType === "normalized" ? normalizeData(data) : data;
+			const determineScale = () => {
+				if (data.length <= 10) return "linear";
+
+				const values = data.map((d) => d.y);
+				const max = Math.max(...values);
+				const min = Math.min(...values);
+
+				return max / Math.max(min, 0.0001) > 1000 ? "log" : "linear";
+			};
+
+			const scaleType = determineScale();
 
 			const y = d3
 				.scaleLinear()
-				.domain(
-					(() => {
-						if (scaleType === "log") {
-							const minY = Math.max(d3.min(data, (d) => d.y) || 1, 1);
-							return [minY, d3.max(data, (d) => d.y) || minY];
-						} else if (scaleType === "normalized") {
-							return [0, 1];
-						} else {
-							return [0, d3.max(data, (d) => d.y) || 0];
-						}
-					})()
-				)
+				.domain(scaleType === "log" ? [Math.max(d3.min(data, (d) => d.y) || 1, 1), d3.max(data, (d) => d.y) || 1] : [0, d3.max(data, (d) => d.y) || 0])
 				.nice()
 				.range([innerHeight, 0]);
 
@@ -99,7 +86,7 @@ function SelectChart({ data, title, onBrush, scaleType = "log", formatter = form
 				.y0(yScale(scaleType === "log" ? 1 : 0))
 				.y1((d) => yScale(d.y));
 
-			g.append("path").datum(processedData).attr("class", "area").attr("d", areaGenerator).attr("fill", "steelblue").attr("fill-opacity", 0.3);
+			g.append("path").datum(data).attr("class", "area").attr("d", areaGenerator).attr("fill", "steelblue").attr("fill-opacity", 0.3);
 
 			svg.append("text")
 				.attr("x", innerWidth / 2)
@@ -120,9 +107,9 @@ function SelectChart({ data, title, onBrush, scaleType = "log", formatter = form
 				const selection = event.selection;
 				if (!selection) return;
 
-				g.append("path").datum(processedData).attr("class", "area").attr("d", areaGenerator).attr("fill", "lightgray").attr("fill-opacity", 0.3);
+				g.append("path").datum(data).attr("class", "area").attr("d", areaGenerator).attr("fill", "lightgray").attr("fill-opacity", 0.3);
 
-				g.append("path").datum(processedData).attr("class", "area").attr("clip-path", `polygon(${selection[0]}px 0, ${selection[1]}px 0, ${selection[1]}px 100%, ${selection[0]}px 100%)`).attr("d", areaGenerator).attr("fill", "steelblue").attr("fill-opacity", 0.3);
+				g.append("path").datum(data).attr("class", "area").attr("clip-path", `polygon(${selection[0]}px 0, ${selection[1]}px 0, ${selection[1]}px 100%, ${selection[0]}px 100%)`).attr("d", areaGenerator).attr("fill", "steelblue").attr("fill-opacity", 0.3);
 
 				const [x0, x1] = selection as [number, number];
 				const [minX, maxX] = [parseFloat(x.invert(x0).toFixed(2)), parseFloat(x.invert(x1).toFixed(2))];
@@ -136,15 +123,7 @@ function SelectChart({ data, title, onBrush, scaleType = "log", formatter = form
 				if (selectionWidth < textWidth) {
 					const avgX = parseFloat(((minX + maxX) / 2).toFixed(2));
 					const centerX = (x0 + x1) / 2 + 2;
-					svg.append("text")
-						.attr("class", "brush-label")
-						.attr("x", centerX)
-						.attr("y", innerHeight)
-						.attr("text-anchor", "middle")
-						.attr("font-size", "12px")
-						.attr("fill", "#666")
-						.attr("pointer-events", "none")
-						.text(formatter(avgX));
+					svg.append("text").attr("class", "brush-label").attr("x", centerX).attr("y", innerHeight).attr("text-anchor", "middle").attr("font-size", "12px").attr("fill", "#666").attr("pointer-events", "none").text(formatter(avgX));
 				} else {
 					svg.append("text")
 						.attr("class", "brush-label")
@@ -184,7 +163,7 @@ function SelectChart({ data, title, onBrush, scaleType = "log", formatter = form
 					if (!selection) {
 						svg.selectAll(".area").remove();
 						svg.selectAll(".brush-label").remove();
-						g.append("path").datum(processedData).attr("class", "area").attr("d", areaGenerator).attr("fill", "steelblue").attr("fill-opacity", 0.3);
+						g.append("path").datum(data).attr("class", "area").attr("d", areaGenerator).attr("fill", "steelblue").attr("fill-opacity", 0.3);
 						onBrush?.(d3.min(data, (d) => d.x) || 0, d3.max(data, (d) => d.x) || 0);
 					}
 				});
@@ -199,7 +178,7 @@ function SelectChart({ data, title, onBrush, scaleType = "log", formatter = form
 				svg.selectAll("*").remove();
 			};
 		}
-	}, [data, onBrush, title, scaleType, formatter]);
+	}, [data, onBrush, title, formatter]);
 
 	useEffect(() => {
 		const cancel = draw();
