@@ -812,7 +812,7 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 				.attr("stroke-width", 1);
 
 			if (isHoverable) {
-				cleanups.push(setupTooltip(g, pathG, lineColor, keyData, valueData, x, y, isTime, xAxisFormatter, innerHeight, segments, timeStampData, xDataType));
+				cleanups.push(setupTooltip(g, lineColor, keyData, valueData, x, y, isTime, xAxisFormatter, innerHeight, segments, timeStampData, xDataType));
 			}
 		}
 

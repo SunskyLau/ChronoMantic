@@ -3,7 +3,7 @@ import { generateId } from "../../../utils/id";
 import { getSecondsByUnit } from "../../../utils/query-spec";
 import { Unit, Segment } from "../../../types/QuerySpec";
 
-export const setupTooltip = (g: d3.Selection<SVGGElement, unknown, null, undefined>, pathG: d3.Selection<SVGGElement, unknown, null, undefined>, lineColor: string, keyData: number[], valueData: number[], x: d3.ScaleTime<number, number, never> | d3.ScaleLinear<number, number, never>, y: d3.ScaleLinear<number, number>, isTime: boolean, xAxisFormatter: (date: Date) => string, innerHeight: number, segments: Segment[], timeStampData: number[], xDataType: Unit) => {
+export const setupTooltip = (g: d3.Selection<SVGGElement, unknown, null, undefined>,  lineColor: string, keyData: number[], valueData: number[], x: d3.ScaleTime<number, number, never> | d3.ScaleLinear<number, number, never>, y: d3.ScaleLinear<number, number>, isTime: boolean, xAxisFormatter: (date: Date) => string, innerHeight: number, segments: Segment[], timeStampData: number[], xDataType: Unit) => {
   const id = generateId();
 	const tooltip = d3.select("body").append("div").attr("class", `tooltip-${id}`).style("position", "absolute").style("background", "#000a").style("color", "#fff").style("padding", "5px 10px").style("border", "1px solid #ccc").style("border-radius", "6px").style("pointer-events", "none").style("transform", "translate(-50%, -100%)").style("opacity", 0).style("font-weight", "200").style("font-size", "14px");
 
