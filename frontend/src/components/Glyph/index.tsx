@@ -143,7 +143,6 @@ const calculateTimeRangeLevels = (trends: TrendWithSource[], trend_groups: Trend
 		});
 	});
 
-	// 计算每个时间范围的层级
 	timeRanges.forEach((range1, i) => {
 		for (let j = 0; j < i; j++) {
 			const range2 = timeRanges[j];
@@ -186,15 +185,15 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 		return level;
 	};
 
-	const getV = (level: number, negative: boolean = false) => {
-		return negative ? baseY2.current - level * 12 : baseY1.current - (level + 1) * 12;
+	const getV = (level: number, negative: boolean = false, step: number = 8) => {
+		return negative ? baseY2.current - level * step : baseY1.current - level * step - step / 2;
 	};
 
-	const drawTimeIndicator = ({ startX, endX, textY, timeColor, timeText, key, strokeWidth = 1, disabled = false, index }: { startX: number; endX: number; textY: number; timeColor: string; timeText?: string; key?: string; strokeWidth?: number; disabled?: boolean; index?: number }) => {
+	const drawTimeIndicator = ({ startX, endX, textY, timeColor, timeText, key, strokeWidth = 1, index }: { startX: number; endX: number; textY: number; timeColor: string; timeText?: string; key?: string; strokeWidth?: number; disabled?: boolean; index?: number }) => {
 		const lineHeight = height / 24;
 		const textWidth = timeText ? (timeText.length * fontSize) / 2 + fontSize : 0;
 		const isActive = index === curRelation;
-		const color = isActive ? timeColor.slice(0, 7) : disabled ? DISABLED_COLOR : timeColor;
+		const color = isActive ? timeColor.slice(0, 7) : timeColor;
 
 		return (
 			<g key={key}>
@@ -231,8 +230,6 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 					y2={textY}
 					stroke={color}
 					strokeWidth={strokeWidth}
-					strokeDasharray={isActive ? "1,1" : "none"}
-					style={{ animation: isActive ? "dashFlow 5s linear infinite" : "none" }}
 				/>
 				<line
 					x1={Math.min(endX, (startX + endX + textWidth) / 2)}
@@ -241,8 +238,6 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 					y2={textY}
 					stroke={color}
 					strokeWidth={strokeWidth}
-					strokeDasharray={isActive ? "1,1" : "none"}
-					style={{ animation: isActive ? "dashFlow 5s linear infinite" : "none" }}
 				/>
 			</g>
 		);
@@ -374,12 +369,12 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 
 	const trendLines = trends.map((trend, i) => getTrend(trend, i));
 
-	baseY1.current = Math.min(...points.current.map((point) => point?.y1 ?? 0), ...points.current.map((point) => point?.y2 ?? 0));
-	baseY2.current = Math.max(...points.current.map((point) => point?.y1 ?? 0), ...points.current.map((point) => point?.y2 ?? 0));
+	baseY1.current = Math.min(...points.current.map((point) => point?.y1 ?? 0), ...points.current.map((point) => point?.y2 ?? 0)) - 5;
+	baseY2.current = Math.max(...points.current.map((point) => point?.y1 ?? 0), ...points.current.map((point) => point?.y2 ?? 0)) + 5;
 
 	useEffect(() => {
-		baseY1.current = Math.min(...points.current.map((point) => point?.y1 ?? 0), ...points.current.map((point) => point?.y2 ?? 0));
-		baseY2.current = Math.max(...points.current.map((point) => point?.y1 ?? 0), ...points.current.map((point) => point?.y2 ?? 0));
+		baseY1.current = Math.min(...points.current.map((point) => point?.y1 ?? 0), ...points.current.map((point) => point?.y2 ?? 0)) - 5;
+		baseY2.current = Math.max(...points.current.map((point) => point?.y1 ?? 0), ...points.current.map((point) => point?.y2 ?? 0)) + 5;
 	}, [trends]);
 
 	const drawCircle = (x: number, y: number, r: number = 1.5, color: string = "#000", disabled: boolean = false) => {
@@ -440,7 +435,7 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 		const fontSize = (height / 4) * strokeWidth;
 		return (
 			<>
-				<rect fill="#fff" x={x - fontSize * newComparator.length / 2} y={y - fontSize / 4} width={fontSize * newComparator.length} height={fontSize / 2}></rect>
+				{/* <rect fill="#fff" x={x - fontSize * newComparator.length / 2} y={y - fontSize / 4} width={fontSize * newComparator.length} height={fontSize / 2}></rect> */}
 				<text
 					onClick={() => onClick?.("Relation", index)}
 					x={x}
@@ -456,6 +451,10 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 			</>
 		);
 	};
+
+	const timeRangeLevels = calculateTimeRangeLevels(trends, trend_groups, trendLength);
+	const maxLevel = Math.max(-1, ...timeRangeLevels.map((item) => item.level));
+	const space = 10;
 
 	const relationLines = single_relations.map((relation, i) => {
 		if (!query || !relation.attribute || relation.id1 === undefined || relation.id2 === undefined) return null;
@@ -487,19 +486,19 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 			);
 		} else if (isSpan) {
 			const offset = trendLength;
+			const offsetY = (maxLevel + 2) * 6;
 			const x11 = trendIndex1 * trendLength;
 			const x12 = x11 + offset;
 			const x21 = trendIndex2 * trendLength;
 			const x22 = x21 + offset;
-			const y = baseY2.current;
 			const relationColor = getColorWithDisabled(colorMap, query, relation.text_source_id) || DEFAULT_COLOR;
 			const level = getLevel(x11, x22, true);
-			const v = getV(level, true);
+			const y = baseY2.current + offsetY - (level + 1) * space;
 			return (
 				<g key={i}>
 					{drawTimeIndicator({ startX: x11, endX: x12, textY: y, timeColor: relationColor, disabled, index: i })}
 					{drawTimeIndicator({ startX: x21, endX: x22, textY: y, timeColor: relationColor, disabled, index: i })}
-					{drawConnect((x12 + x11) / 2, y, (x21 + x22) / 2, y, v, i, relation.comparator, isReverse, relationColor)}
+					{drawConnect((x12 + x11) / 2, y, (x21 + x22) / 2, y, y + space / 2, i, relation.comparator, isReverse, relationColor)}
 				</g>
 			);
 		} else {
@@ -611,7 +610,7 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 				break;
 		}
 
-		const textY = baseY2.current + (type === "global" ? level + 1 : level) * 6;
+		const textY = baseY2.current + level * 6;
 		const timeColor = getColorWithDisabled(colorMap, query, condition.text_source_id);
 		const timeText = getScopeText(condition);
 
@@ -626,9 +625,6 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 			key: `${type}-time-${index}`,
 		});
 	};
-
-	const timeRangeLevels = calculateTimeRangeLevels(trends, trend_groups, trendLength);
-	const maxLevel = Math.max(-1, ...timeRangeLevels.map((item) => item.level));
 
 	const timeIndicators = () => {
 		return (
@@ -658,7 +654,7 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 					drawTimeRangeIndicator({
 						type: "global",
 						index: 0,
-						level: maxLevel,
+						level: maxLevel + 1,
 						condition: query.duration_condition,
 					})}
 			</>
@@ -684,7 +680,7 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 
 		if (!group1Info || !group2Info) return null;
 		const level = getLevel(group1Info.start, group2Info.end, true);
-		const rangeY = baseY2.current + offset - (level + 1) * 6;
+		const rangeY = baseY2.current + offset - level * space;
 		const relationColor = getColorWithDisabled(colorMap, query, relation.text_source_id);
 		const index = i + single_relations.length;
 
@@ -692,7 +688,7 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 			<g key={`group-${i}`}>
 				{drawTimeIndicator({ startX: group1Info.start, endX: group1Info.end, textY: rangeY, timeColor: relationColor, index })}
 				{drawTimeIndicator({ startX: group2Info.start, endX: group2Info.end, textY: rangeY, timeColor: relationColor, index })}
-				{drawConnect(group1Info.end, rangeY, group2Info.start, rangeY, rangeY, index, relation.comparator, false, relationColor, strokeWidth)}
+				{drawConnect(group1Info.center, rangeY, group2Info.center, rangeY, rangeY + space / 2, index, relation.comparator, false, relationColor, strokeWidth)}
 			</g>
 		);
 	};
