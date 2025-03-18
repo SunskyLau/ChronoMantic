@@ -13,9 +13,9 @@ export default function SubmitIcon({ className }: { className?: string }) {
 				<path
 					d="M2 7H15.5M15.5 7L11 1.5M15.5 7L11 12.5"
 					stroke="white"
-					stroke-width="3"
-					stroke-linecap="round"
-					stroke-linejoin="round"
+					strokeWidth="3"
+					strokeLinecap="round"
+					strokeLinejoin="round"
 				/>
 			</svg>
 		</Base>

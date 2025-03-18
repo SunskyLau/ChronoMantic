@@ -155,7 +155,9 @@ export default function DetailView() {
 				level={level}
 				disabled={!current}
 				maxLevel={current?.max_approximation_level ?? 0}
-				onChange={(level) => dispatch(setLevel(level))}
+				onChange={(level) => {
+					dispatch(setLevel(level));
+				}}
 			/>
 			{timeCol && source ? (
 				<>
@@ -179,7 +181,7 @@ export default function DetailView() {
 							height={"100%"}
 							segments={segments}
 							split={split}
-							lineColor="#333"
+							lineColor="#000"
 							onScroll={handleScroll}
 							title={source}
 							isXAxisTextVisible
@@ -204,6 +206,7 @@ export default function DetailView() {
 							yAxisColor="#666"
 							xAxisTextColor="#666"
 							yAxisTextColor="#666"
+							lineColor="#000"
 							margin={{ top: 15, bottom: 25, right: 15, left: 50 }}
 							height={"100%"}
 							split={split}
