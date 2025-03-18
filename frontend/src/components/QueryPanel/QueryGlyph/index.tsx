@@ -21,6 +21,7 @@ export default function QueryGlyph({ className }: { className?: string }) {
 			<Popover
 				rootClassName="glyph-popover"
 				trigger={["contextMenu"]}
+				placement="rightBottom"
 				content={<QueryCondition></QueryCondition>}
 			>
 				<div

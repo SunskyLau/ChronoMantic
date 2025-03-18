@@ -22,10 +22,6 @@
     margin: 4px 0 12px;
 }
 
-.query-condition section:first-child h4:first-child {
-    margin-top: 0;
-}
-
 .query-condition section h5 {
     margin-top: 0;
     margin-bottom: 0;

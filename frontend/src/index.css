@@ -30,7 +30,7 @@
 }
 
 * {
-  font-family: 'JetBrainsMono-Regular', 'Montserrat-Regular', 'PingFangTC';
+  font-family: 'JetBrainsMono-Regular', 'Montserrat-Regular', 'PingFangTC' !important;
 }
 
 body {
