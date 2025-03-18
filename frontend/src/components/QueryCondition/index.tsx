@@ -185,6 +185,7 @@ export default function QueryCondition() {
 			<section>
 				<SelectChoice
 					title="Start Value and End Value"
+					activeColor={getColorFromMap(colorMap, memoizedQuery.comparator_between_start_end_value?.text_source_id)}
 					value={memoizedQuery.comparator_between_start_end_value?.comparator}
 					options={Object.values(Comparator)}
 					onChange={(comparator) => {
