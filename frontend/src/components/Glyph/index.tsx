@@ -68,7 +68,7 @@ const getColorWithDisabled = (colorMap: Record<string, string>, query: QuerySpec
 	return getColorFromMap(colorMap, text_source_id);
 };
 
-const getScopeText = (scope: ScopeConditionWithSourceWithUnit, unitFormatter: (unit: string) => string = (unit: string) => unit) => {
+const getScopeText = (scope: ScopeConditionWithSourceWithUnit, unitFormatter: (unit: string) => string = (unit: string) => unit === 'number' ? '' : unit) => {
 	if (!scope) return null;
 	const { min, max, unit = "" } = scope;
 	if (min && max) {
@@ -91,7 +91,7 @@ const getSlopeText = (trend: TrendWithSource, colorMap: Record<string, string>, 
 	if (!Object.keys(conditions).length) return null;
 	const texts: Record<string, TextWithColor> = {};
 	const map = {
-		slope_scope_condition: { key: TrendTextMap["slope_scope_condition"], unitFormatter: (unit: string) => (unit ? `/${unit}` : "") },
+		slope_scope_condition: { key: TrendTextMap["slope_scope_condition"], unitFormatter: (unit: string) => (unit !== Unit.NUMBER ? `/${unit}` : "") },
 		relative_slope_scope_condition: { key: TrendTextMap["relative_slope_scope_condition"], unitFormatter: () => `%` },
 	};
 	Object.entries(conditions).forEach(([key, value]) => {

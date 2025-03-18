@@ -51,7 +51,7 @@ export default function SpanWithUnit({ title, disabled, min, max, minInclusive, 
 					minInclusive={minInclusive ?? false}
 					maxInclusive={maxInclusive ?? false}
 					addonAfter={
-						unit && (
+						unit && unit !== Unit.NUMBER && (
 							<Select
 								disabled={disabled}
 								value={unit}
