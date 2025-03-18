@@ -1170,13 +1170,13 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 					.attr("fill", 'var(--primary-color)')
 					.attr("opacity", isRequesting ? 0.6 : 1)
 
-				const cancleButton = intentionLinesG
+				const cancelButton = intentionLinesG
 					.append("g")
 					.attr("transform", `translate(${buttonX}, ${computedMargin.top + 32})`)
 					.attr("class", "cancle-button")
 					.style("cursor", isRequesting ? "not-allowed" : "pointer");
 
-				cancleButton
+				cancelButton
 					.append("rect")
 					.attr("width", 60)
 					.attr("height", 24)
@@ -1184,9 +1184,9 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 					.attr("fill", "#ff4d4f")
 					.attr("opacity", isRequesting ? 0.6 : 1);
 
-				cancleButton.append("text").attr("x", 30).attr("y", 16).attr("text-anchor", "middle").attr("fill", "white").attr("font-size", "12px").text("Cancle");
+				cancelButton.append("text").attr("x", 30).attr("y", 16).attr("text-anchor", "middle").attr("fill", "white").attr("font-size", "12px").text("Cancel");
 
-				cancleButton.on("click", () => {
+				cancelButton.on("click", () => {
 					if (isRequesting) return;
 					onSplitSelect?.([]);
 					onCancelSplit?.();
