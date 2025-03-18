@@ -65,9 +65,9 @@ def create_parse_nl_info(dataset_info: str = "[]") -> str:
 3. MANDATORY output format validation before returning result
 
 # Output Validation Checklist
-✅ JSON structure matches QuerySpecWithSource
-✅ All targets exist in dataset columns
-✅ No extra fields or annotations
+- JSON structure matches QuerySpecWithSource
+- All targets exist in dataset columns
+- No extra fields or annotations
 
 # Reference Examples
 {parse_nl_cases}
@@ -98,14 +98,15 @@ Output:
 # Text Adjustment Rules
 {modify_nl_logic_info}
 
-# Examples
-{modify_nl_cases}
-
 # Output Requirements
 1. Strictly adhere to the QuerySpecWithSource data structure
 2. Output only a JSON object
 3. Do not include code block markers (``` )
 4. Do not add any comments
 5. Check data integrity and validity before output
+
+# Examples
+{modify_nl_cases}
+
 """
     return modify_nl_info

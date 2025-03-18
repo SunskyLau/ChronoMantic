@@ -601,3 +601,106 @@ Output:
   "duration_condition": {"max": {"inclusive": true, "value": 25}, "min": {"inclusive": true, "value": 20}, "unit": "month", "text_source_id": 7}
 }
 """
+
+    case6="""
+Input:
+old_queryspec_with_source
+```null
+```
+
+new_queryspec_with_source_without_text_sources
+```{'original_text': '', 'text_sources': [], 'targets': [], 'trends': [{'category': {'category': 'up'}}, {'category': {'category': 'down'}}, {'category': {'category': 'up'}}, {'category': {'category': 'down'}}, {'category': {'category': 'up'}}, {'category': {'category': 'down'}}], 'single_relations': [{'id1': 0, 'id2': 2, 'attribute': 'duration', 'comparator': '<'}, {'id1': 2, 'id2': 4, 'attribute': 'end_value', 'comparator': '>'}], 'trend_groups': [], 'group_relations': []}
+```
+
+intentions
+```{
+  "single_segment_intentions": [
+    {
+      "id": 0,
+      "single_choices": [
+        "user"
+      ]
+    },
+    {
+      "id": 1,
+      "single_choices": [
+        "user"
+      ]
+    },
+    {
+      "id": 2,
+      "single_choices": [
+        "user"
+      ]
+    },
+    {
+      "id": 3,
+      "single_choices": [
+        "user"
+      ]
+    },
+    {
+      "id": 4,
+      "single_choices": [
+        "user"
+      ]
+    },
+    {
+      "id": 5,
+      "single_choices": [
+        "user"
+      ]
+    }
+  ],
+  "segment_group_intentions": [],
+  "single_relation_intentions": [
+    {
+      "id1": 0,
+      "id2": 2,
+      "relation_choices": [
+        "duration"
+      ]
+    },
+    {
+      "id1": 2,
+      "id2": 4,
+      "relation_choices": [
+        "end_value"
+      ]
+    }
+  ],
+  "group_relation_intentions": [],
+  "global_intentions": []
+}
+```
+
+Output:
+{
+  "original_text": "Find a pattern that starts with a rise, then falls, followed by another rise, then falls again, then rises once more, and ends with a fall, where the duration of the first rise is shorter than the third rise, and the end value of the third rise is greater than the end value of the fifth rise.",
+  "text_sources": [
+    {"text": "rise"},
+    {"text": "falls"},
+    {"text": "rise"},
+    {"text": "falls"},
+    {"text": "rises"},
+    {"text": "fall"},
+    {"text": "the duration of the first rise is shorter than the third rise"},
+    {"text": "the end value of the third rise is greater than the end value of the fifth rise"}
+  ],
+  "targets": [],
+  "trends": [
+    {"category": {"category": "up", "text_source_id": 0}},
+    {"category": {"category": "down", "text_source_id": 1}},
+    {"category": {"category": "up", "text_source_id": 2}},
+    {"category": {"category": "down", "text_source_id": 3}},
+    {"category": {"category": "up", "text_source_id": 4}},
+    {"category": {"category": "down", "text_source_id": 5}}
+  ],
+  "single_relations": [
+    {"id1": 0, "id2": 2, "attribute": "duration", "comparator": "<", "text_source_id": 6},
+    {"id1": 2, "id2": 4, "attribute": "end_value", "comparator": ">", "text_source_id": 7}
+  ],
+  "trend_groups": [],
+  "group_relations": []
+}
+"""
