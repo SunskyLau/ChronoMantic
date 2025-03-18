@@ -22,6 +22,9 @@ parse_nl_cases = f"""## Example 1
 
 ## Example 7
 {ParseNL_Cases.case7}
+
+## Example 8
+{ParseNL_Cases.case8}
 """
 
 modify_nl_cases = f"""## Example 1
@@ -70,7 +73,11 @@ def create_parse_nl_info(dataset_info: str = "[]") -> str:
 - No extra fields or annotations
 
 # Reference Examples
+## Parse Examples
 {parse_nl_cases}
+
+## Generate/Modify QuerySpec Examples
+{modify_nl_cases}
 """
     return parse_nl_info
 

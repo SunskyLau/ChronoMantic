@@ -4,7 +4,10 @@ from .constant import FUZZY_FACTOR
 class ParseNL_Cases:
     case1 = """
 Input:
-Find periods in AMZN when price first rose sharply then fell gradually and the price was higher than 100
+Find periods in AMZN when price first rose sharply then fell gradually with a lower end value than the uptrend's start value and the price was higher than 100
+
+Explanation:
+1. You can't find a valid trend of other trend_id(uptrend's previous id is equal to -1, and fell trend's next id is out of range), so you should set comparator_between_start_end_value.
 
 Output:
 {
@@ -15,6 +18,7 @@ Output:
     { "text": "sharply" },
     { "text": "fell" },
     { "text": "gradually" },
+    { "text": "lower end value than the uptrend's start value" },
     { "text": "higher than 100" }
   ],
   "targets": [
@@ -59,6 +63,10 @@ Output:
       "value": 100,
       "inclusive": true
     },
+    "text_source_id": 6
+  },
+  "comparator_between_start_end_value": {
+    "comparator": ">",
     "text_source_id": 5
   }
 }
@@ -523,12 +531,12 @@ Output:
     case6 = (
         """
 Input:
-Find periods when price presented a high plateau shape with a slope of downtrend is about 20%/week, and totally the uptrend's start value is approximately equal to the end value of the downtrend
+Find periods when price presented a high plateau shape with a slope of downtrend is about 20%/week, and totally the uptrend's start value is approximately equal to the end value of the flat trend
 
 Explanation:
 1. The user's query is about a high plateau shape, which means a rising trend followed by a flat trend followed by a downtrend (up->flat->down).
 2. Trends need to be distinguished between rising and falling, and negative slopes should be used when falling. Because user didn't specify the slope, the slope should be set according to the fuzzy factor.
-3. You can't find a valid trend of other trend_id(uptrend's previous id is equal to -1, and downtrend's next id is out of range), so you should set compare_between_start_end_value.
+3. You can't compare the start value and end value of the uptrend and downtrend directly, so you should transform the end value of the flat trend(trend_id=1) to the start value of the next trend(trend_id=2).
 
 Output:
 {
@@ -536,7 +544,7 @@ Output:
   "text_sources": [
     { "text": "a high plateau shape" },
     { "text": "a slope of downtrend is about 20%/week" },
-    { "text": "totally the uptrend's start value is approximately equal to the end value of the downtrend" }
+    { "text": "totally the uptrend's start value is approximately equal to the end value of the flat trend" }
   ],
   "targets": [],
   "trends": [
@@ -575,13 +583,11 @@ Output:
       }
     }
   ],
-  "single_relations": [],
+  "single_relations": [
+    {"id1": 0, "id2": 2, "attribute": "start_value", "comparator": "~=", "text_source_id": 2}
+  ],
   "trend_groups": [],
-  "group_relations": [],
-  "comparator_between_start_end_value": {
-    "comparator": "~=",
-    "text_source_id": 2
-  }
+  "group_relations": []
 }
 """
     )
@@ -590,6 +596,9 @@ Output:
         """
 Input:
 look for a pattern that rises, then rises again with a smaller relative slope and a smaller slope compared to the first rise, then rises once more with a duration approximately equal to the first rise, and the overall duration of the pattern is about 25 months, and the start value of this pattern is greater than the end value
+
+Explanation:
+1. The user specifies the start value of this pattern is greater than the end value, so you should set comparator_between_start_end_value.
 
 Output:
 {
@@ -670,3 +679,79 @@ Output:
 }
 """
     )
+
+    case8 = """
+Input:
+First rise, then fall, the start value of the rise is higher than the end value of the fall, then rise again to the same level as the first rise's start value, and then remain flat.
+
+Explanation:
+1. Trend Sequence Identification :
+  The user wants to identify a specific sequence of trends in the data: rise -> fall -> rise -> flat.
+2. Single Relations (Value Comparisons) :
+  The user specifies certain relationships between the values of these trends. However, direct comparisons between starting and ending values of trends are not possible. To address this, we use transformation rules to make indirect comparisons:
+  Rule 1: Comparing Upward and Downward Trends
+    The user wants `the start value of the rise is higher than the end value of the fall`.
+    Since the ending value of the downward trend cannot be directly compared to the starting value of the upward trend, we transform it into the starting value of the next trend.
+    Specifically, we compare the starting value of trend_id = 0 (first upward trend) with the starting value of trend_id = 2 (the trend after the downward trend).
+  Rule 2: Comparing Two Upward Trends
+    The user wants `the start value of the rise is higher than the end value of the fall`.
+    Since the ending value of the third upward trend cannot be directly compared to the starting value of the first upward trend , we transform it into the starting value of the next trend .
+    Specifically, we compare the starting value of trend_id = 0 (first upward trend) with the starting value of trend_id = 3 (the trend after the third upward trend).
+
+Output:
+{
+  "original_text": "First rise, then fall, the start value of the rise is higher than the end value of the fall, then rise again to the same level as the first rise's start value, and then remain flat.",
+  "text_sources": [
+    { "text": "rise" },
+    { "text": "fall" },
+    { "text": "the start value of the rise is higher than the end value of the fall" },
+    { "text": "rise again to the same level as the first rise's start value" },
+    { "text": "flat" }
+  ],
+  "targets": [],
+  "trends": [
+    {
+      "category": {
+        "category": "up",
+        "text_source_id": 0
+      }
+    },
+    {
+      "category": {
+        "category": "down",
+        "text_source_id": 1
+      }
+    },
+    {
+      "category": {
+        "category": "up",
+        "text_source_id": 3
+      }
+    },
+    {
+      "category": {
+        "category": "flat",
+        "text_source_id": 4
+      }
+    }
+  ],
+  "single_relations": [
+    {
+      "attribute": "start_value",
+      "comparator": ">",
+      "id1": 0,
+      "id2": 2,
+      "text_source_id": 2
+    },
+    {
+      "attribute": "start_value",
+      "comparator": "~=",
+      "id1": 0,
+      "id2": 3,
+      "text_source_id": 3
+    }
+  ],
+  "trend_groups": [],
+  "group_relations": []
+}
+"""

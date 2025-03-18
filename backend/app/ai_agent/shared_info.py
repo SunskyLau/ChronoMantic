@@ -281,7 +281,14 @@ parse_nl_logic_info = f"""## I. Range Expression Parsing
       - For a trend’s `end_value` (e.g., `trend_id=0`):
         - Set its `end_value` = `start_value` of the next trend (`trend_id=1`).
   - If `prev_id` or `next_id` is out of bounds (e.g., missing adjacent trends):
-    - Force `compare_between_start_end_value` to directly compare the original `start_value` and `end_value` of the two trends.  
+    - Force `comparator_between_start_end_value` to directly compare the original `start_value` and `end_value` of the two trends. 
+- Example:
+  - "Find pattern where rise then fall with a lower end value than the uptrend's start value and then followed by another rise" → 
+    "single_relations": [
+      {{"id1": 0, "id2": 2, "attribute": "start_value", "comparator": ">"}}
+    ]
+  - "Find periods where has a peak, the uptrend's start value is higher than the peak's end value" → 
+    "comparator_between_start_end_value": {{"comparator": ">"}}
 
 ## IV. Duration Handling
 8. Time Dimension Classification
