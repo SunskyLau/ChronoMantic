@@ -158,6 +158,7 @@ export default function NlqueryBox() {
 							if (textareaRef.current) {
 								textareaRef.current.focus();
 								textareaRef.current.setSelectionRange(-1, -1);
+								textareaRef.current.scrollTop = textareaRef.current.scrollHeight;
 							}
 						});
 					}}
