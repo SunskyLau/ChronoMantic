@@ -1164,10 +1164,11 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 
 				submitButton
 					.append("rect")
-					.attr("width", isRequesting ? 84 : defaultSplits?.length ? 60 : 60)
+					.attr("width", isRequesting ? 90 : defaultSplits?.length ? 60 : 60)
 					.attr("height", 24)
 					.attr("rx", 4)
-					.attr("fill", isRequesting ? "#1890ff66" : "#1890ff");
+					.attr("fill", 'var(--primary-color)')
+					.attr("opacity", isRequesting ? 0.6 : 1)
 
 				const cancleButton = intentionLinesG
 					.append("g")
@@ -1180,7 +1181,8 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 					.attr("width", 60)
 					.attr("height", 24)
 					.attr("rx", 4)
-					.attr("fill", isRequesting ? "#ff4d4f66" : "#ff4d4f");
+					.attr("fill", "#ff4d4f")
+					.attr("opacity", isRequesting ? 0.6 : 1);
 
 				cancleButton.append("text").attr("x", 30).attr("y", 16).attr("text-anchor", "middle").attr("fill", "white").attr("font-size", "12px").text("Cancle");
 
@@ -1224,12 +1226,12 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 					})
 					.on("mouseenter", function () {
 						if (!isRequesting) {
-							d3.select(this).select("rect").transition().duration(200).attr("fill", "#40a9ff");
+							d3.select(this).select("rect").transition().duration(200).attr("opacity", 0.8);
 						}
 					})
 					.on("mouseleave", function () {
 						if (!isRequesting) {
-							d3.select(this).select("rect").transition().duration(200).attr("fill", "#1890ff");
+							d3.select(this).select("rect").transition().duration(200).attr("opacity", 1);
 						}
 					});
 			}
