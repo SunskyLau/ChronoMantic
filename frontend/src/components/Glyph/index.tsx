@@ -702,6 +702,7 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 		const group2Info = getGroupInfo(relation.group2);
 
 		if (!group1Info || !group2Info) return null;
+		const isReverse = group1Info.start > group2Info.start;
 		const level = getLevel(Math.min(group1Info.start, group2Info.start), Math.max(group1Info.end, group2Info.end), true);
 		const rangeY = baseY2.current + offset - (level + 1) * space;
 		const relationColor = getColorWithDisabled(colorMap, query, relation.text_source_id);
@@ -711,7 +712,7 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 			<g key={`group-${i}`}>
 				{drawTimeIndicator({ startX: group1Info.start, endX: group1Info.end, textY: rangeY, timeColor: relationColor, index })}
 				{drawTimeIndicator({ startX: group2Info.start, endX: group2Info.end, textY: rangeY, timeColor: relationColor, index })}
-				{drawConnect(group1Info.center, rangeY, group2Info.center, rangeY, rangeY + space / 2, index, relation.comparator, false, relationColor, strokeWidth)}
+				{drawConnect(group1Info.center, rangeY, group2Info.center, rangeY, rangeY + space / 2, index, relation.comparator, isReverse, relationColor, strokeWidth)}
 			</g>
 		);
 	};
