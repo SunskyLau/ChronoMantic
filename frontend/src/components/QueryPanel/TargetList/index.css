@@ -13,3 +13,9 @@
   font-size: 18px;
 }
 
+.target-list .target-item.disabled {
+  background-color: #3331 !important;
+  text-decoration: line-through;
+  color: #999;
+}
+
