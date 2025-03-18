@@ -38,6 +38,15 @@ const comparatorMap = {
 	[Comparator.APPROXIMATELY_EQUAL_TO]: Comparator.APPROXIMATELY_EQUAL_TO,
 };
 
+const checkScopeCondition = (scope: ScopeConditionWithSourceWithUnit) => {
+	if (!scope) return false;
+	const { min, max } = scope;
+	const minValue = min?.value;
+	const maxValue = max?.value;
+	if (minValue || maxValue) return true;
+	return false;
+};
+
 const getTrendInfo = (trend: TrendWithSource) => {
 	if (!trend) return { isFlat: false, isUp: false, isDown: false };
 	return {
@@ -113,16 +122,16 @@ const hasOverlap = (range1: [number, number], range2: [number, number]) => {
 	return minStart < maxEnd;
 };
 
-const calculateTimeRangeLevels = (trends: TrendWithSource[], trend_groups: TrendGroupWithSource[], trendLength: number) => {
+const calculateTimeRangeLevels = (trends: TrendWithSource[], trend_groups: TrendGroupWithSource[], query: QuerySpecWithSource | null | undefined, trendLength: number) => {
 	const timeRanges: {
-		type: "trend" | "group";
+		type: "trend" | "group" | "global";
 		range: [number, number];
 		index: number;
 		level: number;
 	}[] = [];
 
 	trends.forEach((trend, i) => {
-		if (trend.duration_condition) {
+		if (trend.duration_condition && checkScopeCondition(trend.duration_condition)) {
 			timeRanges.push({
 				type: "trend",
 				range: [i * trendLength, (i + 1) * trendLength],
@@ -133,15 +142,26 @@ const calculateTimeRangeLevels = (trends: TrendWithSource[], trend_groups: Trend
 	});
 
 	trend_groups.forEach((group, i) => {
-		const startIndex = group.ids[0];
-		const endIndex = group.ids[1];
-		timeRanges.push({
+		if (group.duration_condition && checkScopeCondition(group.duration_condition)) {
+			const startIndex = group.ids[0];
+			const endIndex = group.ids[1];
+			timeRanges.push({
 			type: "group",
-			range: [startIndex * trendLength, (endIndex + 1) * trendLength],
-			index: i,
+				range: [startIndex * trendLength, (endIndex + 1) * trendLength],
+				index: i,
+				level: 0,
+			});
+		}
+	});
+
+	if (query?.duration_condition && checkScopeCondition(query.duration_condition)) {
+		timeRanges.push({
+			type: "global",
+			range: [0, trendLength * (query.trends.length + 1)],
+			index: -1,
 			level: 0,
 		});
-	});
+	}
 
 	timeRanges.forEach((range1, i) => {
 		for (let j = 0; j < i; j++) {
@@ -452,7 +472,7 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 		);
 	};
 
-	const timeRangeLevels = calculateTimeRangeLevels(trends, trend_groups, trendLength);
+	const timeRangeLevels = calculateTimeRangeLevels(trends, trend_groups, query, trendLength);
 	const maxLevel = Math.max(-1, ...timeRangeLevels.map((item) => item.level));
 	const space = 10;
 
@@ -486,13 +506,13 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 			);
 		} else if (isSpan) {
 			const offset = trendLength;
-			const offsetY = (maxLevel + 2) * 6;
+			const offsetY = (maxLevel + 1) * 6;
 			const x11 = trendIndex1 * trendLength;
 			const x12 = x11 + offset;
 			const x21 = trendIndex2 * trendLength;
 			const x22 = x21 + offset;
 			const relationColor = getColorWithDisabled(colorMap, query, relation.text_source_id) || DEFAULT_COLOR;
-			const level = getLevel(x11, x22, true);
+			const level = getLevel(Math.min(x11, x21), Math.max(x12, x22), true);
 			const y = baseY2.current + offsetY - (level + 1) * space;
 			return (
 				<g key={i}>
@@ -632,6 +652,7 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 				{trends.map(
 					(trend, i) =>
 						trend.duration_condition &&
+						checkScopeCondition(trend.duration_condition) &&
 						drawTimeRangeIndicator({
 							type: "trend",
 							index: i,
@@ -642,6 +663,7 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 				{trend_groups.map(
 					(group, i) =>
 						group.duration_condition &&
+						checkScopeCondition(group.duration_condition) &&
 						drawTimeRangeIndicator({
 							type: "group",
 							index: i,
@@ -651,10 +673,11 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 						})
 				)}
 				{query?.duration_condition &&
+					checkScopeCondition(query.duration_condition) &&
 					drawTimeRangeIndicator({
 						type: "global",
 						index: 0,
-						level: maxLevel + 1,
+						level: timeRangeLevels.find((item) => item.type === "global")?.level || 0,
 						condition: query.duration_condition,
 					})}
 			</>
@@ -663,7 +686,7 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 
 	const drawGroupRelation = (relation: GroupRelationWithSource, i: number, trendLength: number, trends: TrendWithSource[], strokeWidth: number = 1) => {
 		if (!query) return null;
-		const offset = (maxLevel + 2) * 6;
+		const offset = (maxLevel + 1) * 6;
 		const getGroupInfo = (ids: [number, number]) => {
 			if (ids[0] === undefined || ids[1] === undefined || ids[0] >= trends.length || ids[1] >= trends.length) return null;
 			const x1 = ids[0] * trendLength;
@@ -679,8 +702,8 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 		const group2Info = getGroupInfo(relation.group2);
 
 		if (!group1Info || !group2Info) return null;
-		const level = getLevel(group1Info.start, group2Info.end, true);
-		const rangeY = baseY2.current + offset - level * space;
+		const level = getLevel(Math.min(group1Info.start, group2Info.start), Math.max(group1Info.end, group2Info.end), true);
+		const rangeY = baseY2.current + offset - (level + 1) * space;
 		const relationColor = getColorWithDisabled(colorMap, query, relation.text_source_id);
 		const index = i + single_relations.length;
 
