@@ -25,6 +25,9 @@ parse_nl_cases = f"""## Example 1
 
 ## Example 8
 {ParseNL_Cases.case8}
+
+## Example 9
+{ParseNL_Cases.case9}
 """
 
 modify_nl_cases = f"""## Example 1

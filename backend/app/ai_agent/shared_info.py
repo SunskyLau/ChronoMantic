@@ -149,7 +149,7 @@ export interface QuerySpecWithSource {
   trends: TrendWithSource[]; // Trend list
   single_relations: SingleRelationWithSource[]; // Single trend relation list
   trend_groups: TrendGroupWithSource[]; // Trend group list
-  group_relations: GroupRelationWithSource[]; // Group relation list
+  group_relations: GroupRelationWithSource[]; // Group relation list, only used when user compare two trend groups
   duration_condition?: ScopeConditionWithSourceWithUnit; // Total time span range condition
   time_scope_condition?: ScopeConditionWithSource; // Time range condition
   max_value_scope_condition?: ScopeConditionWithSource; // Maximum value range condition

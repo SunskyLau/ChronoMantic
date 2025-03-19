@@ -74,19 +74,19 @@ Output:
 
     case2 = """
 Input:
-Find periods in DPZ when price presented a double-bottom shape where the first bottom's slope was steeper than the second bottom's slope
+Find periods in DPZ when price presented consecutive valleys shape where the first bottom's slope was steeper than the second bottom's slope
 
 Explanation:
-1. Double-bottom represents two falling-rising trends, so it should be parsed as down->up->down->up.
-2. The user's query is about a double-bottom shape where the first bottom's slope was steeper than the second bottom's slope, so it means the slope of `trend_id=0` < `trend_id=2` and `trend_id=1` > `trend_id=3`.
-3. Note: If the user inputs triple-bottom, it should be parsed as three groups of such falling-rising patterns: down->up->down->up->down->up.
+1. Consecutive valleys represents two falling-rising trends, so it should be parsed as down->up->down->up.
+2. The user's query specifies that the first bottom's slope was steeper than the second bottom's slope, so it means the relative slope of `trend_id=0` > `trend_id=2` and `trend_id=1` > `trend_id=3`.
+3. Note: If the user inputs triple-bottom (or triple-valley or three consecutive valleys), it should be parsed as three groups of such falling-rising patterns: down->up->down->up->down->up.
 
 Output:
 {
-  "original_text": "Find periods in DPZ when price presented a double-bottom shape where the first bottom's slope was steeper than the second bottom's slope",
+  "original_text": "Find periods in DPZ when price presented consecutive valleys shape where the first bottom's slope was steeper than the second bottom's slope",
   "text_sources": [
     { "text": "DPZ" },
-    { "text": "double-bottom" },
+    { "text": "consecutive valleys" },
     { "text": "first bottom's slope was steeper than the second bottom's slope" }
   ],
   "targets": [
@@ -125,21 +125,14 @@ Output:
     {
       "id1": 0,
       "id2": 2,
-      "attribute": "end_value",
-      "comparator": "~=",
-      "text_source_id": 1
-    },
-    {
-      "id1": 0,
-      "id2": 2,
-      "attribute": "slope",
-      "comparator": "<",
+      "attribute": "relative_slope",
+      "comparator": ">",
       "text_source_id": 2
     },
     {
       "id1": 1,
       "id2": 3,
-      "attribute": "slope",
+      "attribute": "relative_slope",
       "comparator": ">",
       "text_source_id": 2
     }
@@ -274,8 +267,8 @@ Find periods in AMZN when price presented a head-and-shoulders shape followed by
 
 Explanation:
 1. Head-and-shoulders is a head-and-shoulders pattern, shaped as up->down->up->down->up->down, with the "head" (`trend_id=2`) being higher than the "shoulders" (`trend_id=0` and `trend_id=4`).
-2. Cup-with-handle is a cup-and-handle pattern, shaped as down->down->up->up->down, with the "handle" (`trend_id=5`) being higher than the "cup" (`trend_id=3`).
-3. The user's query is about a head-and-shoulders shape followed by a cup-with-handle shape, so it should be parsed as up->down->up->down->up->down->down->down->up->up->down.
+2. Cup-with-handle is a cup-and-handle pattern, shaped as down->down->up->up->flat, with start value of the "handle" (`trend_id=5`) should similar to the start value of the "cup" (`trend_id=0`).
+3. The user's query is about a head-and-shoulders shape followed by a cup-with-handle shape, so it should be parsed as up->down->up->down->up->down->down->down->up->up->flat.
 
 Output:
 {
@@ -354,7 +347,7 @@ Output:
     },
     {
       "category": {
-        "category": "down",
+        "category": "flat",
         "text_source_id": 2
       }
     }
@@ -389,10 +382,10 @@ Output:
       "text_source_id": 2
     },
     {
-      "id1": 7,
+      "id1": 6,
       "id2": 10,
-      "attribute": "end_value",
-      "comparator": "<",
+      "attribute": "start_value",
+      "comparator": "~=",
       "text_source_id": 2
     }
   ],
@@ -753,5 +746,52 @@ Output:
   ],
   "trend_groups": [],
   "group_relations": []
+}
+"""
+
+    case9 = """
+Input:
+Find pattern that first rises and then stays flat and then falls, the flat trend's duration is longer than others, and the uptrend's start value is similar to the end value of the downtrend, besides, these two trends' slope extent is approximately equal
+
+Output:
+{
+  "original_text": "Find pattern that first rises and then stays flat and then falls, the flat trend's duration is longer than others, and the uptrend's start value is similar to the end value of the downtrend, besides, these two trends' slope extent is approximately equal",
+  "text_sources": [
+    { "text": "rises" },
+    { "text": "flat" },
+    { "text": "falls" },
+    { "text": "the flat trend's duration is longer than others" },
+    { "text": "the uptrend's start value is similar to the end value of the downtrend" },
+    { "text": "these two trends' slope extent is approximately equal" }
+  ],
+  "targets": [],
+  "trends": [
+    {
+      "category": {
+        "category": "up",
+        "text_source_id": 0
+      }
+    },
+    {
+      "category": {
+        "category": "flat",
+        "text_source_id": 1
+      }
+    },
+    {
+      "category": {
+        "category": "down",
+        "text_source_id": 2
+      }
+    }
+  ],
+  "single_relations": [
+    {"id1": 1, "id2": 0, "attribute": "duration", "comparator": ">", "text_source_id": 3},
+    {"id1": 1, "id2": 2, "attribute": "duration", "comparator": ">", "text_source_id": 3},
+    {"id1": 0, "id2": 2, "attribute": "relative_slope", "comparator": "~=", "text_source_id": 5}
+  ],
+  "trend_groups": [],
+  "group_relations": [],
+  "comparator_between_start_end_value": {"comparator": "~=", "text_source_id": 4}
 }
 """
