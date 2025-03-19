@@ -15,6 +15,7 @@ import HighlightedText from "./HighlightedText";
 import AudioIcon from "../../icons/Audio";
 import { formatQuerySpec } from "../../utils/query-spec";
 import store from "../../app/store";
+import { setDefaultSplits } from "../../app/slice/selectSlice";
 
 // 语音识别配置
 const initSpeechRecognition = () => {
@@ -89,9 +90,12 @@ export default function NlqueryBox() {
 			dispatch(setQuerySpec(querySpec));
 			dispatch(setOriginalQuery(query));
 			dispatch(setQueryResults(null));
-			const res = await queryApi.getFragmentsBySpec(querySpec);
-			dispatch(setQueryResults(res));
-			dispatch(setIsRequesting(false));
+			queryApi.getFragmentsBySpec(querySpec).then((res) => {
+				dispatch(setQueryResults(res));
+				dispatch(setDefaultSplits([]));
+			}).finally(() => {
+				dispatch(setIsRequesting(false));
+			});
 		},
 		[NLQuery, query, dispatch]
 	);
