@@ -95,7 +95,7 @@ const getSlopeText = (trend: TrendWithSource, colorMap: Record<string, string>, 
 		relative_slope_scope_condition: { key: TrendTextMap["relative_slope_scope_condition"], unitFormatter: () => `%` },
 	};
 	Object.entries(conditions).forEach(([key, value]) => {
-		if (key === "duration_condition" || key === "category") return;
+		if (!(key in map)) return;
 		const unit = map[key as keyof typeof map];
 		if (value) {
 			const text = getScopeText(value, unit.unitFormatter);
