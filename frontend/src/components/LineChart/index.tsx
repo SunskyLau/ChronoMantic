@@ -127,6 +127,8 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 
 	const handlePopoverClose = useCallback(() => {
 		setPopoverPosition(null);
+		setSegmentIds([]);
+		setRelationIds([]);
 		setComparison(null);
 	}, []);
 
@@ -1024,7 +1026,7 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 			Object.values(lines)
 				.flat()
 				.forEach((intention) => {
-					const y = computedMargin.top - intention.level * 8;
+					const y = computedMargin.top - intention.level * 8 < 0 ? (intention.level + 1) * 8 : computedMargin.top - intention.level * 8;
 					const isRelation = intention.type === "SingleRelation" || intention.type === "GroupRelation";
 					const startX1 = x(timeStampData[intention.ranges[0][0]]);
 					const endX1 = isRelation ? x(timeStampData[intention.ranges[0][1]]) : x(timeStampData[intention.ranges[intention.ranges.length - 1][1]]);

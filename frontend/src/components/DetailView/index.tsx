@@ -177,7 +177,7 @@ export default function DetailView() {
 							textColor="#000"
 							isHoverable
 							range={range}
-							margin={{ top: 15, bottom: 30, right: 15, left: 50 }}
+							margin={{ top: 30, bottom: 30, right: 15, left: 50 }}
 							height={"100%"}
 							segments={segments}
 							split={split}
