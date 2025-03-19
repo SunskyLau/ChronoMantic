@@ -392,20 +392,15 @@ export default function ResultsContent() {
 	}, [selectedAttributes, queryLevelResults]);
 
 	const [count, setCount] = useState(10);
-	const [isLoading, setIsLoading] = useState(false);
 
 	const handleScroll = useCallback(
 		(e: React.UIEvent<HTMLDivElement>) => {
 			const element = e.currentTarget;
-			if (element.scrollHeight - element.scrollTop <= element.clientHeight + 100 && !isLoading && count < filteredResults.length) {
-				setIsLoading(true);
-				setTimeout(() => {
-					setCount((prev) => Math.min(prev + 10, filteredResults.length));
-					setIsLoading(false);
-				}, 100);
+			if (element.scrollHeight - element.scrollTop <= element.clientHeight + 200 && count < filteredResults.length) {
+				setCount((prev) => Math.min(prev + 10, filteredResults.length));
 			}
 		},
-		[count, filteredResults.length, isLoading]
+		[count, filteredResults.length]
 	);
 
 	const sortedResults = useMemo(() => {
@@ -630,9 +625,10 @@ export default function ResultsContent() {
 											xData={x}
 											range={[start, end]}
 											yData={(data?.[source] as number[]) || []}
-											margin={{ top: 1, bottom: 1, right: 1, left: 1 }}
+											margin={{ top: 2, bottom: 2, right: 1, left: 1 }}
 											height={42}
 											split={splits}
+											lineColor="#000"
 											isShowRange={false}
 											isExpand={false}
 											resultsSplit={{ segments: [segments.map((segment) => [segment.start_idx, segment.end_idx])], colors: query?.trends.map((trend) => getColorFromMap(colorMap, trend.category.text_source_id)) || [] }}
