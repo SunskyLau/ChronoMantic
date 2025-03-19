@@ -852,7 +852,7 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 	};
 
 	const drawComparatorBetweenStartEndValue = () => {
-		if (!query?.comparator_between_start_end_value) return null;
+		if (!query?.comparator_between_start_end_value?.comparator) return null;
 		const color = getColorWithDisabled(colorMap, query, query.comparator_between_start_end_value.text_source_id);
 		const comparator = query.comparator_between_start_end_value.comparator;
 		const x1 = 0;
