@@ -825,7 +825,7 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 				.attr("fill", "#3331");
 		}
 
-		if (split && keyData.length > 2) {
+		if (split && keyData.length > 1) {
 			const splitLinesG = g.append("g").attr("class", "split-lines").attr("clip-path", `url(#clip-path-${id})`);
 
 			const splitInteractionG = g.append("g").attr("class", "split-interaction").attr("clip-path", `url(#clip-path-${id})`).style("pointer-events", "all");
@@ -864,7 +864,7 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 				}
 			}
 
-			if (resultsSplit && keyData.length > 2) {
+			if (resultsSplit && keyData.length > 1) {
 				const resultsG = g.append("g").attr("class", "results-split-line");
 
 				for (let i = 0; i < resultsSplit.segments.length; i++) {
