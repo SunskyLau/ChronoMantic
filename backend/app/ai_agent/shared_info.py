@@ -313,6 +313,7 @@ parse_nl_logic_info = f"""## I. Range Expression Parsing
   - Must be a continuous substring
   - Maintain the original order of appearance
   - No overlapping coverage
+  - You MUST choose substring that appear in the original text.
 - Example:
   - Original Sentence: "show a sharp rise then gradual decline"
   - Extracted: ["sharp rise", "gradual decline"]
@@ -360,7 +361,7 @@ Requirements:
 Rules:
 1. Fragment Extraction:
 - text_sources elements MUST be contiguous substrings of original_text
-- the text Must be the same as the original text
+- You MUST choose substring that appear in the original text.
 - Maintain original document order
 - Zero overlap between fragments
 

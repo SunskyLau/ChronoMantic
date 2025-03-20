@@ -74,6 +74,7 @@ def create_parse_nl_info(dataset_info: str = "[]") -> str:
 - JSON structure matches QuerySpecWithSource
 - All targets exist in dataset columns
 - No extra fields or annotations
+- The text_sources must be the substring of original_text
 
 # Reference Examples
 ## Parse Examples
@@ -114,6 +115,7 @@ Output:
 3. Do not include code block markers (``` )
 4. Do not add any comments
 5. Check data integrity and validity before output
+6. The text_sources must be the substring of original_text
 
 # Examples
 {modify_nl_cases}
