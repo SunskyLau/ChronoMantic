@@ -11,7 +11,7 @@ Explanation:
 
 Output:
 {
-  "original_text": "Find periods in AMZN when price first rose sharply then fell gradually and the price was higher than 100",
+  "original_text": "Find periods in AMZN when price first rose sharply then fell gradually with a lower end value than the uptrend's start value and the price was higher than 100",
   "text_sources": [
     { "text": "AMZN" },
     { "text": "rose" },
@@ -533,7 +533,7 @@ Explanation:
 
 Output:
 {
-  "original_text": "Find periods when price presented a high plateau shape with a slope of downtrend is about 20%/week",
+  "original_text": "Find periods when price presented a high plateau shape with a slope of downtrend is about 20%/week, and totally the uptrend's start value is approximately equal to the end value of the flat trend",
   "text_sources": [
     { "text": "a high plateau shape" },
     { "text": "a slope of downtrend is about 20%/week" },
@@ -795,3 +795,175 @@ Output:
   "comparator_between_start_end_value": {"comparator": "~=", "text_source_id": 4}
 }
 """
+
+    case10 = """
+Input:
+帮我找到一个下降然后平坦，最后上升的片段，要求起始值和结束值相等，并且平坦时间比其他两段长
+
+Output:
+{
+  "original_text": "帮我找到一个下降然后平坦，最后上升的片段，要求起始值和结束值相等，并且平坦时间比其他两段长",
+  "text_sources": [
+    { "text": "下降" },
+    { "text": "平坦" },
+    { "text": "上升" },
+    { "text": "起始值和结束值相等" },
+    { "text": "平坦时间比其他两段长" }
+  ],
+  "targets": [],
+  "trends": [
+    { "category": {"category": "down", "text_source_id": 0}},
+    { "category": {"category": "flat", "text_source_id": 1}},
+    { "category": {"category": "up", "text_source_id": 2}}
+  ],
+  "single_relations": [
+    {"id1": 1, "id2": 0, "attribute": "duration", "comparator": ">", "text_source_id": 4},
+    {"id1": 1, "id2": 2, "attribute": "duration", "comparator": ">", "text_source_id": 4}
+  ],
+  "trend_groups": [],
+  "group_relations": [],
+  "comparator_between_start_end_value": {"comparator": "~=", "text_source_id": 4}
+}
+"""
+
+    case11 = """
+Input:
+连续山峰并且峰值几乎相等，低点也几乎相等
+
+Explanation:
+1. 连续山峰：two upward and then downward trends
+2. 峰值几乎相等：the two upward ends are almost equal in value 
+3. 低点也几乎相等：三个低点（第一段的开始，第三段的开始(或者第二段的结束)以及最后一段的结束）几乎相等，需要两两比较：
+  1. 第一段的开始和第三段的开始（start_value）
+  2. 第一段的开始和最后一段的结束（comparator_between_start_end_value）
+  3. 第二段的结束和最后一段的结束（end_value）
+
+Output:
+{
+  "original_text": "连续山峰并且峰值几乎相等，低点也几乎相等",
+  "text_sources": [
+    { "text": "连续山峰" },
+    { "text": "峰值几乎相等" },
+    { "text": "低点也几乎相等" }
+  ],
+  "targets": [],
+  "trends": [
+    { "category": {"category": "up", "text_source_id": 0}},
+    { "category": {"category": "down", "text_source_id": 0}},
+    { "category": {"category": "up", "text_source_id": 0}},
+    { "category": {"category": "down", "text_source_id": 0}}
+  ],
+  "single_relations": [
+    {"id1": 0, "id2": 2, "attribute": "end_value", "comparator": "~=", "text_source_id": 1},
+    {"id1": 0, "id2": 2, "attribute": "start_value", "comparator": "~=", "text_source_id": 2},
+    {"id1": 1, "id2": 3, "attribute": "end_value", "comparator": "~=", "text_source_id": 2}
+  ],
+  "trend_groups": [],
+  "group_relations": [],
+  "comparator_between_start_end_value": {"comparator": "~=", "text_source_id": 2}
+}
+    """
+
+    case12 = """
+Input:
+三个山峰，中间的山峰更高
+
+Output:
+{
+  "original_text": "三个山峰，中间的山峰更高",
+  "text_sources": [
+    { "text": "三个山峰" },
+    { "text": "中间的山峰更高" }
+  ],
+  "trends": [
+    { "category": {"category": "up", "text_source_id": 0}},
+    { "category": {"category": "down", "text_source_id": 0}},
+    { "category": {"category": "up", "text_source_id": 0}},
+    { "category": {"category": "down", "text_source_id": 0}},
+    { "category": {"category": "up", "text_source_id": 0}},
+    { "category": {"category": "down", "text_source_id": 0}}
+  ],
+  "single_relations": [
+    {"id1": 0, "id2": 2, "attribute": "end_value", "comparator": "<", "text_source_id": 1},
+    {"id1": 2, "id2": 4, "attribute": "end_value", "comparator": ">", "text_source_id": 1}
+  ],
+  "trend_groups": [],
+  "group_relations": []
+}
+"""
+
+    case13 = """
+Input:
+找到三个连续的山谷，中间的山谷低于左右两个谷
+
+Output:
+{
+  "original_text": "找到三个连续的山谷，中间的山谷低于左右两个谷",
+  "text_sources": [
+    { "text": "三个连续的山谷" },
+    { "text": "中间的山谷低于左右两个谷" }
+  ],
+  "trends": [
+    { "category": {"category": "down", "text_source_id": 0}},
+    { "category": {"category": "up", "text_source_id": 0}},
+    { "category": {"category": "down", "text_source_id": 0}},
+    { "category": {"category": "up", "text_source_id": 0}},
+    { "category": {"category": "down", "text_source_id": 0}},
+    { "category": {"category": "up", "text_source_id": 0}}
+  ],
+  "single_relations": [
+    {"id1": 0, "id2": 2, "attribute": "end_value", "comparator": ">", "text_source_id": 1},
+    {"id1": 2, "id2": 4, "attribute": "end_value", "comparator": "<", "text_source_id": 1}
+  ],
+  "trend_groups": [],
+  "group_relations": []
+}
+"""
+
+    case14 = """
+Input:
+找到三个连续的下降然后上升，第二个的最低值比别的更小
+
+Output:
+{
+  "original_text": "找到三个连续的下降然后上升，第二个的最低值比别的更小",
+  "text_sources": [
+    { "text": "三个连续的下降然后上升" },
+    { "text": "第二个的最低值比别的更小" }
+  ],
+  "trends": [
+    { "category": {"category": "down", "text_source_id": 0}},
+    { "category": {"category": "up", "text_source_id": 0}},
+    { "category": {"category": "down", "text_source_id": 0}},
+    { "category": {"category": "up", "text_source_id": 0}},
+    { "category": {"category": "down", "text_source_id": 0}},
+    { "category": {"category": "up", "text_source_id": 0}}
+  ],
+  "single_relations": [
+    {"id1": 0, "id2": 2, "attribute": "end_value", "comparator": ">", "text_source_id": 1},
+    {"id1": 2, "id2": 4, "attribute": "end_value", "comparator": "<", "text_source_id": 1}
+  ],
+  "trend_groups": [],
+  "group_relations": []
+}
+"""
+
+    @classmethod
+    def get_all_cases(cls):
+        cases = [
+            cls.case1,
+            cls.case2,
+            cls.case3,
+            cls.case4,
+            cls.case5,
+            cls.case6,
+            cls.case7,
+            cls.case8,
+            cls.case9,
+            cls.case10,
+            cls.case11,
+            cls.case12,
+            cls.case13,
+            cls.case14,
+        ]
+        return "\n".join([f"### Case {i+1}\n{case}\n" for i, case in enumerate(cases)])

@@ -602,7 +602,7 @@ Output:
 }
 """
 
-    case6="""
+    case6 = """
 Input:
 old_queryspec_with_source
 ```null
@@ -704,3 +704,8 @@ Output:
   "group_relations": []
 }
 """
+
+    @classmethod
+    def get_all_cases(cls):
+        cases = [cls.case1, cls.case2, cls.case3, cls.case4, cls.case5, cls.case6]
+        return "\n".join([f"### Case {i+1}\n{case}\n" for i, case in enumerate(cases)])

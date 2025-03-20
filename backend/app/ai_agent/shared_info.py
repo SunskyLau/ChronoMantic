@@ -271,6 +271,7 @@ parse_nl_logic_info = f"""## I. Range Expression Parsing
 
 7. Start Value vs. End Value Comparison Rules
 - Rule Priority Flow:  
+  - If user doesn't specify any trend, you should set comparator_between_start_end_value.
   - If comparing `start_value` vs. `start_value` OR `end_value` vs. `end_value` between two trends:
     - Directly compare the specified values (`start_value` or `end_value`) of the two trends.
   - If one trend uses `start_value` and the other uses `end_value`:  
@@ -346,9 +347,10 @@ Outputs:
 ### Stage 1: Text Generation
 Requirements:
 1. Semantic Preservation:
-- Maintain original_text from old_queryspec_with_source where possible
+- Maintain original_text from old_queryspec_with_source where possible, if the difference is too large, you can generate a new text by no reference to the original text
 - Integrate USER-marked attributes from intentions
 - Update modified attributes with new parameters
+- DO NOT lose any information contained in `new_queryspec_with_source_without_text_sources`, describe attributes ONE BY ONE
 
 2. Linguistic Standards:
 - Ensure grammatical correctness

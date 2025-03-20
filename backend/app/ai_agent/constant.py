@@ -75,7 +75,7 @@ class Ollama:
     API_KEY = "ollama"
 
     class MODELS:
-        LLAMA3_3 = "llama3.3"
+        LLAMA3_3 = "llama3.3:70b-it-8192"
         QWEN2_5_32B = "qwen2.5:32b-instruct-fp16"
         GEMMA3_12B = "gemma3:12b-it-fp16"
 

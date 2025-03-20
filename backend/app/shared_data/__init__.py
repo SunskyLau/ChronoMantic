@@ -43,6 +43,8 @@ class APPROXIMATION_SEGMENTS_CONTAINERS_CONTAINER:
 dataset_info_container = DATASET_INFO_CONTAINER()
 dataset_container = DATASET_CONTAINER()
 approximation_segments_containers_container = APPROXIMATION_SEGMENTS_CONTAINERS_CONTAINER()
+# parse_nl_agent = myAIClient(model=Ollama.MODELS.LLAMA3_3, platform=Platforms.OLLAMA)
+# modify_nl_agent = myAIClient(model=Ollama.MODELS.LLAMA3_3, platform=Platforms.OLLAMA)
 parse_nl_agent = myAIClient(model="qwen2.5-32b-instruct", platform=Platforms.QWEN)
 modify_nl_agent = myAIClient(model="qwen2.5-32b-instruct", platform=Platforms.QWEN)
 # parse_nl_agent = myAIClient(model="qwen2.5-14b-instruct", platform=Platforms.QWEN)

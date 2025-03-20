@@ -46,7 +46,6 @@ class Segment(DictMixin):
     category: Optional[TrendCategory] = None
 
 
-
 @dataclass
 class SegmentGroup(DictMixin):
     ids: Tuple[int, int]  # 组内趋势的id列表，ids[1]>=ids[0]
@@ -148,7 +147,6 @@ class QuerySpec(DictMixin):
 
 class TextSource(BaseModel):
     text: str  # 原始文本片段
-    index: int  # 用于区分text相同但是在原文中位置不同的文本片段
 
 
 class WithSource(BaseModel):

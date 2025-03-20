@@ -2,49 +2,9 @@ from .modify_nl_cases import ModifyNL_Cases
 from .parse_nl_cases import ParseNL_Cases
 from .shared_info import QuerySpecWithSource_info, SegmentGroup_info, parse_nl_logic_info, Segment_info, modify_nl_logic_info, intentions_info
 
-parse_nl_cases = f"""## Example 1
-{ParseNL_Cases.case1}
+parse_nl_cases = ParseNL_Cases.get_all_cases()
 
-## Example 2
-{ParseNL_Cases.case2}
-
-## Example 3
-{ParseNL_Cases.case3}
-
-## Example 4
-{ParseNL_Cases.case4}
-
-## Example 5
-{ParseNL_Cases.case5}
-
-## Example 6
-{ParseNL_Cases.case6}
-
-## Example 7
-{ParseNL_Cases.case7}
-
-## Example 8
-{ParseNL_Cases.case8}
-
-## Example 9
-{ParseNL_Cases.case9}
-"""
-
-modify_nl_cases = f"""## Example 1
-{ModifyNL_Cases.case1}
-
-## Example 2
-{ModifyNL_Cases.case2}
-
-## Example 3
-{ModifyNL_Cases.case3}
-
-## Example 4
-{ModifyNL_Cases.case4}
-
-## Example 5
-{ModifyNL_Cases.case5}
-"""
+modify_nl_cases = ModifyNL_Cases.get_all_cases()
 
 parse_nl_system_prompt = f"""You are providing a natural language to structured query(type: QuerySpecWithSource) parsing service for a natural language-driven time series segment querying tool. Below is the relevant background and knowledge.
 """
@@ -79,9 +39,6 @@ def create_parse_nl_info(dataset_info: str = "[]") -> str:
 # Reference Examples
 ## Parse Examples
 {parse_nl_cases}
-
-## Generate/Modify QuerySpec Examples
-{modify_nl_cases}
 """
     return parse_nl_info
 
