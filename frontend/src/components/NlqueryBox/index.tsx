@@ -81,23 +81,51 @@ export default function NlqueryBox() {
 		[query, dispatch]
 	);
 
+	const handleParseQuery = useCallback(() => {
+		if (NLQuery.trim()) {
+			textareaRef.current?.blur();
+			dispatch(setIsRequesting(true));
+			setIsEdit(false);
+			dispatch(setQuery(null));
+			dispatch(setColorMap(null));
+			return queryApi
+				.getQuerySpec(NLQuery)
+				.then((res) => {
+					dispatch(setQuery(res));
+					dispatch(setColorMap(res));
+					dispatch(setQueryResults(null));
+					return res;
+				})
+				.finally(() => {
+					dispatch(setIsRequesting(false));
+				});
+		}
+	}, [NLQuery, dispatch]);
+
 	const handleSubmit = useCallback(
 		async (e: React.FormEvent) => {
 			e.preventDefault();
+			if (!NLQuery.trim()) return;
+			let newQuery: QuerySpecWithSource | null = query;
+			if (!query || query.original_text !== NLQuery) {
+				newQuery = await handleParseQuery()!;
+			}
 			dispatch(setIsRequesting(true));
-			if (!NLQuery.trim() || !query) return;
-			const querySpec = formatQuerySpec(query);
+			const querySpec = formatQuerySpec(newQuery!);
 			dispatch(setQuerySpec(querySpec));
-			dispatch(setOriginalQuery(query));
+			dispatch(setOriginalQuery(newQuery));
 			dispatch(setQueryResults(null));
-			queryApi.getFragmentsBySpec(querySpec).then((res) => {
-				dispatch(setQueryResults(res));
-				dispatch(setDefaultSplits([]));
-			}).finally(() => {
-				dispatch(setIsRequesting(false));
-			});
+			queryApi
+				.getFragmentsBySpec(querySpec)
+				.then((res) => {
+					dispatch(setQueryResults(res));
+					dispatch(setDefaultSplits([]));
+				})
+				.finally(() => {
+					dispatch(setIsRequesting(false));
+				});
 		},
-		[NLQuery, query, dispatch]
+		[NLQuery, dispatch, query, handleParseQuery]
 	);
 
 	const handleSpeechResult = useCallback(
@@ -115,26 +143,10 @@ export default function NlqueryBox() {
 		(e: React.KeyboardEvent) => {
 			if (e.key === "Enter") {
 				e.preventDefault();
-				dispatch(setIsRequesting(true));
-				if (textareaRef.current && NLQuery.trim()) {
-					textareaRef.current.blur();
-					setIsEdit(false);
-					dispatch(setQuery(null));
-					dispatch(setColorMap(null));
-					queryApi
-						.getQuerySpec(NLQuery)
-						.then((res) => {
-							dispatch(setQuery(res));
-							dispatch(setColorMap(res));
-							dispatch(setQueryResults(null));
-						})
-						.finally(() => {
-							dispatch(setIsRequesting(false));
-						});
-				}
+				handleParseQuery();
 			}
 		},
-		[NLQuery, dispatch]
+		[handleParseQuery]
 	);
 
 	return (
@@ -186,7 +198,7 @@ export default function NlqueryBox() {
 				</div>
 			)}
 			<div className="btns">
-				{isRequesting && <LoadingOutlined style={{ marginRight: 'auto', marginBottom: '6px' }} />}
+				{isRequesting && <LoadingOutlined style={{ marginRight: "auto", marginBottom: "6px" }} />}
 				<button
 					onClick={() => {
 						if (!SpeechRecognition) {
