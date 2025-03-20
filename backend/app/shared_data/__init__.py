@@ -2,7 +2,7 @@ from typing import List, Optional
 import pandas as pd
 
 from ..ai_agent import myAIClient
-from ..ai_agent.constant import Platforms, Qwen, GroqPlatform
+from ..ai_agent.constant import Platforms, Qwen, GroqPlatform, Aichina
 from ..ai_agent.prompts import parse_nl_system_prompt, modify_nl_system_prompt
 from ..MyTypes import ApproximationSegmentsContainer, DatasetInfo
 
@@ -45,6 +45,14 @@ dataset_container = DATASET_CONTAINER()
 approximation_segments_containers_container = APPROXIMATION_SEGMENTS_CONTAINERS_CONTAINER()
 parse_nl_agent = myAIClient(model="qwen2.5-32b-instruct", platform=Platforms.QWEN)
 modify_nl_agent = myAIClient(model="qwen2.5-32b-instruct", platform=Platforms.QWEN)
+# parse_nl_agent = myAIClient(model="qwen2.5-14b-instruct", platform=Platforms.QWEN)
+# modify_nl_agent = myAIClient(model="qwen2.5-14b-instruct", platform=Platforms.QWEN)
+parse_nl_agent = myAIClient(model=Aichina.MODELS.CLAUDE3_5, platform=Platforms.AICHINA)
+modify_nl_agent = myAIClient(model=Aichina.MODELS.CLAUDE3_5, platform=Platforms.AICHINA)
+# parse_nl_agent = myAIClient(model="gpt-4o", platform=Platforms.AICHINA)
+# modify_nl_agent = myAIClient(model="gpt-4o", platform=Platforms.AICHINA)
+# parse_nl_agent = myAIClient(model="gemini-2.0-flash", platform=Platforms.AICHINA)
+# modify_nl_agent = myAIClient(model="gemini-2.0-flash", platform=Platforms.AICHINA)
 # parse_nl_agent = myAIClient(model="qwen-plus", platform=Platforms.QWEN)
 # modify_nl_agent = myAIClient(model="qwen-plus", platform=Platforms.QWEN)
 # parse_nl_agent = myAIClient(model="qwen-turbo-latest", platform=Platforms.QWEN)

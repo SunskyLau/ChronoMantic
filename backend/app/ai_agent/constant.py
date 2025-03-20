@@ -11,6 +11,7 @@ class Platforms:
     TENCENT = "tencent"
     GROQ = "groq"
     OLLAMA = "ollama"
+    AICHINA = "aichina"
 
 
 class Azure:
@@ -78,6 +79,13 @@ class Ollama:
         QWEN2_5_32B = "qwen2.5:32b-instruct-fp16"
         GEMMA3_12B = "gemma3:12b-it-fp16"
 
+class Aichina:
+    API_KEY = "sk-OMUICYXF9CtERDFhPLDHnTvRqJ2P9QRqlE2Vvge9Qg9dihAC"
+    BASE_URL = "https://ai.api.xn--fiqs8s/v1"
+
+    class MODELS:
+        QWEN2_5 = "qwen2.5-32b-instruct"
+        CLAUDE3_5 = "claude-3-5-sonnet-latest"
 
 PROMPT_SPLITTER = "\n\n"
 NOW = datetime.now().strftime("%Y-%m-%d")

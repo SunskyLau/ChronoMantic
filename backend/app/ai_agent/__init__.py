@@ -8,7 +8,7 @@ from typing import List, Dict, Optional
 from groq import Groq
 
 from .prompts import create_parse_nl_info, create_modify_nl_info, parse_nl_system_prompt, modify_nl_system_prompt, QuerySpecWithSource_info
-from .constant import Azure, DeepSeek, GroqPlatform, SiliconFlow, Qwen, Platforms, Tencent, Ollama
+from .constant import Azure, DeepSeek, GroqPlatform, SiliconFlow, Qwen, Platforms, Tencent, Ollama, Aichina
 from .debugger import debugger
 
 
@@ -44,6 +44,8 @@ class myAIClient:
             return OpenAI(api_key=Ollama.API_KEY, base_url=Ollama.BASE_URL)
         elif platform == Platforms.GROQ:
             return Groq(api_key=GroqPlatform.API_KEY)
+        elif platform == Platforms.AICHINA:
+            return OpenAI(api_key=Aichina.API_KEY, base_url=Aichina.BASE_URL)
         else:
             raise ValueError(f"Invalid platform: {platform}")
 
