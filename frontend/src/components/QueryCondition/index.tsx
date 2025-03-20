@@ -90,10 +90,10 @@ export default function QueryCondition() {
 		>
 			<section>
 				<Target
-					value={memoizedQuery.targets.map((target) => target.target)}
+					value={memoizedQuery.targets?.map((target) => target.target) || []}
 					options={values}
 					colorMap={colorMap}
-					sources={memoizedQuery?.targets.map((target) => target.text_source_id)}
+					sources={memoizedQuery?.targets?.map((target) => target.text_source_id) || []}
 					onChange={(val) => {
 						const newQuery = { ...memoizedQuery };
 						newQuery.targets = val.map((target) => ({ target, text_source_id: query?.targets.find((source) => source.target === target)?.text_source_id ?? -1 }));

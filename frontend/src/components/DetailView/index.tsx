@@ -30,7 +30,7 @@ export default function DetailView() {
 	const segments = useMemo(() => results?.find((result) => result.source === source)?.approximation_segments_list.find((item) => item.approximation_level === level)?.segments || [], [results, source, level]);
 	const split = useMemo(() => getSplit(segments), [segments]);
 	const query = useAppSelector((state) => state.states.query);
-	const filteredTargets = query?.targets.filter((target) => target.text_source_id && target.text_source_id !== -1) || [];
+	const filteredTargets = query?.targets?.filter((target) => target.text_source_id && target.text_source_id !== -1) || [];
 	const colorMap = useAppSelector((state) => state.states.colorMap);
 	const brushPosition = useAppSelector((state) => state.select.brushPosition);
 	const isTarget = !filteredTargets.length || filteredTargets.some((target) => target.target === source);
