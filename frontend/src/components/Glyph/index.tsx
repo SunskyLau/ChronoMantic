@@ -201,7 +201,7 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 				level++;
 			}
 		}
-		levelMap[level].push([x1, x2]);
+		levelMap[level].push([min, max]);
 		return level;
 	};
 
@@ -538,7 +538,7 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 			};
 
 			const relationColor = getColorWithDisabled(colorMap, query, relation.text_source_id) || DEFAULT_COLOR;
-			const level = getLevel(x11, x22);
+			const level = getLevel(Math.min(x11, x21), Math.max(x12, x22));
 			const v = getV(level);
 
 			return (

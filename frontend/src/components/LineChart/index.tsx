@@ -19,6 +19,11 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 	const isTime = useMemo(() => xDataType !== Unit.NUMBER, [xDataType]);
 	const [userSplits, setUserSplits] = useState<number[]>([]);
 
+	useEffect(()=>{
+		setUserSplits([]);
+		onSplitSelect?.([]);
+	}, [split, onSplitSelect]);
+
 	const isMargin = useMemo(() => isXAxisVisible || isXAxisTextVisible || isYAxisVisible || isYAxisTextVisible, [isXAxisVisible, isXAxisTextVisible, isYAxisVisible, isYAxisTextVisible]);
 	const timeStampData = useMemo(() => (xData.every((x) => typeof x === "string") ? xData.map((d) => new Date(d).getTime()) : xData.slice()), [xData]);
 	const computedMargin = useMemo(() => ({ top: isMargin ? margin?.top ?? 30 : 0, right: isMargin ? margin?.right ?? 40 : 0, bottom: isMargin ? margin?.bottom ?? 30 : 0, left: isMargin ? margin?.left ?? 40 : 0 }), [isMargin, margin]);

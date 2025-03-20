@@ -137,6 +137,10 @@ export default function DetailView() {
 		[dispatch, originalQuery, query, selectedSplits, defaultSplits, segments]
 	);
 
+	useEffect(()=>{
+		handleCancelSplit();
+	}, [level, handleCancelSplit])
+
 	return (
 		<Panel
 			className="main-view"
