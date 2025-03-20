@@ -49,6 +49,9 @@ function SelectChart({ data, title, onBrush, formatter = formatNumber }: SelectC
 				.domain(d3.extent(data, (d) => d.x) as [number, number])
 				.range([0, innerWidth]);
 
+				const xMin = d3.min(data, (d) => d.x) ?? -Infinity;
+				const xMax = d3.max(data, (d) => d.x) ?? Infinity;
+
 			const determineScale = () => {
 				if (data.length <= 10) return "linear";
 
@@ -118,7 +121,7 @@ function SelectChart({ data, title, onBrush, formatter = formatNumber }: SelectC
 				const maxText = formatter(maxX);
 				const minText = formatter(minX);
 				const textLength = Math.max(maxText.length, minText.length);
-				const textWidth = textLength * 12 + 8;
+				const textWidth = textLength * 14;
 
 				if (selectionWidth < textWidth) {
 					const avgX = parseFloat(((minX + maxX) / 2).toFixed(2));
@@ -164,14 +167,15 @@ function SelectChart({ data, title, onBrush, formatter = formatNumber }: SelectC
 						svg.selectAll(".area").remove();
 						svg.selectAll(".brush-label").remove();
 						g.append("path").datum(data).attr("class", "area").attr("d", areaGenerator).attr("fill", "steelblue").attr("fill-opacity", 0.3);
-						onBrush?.(d3.min(data, (d) => d.x) || 0, d3.max(data, (d) => d.x) || 0);
+						onBrush?.(xMin, xMax);
 					}
 				});
 
-			svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`).attr("class", "brush").call(brush);
-			svg.select(".selection").attr("fill", "none").attr("stroke", "none");
+			svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`).attr("class", "brush").call(brush).call(brush.move, [0, innerWidth]);
+			svg.select(".selection").attr("fill", "none").attr("stroke", "none").attr("pointer-events", "none");
+			svg.select(".brush .overlay").attr("pointer-events", "none");
 
-			svg.selectAll(".handle").attr("fill", "steelblue").attr("stroke", "steelblue").attr("stroke-width", "1").attr("width", "0.5").style("width", "0.5px").style("transform", "translate(3px, 0)");
+			svg.selectAll(".handle").attr("fill", "steelblue").attr("stroke", "steelblue").attr("stroke-width", "1").attr("width", "1").style("width", "1px").style("transform", "translate(3px, 0)");
 
 			return () => {
 				brush.on("brush", null).on("end", null);
