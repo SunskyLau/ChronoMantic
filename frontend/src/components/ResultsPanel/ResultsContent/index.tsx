@@ -213,7 +213,7 @@ export default function ResultsContent() {
 			filteredResults.forEach((result) => {
 				const value = attr.getValue(result.segments, attr.segmentIndex, result);
 				const roundedValue = Math.round(value * 100) / 100;
-				values.set(roundedValue, (values.get(roundedValue) || 0) + 1);
+				values.set(roundedValue, (values.get(roundedValue) ?? 0) + 1);
 				array.push(value);
 			});
 
