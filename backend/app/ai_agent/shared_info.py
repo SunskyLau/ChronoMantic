@@ -348,6 +348,8 @@ Outputs:
 Requirements:
 1. Semantic Preservation:
 - Maintain original_text from old_queryspec_with_source where possible, if the difference is too large, you can generate a new text by no reference to the original text
+- You need to preserve as much of the original text as possible
+- Consistency of language MUST be ensured (If user use Chinese, you MUST use Chinese; If user use English, you MUST use English)
 - Integrate USER-marked attributes from intentions
 - Update modified attributes with new parameters
 - DO NOT lose any information contained in `new_queryspec_with_source_without_text_sources`, describe attributes ONE BY ONE

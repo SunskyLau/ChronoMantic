@@ -112,12 +112,12 @@ export default function NlqueryBox() {
 			}
 			dispatch(setIsRequesting(true));
 			const querySpec = formatQuerySpec(newQuery!);
-			dispatch(setQuerySpec(querySpec));
-			dispatch(setOriginalQuery(newQuery));
 			dispatch(setQueryResults(null));
 			queryApi
 				.getFragmentsBySpec(querySpec)
 				.then((res) => {
+					dispatch(setQuerySpec(querySpec));
+					dispatch(setOriginalQuery(newQuery));
 					dispatch(setQueryResults(res));
 					dispatch(setDefaultSplits([]));
 				})
