@@ -137,10 +137,6 @@ export default function DetailView() {
 		[dispatch, originalQuery, query, selectedSplits, defaultSplits, segments]
 	);
 
-	useEffect(()=>{
-		handleCancelSplit();
-	}, [level, handleCancelSplit])
-
 	return (
 		<Panel
 			className="main-view"
@@ -161,6 +157,8 @@ export default function DetailView() {
 				maxLevel={current?.max_approximation_level ?? 0}
 				onChange={(level) => {
 					dispatch(setLevel(level));
+					dispatch(setSelectedSplits([]));
+					handleCancelSplit();
 				}}
 			/>
 			{timeCol && source ? (
