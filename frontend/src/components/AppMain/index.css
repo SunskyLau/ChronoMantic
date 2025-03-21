@@ -30,6 +30,7 @@
 .main-right .ant-divider {
     padding: 0 20px;
     margin: 0;
+    transform: translateY(4px);
 }
 
 .main-right .panel {
@@ -55,6 +56,8 @@
 
 .main .main-view {
     flex: 3 0 0;
+    padding-top: 10px;
+    padding-inline: 12px;
 }
 
 .main .main-right.hide {

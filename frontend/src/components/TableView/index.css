@@ -13,6 +13,7 @@
 
 .table-view {
     padding-top: 10px;
+    padding-inline: 12px;
 }
 
 .table-view .panel-content {
