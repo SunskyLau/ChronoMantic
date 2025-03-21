@@ -705,7 +705,92 @@ Output:
 }
 """
 
+    case7 = """
+Input:
+old_queryspec_with_source
+```
+{
+  "original_text": "先上升后下降，并且下降趋势更加剧烈",
+  "text_sources": [
+    { "text": "上升" },
+    { "text": "下降" },
+    { "text": "下降趋势更加剧烈" }
+  ],
+  "trends": [
+    { "category": {"category": "up", "text_source_id": 0}},
+    { "category": {"category": "down", "text_source_id": 1}}
+  ],
+  "single_relations": [
+    {"id1": 0, "id2": 1, "attribute": "relative_slope", "comparator": "<", "text_source_id": 2}
+  ],
+  "trend_groups": [],
+  "group_relations": []
+}
+```
+
+new_queryspec_with_source_without_text_sources
+```
+{
+  "original_text": "",
+  "text_sources": [],
+  "trends": [
+    { "category": {"category": "up"}},
+    { "category": {"category": "down"}},
+    { "category": {"category": "up"}},
+    { "category": {"category": "down"}}
+  ],
+  "single_relations": [
+    {"id1": 2, "id2": 3, "attribute": "relative_slope", "comparator": "<"},
+    {"id1": 0, "id2": 2, "attribute": "end_value", "comparator": ">"}
+  ],
+  "trend_groups": [],
+  "group_relations": [
+    {"group1": [0, 1], "group2": [2, 3], "attribute": "duration", "comparator": ">"}
+  ]
+}
+```
+
+intentions
+```
+{
+  "single_segment_intentions": [{"id": 0, "single_choices": ["user"]}, {"id": 1, "single_choices": ["user"]}, {"id": 2, "single_choices": ["result"]}, {"id": 3, "single_choices": ["result"]}],
+  "segment_group_intentions": [],
+  "single_relation_intentions": [{"id1": 0, "id2": 2, "relation_choices": ["end_value"]}],
+  "group_relation_intentions": [{"group1": [0, 1], "group2": [2, 3], "relation_choices": ["duration"]}],
+  "global_intentions": []
+}
+```
+
+Output:
+{
+  "original_text": "先上升后下降，然后又一次上升后下降，其中第一个趋势的结束值大于第三个趋势的结束值，且前两个趋势的时长长于后两个趋势的时长，并且第四个趋势的下降趋势比第三个更加剧烈",
+  "text_sources": [
+    { "text": "上升" },
+    { "text": "下降" },
+    { "text": "上升" },
+    { "text": "下降" },
+    { "text": "第一个趋势的结束值大于第三个趋势的结束值" },
+    { "text": "前两个趋势的时长长于后两个趋势的时长" },
+    { "text": "第四个的下降趋势比第三个更加剧烈" }
+  ],
+  "trends": [
+    { "category": {"category": "up", "text_source_id": 0}},
+    { "category": {"category": "down", "text_source_id": 1}},
+    { "category": {"category": "up", "text_source_id": 2}},
+    { "category": {"category": "down", "text_source_id": 3}}
+  ],
+  "single_relations": [
+    {"id1": 0, "id2": 2, "attribute": "end_value", "comparator": ">", "text_source_id": 4},
+    {"id1": 2, "id2": 3, "attribute": "relative_slope", "comparator": "<", "text_source_id": 6}
+  ],
+  "trend_groups": [],
+  "group_relations": [
+    {"group1": [0, 1], "group2": [2, 3], "attribute": "duration", "comparator": ">", "text_source_id": 5}
+  ]
+}
+"""
+
     @classmethod
     def get_all_cases(cls):
-        cases = [cls.case1, cls.case2, cls.case3, cls.case4, cls.case5, cls.case6]
+        cases = [cls.case1, cls.case2, cls.case3, cls.case4, cls.case5, cls.case6, cls.case7]
         return "\n".join([f"### Case {i+1}\n{case}\n" for i, case in enumerate(cases)])

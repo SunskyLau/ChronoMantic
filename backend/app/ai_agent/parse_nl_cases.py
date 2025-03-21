@@ -948,6 +948,30 @@ Output:
 }
 """
 
+    case15 = """
+Input:
+先上升后下降，并且下降趋势更加剧烈
+
+Output:
+{
+  "original_text": "先上升后下降，并且下降趋势更加剧烈",
+  "text_sources": [
+    { "text": "上升" },
+    { "text": "下降" },
+    { "text": "下降趋势更加剧烈" }
+  ],
+  "trends": [
+    { "category": {"category": "up", "text_source_id": 0}},
+    { "category": {"category": "down", "text_source_id": 1}}
+  ],
+  "single_relations": [
+    {"id1": 0, "id2": 1, "attribute": "relative_slope", "comparator": "<", "text_source_id": 2}
+  ],
+  "trend_groups": [],
+  "group_relations": []
+}
+"""
+
     @classmethod
     def get_all_cases(cls):
         cases = [
@@ -965,5 +989,6 @@ Output:
             cls.case12,
             cls.case13,
             cls.case14,
+            cls.case15,
         ]
         return "\n".join([f"### Case {i+1}\n{case}\n" for i, case in enumerate(cases)])
