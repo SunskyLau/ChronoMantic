@@ -410,9 +410,9 @@ export default function ResultsContent() {
 				if (!attributeScales[attr.id]) {
 					return true;
 				}
-				const value = parseFloat(attr.getValue(result.segments, attr.segmentIndex, result).toFixed(2)) - 0.01;
+				const value = parseFloat(attr.getValue(result.segments, attr.segmentIndex, result).toFixed(2));
 				const [min, max] = attributeScales[attr.id];
-				return value >= min && value <= max;
+				return value >= min - 0.01 && value <= max + 0.01;
 			});
 
 			return attrCondition;
