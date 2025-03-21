@@ -239,6 +239,7 @@ export default function ResultsContent() {
 
 	useEffect(() => {
 		setAttributeScales({});
+		setSortConfig({ keys: [] });
 	}, [queryLevelResults]);
 
 	useEffect(() => {
