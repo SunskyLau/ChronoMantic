@@ -18,6 +18,7 @@ export default function LevelController({ level, disabled, maxLevel, onChange }:
 						railBg: "#E0E0E0",
 						railHoverBg: "#E0E0E0",
 						handleColor: "var(--primary-color)",
+						handleActiveColor: "var(--primary-color)",
 						trackBg: "var(--primary-color)",
 						trackHoverBg: "var(--primary-color)",
 					},

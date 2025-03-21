@@ -1,7 +1,7 @@
 .main {
     display: flex;
     justify-content: center;
-    gap: var(--gap);
+    gap: var(--side-gap);
     height: var(--height);
     margin-top: var(--gap);
 }
@@ -17,12 +17,7 @@
     transition: .1s;
 }
 
-.main-left {
-    margin-left: var(--gap);
-}
-
 .main-right {
-    margin-right: var(--gap);
     width: var(--width);
     display: flex;
     flex: 2 1 0;

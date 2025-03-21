@@ -4,9 +4,8 @@
   --icon-size: 32px;
   --title-size: 30px;
 
-  width: calc(100% - var(--gap) * 2);
+  width: 100%;
   box-sizing: border-box;
-  margin: var(--gap);
   height: var(--header-height);
   line-height: var(--header-height);
   position: relative;

@@ -56,3 +56,9 @@ ul {
     padding: 4px;
     border-radius: 6px;
 }
+
+#app {
+    padding: var(--gap) var(--margin-inline);
+    box-sizing: border-box;
+    height: 100vh;
+}

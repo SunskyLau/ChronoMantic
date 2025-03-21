@@ -28,3 +28,9 @@
 .level-controller .ant-slider .ant-slider-track {
     border-radius: 99px;
 }
+
+.level-controller .ant-slider .ant-slider-handle::after {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px var(--primary-color);
+}

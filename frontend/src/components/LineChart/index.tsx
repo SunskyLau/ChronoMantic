@@ -19,7 +19,7 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 	const isTime = useMemo(() => xDataType !== Unit.NUMBER, [xDataType]);
 	const [userSplits, setUserSplits] = useState<number[]>([]);
 
-	useEffect(()=>{
+	useEffect(() => {
 		setUserSplits([]);
 	}, [split]);
 
@@ -850,13 +850,14 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 				splitLinesG.append("line").attr("class", "split-line").attr("x1", x1).attr("x2", x2).attr("y1", y1).attr("y2", y2).attr("stroke", darkerColor).attr("stroke-opacity", "0.5").attr("stroke-width", 2).attr("pointer-events", "none");
 
 				if (isSelectable && selectedSplits) {
+					const fillColor = popoverPosition?.ranges.some(([s, e]) => s === split[i] && e === split[i + 1]) || relationIds.some(([s, e]) => s === split[i] && e === split[i + 1]) ? (relationIds.length > 0 || popoverPosition?.type === "SingleRelation" || popoverPosition?.type === "GroupRelation" ? "#00800033" : "#1890ff33") : selectedSplits?.includes(split[i]) && selectedSplits?.includes(split[i + 1]) ? "#3331" : "transparent";
 					splitInteractionG
 						.append("rect")
 						.attr("x", x1)
 						.attr("y", 0)
 						.attr("width", x2 - x1)
 						.attr("height", innerHeight)
-						.attr("fill", popoverPosition?.ranges.some(([s, e]) => s === split[i] && e === split[i + 1]) || relationIds.some(([s, e]) => s === split[i] && e === split[i + 1]) ? (relationIds.length > 0 || popoverPosition?.type === "SingleRelation" || popoverPosition?.type === "GroupRelation" ? "#00800033" : "#1890ff33") : selectedSplits?.includes(split[i]) && selectedSplits?.includes(split[i + 1]) ? "#3331" : "transparent")
+						.attr("fill", fillColor)
 						.attr("cursor", "pointer")
 						.attr("data-range", JSON.stringify([split[i], split[i + 1]]))
 						.style("pointer-events", "all")
@@ -867,6 +868,14 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 						})
 						.on("mousemove", handleMouseMove)
 						.on("mouseup", handleMouseUp);
+
+					if (popoverPosition?.groups && popoverPosition.groups.length >= 2) {
+						const firstGroup = popoverPosition.groups[0];
+						const lastGroup = popoverPosition.groups[1];
+						if (firstGroup[firstGroup.length - 1][1] === lastGroup[0][0] && lastGroup[0][0] === split[i]) {
+							splitInteractionG.append("line").attr("x1", x1).attr("x2", x1).attr("y1", 0).attr("y2", innerHeight).attr("stroke", fillColor.slice(0, 7)).attr("stroke-dasharray", "4, 4");
+						}
+					}
 				}
 			}
 
@@ -1173,8 +1182,8 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 					.attr("width", isRequesting ? 90 : defaultSplits?.length ? 60 : 60)
 					.attr("height", 24)
 					.attr("rx", 4)
-					.attr("fill", 'var(--primary-color)')
-					.attr("opacity", isRequesting ? 0.6 : 1)
+					.attr("fill", "var(--primary-color)")
+					.attr("opacity", isRequesting ? 0.6 : 1);
 
 				const cancelButton = intentionLinesG
 					.append("g")
@@ -1335,11 +1344,8 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 
 	useEffect(() => {
 		if (!popoverPosition || !selectedSplits) return;
-		
-		const selectedSegments = segments.filter(
-			(seg) => seg.start_idx >= (selectedSplits[0] ?? 0) && 
-					 seg.end_idx <= (selectedSplits[selectedSplits.length - 1] ?? 0)
-		);
+
+		const selectedSegments = segments.filter((seg) => seg.start_idx >= (selectedSplits[0] ?? 0) && seg.end_idx <= (selectedSplits[selectedSplits.length - 1] ?? 0));
 
 		const fetchComparison = async () => {
 			if (popoverPosition.type === "Global") {
