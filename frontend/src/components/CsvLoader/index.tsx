@@ -41,6 +41,7 @@ const CsvLoader = forwardRef(function CsvLoader({ onClick }: { onClick?: () => v
 					};
 
 					let lastTimeStamp = 0;
+					let delta = 0;
 					result.data.forEach((row) => {
 						for (const [key, value] of Object.entries(row)) {
 							if (!key || value === null) continue;
@@ -49,11 +50,15 @@ const CsvLoader = forwardRef(function CsvLoader({ onClick }: { onClick?: () => v
 							}
 							if (key === dataset.timeStampColumn && typeof value === "string" && !isNaN(new Date(value).getTime())) {
 								const timeStamp = new Date(value).getTime();
-								const delta = timeStamp - lastTimeStamp;
+								delta = timeStamp - lastTimeStamp;
 								lastTimeStamp = timeStamp;
-								dataset.timeStampColumnType = getUnitBySeconds(delta / 1000);
+								dataset.timeStampColumnType = getUnitBySeconds(Math.abs(delta) / 1000);
 							}
-							dataset.data[key].push(value);
+							if (delta >= 0) {
+								dataset.data[key].push(value);
+							} else {
+								dataset.data[key].unshift(value);
+							}
 						}
 					});
 					dispatch(setDataset(dataset));
