@@ -9,8 +9,8 @@ import { queryApi } from "../../api";
 import { resetOriginalQuery, setColorMap, setNLQuery, setQuery } from "../../app/slice/stateSlice";
 import { getColorFromMap } from "../../utils/color";
 import LevelController from "../LevelController";
-import { deepClone } from "../../utils/deepclone";
-import { setLevel, setQueryResults } from "../../app/slice/approximation";
+import { deepClone, deepEqual } from "../../utils/deepclone";
+import { setLevel } from "../../app/slice/approximation";
 import { getSplit } from "../../utils/split";
 import { Intentions, Source } from "../../types/QuerySpec";
 
@@ -31,12 +31,8 @@ export default function DetailView() {
 	const split = useMemo(() => getSplit(segments), [segments]);
 	const query = useAppSelector((state) => state.states.query);
 	const filteredTargets = query?.targets?.filter((target) => target.text_source_id && target.text_source_id !== -1) || [];
-	const colorMap = useAppSelector((state) => state.states.colorMap);
 	const brushPosition = useAppSelector((state) => state.select.brushPosition);
 	const isTarget = !filteredTargets.length || filteredTargets.some((target) => target.target === source);
-	const resultsSplit = useMemo(() => {
-		return { colors: query?.trends.map((trend) => getColorFromMap(colorMap, trend.category.text_source_id)) || [], segments: (isTarget && memoQueryResults[source]?.[level]?.map((segments) => segments.map((segment) => [segment.start_idx, segment.end_idx] as [number, number]))) || [] };
-	}, [query, colorMap, level, memoQueryResults, isTarget, source]);
 	const handleBrush = useCallback(
 		(start: number, end: number) => {
 			dispatch(setRange([start, end]));
@@ -104,6 +100,13 @@ export default function DetailView() {
 	const current = results?.find((result) => result.source === source);
 
 	const originalQuery = useAppSelector((state) => state.states.originalQuery);
+	const isQuery = useMemo(() => deepEqual(query, originalQuery), [query, originalQuery]);
+
+	const colorMap = useAppSelector((state) => state.states.colorMap);
+	const resultsSplit = useMemo(() => {
+		return { colors: isQuery ? query?.trends.map((trend) => getColorFromMap(colorMap, trend.category.text_source_id)) || [] : [], segments: (isTarget && memoQueryResults[source]?.[level]?.map((segments) => segments.map((segment) => [segment.start_idx, segment.end_idx] as [number, number]))) || [] };
+	}, [query, colorMap, level, memoQueryResults, isTarget, source, isQuery]);
+
 	const [isRequesting, setIsRequesting] = useState(false);
 
 	const handleSubmitIntentions = useCallback(
@@ -122,7 +125,6 @@ export default function DetailView() {
 				.then((results) => {
 					dispatch(setQuery(null));
 					dispatch(setColorMap(null));
-					dispatch(setQueryResults(null));
 					dispatch(setNLQuery(results.original_text));
 					requestAnimationFrame(() => {
 						dispatch(setQuery(results));

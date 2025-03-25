@@ -60,6 +60,8 @@ export default function ResultsContent() {
 	const data = useAppSelector((state) => state.dataset.dataset?.data) ?? {};
 	const x = (useAppSelector((state) => state.dataset.dataset?.data[state.dataset.dataset?.timeStampColumn ?? ""]) as string[]) || [];
 	const query = useAppSelector((state) => state.states.query);
+	const originalQuery = useAppSelector((state) => state.states.originalQuery);
+	const isQuery = useMemo(() => deepEqual(query, originalQuery), [query, originalQuery]);
 	const colorMap = useAppSelector((state) => state.states.colorMap);
 	const queryResults = useAppSelector((state) => state.approximation.queryResults);
 	const memoQueryResults = useMemo(() => queryResults || {}, [queryResults]);
@@ -411,8 +413,9 @@ export default function ResultsContent() {
 					return true;
 				}
 				const value = attr.getValue(result.segments, attr.segmentIndex, result);
+				const roundedValue = Math.round(value * 100) / 100;
 				const [min, max] = attributeScales[attr.id];
-				return value >= min - 0.02 && value <= max + 0.02;
+				return roundedValue >= min && roundedValue <= max;
 			});
 
 			return attrCondition;
@@ -632,7 +635,7 @@ export default function ResultsContent() {
 											lineColor="#000"
 											isShowRange={false}
 											isExpand={false}
-											resultsSplit={{ segments: [segments.map((segment) => [segment.start_idx, segment.end_idx])], colors: query?.trends.map((trend) => getColorFromMap(colorMap, trend.category.text_source_id)) || [] }}
+											resultsSplit={{ segments: [segments.map((segment) => [segment.start_idx, segment.end_idx])], colors: query?.trends.map((trend) => getColorFromMap(isQuery ? colorMap : {}, trend.category.text_source_id)) || [] }}
 										/>
 									</div>
 

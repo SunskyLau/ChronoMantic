@@ -43,7 +43,7 @@ function SelectChart({ data, title, onBrush, formatter = formatNumber }: SelectC
 			const innerHeight = height - margin.top - margin.bottom;
 
 			if (displayData.length === 1) {
-				displayData.push({ x: displayData[0].x + 1, y: displayData[0].y });
+				displayData.push({ x: displayData[0].x, y: displayData[0].y });
 			}
 
 			const x = d3
