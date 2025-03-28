@@ -72,8 +72,15 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 		};
 	}, [handleContextMenu]);
 
-	useEffect(() => {
+	const handlePopoverClose = useCallback(() => {
 		setPopoverPosition(null);
+		setSegmentIds([]);
+		setRelationIds([]);
+		setComparison(null);
+	}, []);
+
+	useEffect(() => {
+		handlePopoverClose();
 		setIntentions({
 			single_segment_intentions: [],
 			segment_group_intentions: [],
@@ -81,8 +88,7 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 			group_relation_intentions: [],
 			global_intentions: [],
 		});
-		setComparison(null);
-	}, [splits, selectedSplits, xData, yData, split]);
+	}, [splits, selectedSplits, xData, yData, split, handlePopoverClose]);
 
 	const handleChoicesChange = useCallback((choice: SingleChoice) => {
 		setSelectedChoices((prev) => {
@@ -127,13 +133,6 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 			}
 			return [...prev, choice];
 		});
-	}, []);
-
-	const handlePopoverClose = useCallback(() => {
-		setPopoverPosition(null);
-		setSegmentIds([]);
-		setRelationIds([]);
-		setComparison(null);
 	}, []);
 
 	const createIntention = useMemo(
@@ -585,7 +584,7 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 						setPopoverPosition({
 							x: centerX - svgRect.left,
 							y: centerY - svgRect.top,
-							type: ranges.length === selectedSplits.length - 1 ? "Global" : ranges.length > 1 ? "SegmentGroup" : "SingleSegment",
+							type: ranges.length === selectedSplits.length - 1 && ranges.length > 1 ? "Global" : ranges.length > 1 ? "SegmentGroup" : "SingleSegment",
 							ranges,
 							rectWidth: bounds.right - bounds.left,
 							rectHeight: bounds.bottom - bounds.top,
