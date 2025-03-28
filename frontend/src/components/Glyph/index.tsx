@@ -62,21 +62,21 @@ const getTextSourceFromQuery = (query: QuerySpecWithSource | null, text_source_i
 };
 
 const getColorWithDisabled = (colorMap: Record<string, string>, query: QuerySpecWithSource | null, text_source_id?: number) => {
-	if (text_source_id === undefined || text_source_id < 0) return "#0008";
+	if (text_source_id === undefined || text_source_id < 0) return "#999";
 	const textSource = getTextSourceFromQuery(query, text_source_id);
 	if (!textSource || textSource.disabled) return "#eee";
 	return getColorFromMap(colorMap, text_source_id);
 };
 
-const getScopeText = (scope: ScopeConditionWithSourceWithUnit, unitFormatter: (unit: string) => string = (unit: string) => unit === 'number' ? '' : unit) => {
+const getScopeText = (scope: ScopeConditionWithSourceWithUnit, unitFormatter: (unit: string) => string = (unit: string) => (unit === "number" ? "" : unit), inner: boolean = false) => {
 	if (!scope) return null;
 	const { min, max, unit = "" } = scope;
 	if (min && max) {
-		return `${min.inclusive ? "[" : "("}${min.value}${unitFormatter(unit)}, ${max.value}${unitFormatter(unit)}${max.inclusive ? "]" : ")"}`;
+		return inner ? `${min.inclusive ? "[" : "("}${min.value}${unitFormatter(unit)}, ${max.value}${unitFormatter(unit)}${max.inclusive ? "]" : ")"}` : `${min.inclusive ? "[" : "("}${min.value}, ${max.value}${max.inclusive ? "]" : ")"}${unitFormatter(unit)}`;
 	} else if (min) {
-		return `${min.inclusive ? "[" : "("}${min.value}${unitFormatter(unit)}, +∞)`;
+		return inner ? `${min.inclusive ? "[" : "("}${min.value}${unitFormatter(unit)}, +∞)` : `${min.inclusive ? "[" : "("}${min.value}, +∞)${unitFormatter(unit)}`;
 	} else if (max) {
-		return `(-∞, ${max.value}${unitFormatter(unit)}${max.inclusive ? "]" : ")"}`;
+		return inner ? `(-∞, ${max.value}${unitFormatter(unit)}${max.inclusive ? "]" : ")"}` : `(-∞, ${max.value}${max.inclusive ? "]" : ")"}${unitFormatter(unit)}`;
 	}
 	return "";
 };
@@ -91,14 +91,14 @@ const getSlopeText = (trend: TrendWithSource, colorMap: Record<string, string>, 
 	if (!Object.keys(conditions).length) return null;
 	const texts: Record<string, TextWithColor> = {};
 	const map = {
-		slope_scope_condition: { key: TrendTextMap["slope_scope_condition"], unitFormatter: (unit: string) => (unit !== Unit.NUMBER ? `/${unit}` : "") },
+		slope_scope_condition: { key: TrendTextMap["slope_scope_condition"], unitFormatter: (unit: string) => (unit && unit !== Unit.NUMBER ? `/${unit}` : "") },
 		relative_slope_scope_condition: { key: TrendTextMap["relative_slope_scope_condition"], unitFormatter: () => `%` },
 	};
 	Object.entries(conditions).forEach(([key, value]) => {
 		if (!(key in map)) return;
 		const unit = map[key as keyof typeof map];
-		if (value) {
-			const text = getScopeText(value, unit.unitFormatter);
+		if (value && checkScopeCondition(value)) {
+			const text = getScopeText(value, unit.unitFormatter, key === "relative_slope_scope_condition");
 			texts[key] = {
 				text: text ? unit.key + ": " + text : "",
 				color: getColorWithDisabled(colorMap, query, value.text_source_id),
@@ -146,7 +146,7 @@ const calculateTimeRangeLevels = (trends: TrendWithSource[], trend_groups: Trend
 			const startIndex = group.ids[0];
 			const endIndex = group.ids[1];
 			timeRanges.push({
-			type: "group",
+				type: "group",
 				range: [startIndex * trendLength, (endIndex + 1) * trendLength],
 				index: i,
 				level: 0,
@@ -182,7 +182,8 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 	const levelMap: Record<string, [number, number][]> = {};
 	const baseY1 = useRef(0);
 	const baseY2 = useRef(height);
-	const fontSize = 4;
+	const fontSize = 8;
+	const arcRadius = height / 5;
 
 	const getLevel = (x1: number, x2: number, negative: boolean = false) => {
 		let level = negative ? -1 : 0;
@@ -209,30 +210,15 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 		return negative ? baseY2.current - level * step : baseY1.current - level * step - step / 2;
 	};
 
-	const drawTimeIndicator = ({ startX, endX, textY, timeColor, timeText, key, strokeWidth = 1, index }: { startX: number; endX: number; textY: number; timeColor: string; timeText?: string; key?: string; strokeWidth?: number; disabled?: boolean; index?: number }) => {
-		const lineHeight = height / 24;
-		const textWidth = timeText ? (timeText.length * fontSize) / 2 + fontSize : 0;
+	const drawTimeIndicator = ({ startX, endX, textY, timeColor, timeText, key, strokeWidth = 2.5, index }: { startX: number; endX: number; textY: number; timeColor: string; timeText?: string; key?: string; strokeWidth?: number; disabled?: boolean; index?: number }) => {
+		const textWidth = timeText ? (timeText.length * fontSize) / 2 : 0;
 		const isActive = index === curRelation;
 		const color = isActive ? timeColor.slice(0, 7) : timeColor;
 
 		return (
 			<g key={key}>
-				<line
-					x1={startX}
-					y1={textY - lineHeight}
-					x2={startX}
-					y2={textY + lineHeight}
-					stroke={color}
-					strokeWidth={strokeWidth}
-				/>
-				<line
-					x1={endX}
-					y1={textY - lineHeight}
-					x2={endX}
-					y2={textY + lineHeight}
-					stroke={color}
-					strokeWidth={strokeWidth}
-				/>
+				{drawCircle(startX, textY, strokeWidth * 1.2, color)}
+				{drawCircle(endX, textY, strokeWidth * 1.2, color)}
 				<text
 					x={(startX + endX) / 2}
 					y={textY + fontSize / 16}
@@ -240,6 +226,7 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 					fill={color}
 					textAnchor="middle"
 					dominantBaseline="middle"
+					letterSpacing={-0.5}
 				>
 					{timeText}
 				</text>
@@ -250,6 +237,7 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 					y2={textY}
 					stroke={color}
 					strokeWidth={strokeWidth}
+					strokeLinecap="round"
 				/>
 				<line
 					x1={Math.min(endX, (startX + endX + textWidth) / 2)}
@@ -258,6 +246,7 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 					y2={textY}
 					stroke={color}
 					strokeWidth={strokeWidth}
+					strokeLinecap="round"
 				/>
 			</g>
 		);
@@ -300,20 +289,22 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 		const { y1, y2 } = getYPositions();
 		const id = Math.random().toString(36).substring(2, 7);
 
-		const getControlPoints = () => {
-			const controlPointOffset = 0;
-			const cp1x = prevEndPoint ? prevEndPoint.x2 + controlPointOffset : x1 + controlPointOffset;
-			const cp1y = prevEndPoint ? prevEndPoint.y2 : y1;
-			const cp2x = x2 - controlPointOffset;
-			const cp2y = y2;
-			return { cp1x, cp1y, cp2x, cp2y };
-		};
-
-		const controlPoints = getControlPoints();
 		const texts = getSlopeText(trend, colorMap, query) ?? {};
 		const currentPoint = { x1: prevEndPoint ? prevEndPoint.x2 : x1, y1: prevEndPoint ? prevEndPoint.y2 : y1, x2, y2, isUp, isDown };
-		const fontSize = (trendLength / (Math.max(...Object.values(texts).map((text) => text.text.length)) + 1)) * 2;
 		points.current[i] = currentPoint;
+		const font = fontSize * 0.9;
+
+		const createArc = (arcRadius: number) => {
+			const arc = d3
+				.arc()
+				.innerRadius(0)
+				.outerRadius(arcRadius)
+				.startAngle(Math.PI / 2)
+				.endAngle(Math.atan((currentPoint.y2 - currentPoint.y1) / (currentPoint.x2 - currentPoint.x1)) + Math.PI / 2);
+			return arc({} as DefaultArcObject) || "";
+		};
+		const isSlope = trend.slope_scope_condition && checkScopeCondition(trend.slope_scope_condition);
+		const isRelative = trend.relative_slope_scope_condition && checkScopeCondition(trend.relative_slope_scope_condition);
 
 		return (
 			<g
@@ -339,34 +330,53 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 						markerUnits="strokeWidth"
 					>
 						<path
-							d="M0,0 L4,2 L0,4"
-							fill="none"
-							stroke={color}
-							strokeWidth="1"
+							d="M0,0 L4,2 L0,4 Z"
+							fill={color}
 						/>
 					</marker>
 				</defs>
-				<path
-					d={`M${currentPoint.x1},${currentPoint.y1} 
-						C${controlPoints.cp1x},${controlPoints.cp1y}
-						${controlPoints.cp2x},${controlPoints.cp2y} 
-						${currentPoint.x2},${currentPoint.y2}`}
+				<line
+					x1={currentPoint.x1}
+					y1={currentPoint.y1}
+					x2={currentPoint.x2}
+					y2={currentPoint.y2}
+					strokeLinecap="round"
 					stroke={color}
-					strokeWidth={2}
+					strokeWidth={2.5}
 					fill="none"
 					markerEnd={`url(#arrow-${id}-${i})`}
 				/>
+				{isSlope && (
+					<path
+						d={createArc(arcRadius)}
+						fill="none"
+						stroke={color}
+						strokeWidth={2.5}
+						transform={`translate(${x1},${y1})`}
+					></path>
+				)}
+				{isRelative && (
+					<path
+						d={createArc(isSlope ? arcRadius * 1.4 : arcRadius)}
+						fill="none"
+						stroke={color}
+						strokeWidth={2.5}
+						transform={`translate(${x1},${y1})`}
+						strokeDasharray={"3,1"}
+					></path>
+				)}
 				{Object.entries(texts).map(([key, text], index) => {
-					const lineHeight = fontSize * 1.5;
-					const textY = isUp ? y1 - index * lineHeight - fontSize / 2 : y1 + index * lineHeight + fontSize / 2;
+					const lineHeight = font * 1.1;
+					const textY = isUp ? y1 - index * lineHeight : y1 + index * lineHeight + lineHeight * 2 / 3;
 					return (
 						<text
 							key={key}
-							x={x1 + fontSize / 2}
+							x={x1 + arcRadius + font}
 							y={textY}
-							fontSize={fontSize}
+							fontSize={font}
 							fill={text.color}
 							textAnchor="start"
+							letterSpacing={-0.2}
 						>
 							{text.text}
 						</text>
@@ -408,7 +418,7 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 		);
 	};
 
-	const drawConnect = (x1: number, y1: number, x2: number, y2: number, v: number, index: number, text?: Comparator, reverse: boolean = false, color: string = DEFAULT_COLOR, strokeWidth: number = 1) => {
+	const drawConnect = (x1: number, y1: number, x2: number, y2: number, v: number, index: number, text?: Comparator, reverse: boolean = false, color: string = DEFAULT_COLOR, strokeWidth: number = 2) => {
 		if (x1 > x2) {
 			[x1, x2] = [x2, x1];
 			[y1, y2] = [y2, y1];
@@ -443,24 +453,23 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 					strokeLinecap="round"
 					strokeWidth={strokeWidth}
 				/>
-				{text && drawComparator(midX, v, text, index, reverse, color, strokeWidth)}
+				{text && drawComparator(midX, v, text, index, reverse, color)}
 			</>
 		);
 	};
 
-	const drawComparator = (x: number, y: number, comparator: Comparator, index: number, reverse: boolean = false, color: string = "#000", strokeWidth: number = 1) => {
+	const drawComparator = (x: number, y: number, comparator: Comparator, index: number, reverse: boolean = false, color: string = "#000") => {
 		if (isNaN(x) || isNaN(y)) return null;
 		const newComparator = reverse && comparatorMap[comparator] ? comparatorMap[comparator] : comparator;
 		const isCurRelation = curRelation === index;
-		const fontSize = (height / 4) * strokeWidth;
+		const font = fontSize * 1.5;
 		return (
 			<>
-				{/* <rect fill="#fff" x={x - fontSize * newComparator.length / 2} y={y - fontSize / 4} width={fontSize * newComparator.length} height={fontSize / 2}></rect> */}
 				<text
 					onClick={() => onClick?.("Relation", index)}
 					x={x}
 					y={y}
-					fontSize={fontSize}
+					fontSize={font}
 					fill={isCurRelation ? color.slice(0, 7) : color}
 					fontWeight={700}
 					textAnchor="middle"
@@ -474,7 +483,7 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 
 	const timeRangeLevels = calculateTimeRangeLevels(trends, trend_groups, query, trendLength);
 	const maxLevel = Math.max(-1, ...timeRangeLevels.map((item) => item.level));
-	const space = 10;
+	const space = fontSize * 2;
 
 	const relationLines = single_relations.map((relation, i) => {
 		if (!query || !relation.attribute || relation.id1 === undefined || relation.id2 === undefined) return null;
@@ -506,7 +515,7 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 			);
 		} else if (isSpan) {
 			const offset = trendLength;
-			const offsetY = (maxLevel + 1) * 6;
+			const offsetY = (maxLevel + 1) * fontSize + 2;
 			const x11 = trendIndex1 * trendLength;
 			const x12 = x11 + offset;
 			const x21 = trendIndex2 * trendLength;
@@ -524,10 +533,9 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 		} else {
 			const { x1: x11, x2: x12, y1: y11, y2: y12 } = points.current[trendIndex1] ?? {};
 			const { x1: x21, x2: x22, y1: y21, y2: y22 } = points.current[trendIndex2] ?? {};
+			const isRelative = relation.attribute === SingleAttribute.RELATIVE_SLOPE;
 
-			const arcRadius = height / 6;
-
-			const createArc = (index: number) => {
+			const createArc = (index: number, arcRadius: number) => {
 				const arc = d3
 					.arc()
 					.innerRadius(0)
@@ -544,15 +552,19 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 			return (
 				<g key={i}>
 					<path
-						d={createArc(0)}
+						d={createArc(0, isRelative ? arcRadius * 1.4 : arcRadius)}
 						transform={`translate(${x11},${y11})`}
 						stroke={isActive ? relationColor.slice(0, 7) : relationColor}
+						strokeWidth={2.5}
+						strokeDasharray={isRelative ? "3,1" : "none"}
 						fill="none"
 					/>
 					<path
-						d={createArc(1)}
+						d={createArc(1, isRelative ? arcRadius * 1.4 : arcRadius)}
 						transform={`translate(${x21},${y21})`}
 						stroke={isActive ? relationColor.slice(0, 7) : relationColor}
+						strokeWidth={2.5}
+						strokeDasharray={isRelative ? "3,1" : "none"}
 						fill="none"
 					/>
 					{drawConnect(x11 + arcRadius / 2, y11, x21 + arcRadius / 2, y21, v, i, relation.comparator, isReverse, relationColor)}
@@ -630,7 +642,7 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 				break;
 		}
 
-		const textY = baseY2.current + level * 6;
+		const textY = baseY2.current + level * fontSize + 2;
 		const timeColor = getColorWithDisabled(colorMap, query, condition.text_source_id);
 		const timeText = getScopeText(condition);
 
@@ -684,9 +696,9 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 		);
 	};
 
-	const drawGroupRelation = (relation: GroupRelationWithSource, i: number, trendLength: number, trends: TrendWithSource[], strokeWidth: number = 1) => {
+	const drawGroupRelation = (relation: GroupRelationWithSource, i: number, trendLength: number, trends: TrendWithSource[], strokeWidth: number = 2.5) => {
 		if (!query) return null;
-		const offset = (maxLevel + 1) * 6;
+		const offset = (maxLevel + 1) * fontSize + 2;
 		const getGroupInfo = (ids: [number, number]) => {
 			if (ids[0] === undefined || ids[1] === undefined || ids[0] >= trends.length || ids[1] >= trends.length) return null;
 			const x1 = ids[0] * trendLength;
@@ -710,9 +722,9 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 
 		return (
 			<g key={`group-${i}`}>
-				{drawTimeIndicator({ startX: group1Info.start, endX: group1Info.end, textY: rangeY, timeColor: relationColor, index })}
-				{drawTimeIndicator({ startX: group2Info.start, endX: group2Info.end, textY: rangeY, timeColor: relationColor, index })}
-				{drawConnect(group1Info.center, rangeY, group2Info.center, rangeY, rangeY + space / 2, index, relation.comparator, isReverse, relationColor, strokeWidth)}
+				{drawTimeIndicator({ startX: group1Info.start, endX: group1Info.end, textY: rangeY, timeColor: relationColor, index, strokeWidth })}
+				{drawTimeIndicator({ startX: group2Info.start, endX: group2Info.end, textY: rangeY, timeColor: relationColor, index, strokeWidth })}
+				{drawConnect(group1Info.center, rangeY, group2Info.center, rangeY, rangeY + space / 2, index, relation.comparator, isReverse, relationColor, 2)}
 			</g>
 		);
 	};
@@ -800,18 +812,11 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 		if (!text) return null;
 
 		const color = getColorWithDisabled(colorMap, query, scopeCondition.text_source_id);
-		const strokeWidth = 1;
-		const lineHeight = 3;
+		const strokeWidth = 2.5;
+		const lineHeight = (strokeWidth * 3) / 2;
 		return (
 			<g transform={`translate(${x - fontSize}, 0)`}>
-				<line
-					x1={x + strokeWidth}
-					y1={y - lineHeight}
-					x2={x - strokeWidth}
-					y2={y - lineHeight}
-					stroke={color}
-					strokeWidth={strokeWidth}
-				/>
+				{drawCircle(x, y - lineHeight, strokeWidth, color)}
 				<line
 					x1={x}
 					y1={y - lineHeight}
@@ -839,14 +844,7 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 					stroke={color}
 					strokeWidth={strokeWidth}
 				/>
-				<line
-					x1={x - strokeWidth}
-					y1={y + lineHeight}
-					x2={x + strokeWidth}
-					y2={y + lineHeight}
-					stroke={color}
-					strokeWidth={strokeWidth}
-				/>
+				{drawCircle(x, y + lineHeight, strokeWidth, color)}
 			</g>
 		);
 	};
@@ -883,8 +881,8 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 				{relationLines}
 				{timeIndicators()}
 				{drawTimeScopeCondition()}
-				{drawYValueScopeCondition(0, baseY1.current, maxScopeCondition)}
-				{drawYValueScopeCondition(0, baseY2.current, minScopeCondition)}
+				{drawYValueScopeCondition(0, baseY1.current + fontSize / 2, maxScopeCondition)}
+				{drawYValueScopeCondition(0, baseY2.current - fontSize / 2, minScopeCondition)}
 				{groupRelationLines}
 				{drawComparatorBetweenStartEndValue()}
 			</g>
