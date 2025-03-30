@@ -544,16 +544,18 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 				</g>
 			);
 		} else {
-			const { x1: x11, y1: y11, isSlope: isSlope1, isRelative: isRelative1 } = points.current[trendIndex1] ?? {};
-			const { x1: x21, y1: y21, isSlope: isSlope2, isRelative: isRelative2 } = points.current[trendIndex2] ?? {};
+			const { x1: x11, y1: y11, isSlope: isSlope1, isRelative: isRelative1, isUp: isUp1 } = points.current[trendIndex1] ?? {};
+			const { x1: x21, y1: y21, isSlope: isSlope2, isRelative: isRelative2, isUp: isUp2 } = points.current[trendIndex2] ?? {};
 
 			const relationColor = getColorWithDisabled(colorMap, query, relation.text_source_id) || DEFAULT_COLOR;
 			const level = getLevel(Math.min(x11, x21), Math.max(x11, x21));
 			const v = getV(level);
 			const offset1 = isSlope1 && isRelative1 && relation.attribute === SingleAttribute.RELATIVE_SLOPE ? arcRadius * 1.5 : arcRadius;
 			const offset2 = isSlope2 && isRelative2 && relation.attribute === SingleAttribute.RELATIVE_SLOPE ? arcRadius * 1.5 : arcRadius;
+			const offset3 = isUp1 ? -arcRadius / 2 : 0;
+			const offset4 = isUp2 ? -arcRadius / 2 : 0;
 
-			return <g key={i}>{drawConnect(x11 + offset1, y11 - arcRadius / 2, x21 + offset2, y21 - arcRadius / 2, v, i, relation.comparator, isReverse, relationColor)}</g>;
+			return <g key={i}>{drawConnect(x11 + offset1, y11 + offset3, x21 + offset2, y21 + offset4, v, i, relation.comparator, isReverse, relationColor)}</g>;
 		}
 	});
 
