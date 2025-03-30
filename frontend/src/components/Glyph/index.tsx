@@ -9,8 +9,8 @@ import { formatTime } from "../../utils/time";
 
 type ClickType = "Trend" | "Relation" | "GroupRelation";
 
-const DISABLED_COLOR = "#00000011";
-const DEFAULT_COLOR = "#00000022";
+const DISABLED_COLOR = "#ddd";
+const DEFAULT_COLOR = "#ccc";
 
 interface GlyphProps {
 	targets?: TargetWithSource[];
@@ -62,9 +62,9 @@ const getTextSourceFromQuery = (query: QuerySpecWithSource | null, text_source_i
 };
 
 const getColorWithDisabled = (colorMap: Record<string, string>, query: QuerySpecWithSource | null, text_source_id?: number) => {
-	if (text_source_id === undefined || text_source_id < 0) return "";
+	if (text_source_id === undefined || text_source_id < 0) return DEFAULT_COLOR;
 	const textSource = getTextSourceFromQuery(query, text_source_id);
-	if (!textSource || textSource.disabled) return "#ccc";
+	if (!textSource || textSource.disabled) return DISABLED_COLOR;
 	return getColorFromMap(colorMap, text_source_id, "ff");
 };
 
@@ -306,6 +306,10 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 			return arc({} as DefaultArcObject) || "";
 		};
 		const isAngleLine = isSlope || isRelative;
+		const slopeSourceColor = getColorWithDisabled(colorMap, query, trend.slope_scope_condition?.text_source_id);
+		const slopeColor = slopeSourceColor === DEFAULT_COLOR ? color : slopeSourceColor;
+		const relativeSourceColor = getColorWithDisabled(colorMap, query, trend.relative_slope_scope_condition?.text_source_id);
+		const relativeColor = relativeSourceColor === DEFAULT_COLOR ? color : relativeSourceColor;
 
 		return (
 			<g
@@ -363,7 +367,7 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 					<path
 						d={createArc(arcRadius)}
 						fill="none"
-						stroke={getColorWithDisabled(colorMap, query, trend.slope_scope_condition?.text_source_id) || color}
+						stroke={slopeColor}
 						strokeWidth={2.5}
 						transform={`translate(${x1},${y1})`}
 					></path>
@@ -372,7 +376,7 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 					<path
 						d={createArc(isSlope ? arcRadius * 1.5 : arcRadius)}
 						fill="none"
-						stroke={getColorWithDisabled(colorMap, query, trend.relative_slope_scope_condition?.text_source_id) || color}
+						stroke={relativeColor}
 						strokeWidth={2.5}
 						transform={`translate(${x1},${y1})`}
 						strokeDasharray={"2,2"}
