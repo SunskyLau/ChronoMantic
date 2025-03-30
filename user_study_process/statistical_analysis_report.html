@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>统计分析报告</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 20px;
+            color: #333;
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        h2 {
+            color: #3498db;
+            margin-top: 30px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+        h3 {
+            color: #2980b9;
+            margin-top: 20px;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-bottom: 30px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px 12px;
+            text-align: center;
+        }
+        th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        .significant {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+        .summary {
+            background-color: #eaf2f8;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .explanation {
+            margin-top: 10px;
+            font-style: italic;
+            color: #555;
+        }
+    </style>
+</head>
+<body>
+    <h1>统计分析报告</h1>
+    
+    <div class="summary">
+        <h2>分析概述</h2>
+        <p>本报告分析了不同level(l1-l4)和category(d/u)组合下，两种工具(c/q)在time和score指标上的统计效能。</p>
+        <p>其中：</p>
+        <ul>
+            <li><strong>level</strong>: l1, l2, l3, l4 表示不同的难度级别</li>
+            <li><strong>category</strong>: d (downward), u (upward) 表示不同的类别</li>
+            <li><strong>tool</strong>: c (ChronoMantic), q (Qetch) 表示不同的工具</li>
+            <li><strong>time</strong>: 完成任务所需的时间（秒）</li>
+            <li><strong>score</strong>: 任务完成的得分（1-7分）</li>
+        </ul>
+        <p>统计显著性水平设置为 p < 0.05</p>
+    </div>
+
+    <h2>Time指标分析</h2>
+    
+    <table>
+        <tr>
+            <th>Level</th>
+            <th>Category</th>
+            <th>ChronoMantic均值</th>
+            <th>Qetch均值</th>
+            <th>ChronoMantic标准差</th>
+            <th>Qetch标准差</th>
+            <th>P值</th>
+            <th>是否显著</th>
+        </tr>
+        <tr>
+            <td>l1</td>
+            <td>d</td>
+            <td>87.00</td>
+            <td>108.75</td>
+            <td>30.84</td>
+            <td>62.95</td>
+            <td>0.4004</td>
+            <td>否</td>
+        </tr>
+        <tr>
+            <td>l1</td>
+            <td>u</td>
+            <td>118.13</td>
+            <td>96.00</td>
+            <td>32.64</td>
+            <td>55.39</td>
+            <td>0.3507</td>
+            <td>否</td>
+        </tr>
+        <tr>
+            <td>l2</td>
+            <td>d</td>
+            <td>118.50</td>
+            <td>113.63</td>
+            <td>60.76</td>
+            <td>57.98</td>
+            <td>0.8719</td>
+            <td>否</td>
+        </tr>
+        <tr>
+            <td>l2</td>
+            <td>u</td>
+            <td>141.13</td>
+            <td>89.00</td>
+            <td>42.75</td>
+            <td>29.51</td>
+            <td>0.0145</td>
+            <td class="significant">是</td>
+        </tr>
+        <tr>
+            <td>l3</td>
+            <td>d</td>
+            <td>81.13</td>
+            <td>106.25</td>
+            <td>42.14</td>
+            <td>50.92</td>
+            <td>0.3011</td>
+            <td>否</td>
+        </tr>
+        <tr>
+            <td>l3</td>
+            <td>u</td>
+            <td>99.63</td>
+            <td>51.25</td>
+            <td>28.65</td>
+            <td>17.48</td>
+            <td>0.0016</td>
+            <td class="significant">是</td>
+        </tr>
+        <tr>
+            <td>l4</td>
+            <td>d</td>
+            <td>72.13</td>
+            <td>76.63</td>
+            <td>23.28</td>
+            <td>32.87</td>
+            <td>0.7572</td>
+            <td>否</td>
+        </tr>
+        <tr>
+            <td>l4</td>
+            <td>u</td>
+            <td>88.50</td>
+            <td>66.63</td>
+            <td>27.89</td>
+            <td>10.82</td>
+            <td>0.0684</td>
+            <td>否</td>
+        </tr>
+    </table>
+
+    <div class="explanation">
+        <h3>Time指标分析结果解释：</h3>
+        <p>1. 在l2和l3的upward(u)类别中，两种工具在完成时间上存在显著差异：</p>
+        <ul>
+            <li>l2u: ChronoMantic平均需要141.13秒，而Qetch只需要89.00秒，p=0.0145 &lt; 0.05，差异显著</li>
+            <li>l3u: ChronoMantic平均需要99.63秒，而Qetch只需要51.25秒，p=0.0016 &lt; 0.05，差异显著</li>
+        </ul>
+        <p>2. 在其他level和category组合中，两种工具在完成时间上没有显著差异</p>
+        <p>3. 总体来看，在upward类别任务中，Qetch工具在完成时间上表现更好（需要更少的时间）</p>
+    </div>
+
+    <h2>Score指标分析</h2>
+    
+    <table>
+        <tr>
+            <th>Level</th>
+            <th>Category</th>
+            <th>ChronoMantic均值</th>
+            <th>Qetch均值</th>
+            <th>ChronoMantic标准差</th>
+            <th>Qetch标准差</th>
+            <th>P值</th>
+            <th>是否显著</th>
+        </tr>
+        <tr>
+            <td>l1</td>
+            <td>d</td>
+            <td>7.00</td>
+            <td>5.25</td>
+            <td>0.00</td>
+            <td>1.58</td>
+            <td>0.0166</td>
+            <td class="significant">是</td>
+        </tr>
+        <tr>
+            <td>l1</td>
+            <td>u</td>
+            <td>6.13</td>
+            <td>6.13</td>
+            <td>0.83</td>
+            <td>0.83</td>
+            <td>1.0000</td>
+            <td>否</td>
+        </tr>
+        <tr>
+            <td>l2</td>
+            <td>d</td>
+            <td>6.25</td>
+            <td>3.63</td>
+            <td>0.89</td>
+            <td>1.51</td>
+            <td>0.0013</td>
+            <td class="significant">是</td>
+        </tr>
+        <tr>
+            <td>l2</td>
+            <td>u</td>
+            <td>5.25</td>
+            <td>5.13</td>
+            <td>1.67</td>
+            <td>1.25</td>
+            <td>0.8678</td>
+            <td>否</td>
+        </tr>
+        <tr>
+            <td>l3</td>
+            <td>d</td>
+            <td>6.63</td>
+            <td>3.88</td>
+            <td>0.74</td>
+            <td>1.36</td>
+            <td>0.0004</td>
+            <td class="significant">是</td>
+        </tr>
+        <tr>
+            <td>l3</td>
+            <td>u</td>
+            <td>6.25</td>
+            <td>6.25</td>
+            <td>0.71</td>
+            <td>1.04</td>
+            <td>1.0000</td>
+            <td>否</td>
+        </tr>
+        <tr>
+            <td>l4</td>
+            <td>d</td>
+            <td>6.88</td>
+            <td>4.25</td>
+            <td>0.35</td>
+            <td>1.83</td>
+            <td>0.0046</td>
+            <td class="significant">是</td>
+        </tr>
+        <tr>
+            <td>l4</td>
+            <td>u</td>
+            <td>6.13</td>
+            <td>4.75</td>
+            <td>0.83</td>
+            <td>1.16</td>
+            <td>0.0180</td>
+            <td class="significant">是</td>
+        </tr>
+    </table>
+
+    <div class="explanation">
+        <h3>Score指标分析结果解释：</h3>
+        <p>1. 在downward(d)类别的所有level中，ChronoMantic的得分均显著高于Qetch：</p>
+        <ul>
+            <li>l1d: ChronoMantic=7.00，Qetch=5.25，p=0.0166 &lt; 0.05</li>
+            <li>l2d: ChronoMantic=6.25，Qetch=3.63，p=0.0013 &lt; 0.05</li>
+            <li>l3d: ChronoMantic=6.63，Qetch=3.88，p=0.0004 &lt; 0.05</li>
+            <li>l4d: ChronoMantic=6.88，Qetch=4.25，p=0.0046 &lt; 0.05</li>
+        </ul>
+        <p>2. 在upward(u)类别中：</p>
+        <ul>
+            <li>l1u和l3u: 两种工具得分相同，均为6.13和6.25，p=1.0000</li>
+            <li>l2u: 两种工具得分无显著差异</li>
+            <li>l4u: ChronoMantic得分显著高于Qetch，p=0.0180 &lt; 0.05</li>
+        </ul>
+        <p>3. 总体来看，ChronoMantic在得分方面表现更好，特别是在downward类别任务中</p>
+    </div>
+
+    <h2>综合分析结论</h2>
+    
+    <div class="summary">
+        <h3>1. 工具性能比较</h3>
+        <p><strong>ChronoMantic (c)工具：</strong></p>
+        <ul>
+            <li>在得分(score)方面表现优异，特别是在downward类别的所有难度级别中</li>
+            <li>在完成时间(time)方面，在upward类别的l2和l3级别任务中需要更多时间</li>
+        </ul>
+        
+        <p><strong>Qetch (q)工具：</strong></p>
+        <ul>
+            <li>在upward类别的l2和l3级别任务中，完成时间显著少于ChronoMantic</li>
+            <li>在得分方面，除了l1u、l2u和l3u外，其他情况下得分显著低于ChronoMantic</li>
+        </ul>
+        
+        <h3>2. 任务类别影响</h3>
+        <ul>
+            <li><strong>Downward (d)类别：</strong> ChronoMantic在得分上有明显优势，但完成时间与Qetch无显著差异</li>
+            <li><strong>Upward (u)类别：</strong> Qetch在l2和l3级别的完成时间上有优势，但在l4级别的得分上劣于ChronoMantic</li>
+        </ul>
+        
+        <h3>3. 难度级别影响</h3>
+        <ul>
+            <li>随着难度增加(l1→l4)，两种工具的性能差异模式有所变化</li>
+            <li>在高难度级别(l3, l4)，工具选择对任务完成效果的影响更为明显</li>
+        </ul>
+    </div>
+
+    <div class="explanation">
+        <p>注：本分析基于t检验(假设方差不等)，显著性水平p &lt; 0.05。样本量为每组8个观测值。</p>
+    </div>
+</body>
+</html>
