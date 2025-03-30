@@ -367,7 +367,7 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 				)}
 				{Object.entries(texts).map(([key, text], index) => {
 					const lineHeight = font * 1.1;
-					const textY = isUp ? y1 - index * lineHeight : y1 + index * lineHeight + lineHeight * 2 / 3;
+					const textY = isUp ? y1 - index * lineHeight : y1 + index * lineHeight + (lineHeight * 2) / 3;
 					return (
 						<text
 							key={key}
@@ -486,7 +486,7 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 	const space = fontSize * 2;
 
 	const relationLines = single_relations.map((relation, i) => {
-		if (!query || !relation.attribute || relation.id1 === undefined || relation.id2 === undefined) return null;
+		if (!query || !relation.attribute || relation.id1 === undefined || relation.id2 === undefined || relation.id1 === relation.id2) return null;
 		const trendIndex1 = relation.id1;
 		const trendIndex2 = relation.id2;
 		const isReverse = trendIndex1 > trendIndex2;
@@ -534,6 +534,8 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 			const { x1: x11, x2: x12, y1: y11, y2: y12 } = points.current[trendIndex1] ?? {};
 			const { x1: x21, x2: x22, y1: y21, y2: y22 } = points.current[trendIndex2] ?? {};
 			const isRelative = relation.attribute === SingleAttribute.RELATIVE_SLOPE;
+			const isDrawArc1 = single_relations.slice(0, i).filter((item) => (item.id1 === trendIndex1 || item.id2 === trendIndex1) && item.attribute !== relation.attribute).length > 0;
+			const isDrawArc2 = single_relations.slice(0, i).filter((item) => (item.id1 === trendIndex2 || item.id2 === trendIndex2) && item.attribute !== relation.attribute).length > 0;
 
 			const createArc = (index: number, arcRadius: number) => {
 				const arc = d3
@@ -546,13 +548,13 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 			};
 
 			const relationColor = getColorWithDisabled(colorMap, query, relation.text_source_id) || DEFAULT_COLOR;
-			const level = getLevel(Math.min(x11, x21), Math.max(x12, x22));
+			const level = getLevel(Math.min(x11, x21), Math.max(x11, x21));
 			const v = getV(level);
 
 			return (
 				<g key={i}>
 					<path
-						d={createArc(0, isRelative ? arcRadius * 1.4 : arcRadius)}
+						d={createArc(0, isDrawArc1 ? arcRadius * 1.4 : arcRadius)}
 						transform={`translate(${x11},${y11})`}
 						stroke={isActive ? relationColor.slice(0, 7) : relationColor}
 						strokeWidth={2.5}
@@ -560,7 +562,7 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 						fill="none"
 					/>
 					<path
-						d={createArc(1, isRelative ? arcRadius * 1.4 : arcRadius)}
+						d={createArc(1, isDrawArc2 ? arcRadius * 1.4 : arcRadius)}
 						transform={`translate(${x21},${y21})`}
 						stroke={isActive ? relationColor.slice(0, 7) : relationColor}
 						strokeWidth={2.5}
