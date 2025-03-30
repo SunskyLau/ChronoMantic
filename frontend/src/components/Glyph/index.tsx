@@ -62,10 +62,10 @@ const getTextSourceFromQuery = (query: QuerySpecWithSource | null, text_source_i
 };
 
 const getColorWithDisabled = (colorMap: Record<string, string>, query: QuerySpecWithSource | null, text_source_id?: number) => {
-	if (text_source_id === undefined || text_source_id < 0) return "#999";
+	if (text_source_id === undefined || text_source_id < 0) return "";
 	const textSource = getTextSourceFromQuery(query, text_source_id);
-	if (!textSource || textSource.disabled) return "#eee";
-	return getColorFromMap(colorMap, text_source_id);
+	if (!textSource || textSource.disabled) return "#ccc";
+	return getColorFromMap(colorMap, text_source_id, "ff");
 };
 
 const getScopeText = (scope: ScopeConditionWithSourceWithUnit, unitFormatter: (unit: string) => string = (unit: string) => (unit === "number" ? "" : unit), inner: boolean = false) => {
@@ -252,7 +252,7 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 		);
 	};
 
-	const points = useRef<{ x1: number; y1: number; x2: number; y2: number; isUp: boolean; isDown: boolean }[]>(Array(trends.length).fill(null));
+	const points = useRef<{ x1: number; y1: number; x2: number; y2: number; isUp: boolean; isDown: boolean; isSlope: boolean; isRelative: boolean }[]>(Array(trends.length).fill(null));
 
 	useEffect(() => {
 		points.current = Array(trends.length).fill(null);
@@ -288,23 +288,24 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 
 		const { y1, y2 } = getYPositions();
 		const id = Math.random().toString(36).substring(2, 7);
+		const isSlope = (trend.slope_scope_condition && checkScopeCondition(trend.slope_scope_condition)) || single_relations.some((relation) => relation.attribute === SingleAttribute.SLOPE && (relation.id1 === i || relation.id2 === i));
+		const isRelative = (trend.relative_slope_scope_condition && checkScopeCondition(trend.relative_slope_scope_condition)) || single_relations.some((relation) => relation.attribute === SingleAttribute.RELATIVE_SLOPE && (relation.id1 === i || relation.id2 === i));
 
 		const texts = getSlopeText(trend, colorMap, query) ?? {};
-		const currentPoint = { x1: prevEndPoint ? prevEndPoint.x2 : x1, y1: prevEndPoint ? prevEndPoint.y2 : y1, x2, y2, isUp, isDown };
+		const currentPoint = { x1: prevEndPoint ? prevEndPoint.x2 : x1, y1: prevEndPoint ? prevEndPoint.y2 : y1, x2, y2, isUp, isDown, isSlope, isRelative };
 		points.current[i] = currentPoint;
 		const font = fontSize * 0.9;
 
 		const createArc = (arcRadius: number) => {
 			const arc = d3
 				.arc()
-				.innerRadius(0)
+				.innerRadius(arcRadius)
 				.outerRadius(arcRadius)
 				.startAngle(Math.PI / 2)
 				.endAngle(Math.atan((currentPoint.y2 - currentPoint.y1) / (currentPoint.x2 - currentPoint.x1)) + Math.PI / 2);
 			return arc({} as DefaultArcObject) || "";
 		};
-		const isSlope = trend.slope_scope_condition && checkScopeCondition(trend.slope_scope_condition);
-		const isRelative = trend.relative_slope_scope_condition && checkScopeCondition(trend.relative_slope_scope_condition);
+		const isAngleLine = isSlope || isRelative;
 
 		return (
 			<g
@@ -324,7 +325,7 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 						id={`arrow-${id}-${i}`}
 						markerWidth="4"
 						markerHeight="4"
-						refX="3"
+						refX="2.9"
 						refY="2"
 						orient="auto"
 						markerUnits="strokeWidth"
@@ -346,37 +347,49 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 					fill="none"
 					markerEnd={`url(#arrow-${id}-${i})`}
 				/>
+				{isAngleLine && (
+					<line
+						x1={currentPoint.x1}
+						y1={currentPoint.y1}
+						x2={currentPoint.x1 + arcRadius * 1.8}
+						y2={currentPoint.y1}
+						stroke={color}
+						strokeWidth={1}
+						strokeLinecap="round"
+						strokeDasharray="2,2"
+					></line>
+				)}
 				{isSlope && (
 					<path
 						d={createArc(arcRadius)}
 						fill="none"
-						stroke={color}
+						stroke={getColorWithDisabled(colorMap, query, trend.slope_scope_condition?.text_source_id) || color}
 						strokeWidth={2.5}
 						transform={`translate(${x1},${y1})`}
 					></path>
 				)}
 				{isRelative && (
 					<path
-						d={createArc(isSlope ? arcRadius * 1.4 : arcRadius)}
+						d={createArc(isSlope ? arcRadius * 1.5 : arcRadius)}
 						fill="none"
-						stroke={color}
+						stroke={getColorWithDisabled(colorMap, query, trend.relative_slope_scope_condition?.text_source_id) || color}
 						strokeWidth={2.5}
 						transform={`translate(${x1},${y1})`}
-						strokeDasharray={"3,1"}
+						strokeDasharray={"2,2"}
 					></path>
 				)}
 				{Object.entries(texts).map(([key, text], index) => {
 					const lineHeight = font * 1.1;
-					const textY = isUp ? y1 - index * lineHeight : y1 + index * lineHeight + (lineHeight * 2) / 3;
+					const textY = isUp ? y1 - index * lineHeight - 2 : y1 + index * lineHeight + lineHeight;
 					return (
 						<text
 							key={key}
-							x={x1 + arcRadius + font}
+							x={x1 + (isRelative && isSlope ? arcRadius * 1.5 : arcRadius) + fontSize / 3}
 							y={textY}
 							fontSize={font}
 							fill={text.color}
 							textAnchor="start"
-							letterSpacing={-0.2}
+							letterSpacing={-0.5}
 						>
 							{text.text}
 						</text>
@@ -531,47 +544,16 @@ const Glyph = ({ trends = [], trend_groups = [], single_relations = [], group_re
 				</g>
 			);
 		} else {
-			const { x1: x11, x2: x12, y1: y11, y2: y12 } = points.current[trendIndex1] ?? {};
-			const { x1: x21, x2: x22, y1: y21, y2: y22 } = points.current[trendIndex2] ?? {};
-			const isRelative = relation.attribute === SingleAttribute.RELATIVE_SLOPE;
-			const isDrawArc1 = single_relations.slice(0, i).filter((item) => (item.id1 === trendIndex1 || item.id2 === trendIndex1) && item.attribute !== relation.attribute).length > 0;
-			const isDrawArc2 = single_relations.slice(0, i).filter((item) => (item.id1 === trendIndex2 || item.id2 === trendIndex2) && item.attribute !== relation.attribute).length > 0;
-
-			const createArc = (index: number, arcRadius: number) => {
-				const arc = d3
-					.arc()
-					.innerRadius(0)
-					.outerRadius(arcRadius)
-					.startAngle(Math.PI / 2)
-					.endAngle(index === 0 ? Math.atan((y12 - y11) / (x12 - x11)) + Math.PI / 2 : Math.atan((y22 - y21) / (x22 - x21)) + Math.PI / 2);
-				return arc({} as DefaultArcObject) || "";
-			};
+			const { x1: x11, y1: y11, isSlope: isSlope1, isRelative: isRelative1 } = points.current[trendIndex1] ?? {};
+			const { x1: x21, y1: y21, isSlope: isSlope2, isRelative: isRelative2 } = points.current[trendIndex2] ?? {};
 
 			const relationColor = getColorWithDisabled(colorMap, query, relation.text_source_id) || DEFAULT_COLOR;
 			const level = getLevel(Math.min(x11, x21), Math.max(x11, x21));
 			const v = getV(level);
+			const offset1 = isSlope1 && isRelative1 && relation.attribute === SingleAttribute.RELATIVE_SLOPE ? arcRadius * 1.5 : arcRadius;
+			const offset2 = isSlope2 && isRelative2 && relation.attribute === SingleAttribute.RELATIVE_SLOPE ? arcRadius * 1.5 : arcRadius;
 
-			return (
-				<g key={i}>
-					<path
-						d={createArc(0, isDrawArc1 ? arcRadius * 1.4 : arcRadius)}
-						transform={`translate(${x11},${y11})`}
-						stroke={isActive ? relationColor.slice(0, 7) : relationColor}
-						strokeWidth={2.5}
-						strokeDasharray={isRelative ? "3,1" : "none"}
-						fill="none"
-					/>
-					<path
-						d={createArc(1, isDrawArc2 ? arcRadius * 1.4 : arcRadius)}
-						transform={`translate(${x21},${y21})`}
-						stroke={isActive ? relationColor.slice(0, 7) : relationColor}
-						strokeWidth={2.5}
-						strokeDasharray={isRelative ? "3,1" : "none"}
-						fill="none"
-					/>
-					{drawConnect(x11 + arcRadius / 2, y11, x21 + arcRadius / 2, y21, v, i, relation.comparator, isReverse, relationColor)}
-				</g>
-			);
+			return <g key={i}>{drawConnect(x11 + offset1, y11 - arcRadius / 2, x21 + offset2, y21 - arcRadius / 2, v, i, relation.comparator, isReverse, relationColor)}</g>;
 		}
 	});
 
