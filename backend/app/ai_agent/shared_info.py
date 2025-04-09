@@ -311,13 +311,14 @@ parse_nl_logic_info = f"""## I. Range Expression Parsing
 ## VI. Text Traceability Rules
 10. Text Fragment Extraction
 - Requirements:
-  - Must be a continuous substring
-  - Maintain the original order of appearance
-  - No overlapping coverage
+  - MUST be a continuous substring
+  - MAINTAIN the original ORDER of appearance
+  - MAKE SURE THE ORDER IS MAINTAINED
+  - NO overlapping coverage
   - You MUST choose substring that appear in the original text.
 - Example:
-  - Original Sentence: "show a sharp rise then gradual decline"
-  - Extracted: ["sharp rise", "gradual decline"]
+  - Original Sentence: "show a sharp rise then gradual decline in AMZN"
+  - Extracted: ["sharp rise", "gradual decline", "AMZN"]
 
 ## VII. Slope Direction Handling
 11. Direction-Sensitive Calculation

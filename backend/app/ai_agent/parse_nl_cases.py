@@ -972,6 +972,36 @@ Output:
 }
 """
 
+    case16 = """
+Input:Find patterns that exhibit a stable trend in global active power
+
+Output:
+{
+  "original_text": "Find patterns that exhibit a stable trend in global active power",
+  "text_sources": [
+    { "text": "stable" },
+    { "text": "global active power" }
+  ],
+  "targets": [
+    {
+      "target": "Global_active_power",
+      "text_source_id": 1
+    }
+  ],
+  "trends": [
+    {
+      "category": {
+        "category": "flat",
+        "text_source_id": 0
+      }
+    }
+  ],
+  "single_relations": [],
+  "trend_groups": [],
+  "group_relations": []
+}
+"""
+
     @classmethod
     def get_all_cases(cls):
         cases = [
@@ -990,5 +1020,6 @@ Output:
             cls.case13,
             cls.case14,
             cls.case15,
+            cls.case16,
         ]
         return "\n".join([f"### Case {i+1}\n{case}\n" for i, case in enumerate(cases)])
