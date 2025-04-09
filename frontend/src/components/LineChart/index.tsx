@@ -1044,13 +1044,15 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 					const endX1 = isRelation ? x(timeStampData[intention.ranges[0][1]]) : x(timeStampData[intention.ranges[intention.ranges.length - 1][1]]);
 
 					const line = intentionLinesG.append("g").attr("class", "intention-line").style("cursor", "pointer");
+					const blue = "#000";
+					const green = "#bbb";
 
 					line.append("line")
 						.attr("x1", startX1)
 						.attr("x2", endX1)
 						.attr("y1", y)
 						.attr("y2", y)
-						.attr("stroke", isRelation ? "#008000" : "#1890ff")
+						.attr("stroke", isRelation ? green : blue)
 						.attr("stroke-width", 2);
 
 					line.append("line")
@@ -1058,7 +1060,7 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 						.attr("x2", startX1)
 						.attr("y1", y - 3)
 						.attr("y2", y + 3)
-						.attr("stroke", isRelation ? "#008000" : "#1890ff")
+						.attr("stroke", isRelation ? green : blue)
 						.attr("stroke-width", 2);
 
 					line.append("line")
@@ -1066,7 +1068,7 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 						.attr("x2", endX1)
 						.attr("y1", y - 3)
 						.attr("y2", y + 3)
-						.attr("stroke", isRelation ? "#008000" : "#1890ff")
+						.attr("stroke", isRelation ? green : blue)
 						.attr("stroke-width", 2);
 
 					if (isRelation) {
@@ -1077,14 +1079,14 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 							.attr("x2", endX2)
 							.attr("y1", y)
 							.attr("y2", y)
-							.attr("stroke", isRelation ? "#008000" : "#1890ff")
+							.attr("stroke", isRelation ? green : blue)
 							.attr("stroke-width", 2);
 						line.append("line")
 							.attr("x1", startX2)
 							.attr("x2", endX1)
 							.attr("y1", y)
 							.attr("y2", y)
-							.attr("stroke", isRelation ? "#008000" : "#1890ff")
+							.attr("stroke", isRelation ? green : blue)
 							.attr("stroke-width", 2)
 							.attr("stroke-dasharray", "4, 4");
 						line.append("line")
@@ -1092,7 +1094,7 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 							.attr("x2", startX2)
 							.attr("y1", y - 3)
 							.attr("y2", y + 3)
-							.attr("stroke", isRelation ? "#008000" : "#1890ff")
+							.attr("stroke", isRelation ? green : blue)
 							.attr("stroke-width", 2);
 
 						line.append("line")
@@ -1100,7 +1102,7 @@ function LineChart({ xData, yData, ratio, isFill = false, title = "", isXAxisVis
 							.attr("x2", endX2)
 							.attr("y1", y - 3)
 							.attr("y2", y + 3)
-							.attr("stroke", isRelation ? "#008000" : "#1890ff")
+							.attr("stroke", isRelation ? green : blue)
 							.attr("stroke-width", 2);
 					}
 
