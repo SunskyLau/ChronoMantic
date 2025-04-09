@@ -51,8 +51,8 @@ function SelectChart({ data, title, onBrush, formatter = formatNumber }: SelectC
 				.domain(d3.extent(displayData, (d) => d.x) as [number, number])
 				.range([0, innerWidth]);
 
-				const xMin = d3.min(displayData, (d) => d.x) ?? -Infinity;
-				const xMax = d3.max(displayData, (d) => d.x) ?? Infinity;
+			const xMin = d3.min(displayData, (d) => d.x) ?? -Infinity;
+			const xMax = d3.max(displayData, (d) => d.x) ?? Infinity;
 
 			const determineScale = () => {
 				if (displayData.length <= 10) return "linear";
@@ -122,34 +122,28 @@ function SelectChart({ data, title, onBrush, formatter = formatNumber }: SelectC
 				const selectionWidth = (x1 as number) - (x0 as number);
 				const maxText = formatter(maxX);
 				const minText = formatter(minX);
-				const textLength = Math.max(maxText.length, minText.length);
-				const textWidth = textLength * 14;
+				const textWidth = (maxText.length + minText.length) * 6 + 4;
+				const isEnough = textWidth < selectionWidth;
 
-				if (selectionWidth < textWidth) {
-					const avgX = parseFloat(((minX + maxX) / 2).toFixed(2));
-					const centerX = (x0 + x1) / 2 + 2;
-					svg.append("text").attr("class", "brush-label").attr("x", centerX).attr("y", innerHeight).attr("text-anchor", "middle").attr("font-size", "12px").attr("fill", "#666").attr("pointer-events", "none").text(formatter(avgX));
-				} else {
-					svg.append("text")
-						.attr("class", "brush-label")
-						.attr("x", x0 + 5)
-						.attr("y", innerHeight)
-						.attr("text-anchor", "start")
-						.attr("font-size", "12px")
-						.attr("fill", "#666")
-						.attr("pointer-events", "none")
-						.text(minText);
+				svg.append("text")
+					.attr("class", "brush-label")
+					.attr("x", x0 + 5)
+					.attr("y", isEnough ? innerHeight : 12)
+					.attr("text-anchor", "start")
+					.attr("font-size", "12px")
+					.attr("fill", "#666")
+					.attr("pointer-events", "none")
+					.text(minText);
 
-					svg.append("text")
-						.attr("class", "brush-label")
-						.attr("x", x1 - 3)
-						.attr("y", innerHeight)
-						.attr("text-anchor", "end")
-						.attr("font-size", "12px")
-						.attr("fill", "#666")
-						.attr("pointer-events", "none")
-						.text(maxText);
-				}
+				svg.append("text")
+					.attr("class", "brush-label")
+					.attr("x", x1 - 3)
+					.attr("y", innerHeight)
+					.attr("text-anchor", "end")
+					.attr("font-size", "12px")
+					.attr("fill", "#666")
+					.attr("pointer-events", "none")
+					.text(maxText);
 
 				onBrush?.(minX, maxX);
 			}
