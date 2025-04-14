@@ -1,0 +1,82 @@
+```json
+{
+  "original_text": "Find a head-and-shoulders pattern with a duration of about 51 weeks.",
+  "text_sources": [
+    {
+      "text": "head-and-shoulders"
+    },
+    {
+      "text": "about 51 weeks"
+    }
+  ],
+  "targets": [],
+  "trends": [
+    {
+      "category": {
+        "category": "up",
+        "text_source_id": 0
+      }
+    },
+    {
+      "category": {
+        "category": "down",
+        "text_source_id": 0
+      }
+    },
+    {
+      "category": {
+        "category": "up",
+        "text_source_id": 0
+      }
+    },
+    {
+      "category": {
+        "category": "down",
+        "text_source_id": 0
+      }
+    },
+    {
+      "category": {
+        "category": "up",
+        "text_source_id": 0
+      }
+    },
+    {
+      "category": {
+        "category": "down",
+        "text_source_id": 0
+      }
+    }
+  ],
+  "single_relations": [
+    {
+      "attribute": "end_value",
+      "comparator": "<",
+      "id1": 0,
+      "id2": 2,
+      "text_source_id": 0
+    },
+    {
+      "attribute": "end_value",
+      "comparator": ">",
+      "id1": 2,
+      "id2": 4,
+      "text_source_id": 0
+    }
+  ],
+  "trend_groups": [],
+  "group_relations": [],
+  "duration_condition": {
+    "max": {
+      "value": 56.88,
+      "inclusive": true
+    },
+    "min": {
+      "value": 46.54,
+      "inclusive": true
+    },
+    "unit": "week",
+    "text_source_id": 1
+  }
+}
+```
