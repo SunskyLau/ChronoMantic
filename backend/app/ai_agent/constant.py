@@ -88,6 +88,7 @@ class Aichina:
         QWEN2_5 = "qwen2.5-32b-instruct"
         CLAUDE3_5 = "claude-3-5-sonnet-latest"
         GEMINI2_0 = "gemini-2.0-flash"
+        GEMINI2_5 = "gemini-2.5-flash-lite-preview-06-17"
 
 
 PROMPT_SPLITTER = "\n\n"
