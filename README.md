@@ -1,19 +1,81 @@
-# 总体思路
+# ChronoMantic: An NL-Driven Approach for Time Series Pattern Query via Large Language Models
 
-通过generate_segments，根据分段数量，通过DP算法找到最优分割办法；
+This repository contains the source code and implementation for the paper "ChronoMantic: An NL-Driven Approach for Time Series Pattern Query via Large Language Models".
 
-依然可以使用数据流图保存每次搜索结果
+## Abstract
 
-对于每个结果节点，用户可以进行更深入的迭代式查询
+Finding time series patterns has emerged as an important problem in finance, healthcare, climate science, and manufacturing, where temporal data analysis informs critical decision-making processes. While by-example and by-sketch methods are commonly employed for time series querying, they are limited by insufficient preciseness in pattern specification as well as discrepancies between algorithmic similarity measures and human perception. Natural language (NL) offers a promising alternative for time series pattern specification, providing enhanced preciseness and improved ease of use. However, existing NL-based approaches are constrained by limited expressiveness, opaque parsing mechanisms, and inadequate support for iterative querying. This paper introduces ChronoMantic, an NL-driven time series pattern query system that leverages Large Language Models (LLMs) for parsing NL. The system enables transparent parsing interpretation, and enhanced iterative querying through an improved by-example approach. We demonstrate ChronoMantic's general utility through two usage scenarios, objectively test its query performance on our manually annotated time series pattern dataset, and evaluate its query effectiveness and usability via a two-stage user study incorporating both quantitative and qualitative analyses.
 
-首先可以有推荐，比如对于初始查询为up,down,up
+## System Architecture
 
-可以从结果集中继续推荐：up sharply, down ,up slowly等
+ChronoMantic consists of:
+- **Frontend**: React + TypeScript interface for interactive time series pattern querying
+- **Backend**: Flask-based API server with LLM integration for natural language processing
+- **Query Engine**: Structured pattern matching and similarity computation
+- **Dataset Processing**: Time series data preprocessing and approximation
 
-甚至可以继续让用户指定更深入的分割数量，得到更细化的趋势变化
+## Installation
 
-还可以根据阈值进行细化查询
+### Prerequisites
+- Python 3.8+
+- Node.js 16+
+- npm/yarn package manager
 
-还可以指定两种不同的任务：1. 单序列指定片段长度和查询步长的片段检索； 2.多序列指定时间范围的片段查询
+### Backend Setup
+```bash
+cd backend
+pip install flask flask-cors pandas numpy scipy matplotlib groq openai typeguard pydantic
+python run.py
+```
 
-用户可通过交互确定什么样的是sharp，什么样的是slowly?
+### Frontend Setup
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+## Usage
+
+1. **Start the backend server**: The Flask server runs on `http://localhost:5000` by default
+2. **Launch the frontend**: The React application runs on `http://localhost:5173`
+3. **Upload time series data**: Use CSV format with timestamp and value columns
+4. **Query patterns**: Use natural language descriptions or interactive segment selection
+5. **Review results**: Examine matched patterns with similarity scores and visualizations
+
+## Core Features
+
+- **Natural Language Query Parsing**: Convert human-readable pattern descriptions to structured queries
+- **Interactive Query Refinement**: Iterative query modification through user feedback
+- **Pattern Approximation**: Efficient time series segmentation and trend analysis
+- **Multi-modal Querying**: Support for both NL descriptions and by-example selection
+- **Transparent Interpretation**: Clear explanation of query parsing and matching results
+
+## Dataset Support
+
+The system supports time series data in CSV format. Sample datasets are included in the `datasets/` directory for testing and evaluation purposes.
+
+<!-- ## Technical Evaluation -->
+
+<!-- Technical evaluation scripts and annotated datasets are available in `backend/technical_evaluation/` for reproducing the experimental results reported in the paper. -->
+
+<!-- ## Citation -->
+
+<!-- If you use this code in your research, please cite: -->
+
+<!-- ```bibtex
+@article{chronomantic2024,
+  title={ChronoMantic: An NL-Driven Approach for Time Series Pattern Query via Large Language Models},
+  author={[Author Names]},
+  journal={[Journal Name]},
+  year={2024}
+}
+``` -->
+
+<!-- ## License -->
+
+<!-- This project is licensed under the [MIT License](LICENSE). -->
+
+<!-- ## Contact -->
+
+<!-- For questions about the implementation or research, please contact [email@domain.com]. -->
