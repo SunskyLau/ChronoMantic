@@ -1,0 +1,1785 @@
+[
+  {
+    "metadata": {
+      "datasetName": "portfolio_data.csv",
+      "timeStampName": "Date"
+    },
+    "columnAnnotations": [
+      {
+        "columnName": "AMZN",
+        "levelAnnotations": [
+          {
+            "windowLevel": 1,
+            "annotations": [
+              {
+                "pattern": "double-bottom",
+                "startIndex": 308,
+                "endIndex": 398,
+                "startTime": "7/22/2014",
+                "endTime": "11/26/2014"
+              }
+            ]
+          },
+          {
+            "windowLevel": 0.5,
+            "annotations": [
+              {
+                "pattern": "double-bottom",
+                "startIndex": 340,
+                "endIndex": 419,
+                "startTime": "9/5/2014",
+                "endTime": "12/29/2014"
+              },
+              {
+                "pattern": "head-and-shoulders",
+                "startIndex": 1204,
+                "endIndex": 1401,
+                "startTime": "2/9/2018",
+                "endTime": "11/20/2018"
+              },
+              {
+                "pattern": "double-top",
+                "startIndex": 316,
+                "endIndex": 411,
+                "startTime": "8/1/2014",
+                "endTime": "12/16/2014"
+              },
+              {
+                "pattern": "rising-two-tops",
+                "startIndex": 1204,
+                "endIndex": 1384,
+                "startTime": "2/9/2018",
+                "endTime": "10/26/2018"
+              }
+            ]
+          },
+          {
+            "windowLevel": 0.25,
+            "annotations": [
+              {
+                "pattern": "double-bottom",
+                "startIndex": 1034,
+                "endIndex": 1067,
+                "startTime": "6/8/2017",
+                "endTime": "7/26/2017"
+              },
+              {
+                "pattern": "double-bottom",
+                "startIndex": 399,
+                "endIndex": 442,
+                "startTime": "11/28/2014",
+                "endTime": "2/2/2015"
+              },
+              {
+                "pattern": "double-top",
+                "startIndex": 850,
+                "endIndex": 887,
+                "startTime": "9/14/2016",
+                "endTime": "11/4/2016"
+              }
+            ]
+          },
+          {
+            "windowLevel": 0.125,
+            "annotations": [
+              {
+                "pattern": "double-bottom",
+                "startIndex": 764,
+                "endIndex": 804,
+                "startTime": "5/12/2016",
+                "endTime": "7/11/2016"
+              },
+              {
+                "pattern": "double-top",
+                "startIndex": 1506,
+                "endIndex": 1517,
+                "startTime": "4/25/2019",
+                "endTime": "5/10/2019"
+              },
+              {
+                "pattern": "double-top",
+                "startIndex": 25,
+                "endIndex": 37,
+                "startTime": "6/6/2013",
+                "endTime": "6/24/2013"
+              },
+              {
+                "pattern": "rising-two-tops",
+                "startIndex": 133,
+                "endIndex": 142,
+                "startTime": "11/7/2013",
+                "endTime": "11/20/2013"
+              },
+              {
+                "pattern": "rising-two-tops",
+                "startIndex": 754,
+                "endIndex": 767,
+                "startTime": "4/28/2016",
+                "endTime": "5/17/2016"
+              },
+              {
+                "pattern": "rising-two-tops",
+                "startIndex": 1386,
+                "endIndex": 1400,
+                "startTime": "10/30/2018",
+                "endTime": "11/19/2018"
+              },
+              {
+                "pattern": "rising-two-tops",
+                "startIndex": 592,
+                "endIndex": 608,
+                "startTime": "9/4/2015",
+                "endTime": "9/29/2015"
+              },
+              {
+                "pattern": "rising-two-tops",
+                "startIndex": 1209,
+                "endIndex": 1229,
+                "startTime": "2/16/2018",
+                "endTime": "3/19/2018"
+              },
+              {
+                "pattern": "rising-two-tops",
+                "startIndex": 1176,
+                "endIndex": 1198,
+                "startTime": "12/29/2017",
+                "endTime": "2/1/2018"
+              },
+              {
+                "pattern": "plateau",
+                "startIndex": 561,
+                "endIndex": 583,
+                "startTime": "7/23/2015",
+                "endTime": "8/24/2015"
+              },
+              {
+                "pattern": "plateau",
+                "startIndex": 624,
+                "endIndex": 683,
+                "startTime": "10/21/2015",
+                "endTime": "1/15/2016"
+              },
+              {
+                "pattern": "falling-two-tops",
+                "startIndex": 1436,
+                "endIndex": 1446,
+                "startTime": "1/14/2019",
+                "endTime": "1/29/2019"
+              },
+              {
+                "pattern": "falling-two-tops",
+                "startIndex": 522,
+                "endIndex": 534,
+                "startTime": "5/28/2015",
+                "endTime": "6/15/2015"
+              },
+              {
+                "pattern": "falling-two-tops",
+                "startIndex": 876,
+                "endIndex": 891,
+                "startTime": "10/20/2016",
+                "endTime": "11/10/2016"
+              },
+              {
+                "pattern": "falling-two-tops",
+                "startIndex": 1340,
+                "endIndex": 1355,
+                "startTime": "8/24/2018",
+                "endTime": "9/17/2018"
+              },
+              {
+                "pattern": "falling-two-tops",
+                "startIndex": 1359,
+                "endIndex": 1382,
+                "startTime": "9/21/2018",
+                "endTime": "10/24/2018"
+              },
+              {
+                "pattern": "falling-two-tops",
+                "startIndex": 1373,
+                "endIndex": 1401,
+                "startTime": "10/11/2018",
+                "endTime": "11/20/2018"
+              },
+              {
+                "pattern": "falling-two-tops",
+                "startIndex": 383,
+                "endIndex": 431,
+                "startTime": "11/5/2014",
+                "endTime": "1/15/2015"
+              },
+              {
+                "pattern": "falling-three-bottoms",
+                "startIndex": 1231,
+                "endIndex": 1241,
+                "startTime": "3/21/2018",
+                "endTime": "4/5/2018"
+              },
+              {
+                "pattern": "falling-three-bottoms",
+                "startIndex": 1409,
+                "endIndex": 1419,
+                "startTime": "12/3/2018",
+                "endTime": "12/18/2018"
+              },
+              {
+                "pattern": "falling-three-bottoms",
+                "startIndex": 868,
+                "endIndex": 889,
+                "startTime": "10/10/2016",
+                "endTime": "11/8/2016"
+              },
+              {
+                "pattern": "falling-three-bottoms",
+                "startIndex": 868,
+                "endIndex": 899,
+                "startTime": "10/10/2016",
+                "endTime": "11/22/2016"
+              },
+              {
+                "pattern": "falling-three-bottoms",
+                "startIndex": 1346,
+                "endIndex": 1377,
+                "startTime": "9/4/2018",
+                "endTime": "10/17/2018"
+              },
+              {
+                "pattern": "falling-three-bottoms",
+                "startIndex": 1364,
+                "endIndex": 1409,
+                "startTime": "9/28/2018",
+                "endTime": "12/3/2018"
+              },
+              {
+                "pattern": "falling-three-bottoms",
+                "startIndex": 1377,
+                "endIndex": 1433,
+                "startTime": "10/17/2018",
+                "endTime": "1/9/2019"
+              },
+              {
+                "pattern": "falling-three-tops",
+                "startIndex": 1410,
+                "endIndex": 1423,
+                "startTime": "12/4/2018",
+                "endTime": "12/24/2018"
+              },
+              {
+                "pattern": "rising-three-tops",
+                "startIndex": 1321,
+                "endIndex": 1333,
+                "startTime": "7/30/2018",
+                "endTime": "8/15/2018"
+              },
+              {
+                "pattern": "rising-three-tops",
+                "startIndex": 1502,
+                "endIndex": 1515,
+                "startTime": "4/18/2019",
+                "endTime": "5/8/2019"
+              },
+              {
+                "pattern": "rising-three-tops",
+                "startIndex": 584,
+                "endIndex": 608,
+                "startTime": "8/25/2015",
+                "endTime": "9/29/2015"
+              },
+              {
+                "pattern": "rising-two-bottoms",
+                "startIndex": 913,
+                "endIndex": 922,
+                "startTime": "12/13/2016",
+                "endTime": "12/27/2016"
+              },
+              {
+                "pattern": "rising-two-bottoms",
+                "startIndex": 590,
+                "endIndex": 600,
+                "startTime": "9/2/2015",
+                "endTime": "9/17/2015"
+              },
+              {
+                "pattern": "rising-two-bottoms",
+                "startIndex": 901,
+                "endIndex": 913,
+                "startTime": "11/25/2016",
+                "endTime": "12/13/2016"
+              },
+              {
+                "pattern": "rising-two-bottoms",
+                "startIndex": 580,
+                "endIndex": 596,
+                "startTime": "8/19/2015",
+                "endTime": "9/11/2015"
+              },
+              {
+                "pattern": "rising-two-bottoms",
+                "startIndex": 756,
+                "endIndex": 778,
+                "startTime": "5/2/2016",
+                "endTime": "6/2/2016"
+              },
+              {
+                "pattern": "rising-two-bottoms",
+                "startIndex": 1101,
+                "endIndex": 1134,
+                "startTime": "9/13/2017",
+                "endTime": "10/30/2017"
+              },
+              {
+                "pattern": "rising-two-bottoms",
+                "startIndex": 1294,
+                "endIndex": 1332,
+                "startTime": "6/20/2018",
+                "endTime": "8/14/2018"
+              },
+              {
+                "pattern": "falling-two-bottoms",
+                "startIndex": 909,
+                "endIndex": 918,
+                "startTime": "12/7/2016",
+                "endTime": "12/20/2016"
+              },
+              {
+                "pattern": "falling-two-bottoms",
+                "startIndex": 989,
+                "endIndex": 998,
+                "startTime": "4/4/2017",
+                "endTime": "4/18/2017"
+              },
+              {
+                "pattern": "falling-two-bottoms",
+                "startIndex": 1439,
+                "endIndex": 1448,
+                "startTime": "1/17/2019",
+                "endTime": "1/31/2019"
+              },
+              {
+                "pattern": "falling-two-bottoms",
+                "startIndex": 878,
+                "endIndex": 889,
+                "startTime": "10/24/2016",
+                "endTime": "11/8/2016"
+              },
+              {
+                "pattern": "falling-two-bottoms",
+                "startIndex": 918,
+                "endIndex": 929,
+                "startTime": "12/20/2016",
+                "endTime": "1/6/2017"
+              },
+              {
+                "pattern": "falling-two-bottoms",
+                "startIndex": 942,
+                "endIndex": 954,
+                "startTime": "1/26/2017",
+                "endTime": "2/13/2017"
+              },
+              {
+                "pattern": "falling-two-bottoms",
+                "startIndex": 247,
+                "endIndex": 260,
+                "startTime": "4/24/2014",
+                "endTime": "5/13/2014"
+              },
+              {
+                "pattern": "falling-two-bottoms",
+                "startIndex": 231,
+                "endIndex": 244,
+                "startTime": "4/1/2014",
+                "endTime": "4/21/2014"
+              },
+              {
+                "pattern": "falling-two-bottoms",
+                "startIndex": 868,
+                "endIndex": 889,
+                "startTime": "10/10/2016",
+                "endTime": "11/8/2016"
+              },
+              {
+                "pattern": "falling-two-bottoms",
+                "startIndex": 1352,
+                "endIndex": 1377,
+                "startTime": "9/12/2018",
+                "endTime": "10/17/2018"
+              },
+              {
+                "pattern": "falling-two-bottoms",
+                "startIndex": 1093,
+                "endIndex": 1125,
+                "startTime": "8/31/2017",
+                "endTime": "10/17/2017"
+              },
+              {
+                "pattern": "falling-two-bottoms",
+                "startIndex": 363,
+                "endIndex": 399,
+                "startTime": "10/8/2014",
+                "endTime": "11/28/2014"
+              },
+              {
+                "pattern": "falling-two-bottoms",
+                "startIndex": 1393,
+                "endIndex": 1433,
+                "startTime": "11/8/2018",
+                "endTime": "1/9/2019"
+              },
+              {
+                "pattern": "rising-three-bottoms",
+                "startIndex": 1057,
+                "endIndex": 1067,
+                "startTime": "7/12/2017",
+                "endTime": "7/26/2017"
+              },
+              {
+                "pattern": "rising-three-bottoms",
+                "startIndex": 602,
+                "endIndex": 627,
+                "startTime": "9/21/2015",
+                "endTime": "10/26/2015"
+              },
+              {
+                "pattern": "rising-three-bottoms",
+                "startIndex": 1318,
+                "endIndex": 1352,
+                "startTime": "7/25/2018",
+                "endTime": "9/12/2018"
+              },
+              {
+                "pattern": "rising-three-bottoms",
+                "startIndex": 1294,
+                "endIndex": 1346,
+                "startTime": "6/20/2018",
+                "endTime": "9/4/2018"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "columnName": "DPZ",
+        "levelAnnotations": [
+          {
+            "windowLevel": 0.5,
+            "annotations": [
+              {
+                "pattern": "inverted-head-and-shoulders",
+                "startIndex": 1297,
+                "endIndex": 1340,
+                "startTime": "6/25/2018",
+                "endTime": "8/24/2018"
+              }
+            ]
+          },
+          {
+            "windowLevel": 0.25,
+            "annotations": [
+              {
+                "pattern": "rising-two-tops",
+                "startIndex": 1400,
+                "endIndex": 1462,
+                "startTime": "11/19/2018",
+                "endTime": "2/21/2019"
+              },
+              {
+                "pattern": "rising-two-tops",
+                "startIndex": 1069,
+                "endIndex": 1142,
+                "startTime": "7/28/2017",
+                "endTime": "11/9/2017"
+              },
+              {
+                "pattern": "falling-two-tops",
+                "startIndex": 1280,
+                "endIndex": 1320,
+                "startTime": "5/31/2018",
+                "endTime": "7/27/2018"
+              },
+              {
+                "pattern": "rising-three-tops",
+                "startIndex": 1385,
+                "endIndex": 1462,
+                "startTime": "10/29/2018",
+                "endTime": "2/21/2019"
+              },
+              {
+                "pattern": "falling-two-bottoms",
+                "startIndex": 1330,
+                "endIndex": 1364,
+                "startTime": "8/10/2018",
+                "endTime": "9/28/2018"
+              },
+              {
+                "pattern": "falling-two-bottoms",
+                "startIndex": 1393,
+                "endIndex": 1456,
+                "startTime": "11/8/2018",
+                "endTime": "2/12/2019"
+              },
+              {
+                "pattern": "falling-two-bottoms",
+                "startIndex": 1073,
+                "endIndex": 1193,
+                "startTime": "8/3/2017",
+                "endTime": "1/25/2018"
+              },
+              {
+                "pattern": "rising-two-bottoms",
+                "startIndex": 1198,
+                "endIndex": 1224,
+                "startTime": "2/1/2018",
+                "endTime": "3/12/2018"
+              },
+              {
+                "pattern": "falling-three-bottoms",
+                "startIndex": 1329,
+                "endIndex": 1394,
+                "startTime": "8/9/2018",
+                "endTime": "11/9/2018"
+              },
+              {
+                "pattern": "falling-three-bottoms",
+                "startIndex": 1364,
+                "endIndex": 1455,
+                "startTime": "9/28/2018",
+                "endTime": "2/11/2019"
+              }
+            ]
+          },
+          {
+            "windowLevel": 0.125,
+            "annotations": [
+              {
+                "pattern": "rising-two-tops",
+                "startIndex": 1096,
+                "endIndex": 1109,
+                "startTime": "9/6/2017",
+                "endTime": "9/25/2017"
+              },
+              {
+                "pattern": "rising-two-tops",
+                "startIndex": 1165,
+                "endIndex": 1177,
+                "startTime": "12/13/2017",
+                "endTime": "1/2/2018"
+              },
+              {
+                "pattern": "rising-two-tops",
+                "startIndex": 1441,
+                "endIndex": 1460,
+                "startTime": "1/22/2019",
+                "endTime": "2/19/2019"
+              },
+              {
+                "pattern": "falling-two-tops",
+                "startIndex": 714,
+                "endIndex": 723,
+                "startTime": "3/2/2016",
+                "endTime": "3/15/2016"
+              },
+              {
+                "pattern": "falling-two-tops",
+                "startIndex": 1361,
+                "endIndex": 1370,
+                "startTime": "9/25/2018",
+                "endTime": "10/8/2018"
+              },
+              {
+                "pattern": "falling-two-tops",
+                "startIndex": 228,
+                "endIndex": 239,
+                "startTime": "3/27/2014",
+                "endTime": "4/11/2014"
+              },
+              {
+                "pattern": "falling-two-tops",
+                "startIndex": 1387,
+                "endIndex": 1407,
+                "startTime": "10/31/2018",
+                "endTime": "11/29/2018"
+              },
+              {
+                "pattern": "falling-two-tops",
+                "startIndex": 1355,
+                "endIndex": 1400,
+                "startTime": "9/17/2018",
+                "endTime": "11/19/2018"
+              },
+              {
+                "pattern": "falling-two-tops",
+                "startIndex": 1336,
+                "endIndex": 1382,
+                "startTime": "8/20/2018",
+                "endTime": "10/24/2018"
+              },
+              {
+                "pattern": "rising-three-tops",
+                "startIndex": 1382,
+                "endIndex": 1400,
+                "startTime": "10/24/2018",
+                "endTime": "11/19/2018"
+              },
+              {
+                "pattern": "rising-three-tops",
+                "startIndex": 1438,
+                "endIndex": 1460,
+                "startTime": "1/16/2019",
+                "endTime": "2/19/2019"
+              },
+              {
+                "pattern": "rising-three-tops",
+                "startIndex": 1385,
+                "endIndex": 1421,
+                "startTime": "10/29/2018",
+                "endTime": "12/20/2018"
+              },
+              {
+                "pattern": "falling-two-bottoms",
+                "startIndex": 250,
+                "endIndex": 259,
+                "startTime": "4/29/2014",
+                "endTime": "5/12/2014"
+              },
+              {
+                "pattern": "falling-two-bottoms",
+                "startIndex": 1267,
+                "endIndex": 1276,
+                "startTime": "5/11/2018",
+                "endTime": "5/24/2018"
+              },
+              {
+                "pattern": "falling-two-bottoms",
+                "startIndex": 1193,
+                "endIndex": 1202,
+                "startTime": "1/25/2018",
+                "endTime": "2/7/2018"
+              },
+              {
+                "pattern": "falling-two-bottoms",
+                "startIndex": 107,
+                "endIndex": 117,
+                "startTime": "10/2/2013",
+                "endTime": "10/16/2013"
+              },
+              {
+                "pattern": "falling-two-bottoms",
+                "startIndex": 231,
+                "endIndex": 242,
+                "startTime": "4/1/2014",
+                "endTime": "4/16/2014"
+              },
+              {
+                "pattern": "falling-two-bottoms",
+                "startIndex": 1477,
+                "endIndex": 1488,
+                "startTime": "3/14/2019",
+                "endTime": "3/29/2019"
+              },
+              {
+                "pattern": "falling-two-bottoms",
+                "startIndex": 223,
+                "endIndex": 237,
+                "startTime": "3/20/2014",
+                "endTime": "4/9/2014"
+              },
+              {
+                "pattern": "falling-two-bottoms",
+                "startIndex": 183,
+                "endIndex": 200,
+                "startTime": "1/22/2014",
+                "endTime": "2/14/2014"
+              },
+              {
+                "pattern": "rising-two-bottoms",
+                "startIndex": 774,
+                "endIndex": 783,
+                "startTime": "5/26/2016",
+                "endTime": "6/9/2016"
+              },
+              {
+                "pattern": "rising-two-bottoms",
+                "startIndex": 1313,
+                "endIndex": 1344,
+                "startTime": "7/18/2018",
+                "endTime": "8/30/2018"
+              },
+              {
+                "pattern": "falling-three-bottoms",
+                "startIndex": 1416,
+                "endIndex": 1425,
+                "startTime": "12/13/2018",
+                "endTime": "12/27/2018"
+              },
+              {
+                "pattern": "falling-three-bottoms",
+                "startIndex": 1411,
+                "endIndex": 1422,
+                "startTime": "12/6/2018",
+                "endTime": "12/21/2018"
+              },
+              {
+                "pattern": "falling-three-bottoms",
+                "startIndex": 600,
+                "endIndex": 612,
+                "startTime": "9/17/2015",
+                "endTime": "10/5/2015"
+              },
+              {
+                "pattern": "falling-three-bottoms",
+                "startIndex": 1193,
+                "endIndex": 1205,
+                "startTime": "1/25/2018",
+                "endTime": "2/12/2018"
+              },
+              {
+                "pattern": "falling-three-bottoms",
+                "startIndex": 245,
+                "endIndex": 259,
+                "startTime": "4/22/2014",
+                "endTime": "5/12/2014"
+              },
+              {
+                "pattern": "falling-three-bottoms",
+                "startIndex": 600,
+                "endIndex": 622,
+                "startTime": "9/17/2015",
+                "endTime": "10/19/2015"
+              },
+              {
+                "pattern": "double-bottom",
+                "startIndex": 405,
+                "endIndex": 414,
+                "startTime": "12/8/2014",
+                "endTime": "12/19/2014"
+              },
+              {
+                "pattern": "double-bottom",
+                "startIndex": 161,
+                "endIndex": 176,
+                "startTime": "12/18/2013",
+                "endTime": "1/10/2014"
+              },
+              {
+                "pattern": "double-bottom",
+                "startIndex": 1463,
+                "endIndex": 1488,
+                "startTime": "2/22/2019",
+                "endTime": "3/29/2019"
+              },
+              {
+                "pattern": "double-bottom",
+                "startIndex": 460,
+                "endIndex": 499,
+                "startTime": "2/27/2015",
+                "endTime": "4/24/2015"
+              },
+              {
+                "pattern": "double-bottom",
+                "startIndex": 671,
+                "endIndex": 708,
+                "startTime": "12/29/2015",
+                "endTime": "2/23/2016"
+              },
+              {
+                "pattern": "double-bottom",
+                "startIndex": 1364,
+                "endIndex": 1407,
+                "startTime": "9/28/2018",
+                "endTime": "11/29/2018"
+              },
+              {
+                "pattern": "double-top",
+                "startIndex": 1052,
+                "endIndex": 1067,
+                "startTime": "7/5/2017",
+                "endTime": "7/26/2017"
+              },
+              {
+                "pattern": "double-top",
+                "startIndex": 37,
+                "endIndex": 76,
+                "startTime": "6/24/2013",
+                "endTime": "8/19/2013"
+              },
+              {
+                "pattern": "basin",
+                "startIndex": 753,
+                "endIndex": 783,
+                "startTime": "4/27/2016",
+                "endTime": "6/9/2016"
+              },
+              {
+                "pattern": "basin",
+                "startIndex": 66,
+                "endIndex": 98,
+                "startTime": "8/5/2013",
+                "endTime": "9/19/2013"
+              },
+              {
+                "pattern": "plateau",
+                "startIndex": 946,
+                "endIndex": 993,
+                "startTime": "2/1/2017",
+                "endTime": "4/10/2017"
+              },
+              {
+                "pattern": "head-and-shoulders",
+                "startIndex": 422,
+                "endIndex": 433,
+                "startTime": "1/2/2015",
+                "endTime": "1/20/2015"
+              },
+              {
+                "pattern": "falling-three-tops",
+                "startIndex": 244,
+                "endIndex": 257,
+                "startTime": "4/21/2014",
+                "endTime": "5/8/2014"
+              },
+              {
+                "pattern": "falling-three-tops",
+                "startIndex": 1355,
+                "endIndex": 1376,
+                "startTime": "9/17/2018",
+                "endTime": "10/16/2018"
+              },
+              {
+                "pattern": "rising-three-bottoms",
+                "startIndex": 639,
+                "endIndex": 649,
+                "startTime": "11/11/2015",
+                "endTime": "11/25/2015"
+              },
+              {
+                "pattern": "rising-three-bottoms",
+                "startIndex": 1444,
+                "endIndex": 1455,
+                "startTime": "1/25/2019",
+                "endTime": "2/11/2019"
+              },
+              {
+                "pattern": "rising-three-bottoms",
+                "startIndex": 1440,
+                "endIndex": 1451,
+                "startTime": "1/18/2019",
+                "endTime": "2/5/2019"
+              },
+              {
+                "pattern": "rising-three-bottoms",
+                "startIndex": 1380,
+                "endIndex": 1394,
+                "startTime": "10/22/2018",
+                "endTime": "11/9/2018"
+              },
+              {
+                "pattern": "rising-three-bottoms",
+                "startIndex": 774,
+                "endIndex": 786,
+                "startTime": "5/26/2016",
+                "endTime": "6/14/2016"
+              },
+              {
+                "pattern": "rising-three-bottoms",
+                "startIndex": 1435,
+                "endIndex": 1448,
+                "startTime": "1/11/2019",
+                "endTime": "1/31/2019"
+              },
+              {
+                "pattern": "rising-three-bottoms",
+                "startIndex": 579,
+                "endIndex": 606,
+                "startTime": "8/18/2015",
+                "endTime": "9/25/2015"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "columnName": "BTC",
+        "levelAnnotations": [
+          {
+            "windowLevel": 1,
+            "annotations": [
+              {
+                "pattern": "head-and-shoulders",
+                "startIndex": 1058,
+                "endIndex": 1240,
+                "startTime": "7/13/2017",
+                "endTime": "4/4/2018"
+              }
+            ]
+          },
+          {
+            "windowLevel": 0.5,
+            "annotations": [
+              {
+                "pattern": "basin",
+                "startIndex": 1394,
+                "endIndex": 1492,
+                "startTime": "11/9/2018",
+                "endTime": "4/4/2019"
+              },
+              {
+                "pattern": "falling-two-tops",
+                "startIndex": 1241,
+                "endIndex": 1331,
+                "startTime": "4/5/2018",
+                "endTime": "8/13/2018"
+              },
+              {
+                "pattern": "falling-three-tops",
+                "startIndex": 1199,
+                "endIndex": 1329,
+                "startTime": "2/2/2018",
+                "endTime": "8/9/2018"
+              }
+            ]
+          },
+          {
+            "windowLevel": 0.25,
+            "annotations": [
+              {
+                "pattern": "falling-two-tops",
+                "startIndex": 1151,
+                "endIndex": 1201,
+                "startTime": "11/22/2017",
+                "endTime": "2/6/2018"
+              },
+              {
+                "pattern": "falling-two-tops",
+                "startIndex": 1201,
+                "endIndex": 1275,
+                "startTime": "2/6/2018",
+                "endTime": "5/23/2018"
+              },
+              {
+                "pattern": "plateau",
+                "startIndex": 791,
+                "endIndex": 819,
+                "startTime": "6/21/2016",
+                "endTime": "8/1/2016"
+              },
+              {
+                "pattern": "rising-two-tops",
+                "startIndex": 1300,
+                "endIndex": 1329,
+                "startTime": "6/28/2018",
+                "endTime": "8/9/2018"
+              },
+              {
+                "pattern": "rising-two-tops",
+                "startIndex": 237,
+                "endIndex": 288,
+                "startTime": "4/9/2014",
+                "endTime": "6/23/2014"
+              },
+              {
+                "pattern": "falling-two-bottoms",
+                "startIndex": 1168,
+                "endIndex": 1210,
+                "startTime": "12/18/2017",
+                "endTime": "2/20/2018"
+              }
+            ]
+          },
+          {
+            "windowLevel": 0.125,
+            "annotations": [
+              {
+                "pattern": "head-and-shoulders",
+                "startIndex": 792,
+                "endIndex": 803,
+                "startTime": "6/22/2016",
+                "endTime": "7/8/2016"
+              },
+              {
+                "pattern": "head-and-shoulders",
+                "startIndex": 459,
+                "endIndex": 477,
+                "startTime": "2/26/2015",
+                "endTime": "3/24/2015"
+              },
+              {
+                "pattern": "head-and-shoulders",
+                "startIndex": 447,
+                "endIndex": 490,
+                "startTime": "2/9/2015",
+                "endTime": "4/13/2015"
+              },
+              {
+                "pattern": "head-and-shoulders",
+                "startIndex": 1299,
+                "endIndex": 1349,
+                "startTime": "6/27/2018",
+                "endTime": "9/7/2018"
+              },
+              {
+                "pattern": "basin",
+                "startIndex": 1443,
+                "endIndex": 1454,
+                "startTime": "1/24/2019",
+                "endTime": "2/8/2019"
+              },
+              {
+                "pattern": "falling-two-tops",
+                "startIndex": 1299,
+                "endIndex": 1309,
+                "startTime": "6/27/2018",
+                "endTime": "7/12/2018"
+              },
+              {
+                "pattern": "falling-two-tops",
+                "startIndex": 1355,
+                "endIndex": 1366,
+                "startTime": "9/17/2018",
+                "endTime": "10/2/2018"
+              },
+              {
+                "pattern": "falling-two-tops",
+                "startIndex": 149,
+                "endIndex": 161,
+                "startTime": "12/2/2013",
+                "endTime": "12/18/2013"
+              },
+              {
+                "pattern": "falling-two-tops",
+                "startIndex": 1026,
+                "endIndex": 1050,
+                "startTime": "5/26/2017",
+                "endTime": "6/30/2017"
+              },
+              {
+                "pattern": "falling-two-tops",
+                "startIndex": 1310,
+                "endIndex": 1350,
+                "startTime": "7/13/2018",
+                "endTime": "9/10/2018"
+              },
+              {
+                "pattern": "falling-three-tops",
+                "startIndex": 1178,
+                "endIndex": 1187,
+                "startTime": "1/3/2018",
+                "endTime": "1/17/2018"
+              },
+              {
+                "pattern": "falling-three-tops",
+                "startIndex": 1227,
+                "endIndex": 1240,
+                "startTime": "3/15/2018",
+                "endTime": "4/4/2018"
+              },
+              {
+                "pattern": "falling-three-tops",
+                "startIndex": 1026,
+                "endIndex": 1059,
+                "startTime": "5/26/2017",
+                "endTime": "7/14/2017"
+              },
+              {
+                "pattern": "plateau",
+                "startIndex": 313,
+                "endIndex": 325,
+                "startTime": "7/29/2014",
+                "endTime": "8/14/2014"
+              },
+              {
+                "pattern": "plateau",
+                "startIndex": 1372,
+                "endIndex": 1385,
+                "startTime": "10/10/2018",
+                "endTime": "10/29/2018"
+              },
+              {
+                "pattern": "rising-two-tops",
+                "startIndex": 1073,
+                "endIndex": 1083,
+                "startTime": "8/3/2017",
+                "endTime": "8/17/2017"
+              },
+              {
+                "pattern": "rising-two-tops",
+                "startIndex": 1491,
+                "endIndex": 1505,
+                "startTime": "4/3/2019",
+                "endTime": "4/24/2019"
+              },
+              {
+                "pattern": "rising-two-tops",
+                "startIndex": 1017,
+                "endIndex": 1037,
+                "startTime": "5/15/2017",
+                "endTime": "6/13/2017"
+              },
+              {
+                "pattern": "rising-two-tops",
+                "startIndex": 1077,
+                "endIndex": 1101,
+                "startTime": "8/9/2017",
+                "endTime": "9/13/2017"
+              },
+              {
+                "pattern": "falling-two-bottoms",
+                "startIndex": 1210,
+                "endIndex": 1231,
+                "startTime": "2/20/2018",
+                "endTime": "3/21/2018"
+              },
+              {
+                "pattern": "falling-two-bottoms",
+                "startIndex": 1399,
+                "endIndex": 1421,
+                "startTime": "11/16/2018",
+                "endTime": "12/20/2018"
+              },
+              {
+                "pattern": "falling-two-bottoms",
+                "startIndex": 1219,
+                "endIndex": 1253,
+                "startTime": "3/5/2018",
+                "endTime": "4/23/2018"
+              },
+              {
+                "pattern": "falling-two-bottoms",
+                "startIndex": 1081,
+                "endIndex": 1123,
+                "startTime": "8/15/2017",
+                "endTime": "10/13/2017"
+              },
+              {
+                "pattern": "double-bottom",
+                "startIndex": 1320,
+                "endIndex": 1354,
+                "startTime": "7/27/2018",
+                "endTime": "9/14/2018"
+              },
+              {
+                "pattern": "double-top",
+                "startIndex": 1029,
+                "endIndex": 1038,
+                "startTime": "6/1/2017",
+                "endTime": "6/14/2017"
+              },
+              {
+                "pattern": "double-top",
+                "startIndex": 449,
+                "endIndex": 459,
+                "startTime": "2/11/2015",
+                "endTime": "2/26/2015"
+              },
+              {
+                "pattern": "double-top",
+                "startIndex": 546,
+                "endIndex": 572,
+                "startTime": "7/1/2015",
+                "endTime": "8/7/2015"
+              },
+              {
+                "pattern": "double-top",
+                "startIndex": 952,
+                "endIndex": 981,
+                "startTime": "2/9/2017",
+                "endTime": "3/23/2017"
+              },
+              {
+                "pattern": "inverted-head-and-shoulders",
+                "startIndex": 1399,
+                "endIndex": 1432,
+                "startTime": "11/16/2018",
+                "endTime": "1/8/2019"
+              },
+              {
+                "pattern": "rising-three-tops",
+                "startIndex": 1254,
+                "endIndex": 1263,
+                "startTime": "4/24/2018",
+                "endTime": "5/7/2018"
+              },
+              {
+                "pattern": "rising-two-bottoms",
+                "startIndex": 1495,
+                "endIndex": 1513,
+                "startTime": "4/9/2019",
+                "endTime": "5/6/2019"
+              },
+              {
+                "pattern": "rising-two-bottoms",
+                "startIndex": 1022,
+                "endIndex": 1041,
+                "startTime": "5/22/2017",
+                "endTime": "6/19/2017"
+              },
+              {
+                "pattern": "rising-two-bottoms",
+                "startIndex": 1194,
+                "endIndex": 1219,
+                "startTime": "1/26/2018",
+                "endTime": "3/5/2018"
+              },
+              {
+                "pattern": "falling-three-bottoms",
+                "startIndex": 1210,
+                "endIndex": 1253,
+                "startTime": "2/20/2018",
+                "endTime": "4/23/2018"
+              },
+              {
+                "pattern": "rising-three-bottoms",
+                "startIndex": 1423,
+                "endIndex": 1432,
+                "startTime": "12/24/2018",
+                "endTime": "1/8/2019"
+              },
+              {
+                "pattern": "rising-three-bottoms",
+                "startIndex": 1345,
+                "endIndex": 1362,
+                "startTime": "8/31/2018",
+                "endTime": "9/26/2018"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "columnName": "NFLX",
+        "levelAnnotations": [
+          {
+            "windowLevel": 1,
+            "annotations": [
+              {
+                "pattern": "head-and-shoulders",
+                "startIndex": 1177,
+                "endIndex": 1424,
+                "startTime": "1/2/2018",
+                "endTime": "12/26/2018"
+              }
+            ]
+          },
+          {
+            "windowLevel": 0.5,
+            "annotations": [
+              {
+                "pattern": "head-and-shoulders",
+                "startIndex": 128,
+                "endIndex": 249,
+                "startTime": "10/31/2013",
+                "endTime": "4/28/2014"
+              },
+              {
+                "pattern": "double-top",
+                "startIndex": 1270,
+                "endIndex": 1321,
+                "startTime": "5/16/2018",
+                "endTime": "7/30/2018"
+              },
+              {
+                "pattern": "rising-two-tops",
+                "startIndex": 1174,
+                "endIndex": 1239,
+                "startTime": "12/27/2017",
+                "endTime": "4/3/2018"
+              },
+              {
+                "pattern": "falling-two-tops",
+                "startIndex": 1237,
+                "endIndex": 1422,
+                "startTime": "3/29/2018",
+                "endTime": "12/21/2018"
+              },
+              {
+                "pattern": "falling-two-bottoms",
+                "startIndex": 1306,
+                "endIndex": 1438,
+                "startTime": "7/9/2018",
+                "endTime": "1/16/2019"
+              }
+            ]
+          },
+          {
+            "windowLevel": 0.25,
+            "annotations": [
+              {
+                "pattern": "plateau",
+                "startIndex": 1115,
+                "endIndex": 1158,
+                "startTime": "10/3/2017",
+                "endTime": "12/4/2017"
+              },
+              {
+                "pattern": "inverted-head-and-shoulders",
+                "startIndex": 1318,
+                "endIndex": 1352,
+                "startTime": "7/25/2018",
+                "endTime": "9/12/2018"
+              },
+              {
+                "pattern": "double-bottom",
+                "startIndex": 21,
+                "endIndex": 53,
+                "startTime": "5/31/2013",
+                "endTime": "7/17/2013"
+              },
+              {
+                "pattern": "rising-two-bottoms",
+                "startIndex": 1408,
+                "endIndex": 1451,
+                "startTime": "11/30/2018",
+                "endTime": "2/5/2019"
+              },
+              {
+                "pattern": "rising-two-bottoms",
+                "startIndex": 1195,
+                "endIndex": 1250,
+                "startTime": "1/29/2018",
+                "endTime": "4/18/2018"
+              },
+              {
+                "pattern": "falling-three-bottoms",
+                "startIndex": 1377,
+                "endIndex": 1438,
+                "startTime": "10/17/2018",
+                "endTime": "1/16/2019"
+              }
+            ]
+          },
+          {
+            "windowLevel": 0.125,
+            "annotations": [
+              {
+                "pattern": "head-and-shoulders",
+                "startIndex": 651,
+                "endIndex": 660,
+                "startTime": "11/30/2015",
+                "endTime": "12/11/2015"
+              },
+              {
+                "pattern": "head-and-shoulders",
+                "startIndex": 1499,
+                "endIndex": 1509,
+                "startTime": "4/15/2019",
+                "endTime": "4/30/2019"
+              },
+              {
+                "pattern": "head-and-shoulders",
+                "startIndex": 818,
+                "endIndex": 830,
+                "startTime": "7/29/2016",
+                "endTime": "8/16/2016"
+              },
+              {
+                "pattern": "head-and-shoulders",
+                "startIndex": 593,
+                "endIndex": 607,
+                "startTime": "9/8/2015",
+                "endTime": "9/28/2015"
+              },
+              {
+                "pattern": "head-and-shoulders",
+                "startIndex": 281,
+                "endIndex": 305,
+                "startTime": "6/12/2014",
+                "endTime": "7/17/2014"
+              },
+              {
+                "pattern": "head-and-shoulders",
+                "startIndex": 1006,
+                "endIndex": 1051,
+                "startTime": "4/28/2017",
+                "endTime": "7/3/2017"
+              },
+              {
+                "pattern": "double-top",
+                "startIndex": 755,
+                "endIndex": 764,
+                "startTime": "4/29/2016",
+                "endTime": "5/12/2016"
+              },
+              {
+                "pattern": "double-top",
+                "startIndex": 300,
+                "endIndex": 309,
+                "startTime": "7/10/2014",
+                "endTime": "7/23/2014"
+              },
+              {
+                "pattern": "double-top",
+                "startIndex": 89,
+                "endIndex": 100,
+                "startTime": "9/6/2013",
+                "endTime": "9/23/2013"
+              },
+              {
+                "pattern": "double-top",
+                "startIndex": 1501,
+                "endIndex": 1515,
+                "startTime": "4/17/2019",
+                "endTime": "5/8/2019"
+              },
+              {
+                "pattern": "rising-two-tops",
+                "startIndex": 1098,
+                "endIndex": 1109,
+                "startTime": "9/8/2017",
+                "endTime": "9/25/2017"
+              },
+              {
+                "pattern": "rising-two-tops",
+                "startIndex": 1321,
+                "endIndex": 1347,
+                "startTime": "7/30/2018",
+                "endTime": "9/5/2018"
+              },
+              {
+                "pattern": "rising-two-tops",
+                "startIndex": 597,
+                "endIndex": 625,
+                "startTime": "9/14/2015",
+                "endTime": "10/22/2015"
+              },
+              {
+                "pattern": "rising-two-tops",
+                "startIndex": 29,
+                "endIndex": 58,
+                "startTime": "6/12/2013",
+                "endTime": "7/24/2013"
+              },
+              {
+                "pattern": "rising-two-tops",
+                "startIndex": 966,
+                "endIndex": 996,
+                "startTime": "3/2/2017",
+                "endTime": "4/13/2017"
+              },
+              {
+                "pattern": "falling-two-tops",
+                "startIndex": 293,
+                "endIndex": 305,
+                "startTime": "6/30/2014",
+                "endTime": "7/17/2014"
+              },
+              {
+                "pattern": "falling-two-tops",
+                "startIndex": 467,
+                "endIndex": 480,
+                "startTime": "3/10/2015",
+                "endTime": "3/27/2015"
+              },
+              {
+                "pattern": "falling-two-bottoms",
+                "startIndex": 461,
+                "endIndex": 477,
+                "startTime": "3/2/2015",
+                "endTime": "3/24/2015"
+              },
+              {
+                "pattern": "falling-two-bottoms",
+                "startIndex": 1034,
+                "endIndex": 1057,
+                "startTime": "6/8/2017",
+                "endTime": "7/12/2017"
+              },
+              {
+                "pattern": "falling-two-bottoms",
+                "startIndex": 1319,
+                "endIndex": 1344,
+                "startTime": "7/26/2018",
+                "endTime": "8/30/2018"
+              },
+              {
+                "pattern": "falling-two-bottoms",
+                "startIndex": 1366,
+                "endIndex": 1392,
+                "startTime": "10/2/2018",
+                "endTime": "11/7/2018"
+              },
+              {
+                "pattern": "falling-two-bottoms",
+                "startIndex": 1377,
+                "endIndex": 1409,
+                "startTime": "10/17/2018",
+                "endTime": "12/3/2018"
+              },
+              {
+                "pattern": "falling-two-bottoms",
+                "startIndex": 1392,
+                "endIndex": 1437,
+                "startTime": "11/7/2018",
+                "endTime": "1/15/2019"
+              },
+              {
+                "pattern": "plateau",
+                "startIndex": 370,
+                "endIndex": 397,
+                "startTime": "10/17/2014",
+                "endTime": "11/25/2014"
+              },
+              {
+                "pattern": "inverted-head-and-shoulders",
+                "startIndex": 1234,
+                "endIndex": 1247,
+                "startTime": "3/26/2018",
+                "endTime": "4/13/2018"
+              },
+              {
+                "pattern": "inverted-head-and-shoulders",
+                "startIndex": 237,
+                "endIndex": 259,
+                "startTime": "4/9/2014",
+                "endTime": "5/12/2014"
+              },
+              {
+                "pattern": "double-bottom",
+                "startIndex": 1465,
+                "endIndex": 1474,
+                "startTime": "2/26/2019",
+                "endTime": "3/11/2019"
+              },
+              {
+                "pattern": "double-bottom",
+                "startIndex": 307,
+                "endIndex": 320,
+                "startTime": "7/21/2014",
+                "endTime": "8/7/2014"
+              },
+              {
+                "pattern": "rising-two-bottoms",
+                "startIndex": 1356,
+                "endIndex": 1365,
+                "startTime": "9/18/2018",
+                "endTime": "10/1/2018"
+              },
+              {
+                "pattern": "rising-two-bottoms",
+                "startIndex": 671,
+                "endIndex": 680,
+                "startTime": "12/29/2015",
+                "endTime": "1/12/2016"
+              },
+              {
+                "pattern": "rising-two-bottoms",
+                "startIndex": 1096,
+                "endIndex": 1107,
+                "startTime": "9/6/2017",
+                "endTime": "9/21/2017"
+              },
+              {
+                "pattern": "rising-two-bottoms",
+                "startIndex": 1237,
+                "endIndex": 1247,
+                "startTime": "3/29/2018",
+                "endTime": "4/13/2018"
+              },
+              {
+                "pattern": "rising-two-bottoms",
+                "startIndex": 1352,
+                "endIndex": 1363,
+                "startTime": "9/12/2018",
+                "endTime": "9/27/2018"
+              },
+              {
+                "pattern": "rising-two-bottoms",
+                "startIndex": 1437,
+                "endIndex": 1447,
+                "startTime": "1/15/2019",
+                "endTime": "1/30/2019"
+              },
+              {
+                "pattern": "rising-two-bottoms",
+                "startIndex": 131,
+                "endIndex": 143,
+                "startTime": "11/5/2013",
+                "endTime": "11/21/2013"
+              },
+              {
+                "pattern": "rising-two-bottoms",
+                "startIndex": 126,
+                "endIndex": 139,
+                "startTime": "10/29/2013",
+                "endTime": "11/15/2013"
+              },
+              {
+                "pattern": "rising-two-bottoms",
+                "startIndex": 1484,
+                "endIndex": 1497,
+                "startTime": "3/25/2019",
+                "endTime": "4/11/2019"
+              },
+              {
+                "pattern": "rising-two-bottoms",
+                "startIndex": 1111,
+                "endIndex": 1124,
+                "startTime": "9/27/2017",
+                "endTime": "10/16/2017"
+              },
+              {
+                "pattern": "rising-two-bottoms",
+                "startIndex": 1497,
+                "endIndex": 1512,
+                "startTime": "4/11/2019",
+                "endTime": "5/3/2019"
+              },
+              {
+                "pattern": "rising-two-bottoms",
+                "startIndex": 716,
+                "endIndex": 732,
+                "startTime": "3/4/2016",
+                "endTime": "3/29/2016"
+              },
+              {
+                "pattern": "rising-two-bottoms",
+                "startIndex": 968,
+                "endIndex": 987,
+                "startTime": "3/6/2017",
+                "endTime": "3/31/2017"
+              },
+              {
+                "pattern": "rising-two-bottoms",
+                "startIndex": 1327,
+                "endIndex": 1353,
+                "startTime": "8/7/2018",
+                "endTime": "9/13/2018"
+              },
+              {
+                "pattern": "rising-two-bottoms",
+                "startIndex": 615,
+                "endIndex": 647,
+                "startTime": "10/8/2015",
+                "endTime": "11/23/2015"
+              },
+              {
+                "pattern": "rising-two-bottoms",
+                "startIndex": 1419,
+                "endIndex": 1451,
+                "startTime": "12/18/2018",
+                "endTime": "2/5/2019"
+              },
+              {
+                "pattern": "falling-three-bottoms",
+                "startIndex": 1231,
+                "endIndex": 1241,
+                "startTime": "3/21/2018",
+                "endTime": "4/5/2018"
+              },
+              {
+                "pattern": "falling-three-bottoms",
+                "startIndex": 1100,
+                "endIndex": 1118,
+                "startTime": "9/12/2017",
+                "endTime": "10/6/2017"
+              },
+              {
+                "pattern": "falling-three-bottoms",
+                "startIndex": 1366,
+                "endIndex": 1409,
+                "startTime": "10/2/2018",
+                "endTime": "12/3/2018"
+              },
+              {
+                "pattern": "basin",
+                "startIndex": 1034,
+                "endIndex": 1045,
+                "startTime": "6/8/2017",
+                "endTime": "6/23/2017"
+              },
+              {
+                "pattern": "basin",
+                "startIndex": 1294,
+                "endIndex": 1306,
+                "startTime": "6/20/2018",
+                "endTime": "7/9/2018"
+              },
+              {
+                "pattern": "falling-three-tops",
+                "startIndex": 653,
+                "endIndex": 662,
+                "startTime": "12/2/2015",
+                "endTime": "12/15/2015"
+              },
+              {
+                "pattern": "falling-three-tops",
+                "startIndex": 1373,
+                "endIndex": 1423,
+                "startTime": "10/11/2018",
+                "endTime": "12/24/2018"
+              },
+              {
+                "pattern": "rising-three-tops",
+                "startIndex": 648,
+                "endIndex": 657,
+                "startTime": "11/24/2015",
+                "endTime": "12/8/2015"
+              },
+              {
+                "pattern": "rising-three-tops",
+                "startIndex": 1212,
+                "endIndex": 1225,
+                "startTime": "2/22/2018",
+                "endTime": "3/13/2018"
+              },
+              {
+                "pattern": "rising-three-tops",
+                "startIndex": 125,
+                "endIndex": 141,
+                "startTime": "10/28/2013",
+                "endTime": "11/19/2013"
+              },
+              {
+                "pattern": "rising-three-tops",
+                "startIndex": 1109,
+                "endIndex": 1126,
+                "startTime": "9/25/2017",
+                "endTime": "10/18/2017"
+              },
+              {
+                "pattern": "rising-three-bottoms",
+                "startIndex": 1497,
+                "endIndex": 1507,
+                "startTime": "4/11/2019",
+                "endTime": "4/26/2019"
+              },
+              {
+                "pattern": "rising-three-bottoms",
+                "startIndex": 1126,
+                "endIndex": 1139,
+                "startTime": "10/18/2017",
+                "endTime": "11/6/2017"
+              },
+              {
+                "pattern": "rising-three-bottoms",
+                "startIndex": 1352,
+                "endIndex": 1365,
+                "startTime": "9/12/2018",
+                "endTime": "10/1/2018"
+              },
+              {
+                "pattern": "rising-three-bottoms",
+                "startIndex": 1439,
+                "endIndex": 1451,
+                "startTime": "1/17/2019",
+                "endTime": "2/5/2019"
+              },
+              {
+                "pattern": "rising-three-bottoms",
+                "startIndex": 123,
+                "endIndex": 139,
+                "startTime": "10/24/2013",
+                "endTime": "11/15/2013"
+              },
+              {
+                "pattern": "rising-three-bottoms",
+                "startIndex": 126,
+                "endIndex": 148,
+                "startTime": "10/29/2013",
+                "endTime": "11/29/2013"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+]
