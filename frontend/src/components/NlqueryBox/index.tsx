@@ -111,7 +111,12 @@ export default function NlqueryBox() {
 				newQuery = await handleParseQuery()!;
 			}
 			dispatch(setIsRequesting(true));
-			const querySpec = formatQuerySpec(newQuery!);
+			if (!newQuery) {
+				console.error('Query is null, cannot format query spec');
+				dispatch(setIsRequesting(false));
+				return;
+			}
+			const querySpec = formatQuerySpec(newQuery);
 			dispatch(setQueryResults(null));
 			queryApi
 				.getFragmentsBySpec(querySpec)

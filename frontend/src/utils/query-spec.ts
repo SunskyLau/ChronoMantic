@@ -33,6 +33,14 @@ export function getUnitBySeconds(seconds: number): Unit {
 }
 
 export function formatQuerySpec(query: QuerySpecWithSource): QuerySpec {
+    // 添加基本的空值检查
+    if (!query) {
+        throw new Error('Query cannot be null or undefined');
+    }
+    if (!query.text_sources) {
+        query.text_sources = [];
+    }
+    
     const formatScopeCondition = (scope?: ScopeConditionWithSource | ScopeConditionWithSourceWithUnit, formatter?: (a: number, b: number) => number): ScopeCondition | undefined => {
         if (!scope) return undefined;
         if (query.text_sources[scope.text_source_id]?.disabled) return undefined;
@@ -101,12 +109,12 @@ export function formatQuerySpec(query: QuerySpecWithSource): QuerySpec {
         };
     };
 
-    const filteredTargets = query.targets
+    const filteredTargets = (query.targets || [])
         .filter(target => !query.text_sources[target.text_source_id]?.disabled)
         .map(target => target.target);
 
     // 过滤掉禁用的趋势
-    const filteredTrends = query.trends.map(formatTrend);
+    const filteredTrends = (query.trends || []).map(formatTrend);
 
     // 过滤掉禁用的单趋势关系
     const filteredSingleRelations = (query.single_relations || [])
