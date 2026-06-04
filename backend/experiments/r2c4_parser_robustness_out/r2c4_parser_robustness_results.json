@@ -1,0 +1,3665 @@
+{
+  "started_at": "2026-06-03T21:09:55",
+  "dataset_info": "[\"AMZN\", \"DPZ\", \"BTC\", \"NFLX\"]",
+  "if_json_format": true,
+  "retries": 2,
+  "note": "Lightweight qualitative parser robustness check for R2C4; not an exhaustive benchmark.",
+  "results": [
+    {
+      "case_id": "plateau",
+      "source": "model_evaluation",
+      "intent": "Plateau: rise, then flat, then decline.",
+      "variant_index": 1,
+      "query": "Find patterns that initially rise, then flatten, and finally decline.",
+      "passed": true,
+      "format_valid": true,
+      "attempt_count": 1,
+      "failures": [],
+      "failure_class": "pass",
+      "normalized": {
+        "targets": [],
+        "trends": [
+          "up",
+          "flat",
+          "down"
+        ],
+        "single_relations": [],
+        "group_relations": [],
+        "raw": {
+          "original_text": "Find patterns that initially rise, then flatten, and finally decline.",
+          "text_sources": [
+            {
+              "text": "initially rise",
+              "index": 0
+            },
+            {
+              "text": "flatten",
+              "index": 0
+            },
+            {
+              "text": "decline",
+              "index": 0
+            }
+          ],
+          "targets": [],
+          "trends": [
+            {
+              "category": {
+                "category": "up",
+                "text_source_id": 0
+              }
+            },
+            {
+              "category": {
+                "category": "flat",
+                "text_source_id": 1
+              }
+            },
+            {
+              "category": {
+                "category": "down",
+                "text_source_id": 2
+              }
+            }
+          ],
+          "single_relations": [],
+          "trend_groups": [],
+          "group_relations": []
+        }
+      },
+      "parsed": {
+        "original_text": "Find patterns that initially rise, then flatten, and finally decline.",
+        "text_sources": [
+          {
+            "text": "initially rise",
+            "index": 0
+          },
+          {
+            "text": "flatten",
+            "index": 0
+          },
+          {
+            "text": "decline",
+            "index": 0
+          }
+        ],
+        "targets": [],
+        "trends": [
+          {
+            "category": {
+              "category": "up",
+              "text_source_id": 0
+            }
+          },
+          {
+            "category": {
+              "category": "flat",
+              "text_source_id": 1
+            }
+          },
+          {
+            "category": {
+              "category": "down",
+              "text_source_id": 2
+            }
+          }
+        ],
+        "single_relations": [],
+        "trend_groups": [],
+        "group_relations": []
+      },
+      "raw_response": "{\n  \"original_text\": \"Find patterns that initially rise, then flatten, and finally decline.\",\n  \"text_sources\": [\n    { \"text\": \"initially rise\" },\n    { \"text\": \"flatten\" },\n    { \"text\": \"decline\" }\n  ],\n  \"targets\": [],\n  \"trends\": [\n    {\n      \"category\": {\n        \"category\": \"up\",\n        \"text_source_id\": 0\n      }\n    },\n    {\n      \"category\": {\n        \"category\": \"flat\",\n        \"text_source_id\": 1\n      }\n    },\n    {\n      \"category\": {\n        \"category\": \"down\",\n        \"text_source_id\": 2\n      }\n    }\n  ],\n  \"single_relations\": [],\n  \"trend_groups\": [],\n  \"group_relations\": []\n}",
+      "attempts": [
+        {
+          "attempt": 1,
+          "parse_error": null,
+          "raw_response": "{\n  \"original_text\": \"Find patterns that initially rise, then flatten, and finally decline.\",\n  \"text_sources\": [\n    { \"text\": \"initially rise\" },\n    { \"text\": \"flatten\" },\n    { \"text\": \"decline\" }\n  ],\n  \"targets\": [],\n  \"trends\": [\n    {\n      \"category\": {\n        \"category\": \"up\",\n        \"text_source_id\": 0\n      }\n    },\n    {\n      \"category\": {\n        \"category\": \"flat\",\n        \"text_source_id\": 1\n      }\n    },\n    {\n      \"category\": {\n        \"category\": \"down\",\n        \"text_source_id\": 2\n      }\n    }\n  ],\n  \"single_relations\": [],\n  \"trend_groups\": [],\n  \"group_relations\": []\n}"
+        }
+      ]
+    },
+    {
+      "case_id": "plateau",
+      "source": "model_evaluation",
+      "intent": "Plateau: rise, then flat, then decline.",
+      "variant_index": 2,
+      "query": "Find intervals where the series rises, stays flat, and then falls.",
+      "passed": true,
+      "format_valid": true,
+      "attempt_count": 1,
+      "failures": [],
+      "failure_class": "pass",
+      "normalized": {
+        "targets": [],
+        "trends": [
+          "up",
+          "flat",
+          "down"
+        ],
+        "single_relations": [],
+        "group_relations": [],
+        "raw": {
+          "original_text": "Find intervals where the series rises, stays flat, and then falls.",
+          "text_sources": [
+            {
+              "text": "rises",
+              "index": 0
+            },
+            {
+              "text": "stays flat",
+              "index": 0
+            },
+            {
+              "text": "falls",
+              "index": 0
+            }
+          ],
+          "targets": [],
+          "trends": [
+            {
+              "category": {
+                "category": "up",
+                "text_source_id": 0
+              }
+            },
+            {
+              "category": {
+                "category": "flat",
+                "text_source_id": 1
+              }
+            },
+            {
+              "category": {
+                "category": "down",
+                "text_source_id": 2
+              }
+            }
+          ],
+          "single_relations": [],
+          "trend_groups": [],
+          "group_relations": []
+        }
+      },
+      "parsed": {
+        "original_text": "Find intervals where the series rises, stays flat, and then falls.",
+        "text_sources": [
+          {
+            "text": "rises",
+            "index": 0
+          },
+          {
+            "text": "stays flat",
+            "index": 0
+          },
+          {
+            "text": "falls",
+            "index": 0
+          }
+        ],
+        "targets": [],
+        "trends": [
+          {
+            "category": {
+              "category": "up",
+              "text_source_id": 0
+            }
+          },
+          {
+            "category": {
+              "category": "flat",
+              "text_source_id": 1
+            }
+          },
+          {
+            "category": {
+              "category": "down",
+              "text_source_id": 2
+            }
+          }
+        ],
+        "single_relations": [],
+        "trend_groups": [],
+        "group_relations": []
+      },
+      "raw_response": "{\n  \"original_text\": \"Find intervals where the series rises, stays flat, and then falls.\",\n  \"text_sources\": [\n    {\n      \"text\": \"rises\"\n    },\n    {\n      \"text\": \"stays flat\"\n    },\n    {\n      \"text\": \"falls\"\n    }\n  ],\n  \"targets\": [],\n  \"trends\": [\n    {\n      \"category\": {\n        \"category\": \"up\",\n        \"text_source_id\": 0\n      }\n    },\n    {\n      \"category\": {\n        \"category\": \"flat\",\n        \"text_source_id\": 1\n      }\n    },\n    {\n      \"category\": {\n        \"category\": \"down\",\n        \"text_source_id\": 2\n      }\n    }\n  ],\n  \"single_relations\": [],\n  \"trend_groups\": [],\n  \"group_relations\": []\n}",
+      "attempts": [
+        {
+          "attempt": 1,
+          "parse_error": null,
+          "raw_response": "{\n  \"original_text\": \"Find intervals where the series rises, stays flat, and then falls.\",\n  \"text_sources\": [\n    {\n      \"text\": \"rises\"\n    },\n    {\n      \"text\": \"stays flat\"\n    },\n    {\n      \"text\": \"falls\"\n    }\n  ],\n  \"targets\": [],\n  \"trends\": [\n    {\n      \"category\": {\n        \"category\": \"up\",\n        \"text_source_id\": 0\n      }\n    },\n    {\n      \"category\": {\n        \"category\": \"flat\",\n        \"text_source_id\": 1\n      }\n    },\n    {\n      \"category\": {\n        \"category\": \"down\",\n        \"text_source_id\": 2\n      }\n    }\n  ],\n  \"single_relations\": [],\n  \"trend_groups\": [],\n  \"group_relations\": []\n}"
+        }
+      ]
+    },
+    {
+      "case_id": "plateau",
+      "source": "model_evaluation",
+      "intent": "Plateau: rise, then flat, then decline.",
+      "variant_index": 3,
+      "query": "Look for a pattern with an upward trend followed by a stable segment and then a downward trend.",
+      "passed": true,
+      "format_valid": true,
+      "attempt_count": 1,
+      "failures": [],
+      "failure_class": "pass",
+      "normalized": {
+        "targets": [],
+        "trends": [
+          "up",
+          "flat",
+          "down"
+        ],
+        "single_relations": [],
+        "group_relations": [],
+        "raw": {
+          "original_text": "Look for a pattern with an upward trend followed by a stable segment and then a downward trend.",
+          "text_sources": [
+            {
+              "text": "upward trend",
+              "index": 0
+            },
+            {
+              "text": "stable segment",
+              "index": 0
+            },
+            {
+              "text": "downward trend",
+              "index": 0
+            }
+          ],
+          "targets": [],
+          "trends": [
+            {
+              "category": {
+                "category": "up",
+                "text_source_id": 0
+              }
+            },
+            {
+              "category": {
+                "category": "flat",
+                "text_source_id": 1
+              }
+            },
+            {
+              "category": {
+                "category": "down",
+                "text_source_id": 2
+              }
+            }
+          ],
+          "single_relations": [],
+          "trend_groups": [],
+          "group_relations": []
+        }
+      },
+      "parsed": {
+        "original_text": "Look for a pattern with an upward trend followed by a stable segment and then a downward trend.",
+        "text_sources": [
+          {
+            "text": "upward trend",
+            "index": 0
+          },
+          {
+            "text": "stable segment",
+            "index": 0
+          },
+          {
+            "text": "downward trend",
+            "index": 0
+          }
+        ],
+        "targets": [],
+        "trends": [
+          {
+            "category": {
+              "category": "up",
+              "text_source_id": 0
+            }
+          },
+          {
+            "category": {
+              "category": "flat",
+              "text_source_id": 1
+            }
+          },
+          {
+            "category": {
+              "category": "down",
+              "text_source_id": 2
+            }
+          }
+        ],
+        "single_relations": [],
+        "trend_groups": [],
+        "group_relations": []
+      },
+      "raw_response": "{\"original_text\":\"Look for a pattern with an upward trend followed by a stable segment and then a downward trend.\",\"text_sources\":[{\"text\":\"upward trend\"},{\"text\":\"stable segment\"},{\"text\":\"downward trend\"}],\"targets\":[],\"trends\":[{\"category\":{\"category\":\"up\",\"text_source_id\":0}},{\"category\":{\"category\":\"flat\",\"text_source_id\":1}},{\"category\":{\"category\":\"down\",\"text_source_id\":2}}],\"single_relations\":[],\"trend_groups\":[],\"group_relations\":[]}",
+      "attempts": [
+        {
+          "attempt": 1,
+          "parse_error": null,
+          "raw_response": "{\"original_text\":\"Look for a pattern with an upward trend followed by a stable segment and then a downward trend.\",\"text_sources\":[{\"text\":\"upward trend\"},{\"text\":\"stable segment\"},{\"text\":\"downward trend\"}],\"targets\":[],\"trends\":[{\"category\":{\"category\":\"up\",\"text_source_id\":0}},{\"category\":{\"category\":\"flat\",\"text_source_id\":1}},{\"category\":{\"category\":\"down\",\"text_source_id\":2}}],\"single_relations\":[],\"trend_groups\":[],\"group_relations\":[]}"
+        }
+      ]
+    },
+    {
+      "case_id": "basin",
+      "source": "model_evaluation",
+      "intent": "Basin: decline, then flat, then rise.",
+      "variant_index": 1,
+      "query": "Find patterns that initially decline, then flatten, and finally rise.",
+      "passed": true,
+      "format_valid": true,
+      "attempt_count": 1,
+      "failures": [],
+      "failure_class": "pass",
+      "normalized": {
+        "targets": [],
+        "trends": [
+          "down",
+          "flat",
+          "up"
+        ],
+        "single_relations": [],
+        "group_relations": [],
+        "raw": {
+          "original_text": "Find patterns that initially decline, then flatten, and finally rise.",
+          "text_sources": [
+            {
+              "text": "decline",
+              "index": 0
+            },
+            {
+              "text": "flatten",
+              "index": 0
+            },
+            {
+              "text": "rise",
+              "index": 0
+            }
+          ],
+          "targets": [],
+          "trends": [
+            {
+              "category": {
+                "category": "down",
+                "text_source_id": 0
+              }
+            },
+            {
+              "category": {
+                "category": "flat",
+                "text_source_id": 1
+              }
+            },
+            {
+              "category": {
+                "category": "up",
+                "text_source_id": 2
+              }
+            }
+          ],
+          "single_relations": [],
+          "trend_groups": [],
+          "group_relations": []
+        }
+      },
+      "parsed": {
+        "original_text": "Find patterns that initially decline, then flatten, and finally rise.",
+        "text_sources": [
+          {
+            "text": "decline",
+            "index": 0
+          },
+          {
+            "text": "flatten",
+            "index": 0
+          },
+          {
+            "text": "rise",
+            "index": 0
+          }
+        ],
+        "targets": [],
+        "trends": [
+          {
+            "category": {
+              "category": "down",
+              "text_source_id": 0
+            }
+          },
+          {
+            "category": {
+              "category": "flat",
+              "text_source_id": 1
+            }
+          },
+          {
+            "category": {
+              "category": "up",
+              "text_source_id": 2
+            }
+          }
+        ],
+        "single_relations": [],
+        "trend_groups": [],
+        "group_relations": []
+      },
+      "raw_response": "{\"original_text\":\"Find patterns that initially decline, then flatten, and finally rise.\",\"text_sources\":[{\"text\":\"decline\"},{\"text\":\"flatten\"},{\"text\":\"rise\"}],\"targets\":[],\"trends\":[{\"category\":{\"category\":\"down\",\"text_source_id\":0}},{\"category\":{\"category\":\"flat\",\"text_source_id\":1}},{\"category\":{\"category\":\"up\",\"text_source_id\":2}}],\"single_relations\":[],\"trend_groups\":[],\"group_relations\":[]}",
+      "attempts": [
+        {
+          "attempt": 1,
+          "parse_error": null,
+          "raw_response": "{\"original_text\":\"Find patterns that initially decline, then flatten, and finally rise.\",\"text_sources\":[{\"text\":\"decline\"},{\"text\":\"flatten\"},{\"text\":\"rise\"}],\"targets\":[],\"trends\":[{\"category\":{\"category\":\"down\",\"text_source_id\":0}},{\"category\":{\"category\":\"flat\",\"text_source_id\":1}},{\"category\":{\"category\":\"up\",\"text_source_id\":2}}],\"single_relations\":[],\"trend_groups\":[],\"group_relations\":[]}"
+        }
+      ]
+    },
+    {
+      "case_id": "basin",
+      "source": "model_evaluation",
+      "intent": "Basin: decline, then flat, then rise.",
+      "variant_index": 2,
+      "query": "Find intervals where the series falls, stays flat, and then rises.",
+      "passed": true,
+      "format_valid": true,
+      "attempt_count": 1,
+      "failures": [],
+      "failure_class": "pass",
+      "normalized": {
+        "targets": [],
+        "trends": [
+          "down",
+          "flat",
+          "up"
+        ],
+        "single_relations": [],
+        "group_relations": [],
+        "raw": {
+          "original_text": "Find intervals where the series falls, stays flat, and then rises.",
+          "text_sources": [
+            {
+              "text": "falls",
+              "index": 0
+            },
+            {
+              "text": "stays flat",
+              "index": 0
+            },
+            {
+              "text": "rises",
+              "index": 0
+            }
+          ],
+          "targets": [],
+          "trends": [
+            {
+              "category": {
+                "category": "down",
+                "text_source_id": 0
+              }
+            },
+            {
+              "category": {
+                "category": "flat",
+                "text_source_id": 1
+              }
+            },
+            {
+              "category": {
+                "category": "up",
+                "text_source_id": 2
+              }
+            }
+          ],
+          "single_relations": [],
+          "trend_groups": [],
+          "group_relations": []
+        }
+      },
+      "parsed": {
+        "original_text": "Find intervals where the series falls, stays flat, and then rises.",
+        "text_sources": [
+          {
+            "text": "falls",
+            "index": 0
+          },
+          {
+            "text": "stays flat",
+            "index": 0
+          },
+          {
+            "text": "rises",
+            "index": 0
+          }
+        ],
+        "targets": [],
+        "trends": [
+          {
+            "category": {
+              "category": "down",
+              "text_source_id": 0
+            }
+          },
+          {
+            "category": {
+              "category": "flat",
+              "text_source_id": 1
+            }
+          },
+          {
+            "category": {
+              "category": "up",
+              "text_source_id": 2
+            }
+          }
+        ],
+        "single_relations": [],
+        "trend_groups": [],
+        "group_relations": []
+      },
+      "raw_response": "{\"original_text\":\"Find intervals where the series falls, stays flat, and then rises.\",\"text_sources\":[{\"text\":\"falls\"},{\"text\":\"stays flat\"},{\"text\":\"rises\"}],\"targets\":[],\"trends\":[{\"category\":{\"category\":\"down\",\"text_source_id\":0}},{\"category\":{\"category\":\"flat\",\"text_source_id\":1}},{\"category\":{\"category\":\"up\",\"text_source_id\":2}}],\"single_relations\":[],\"trend_groups\":[],\"group_relations\":[]}",
+      "attempts": [
+        {
+          "attempt": 1,
+          "parse_error": null,
+          "raw_response": "{\"original_text\":\"Find intervals where the series falls, stays flat, and then rises.\",\"text_sources\":[{\"text\":\"falls\"},{\"text\":\"stays flat\"},{\"text\":\"rises\"}],\"targets\":[],\"trends\":[{\"category\":{\"category\":\"down\",\"text_source_id\":0}},{\"category\":{\"category\":\"flat\",\"text_source_id\":1}},{\"category\":{\"category\":\"up\",\"text_source_id\":2}}],\"single_relations\":[],\"trend_groups\":[],\"group_relations\":[]}"
+        }
+      ]
+    },
+    {
+      "case_id": "basin",
+      "source": "model_evaluation",
+      "intent": "Basin: decline, then flat, then rise.",
+      "variant_index": 3,
+      "query": "Look for a pattern with a downward trend followed by a stable segment and then an upward trend.",
+      "passed": true,
+      "format_valid": true,
+      "attempt_count": 1,
+      "failures": [],
+      "failure_class": "pass",
+      "normalized": {
+        "targets": [],
+        "trends": [
+          "down",
+          "flat",
+          "up"
+        ],
+        "single_relations": [],
+        "group_relations": [],
+        "raw": {
+          "original_text": "Look for a pattern with a downward trend followed by a stable segment and then an upward trend.",
+          "text_sources": [
+            {
+              "text": "downward trend",
+              "index": 0
+            },
+            {
+              "text": "stable segment",
+              "index": 0
+            },
+            {
+              "text": "upward trend",
+              "index": 0
+            }
+          ],
+          "targets": [],
+          "trends": [
+            {
+              "category": {
+                "category": "down",
+                "text_source_id": 0
+              }
+            },
+            {
+              "category": {
+                "category": "flat",
+                "text_source_id": 1
+              }
+            },
+            {
+              "category": {
+                "category": "up",
+                "text_source_id": 2
+              }
+            }
+          ],
+          "single_relations": [],
+          "trend_groups": [],
+          "group_relations": []
+        }
+      },
+      "parsed": {
+        "original_text": "Look for a pattern with a downward trend followed by a stable segment and then an upward trend.",
+        "text_sources": [
+          {
+            "text": "downward trend",
+            "index": 0
+          },
+          {
+            "text": "stable segment",
+            "index": 0
+          },
+          {
+            "text": "upward trend",
+            "index": 0
+          }
+        ],
+        "targets": [],
+        "trends": [
+          {
+            "category": {
+              "category": "down",
+              "text_source_id": 0
+            }
+          },
+          {
+            "category": {
+              "category": "flat",
+              "text_source_id": 1
+            }
+          },
+          {
+            "category": {
+              "category": "up",
+              "text_source_id": 2
+            }
+          }
+        ],
+        "single_relations": [],
+        "trend_groups": [],
+        "group_relations": []
+      },
+      "raw_response": "{\n  \"original_text\": \"Look for a pattern with a downward trend followed by a stable segment and then an upward trend.\",\n  \"text_sources\": [\n    {\n      \"text\": \"downward trend\"\n    },\n    {\n      \"text\": \"stable segment\"\n    },\n    {\n      \"text\": \"upward trend\"\n    }\n  ],\n  \"targets\": [],\n  \"trends\": [\n    {\n      \"category\": {\n        \"category\": \"down\",\n        \"text_source_id\": 0\n      }\n    },\n    {\n      \"category\": {\n        \"category\": \"flat\",\n        \"text_source_id\": 1\n      }\n    },\n    {\n      \"category\": {\n        \"category\": \"up\",\n        \"text_source_id\": 2\n      }\n    }\n  ],\n  \"single_relations\": [],\n  \"trend_groups\": [],\n  \"group_relations\": []\n}",
+      "attempts": [
+        {
+          "attempt": 1,
+          "parse_error": null,
+          "raw_response": "{\n  \"original_text\": \"Look for a pattern with a downward trend followed by a stable segment and then an upward trend.\",\n  \"text_sources\": [\n    {\n      \"text\": \"downward trend\"\n    },\n    {\n      \"text\": \"stable segment\"\n    },\n    {\n      \"text\": \"upward trend\"\n    }\n  ],\n  \"targets\": [],\n  \"trends\": [\n    {\n      \"category\": {\n        \"category\": \"down\",\n        \"text_source_id\": 0\n      }\n    },\n    {\n      \"category\": {\n        \"category\": \"flat\",\n        \"text_source_id\": 1\n      }\n    },\n    {\n      \"category\": {\n        \"category\": \"up\",\n        \"text_source_id\": 2\n      }\n    }\n  ],\n  \"single_relations\": [],\n  \"trend_groups\": [],\n  \"group_relations\": []\n}"
+        }
+      ]
+    },
+    {
+      "case_id": "double_top",
+      "source": "model_evaluation",
+      "intent": "Double-top: two consecutive peaks with approximately equal values.",
+      "variant_index": 1,
+      "query": "Find patterns that exhibit two consecutive peaks with approximately equal values.",
+      "passed": true,
+      "format_valid": true,
+      "attempt_count": 1,
+      "failures": [],
+      "failure_class": "pass",
+      "normalized": {
+        "targets": [],
+        "trends": [
+          "up",
+          "down",
+          "up",
+          "down"
+        ],
+        "single_relations": [
+          [
+            0,
+            2,
+            "end_value",
+            "~="
+          ]
+        ],
+        "group_relations": [],
+        "raw": {
+          "original_text": "Find patterns that exhibit two consecutive peaks with approximately equal values.",
+          "text_sources": [
+            {
+              "text": "two consecutive peaks",
+              "index": 0
+            },
+            {
+              "text": "approximately equal values",
+              "index": 0
+            }
+          ],
+          "targets": [],
+          "trends": [
+            {
+              "category": {
+                "category": "up",
+                "text_source_id": 0
+              }
+            },
+            {
+              "category": {
+                "category": "down",
+                "text_source_id": 0
+              }
+            },
+            {
+              "category": {
+                "category": "up",
+                "text_source_id": 0
+              }
+            },
+            {
+              "category": {
+                "category": "down",
+                "text_source_id": 0
+              }
+            }
+          ],
+          "single_relations": [
+            {
+              "id1": 0,
+              "id2": 2,
+              "attribute": "end_value",
+              "comparator": "~=",
+              "text_source_id": 1
+            }
+          ],
+          "trend_groups": [],
+          "group_relations": []
+        }
+      },
+      "parsed": {
+        "original_text": "Find patterns that exhibit two consecutive peaks with approximately equal values.",
+        "text_sources": [
+          {
+            "text": "two consecutive peaks",
+            "index": 0
+          },
+          {
+            "text": "approximately equal values",
+            "index": 0
+          }
+        ],
+        "targets": [],
+        "trends": [
+          {
+            "category": {
+              "category": "up",
+              "text_source_id": 0
+            }
+          },
+          {
+            "category": {
+              "category": "down",
+              "text_source_id": 0
+            }
+          },
+          {
+            "category": {
+              "category": "up",
+              "text_source_id": 0
+            }
+          },
+          {
+            "category": {
+              "category": "down",
+              "text_source_id": 0
+            }
+          }
+        ],
+        "single_relations": [
+          {
+            "id1": 0,
+            "id2": 2,
+            "attribute": "end_value",
+            "comparator": "~=",
+            "text_source_id": 1
+          }
+        ],
+        "trend_groups": [],
+        "group_relations": []
+      },
+      "raw_response": "{\"original_text\":\"Find patterns that exhibit two consecutive peaks with approximately equal values.\",\"text_sources\":[{\"text\":\"two consecutive peaks\"},{\"text\":\"approximately equal values\"}],\"targets\":[],\"trends\":[{\"category\":{\"category\":\"up\",\"text_source_id\":0}},{\"category\":{\"category\":\"down\",\"text_source_id\":0}},{\"category\":{\"category\":\"up\",\"text_source_id\":0}},{\"category\":{\"category\":\"down\",\"text_source_id\":0}}],\"single_relations\":[{\"id1\":0,\"id2\":2,\"attribute\":\"end_value\",\"comparator\":\"~=\",\"text_source_id\":1}],\"trend_groups\":[],\"group_relations\":[]}",
+      "attempts": [
+        {
+          "attempt": 1,
+          "parse_error": null,
+          "raw_response": "{\"original_text\":\"Find patterns that exhibit two consecutive peaks with approximately equal values.\",\"text_sources\":[{\"text\":\"two consecutive peaks\"},{\"text\":\"approximately equal values\"}],\"targets\":[],\"trends\":[{\"category\":{\"category\":\"up\",\"text_source_id\":0}},{\"category\":{\"category\":\"down\",\"text_source_id\":0}},{\"category\":{\"category\":\"up\",\"text_source_id\":0}},{\"category\":{\"category\":\"down\",\"text_source_id\":0}}],\"single_relations\":[{\"id1\":0,\"id2\":2,\"attribute\":\"end_value\",\"comparator\":\"~=\",\"text_source_id\":1}],\"trend_groups\":[],\"group_relations\":[]}"
+        }
+      ]
+    },
+    {
+      "case_id": "double_top",
+      "source": "model_evaluation",
+      "intent": "Double-top: two consecutive peaks with approximately equal values.",
+      "variant_index": 2,
+      "query": "Find intervals with two peaks in a row where the two peak values are about the same.",
+      "passed": true,
+      "format_valid": true,
+      "attempt_count": 1,
+      "failures": [],
+      "failure_class": "pass",
+      "normalized": {
+        "targets": [],
+        "trends": [
+          "up",
+          "down",
+          "up",
+          "down"
+        ],
+        "single_relations": [
+          [
+            0,
+            2,
+            "end_value",
+            "~="
+          ]
+        ],
+        "group_relations": [],
+        "raw": {
+          "original_text": "Find intervals with two peaks in a row where the two peak values are about the same.",
+          "text_sources": [
+            {
+              "text": "two peaks in a row",
+              "index": 0
+            },
+            {
+              "text": "the two peak values are about the same",
+              "index": 0
+            }
+          ],
+          "targets": [],
+          "trends": [
+            {
+              "category": {
+                "category": "up",
+                "text_source_id": 0
+              }
+            },
+            {
+              "category": {
+                "category": "down",
+                "text_source_id": 0
+              }
+            },
+            {
+              "category": {
+                "category": "up",
+                "text_source_id": 0
+              }
+            },
+            {
+              "category": {
+                "category": "down",
+                "text_source_id": 0
+              }
+            }
+          ],
+          "single_relations": [
+            {
+              "id1": 0,
+              "id2": 2,
+              "attribute": "end_value",
+              "comparator": "~=",
+              "text_source_id": 1
+            }
+          ],
+          "trend_groups": [],
+          "group_relations": []
+        }
+      },
+      "parsed": {
+        "original_text": "Find intervals with two peaks in a row where the two peak values are about the same.",
+        "text_sources": [
+          {
+            "text": "two peaks in a row",
+            "index": 0
+          },
+          {
+            "text": "the two peak values are about the same",
+            "index": 0
+          }
+        ],
+        "targets": [],
+        "trends": [
+          {
+            "category": {
+              "category": "up",
+              "text_source_id": 0
+            }
+          },
+          {
+            "category": {
+              "category": "down",
+              "text_source_id": 0
+            }
+          },
+          {
+            "category": {
+              "category": "up",
+              "text_source_id": 0
+            }
+          },
+          {
+            "category": {
+              "category": "down",
+              "text_source_id": 0
+            }
+          }
+        ],
+        "single_relations": [
+          {
+            "id1": 0,
+            "id2": 2,
+            "attribute": "end_value",
+            "comparator": "~=",
+            "text_source_id": 1
+          }
+        ],
+        "trend_groups": [],
+        "group_relations": []
+      },
+      "raw_response": "{\"original_text\":\"Find intervals with two peaks in a row where the two peak values are about the same.\",\"text_sources\":[{\"text\":\"two peaks in a row\"},{\"text\":\"the two peak values are about the same\"}],\"targets\":[],\"trends\":[{\"category\":{\"category\":\"up\",\"text_source_id\":0}},{\"category\":{\"category\":\"down\",\"text_source_id\":0}},{\"category\":{\"category\":\"up\",\"text_source_id\":0}},{\"category\":{\"category\":\"down\",\"text_source_id\":0}}],\"single_relations\":[{\"id1\":0,\"id2\":2,\"attribute\":\"end_value\",\"comparator\":\"~=\",\"text_source_id\":1}],\"trend_groups\":[],\"group_relations\":[]}",
+      "attempts": [
+        {
+          "attempt": 1,
+          "parse_error": null,
+          "raw_response": "{\"original_text\":\"Find intervals with two peaks in a row where the two peak values are about the same.\",\"text_sources\":[{\"text\":\"two peaks in a row\"},{\"text\":\"the two peak values are about the same\"}],\"targets\":[],\"trends\":[{\"category\":{\"category\":\"up\",\"text_source_id\":0}},{\"category\":{\"category\":\"down\",\"text_source_id\":0}},{\"category\":{\"category\":\"up\",\"text_source_id\":0}},{\"category\":{\"category\":\"down\",\"text_source_id\":0}}],\"single_relations\":[{\"id1\":0,\"id2\":2,\"attribute\":\"end_value\",\"comparator\":\"~=\",\"text_source_id\":1}],\"trend_groups\":[],\"group_relations\":[]}"
+        }
+      ]
+    },
+    {
+      "case_id": "double_top",
+      "source": "model_evaluation",
+      "intent": "Double-top: two consecutive peaks with approximately equal values.",
+      "variant_index": 3,
+      "query": "Look for a double-top shape where the first peak and the second peak reach approximately equal heights.",
+      "passed": true,
+      "format_valid": true,
+      "attempt_count": 1,
+      "failures": [],
+      "failure_class": "pass",
+      "normalized": {
+        "targets": [],
+        "trends": [
+          "up",
+          "down",
+          "up",
+          "down"
+        ],
+        "single_relations": [
+          [
+            0,
+            2,
+            "end_value",
+            "~="
+          ]
+        ],
+        "group_relations": [],
+        "raw": {
+          "original_text": "Look for a double-top shape where the first peak and the second peak reach approximately equal heights.",
+          "text_sources": [
+            {
+              "text": "double-top",
+              "index": 0
+            },
+            {
+              "text": "first peak and the second peak reach approximately equal heights",
+              "index": 0
+            }
+          ],
+          "targets": [],
+          "trends": [
+            {
+              "category": {
+                "category": "up",
+                "text_source_id": 0
+              }
+            },
+            {
+              "category": {
+                "category": "down",
+                "text_source_id": 0
+              }
+            },
+            {
+              "category": {
+                "category": "up",
+                "text_source_id": 0
+              }
+            },
+            {
+              "category": {
+                "category": "down",
+                "text_source_id": 0
+              }
+            }
+          ],
+          "single_relations": [
+            {
+              "id1": 0,
+              "id2": 2,
+              "attribute": "end_value",
+              "comparator": "~=",
+              "text_source_id": 1
+            }
+          ],
+          "trend_groups": [],
+          "group_relations": []
+        }
+      },
+      "parsed": {
+        "original_text": "Look for a double-top shape where the first peak and the second peak reach approximately equal heights.",
+        "text_sources": [
+          {
+            "text": "double-top",
+            "index": 0
+          },
+          {
+            "text": "first peak and the second peak reach approximately equal heights",
+            "index": 0
+          }
+        ],
+        "targets": [],
+        "trends": [
+          {
+            "category": {
+              "category": "up",
+              "text_source_id": 0
+            }
+          },
+          {
+            "category": {
+              "category": "down",
+              "text_source_id": 0
+            }
+          },
+          {
+            "category": {
+              "category": "up",
+              "text_source_id": 0
+            }
+          },
+          {
+            "category": {
+              "category": "down",
+              "text_source_id": 0
+            }
+          }
+        ],
+        "single_relations": [
+          {
+            "id1": 0,
+            "id2": 2,
+            "attribute": "end_value",
+            "comparator": "~=",
+            "text_source_id": 1
+          }
+        ],
+        "trend_groups": [],
+        "group_relations": []
+      },
+      "raw_response": "{\n  \"original_text\": \"Look for a double-top shape where the first peak and the second peak reach approximately equal heights.\",\n  \"text_sources\": [\n    {\n      \"text\": \"double-top\"\n    },\n    {\n      \"text\": \"first peak and the second peak reach approximately equal heights\"\n    }\n  ],\n  \"targets\": [],\n  \"trends\": [\n    {\n      \"category\": {\n        \"category\": \"up\",\n        \"text_source_id\": 0\n      }\n    },\n    {\n      \"category\": {\n        \"category\": \"down\",\n        \"text_source_id\": 0\n      }\n    },\n    {\n      \"category\": {\n        \"category\": \"up\",\n        \"text_source_id\": 0\n      }\n    },\n    {\n      \"category\": {\n        \"category\": \"down\",\n        \"text_source_id\": 0\n      }\n    }\n  ],\n  \"single_relations\": [\n    {\n      \"id1\": 0,\n      \"id2\": 2,\n      \"attribute\": \"end_value\",\n      \"comparator\": \"~=\",\n      \"text_source_id\": 1\n    }\n  ],\n  \"trend_groups\": [],\n  \"group_relations\": []\n}",
+      "attempts": [
+        {
+          "attempt": 1,
+          "parse_error": null,
+          "raw_response": "{\n  \"original_text\": \"Look for a double-top shape where the first peak and the second peak reach approximately equal heights.\",\n  \"text_sources\": [\n    {\n      \"text\": \"double-top\"\n    },\n    {\n      \"text\": \"first peak and the second peak reach approximately equal heights\"\n    }\n  ],\n  \"targets\": [],\n  \"trends\": [\n    {\n      \"category\": {\n        \"category\": \"up\",\n        \"text_source_id\": 0\n      }\n    },\n    {\n      \"category\": {\n        \"category\": \"down\",\n        \"text_source_id\": 0\n      }\n    },\n    {\n      \"category\": {\n        \"category\": \"up\",\n        \"text_source_id\": 0\n      }\n    },\n    {\n      \"category\": {\n        \"category\": \"down\",\n        \"text_source_id\": 0\n      }\n    }\n  ],\n  \"single_relations\": [\n    {\n      \"id1\": 0,\n      \"id2\": 2,\n      \"attribute\": \"end_value\",\n      \"comparator\": \"~=\",\n      \"text_source_id\": 1\n    }\n  ],\n  \"trend_groups\": [],\n  \"group_relations\": []\n}"
+        }
+      ]
+    },
+    {
+      "case_id": "head_and_shoulders",
+      "source": "model_evaluation",
+      "intent": "Head-and-shoulders: three consecutive peaks where the middle peak is higher.",
+      "variant_index": 1,
+      "query": "Find patterns that exhibit three consecutive peaks, where the middle peak is higher than the other two.",
+      "passed": true,
+      "format_valid": true,
+      "attempt_count": 1,
+      "failures": [],
+      "failure_class": "pass",
+      "normalized": {
+        "targets": [],
+        "trends": [
+          "up",
+          "down",
+          "up",
+          "down",
+          "up",
+          "down"
+        ],
+        "single_relations": [
+          [
+            2,
+            0,
+            "end_value",
+            ">"
+          ],
+          [
+            2,
+            4,
+            "end_value",
+            ">"
+          ]
+        ],
+        "group_relations": [],
+        "raw": {
+          "original_text": "Find patterns that exhibit three consecutive peaks, where the middle peak is higher than the other two.",
+          "text_sources": [
+            {
+              "text": "three consecutive peaks",
+              "index": 0
+            },
+            {
+              "text": "middle peak is higher than the other two",
+              "index": 0
+            }
+          ],
+          "targets": [],
+          "trends": [
+            {
+              "category": {
+                "category": "up",
+                "text_source_id": 0
+              }
+            },
+            {
+              "category": {
+                "category": "down",
+                "text_source_id": 0
+              }
+            },
+            {
+              "category": {
+                "category": "up",
+                "text_source_id": 0
+              }
+            },
+            {
+              "category": {
+                "category": "down",
+                "text_source_id": 0
+              }
+            },
+            {
+              "category": {
+                "category": "up",
+                "text_source_id": 0
+              }
+            },
+            {
+              "category": {
+                "category": "down",
+                "text_source_id": 0
+              }
+            }
+          ],
+          "single_relations": [
+            {
+              "id1": 0,
+              "id2": 2,
+              "attribute": "end_value",
+              "comparator": "<",
+              "text_source_id": 1
+            },
+            {
+              "id1": 2,
+              "id2": 4,
+              "attribute": "end_value",
+              "comparator": ">",
+              "text_source_id": 1
+            }
+          ],
+          "trend_groups": [],
+          "group_relations": []
+        }
+      },
+      "parsed": {
+        "original_text": "Find patterns that exhibit three consecutive peaks, where the middle peak is higher than the other two.",
+        "text_sources": [
+          {
+            "text": "three consecutive peaks",
+            "index": 0
+          },
+          {
+            "text": "middle peak is higher than the other two",
+            "index": 0
+          }
+        ],
+        "targets": [],
+        "trends": [
+          {
+            "category": {
+              "category": "up",
+              "text_source_id": 0
+            }
+          },
+          {
+            "category": {
+              "category": "down",
+              "text_source_id": 0
+            }
+          },
+          {
+            "category": {
+              "category": "up",
+              "text_source_id": 0
+            }
+          },
+          {
+            "category": {
+              "category": "down",
+              "text_source_id": 0
+            }
+          },
+          {
+            "category": {
+              "category": "up",
+              "text_source_id": 0
+            }
+          },
+          {
+            "category": {
+              "category": "down",
+              "text_source_id": 0
+            }
+          }
+        ],
+        "single_relations": [
+          {
+            "id1": 0,
+            "id2": 2,
+            "attribute": "end_value",
+            "comparator": "<",
+            "text_source_id": 1
+          },
+          {
+            "id1": 2,
+            "id2": 4,
+            "attribute": "end_value",
+            "comparator": ">",
+            "text_source_id": 1
+          }
+        ],
+        "trend_groups": [],
+        "group_relations": []
+      },
+      "raw_response": "{\"original_text\":\"Find patterns that exhibit three consecutive peaks, where the middle peak is higher than the other two.\",\"text_sources\":[{\"text\":\"three consecutive peaks\"},{\"text\":\"middle peak is higher than the other two\"}],\"targets\":[],\"trends\":[{\"category\":{\"category\":\"up\",\"text_source_id\":0}},{\"category\":{\"category\":\"down\",\"text_source_id\":0}},{\"category\":{\"category\":\"up\",\"text_source_id\":0}},{\"category\":{\"category\":\"down\",\"text_source_id\":0}},{\"category\":{\"category\":\"up\",\"text_source_id\":0}},{\"category\":{\"category\":\"down\",\"text_source_id\":0}}],\"single_relations\":[{\"id1\":0,\"id2\":2,\"attribute\":\"end_value\",\"comparator\":\"<\",\"text_source_id\":1},{\"id1\":2,\"id2\":4,\"attribute\":\"end_value\",\"comparator\":\">\",\"text_source_id\":1}],\"trend_groups\":[],\"group_relations\":[]}",
+      "attempts": [
+        {
+          "attempt": 1,
+          "parse_error": null,
+          "raw_response": "{\"original_text\":\"Find patterns that exhibit three consecutive peaks, where the middle peak is higher than the other two.\",\"text_sources\":[{\"text\":\"three consecutive peaks\"},{\"text\":\"middle peak is higher than the other two\"}],\"targets\":[],\"trends\":[{\"category\":{\"category\":\"up\",\"text_source_id\":0}},{\"category\":{\"category\":\"down\",\"text_source_id\":0}},{\"category\":{\"category\":\"up\",\"text_source_id\":0}},{\"category\":{\"category\":\"down\",\"text_source_id\":0}},{\"category\":{\"category\":\"up\",\"text_source_id\":0}},{\"category\":{\"category\":\"down\",\"text_source_id\":0}}],\"single_relations\":[{\"id1\":0,\"id2\":2,\"attribute\":\"end_value\",\"comparator\":\"<\",\"text_source_id\":1},{\"id1\":2,\"id2\":4,\"attribute\":\"end_value\",\"comparator\":\">\",\"text_source_id\":1}],\"trend_groups\":[],\"group_relations\":[]}"
+        }
+      ]
+    },
+    {
+      "case_id": "head_and_shoulders",
+      "source": "model_evaluation",
+      "intent": "Head-and-shoulders: three consecutive peaks where the middle peak is higher.",
+      "variant_index": 2,
+      "query": "Find a head-and-shoulders shape with three peaks and the center peak higher than both side peaks.",
+      "passed": true,
+      "format_valid": true,
+      "attempt_count": 1,
+      "failures": [],
+      "failure_class": "pass",
+      "normalized": {
+        "targets": [],
+        "trends": [
+          "up",
+          "down",
+          "up",
+          "down",
+          "up",
+          "down"
+        ],
+        "single_relations": [
+          [
+            2,
+            0,
+            "end_value",
+            ">"
+          ],
+          [
+            2,
+            4,
+            "end_value",
+            ">"
+          ]
+        ],
+        "group_relations": [],
+        "raw": {
+          "original_text": "Find a head-and-shoulders shape with three peaks and the center peak higher than both side peaks.",
+          "text_sources": [
+            {
+              "text": "head-and-shoulders shape",
+              "index": 0
+            },
+            {
+              "text": "three peaks",
+              "index": 0
+            },
+            {
+              "text": "center peak higher than both side peaks",
+              "index": 0
+            }
+          ],
+          "targets": [],
+          "trends": [
+            {
+              "category": {
+                "category": "up",
+                "text_source_id": 0
+              }
+            },
+            {
+              "category": {
+                "category": "down",
+                "text_source_id": 0
+              }
+            },
+            {
+              "category": {
+                "category": "up",
+                "text_source_id": 0
+              }
+            },
+            {
+              "category": {
+                "category": "down",
+                "text_source_id": 0
+              }
+            },
+            {
+              "category": {
+                "category": "up",
+                "text_source_id": 0
+              }
+            },
+            {
+              "category": {
+                "category": "down",
+                "text_source_id": 0
+              }
+            }
+          ],
+          "single_relations": [
+            {
+              "id1": 0,
+              "id2": 2,
+              "attribute": "end_value",
+              "comparator": "<",
+              "text_source_id": 2
+            },
+            {
+              "id1": 2,
+              "id2": 4,
+              "attribute": "end_value",
+              "comparator": ">",
+              "text_source_id": 2
+            }
+          ],
+          "trend_groups": [],
+          "group_relations": []
+        }
+      },
+      "parsed": {
+        "original_text": "Find a head-and-shoulders shape with three peaks and the center peak higher than both side peaks.",
+        "text_sources": [
+          {
+            "text": "head-and-shoulders shape",
+            "index": 0
+          },
+          {
+            "text": "three peaks",
+            "index": 0
+          },
+          {
+            "text": "center peak higher than both side peaks",
+            "index": 0
+          }
+        ],
+        "targets": [],
+        "trends": [
+          {
+            "category": {
+              "category": "up",
+              "text_source_id": 0
+            }
+          },
+          {
+            "category": {
+              "category": "down",
+              "text_source_id": 0
+            }
+          },
+          {
+            "category": {
+              "category": "up",
+              "text_source_id": 0
+            }
+          },
+          {
+            "category": {
+              "category": "down",
+              "text_source_id": 0
+            }
+          },
+          {
+            "category": {
+              "category": "up",
+              "text_source_id": 0
+            }
+          },
+          {
+            "category": {
+              "category": "down",
+              "text_source_id": 0
+            }
+          }
+        ],
+        "single_relations": [
+          {
+            "id1": 0,
+            "id2": 2,
+            "attribute": "end_value",
+            "comparator": "<",
+            "text_source_id": 2
+          },
+          {
+            "id1": 2,
+            "id2": 4,
+            "attribute": "end_value",
+            "comparator": ">",
+            "text_source_id": 2
+          }
+        ],
+        "trend_groups": [],
+        "group_relations": []
+      },
+      "raw_response": "{\n  \"original_text\": \"Find a head-and-shoulders shape with three peaks and the center peak higher than both side peaks.\",\n  \"text_sources\": [\n    { \"text\": \"head-and-shoulders shape\" },\n    { \"text\": \"three peaks\" },\n    { \"text\": \"center peak higher than both side peaks\" }\n  ],\n  \"targets\": [],\n  \"trends\": [\n    {\n      \"category\": {\n        \"category\": \"up\",\n        \"text_source_id\": 0\n      }\n    },\n    {\n      \"category\": {\n        \"category\": \"down\",\n        \"text_source_id\": 0\n      }\n    },\n    {\n      \"category\": {\n        \"category\": \"up\",\n        \"text_source_id\": 0\n      }\n    },\n    {\n      \"category\": {\n        \"category\": \"down\",\n        \"text_source_id\": 0\n      }\n    },\n    {\n      \"category\": {\n        \"category\": \"up\",\n        \"text_source_id\": 0\n      }\n    },\n    {\n      \"category\": {\n        \"category\": \"down\",\n        \"text_source_id\": 0\n      }\n    }\n  ],\n  \"single_relations\": [\n    {\n      \"id1\": 0,\n      \"id2\": 2,\n      \"attribute\": \"end_value\",\n      \"comparator\": \"<\",\n      \"text_source_id\": 2\n    },\n    {\n      \"id1\": 2,\n      \"id2\": 4,\n      \"attribute\": \"end_value\",\n      \"comparator\": \">\",\n      \"text_source_id\": 2\n    }\n  ],\n  \"trend_groups\": [],\n  \"group_relations\": []\n}",
+      "attempts": [
+        {
+          "attempt": 1,
+          "parse_error": null,
+          "raw_response": "{\n  \"original_text\": \"Find a head-and-shoulders shape with three peaks and the center peak higher than both side peaks.\",\n  \"text_sources\": [\n    { \"text\": \"head-and-shoulders shape\" },\n    { \"text\": \"three peaks\" },\n    { \"text\": \"center peak higher than both side peaks\" }\n  ],\n  \"targets\": [],\n  \"trends\": [\n    {\n      \"category\": {\n        \"category\": \"up\",\n        \"text_source_id\": 0\n      }\n    },\n    {\n      \"category\": {\n        \"category\": \"down\",\n        \"text_source_id\": 0\n      }\n    },\n    {\n      \"category\": {\n        \"category\": \"up\",\n        \"text_source_id\": 0\n      }\n    },\n    {\n      \"category\": {\n        \"category\": \"down\",\n        \"text_source_id\": 0\n      }\n    },\n    {\n      \"category\": {\n        \"category\": \"up\",\n        \"text_source_id\": 0\n      }\n    },\n    {\n      \"category\": {\n        \"category\": \"down\",\n        \"text_source_id\": 0\n      }\n    }\n  ],\n  \"single_relations\": [\n    {\n      \"id1\": 0,\n      \"id2\": 2,\n      \"attribute\": \"end_value\",\n      \"comparator\": \"<\",\n      \"text_source_id\": 2\n    },\n    {\n      \"id1\": 2,\n      \"id2\": 4,\n      \"attribute\": \"end_value\",\n      \"comparator\": \">\",\n      \"text_source_id\": 2\n    }\n  ],\n  \"trend_groups\": [],\n  \"group_relations\": []\n}"
+        }
+      ]
+    },
+    {
+      "case_id": "head_and_shoulders",
+      "source": "model_evaluation",
+      "intent": "Head-and-shoulders: three consecutive peaks where the middle peak is higher.",
+      "variant_index": 3,
+      "query": "Look for three consecutive peaks in which the second peak is taller than the first and third peaks.",
+      "passed": true,
+      "format_valid": true,
+      "attempt_count": 1,
+      "failures": [],
+      "failure_class": "pass",
+      "normalized": {
+        "targets": [],
+        "trends": [
+          "up",
+          "down",
+          "up",
+          "down",
+          "up",
+          "down"
+        ],
+        "single_relations": [
+          [
+            2,
+            0,
+            "end_value",
+            ">"
+          ],
+          [
+            2,
+            4,
+            "end_value",
+            ">"
+          ]
+        ],
+        "group_relations": [],
+        "raw": {
+          "original_text": "Look for three consecutive peaks in which the second peak is taller than the first and third peaks.",
+          "text_sources": [
+            {
+              "text": "three consecutive peaks",
+              "index": 0
+            },
+            {
+              "text": "second peak is taller than the first and third peaks",
+              "index": 0
+            }
+          ],
+          "targets": [],
+          "trends": [
+            {
+              "category": {
+                "category": "up",
+                "text_source_id": 0
+              }
+            },
+            {
+              "category": {
+                "category": "down",
+                "text_source_id": 0
+              }
+            },
+            {
+              "category": {
+                "category": "up",
+                "text_source_id": 0
+              }
+            },
+            {
+              "category": {
+                "category": "down",
+                "text_source_id": 0
+              }
+            },
+            {
+              "category": {
+                "category": "up",
+                "text_source_id": 0
+              }
+            },
+            {
+              "category": {
+                "category": "down",
+                "text_source_id": 0
+              }
+            }
+          ],
+          "single_relations": [
+            {
+              "id1": 0,
+              "id2": 2,
+              "attribute": "end_value",
+              "comparator": "<",
+              "text_source_id": 1
+            },
+            {
+              "id1": 2,
+              "id2": 4,
+              "attribute": "end_value",
+              "comparator": ">",
+              "text_source_id": 1
+            }
+          ],
+          "trend_groups": [],
+          "group_relations": []
+        }
+      },
+      "parsed": {
+        "original_text": "Look for three consecutive peaks in which the second peak is taller than the first and third peaks.",
+        "text_sources": [
+          {
+            "text": "three consecutive peaks",
+            "index": 0
+          },
+          {
+            "text": "second peak is taller than the first and third peaks",
+            "index": 0
+          }
+        ],
+        "targets": [],
+        "trends": [
+          {
+            "category": {
+              "category": "up",
+              "text_source_id": 0
+            }
+          },
+          {
+            "category": {
+              "category": "down",
+              "text_source_id": 0
+            }
+          },
+          {
+            "category": {
+              "category": "up",
+              "text_source_id": 0
+            }
+          },
+          {
+            "category": {
+              "category": "down",
+              "text_source_id": 0
+            }
+          },
+          {
+            "category": {
+              "category": "up",
+              "text_source_id": 0
+            }
+          },
+          {
+            "category": {
+              "category": "down",
+              "text_source_id": 0
+            }
+          }
+        ],
+        "single_relations": [
+          {
+            "id1": 0,
+            "id2": 2,
+            "attribute": "end_value",
+            "comparator": "<",
+            "text_source_id": 1
+          },
+          {
+            "id1": 2,
+            "id2": 4,
+            "attribute": "end_value",
+            "comparator": ">",
+            "text_source_id": 1
+          }
+        ],
+        "trend_groups": [],
+        "group_relations": []
+      },
+      "raw_response": "{\n  \"original_text\": \"Look for three consecutive peaks in which the second peak is taller than the first and third peaks.\",\n  \"text_sources\": [\n    {\n      \"text\": \"three consecutive peaks\"\n    },\n    {\n      \"text\": \"second peak is taller than the first and third peaks\"\n    }\n  ],\n  \"targets\": [],\n  \"trends\": [\n    {\n      \"category\": {\n        \"category\": \"up\",\n        \"text_source_id\": 0\n      }\n    },\n    {\n      \"category\": {\n        \"category\": \"down\",\n        \"text_source_id\": 0\n      }\n    },\n    {\n      \"category\": {\n        \"category\": \"up\",\n        \"text_source_id\": 0\n      }\n    },\n    {\n      \"category\": {\n        \"category\": \"down\",\n        \"text_source_id\": 0\n      }\n    },\n    {\n      \"category\": {\n        \"category\": \"up\",\n        \"text_source_id\": 0\n      }\n    },\n    {\n      \"category\": {\n        \"category\": \"down\",\n        \"text_source_id\": 0\n      }\n    }\n  ],\n  \"single_relations\": [\n    {\n      \"id1\": 0,\n      \"id2\": 2,\n      \"attribute\": \"end_value\",\n      \"comparator\": \"<\",\n      \"text_source_id\": 1\n    },\n    {\n      \"id1\": 2,\n      \"id2\": 4,\n      \"attribute\": \"end_value\",\n      \"comparator\": \">\",\n      \"text_source_id\": 1\n    }\n  ],\n  \"trend_groups\": [],\n  \"group_relations\": []\n}",
+      "attempts": [
+        {
+          "attempt": 1,
+          "parse_error": null,
+          "raw_response": "{\n  \"original_text\": \"Look for three consecutive peaks in which the second peak is taller than the first and third peaks.\",\n  \"text_sources\": [\n    {\n      \"text\": \"three consecutive peaks\"\n    },\n    {\n      \"text\": \"second peak is taller than the first and third peaks\"\n    }\n  ],\n  \"targets\": [],\n  \"trends\": [\n    {\n      \"category\": {\n        \"category\": \"up\",\n        \"text_source_id\": 0\n      }\n    },\n    {\n      \"category\": {\n        \"category\": \"down\",\n        \"text_source_id\": 0\n      }\n    },\n    {\n      \"category\": {\n        \"category\": \"up\",\n        \"text_source_id\": 0\n      }\n    },\n    {\n      \"category\": {\n        \"category\": \"down\",\n        \"text_source_id\": 0\n      }\n    },\n    {\n      \"category\": {\n        \"category\": \"up\",\n        \"text_source_id\": 0\n      }\n    },\n    {\n      \"category\": {\n        \"category\": \"down\",\n        \"text_source_id\": 0\n      }\n    }\n  ],\n  \"single_relations\": [\n    {\n      \"id1\": 0,\n      \"id2\": 2,\n      \"attribute\": \"end_value\",\n      \"comparator\": \"<\",\n      \"text_source_id\": 1\n    },\n    {\n      \"id1\": 2,\n      \"id2\": 4,\n      \"attribute\": \"end_value\",\n      \"comparator\": \">\",\n      \"text_source_id\": 1\n    }\n  ],\n  \"trend_groups\": [],\n  \"group_relations\": []\n}"
+        }
+      ]
+    },
+    {
+      "case_id": "rising_three_tops",
+      "source": "model_evaluation",
+      "intent": "Rising-three-tops: three consecutive peaks with increasing values.",
+      "variant_index": 1,
+      "query": "Find patterns that exhibit three consecutive peaks with increasing values.",
+      "passed": true,
+      "format_valid": true,
+      "attempt_count": 1,
+      "failures": [],
+      "failure_class": "pass",
+      "normalized": {
+        "targets": [],
+        "trends": [
+          "up",
+          "down",
+          "up",
+          "down",
+          "up",
+          "down"
+        ],
+        "single_relations": [
+          [
+            2,
+            0,
+            "end_value",
+            ">"
+          ],
+          [
+            4,
+            2,
+            "end_value",
+            ">"
+          ]
+        ],
+        "group_relations": [],
+        "raw": {
+          "original_text": "Find patterns that exhibit three consecutive peaks with increasing values.",
+          "text_sources": [
+            {
+              "text": "three consecutive peaks",
+              "index": 0
+            },
+            {
+              "text": "increasing values",
+              "index": 0
+            }
+          ],
+          "targets": [],
+          "trends": [
+            {
+              "category": {
+                "category": "up",
+                "text_source_id": 0
+              }
+            },
+            {
+              "category": {
+                "category": "down",
+                "text_source_id": 0
+              }
+            },
+            {
+              "category": {
+                "category": "up",
+                "text_source_id": 0
+              }
+            },
+            {
+              "category": {
+                "category": "down",
+                "text_source_id": 0
+              }
+            },
+            {
+              "category": {
+                "category": "up",
+                "text_source_id": 0
+              }
+            },
+            {
+              "category": {
+                "category": "down",
+                "text_source_id": 0
+              }
+            }
+          ],
+          "single_relations": [
+            {
+              "id1": 0,
+              "id2": 2,
+              "attribute": "end_value",
+              "comparator": "<",
+              "text_source_id": 1
+            },
+            {
+              "id1": 2,
+              "id2": 4,
+              "attribute": "end_value",
+              "comparator": "<",
+              "text_source_id": 1
+            }
+          ],
+          "trend_groups": [],
+          "group_relations": []
+        }
+      },
+      "parsed": {
+        "original_text": "Find patterns that exhibit three consecutive peaks with increasing values.",
+        "text_sources": [
+          {
+            "text": "three consecutive peaks",
+            "index": 0
+          },
+          {
+            "text": "increasing values",
+            "index": 0
+          }
+        ],
+        "targets": [],
+        "trends": [
+          {
+            "category": {
+              "category": "up",
+              "text_source_id": 0
+            }
+          },
+          {
+            "category": {
+              "category": "down",
+              "text_source_id": 0
+            }
+          },
+          {
+            "category": {
+              "category": "up",
+              "text_source_id": 0
+            }
+          },
+          {
+            "category": {
+              "category": "down",
+              "text_source_id": 0
+            }
+          },
+          {
+            "category": {
+              "category": "up",
+              "text_source_id": 0
+            }
+          },
+          {
+            "category": {
+              "category": "down",
+              "text_source_id": 0
+            }
+          }
+        ],
+        "single_relations": [
+          {
+            "id1": 0,
+            "id2": 2,
+            "attribute": "end_value",
+            "comparator": "<",
+            "text_source_id": 1
+          },
+          {
+            "id1": 2,
+            "id2": 4,
+            "attribute": "end_value",
+            "comparator": "<",
+            "text_source_id": 1
+          }
+        ],
+        "trend_groups": [],
+        "group_relations": []
+      },
+      "raw_response": "{\"original_text\":\"Find patterns that exhibit three consecutive peaks with increasing values.\",\"text_sources\":[{\"text\":\"three consecutive peaks\"},{\"text\":\"increasing values\"}],\"targets\":[],\"trends\":[{\"category\":{\"category\":\"up\",\"text_source_id\":0}},{\"category\":{\"category\":\"down\",\"text_source_id\":0}},{\"category\":{\"category\":\"up\",\"text_source_id\":0}},{\"category\":{\"category\":\"down\",\"text_source_id\":0}},{\"category\":{\"category\":\"up\",\"text_source_id\":0}},{\"category\":{\"category\":\"down\",\"text_source_id\":0}}],\"single_relations\":[{\"id1\":0,\"id2\":2,\"attribute\":\"end_value\",\"comparator\":\"<\",\"text_source_id\":1},{\"id1\":2,\"id2\":4,\"attribute\":\"end_value\",\"comparator\":\"<\",\"text_source_id\":1}],\"trend_groups\":[],\"group_relations\":[]}",
+      "attempts": [
+        {
+          "attempt": 1,
+          "parse_error": null,
+          "raw_response": "{\"original_text\":\"Find patterns that exhibit three consecutive peaks with increasing values.\",\"text_sources\":[{\"text\":\"three consecutive peaks\"},{\"text\":\"increasing values\"}],\"targets\":[],\"trends\":[{\"category\":{\"category\":\"up\",\"text_source_id\":0}},{\"category\":{\"category\":\"down\",\"text_source_id\":0}},{\"category\":{\"category\":\"up\",\"text_source_id\":0}},{\"category\":{\"category\":\"down\",\"text_source_id\":0}},{\"category\":{\"category\":\"up\",\"text_source_id\":0}},{\"category\":{\"category\":\"down\",\"text_source_id\":0}}],\"single_relations\":[{\"id1\":0,\"id2\":2,\"attribute\":\"end_value\",\"comparator\":\"<\",\"text_source_id\":1},{\"id1\":2,\"id2\":4,\"attribute\":\"end_value\",\"comparator\":\"<\",\"text_source_id\":1}],\"trend_groups\":[],\"group_relations\":[]}"
+        }
+      ]
+    },
+    {
+      "case_id": "rising_three_tops",
+      "source": "model_evaluation",
+      "intent": "Rising-three-tops: three consecutive peaks with increasing values.",
+      "variant_index": 2,
+      "query": "Find intervals with three peaks in a row, where each later peak is higher than the previous one.",
+      "passed": true,
+      "format_valid": true,
+      "attempt_count": 1,
+      "failures": [],
+      "failure_class": "pass",
+      "normalized": {
+        "targets": [],
+        "trends": [
+          "up",
+          "down",
+          "up",
+          "down",
+          "up",
+          "down"
+        ],
+        "single_relations": [
+          [
+            2,
+            0,
+            "end_value",
+            ">"
+          ],
+          [
+            4,
+            2,
+            "end_value",
+            ">"
+          ]
+        ],
+        "group_relations": [],
+        "raw": {
+          "original_text": "Find intervals with three peaks in a row, where each later peak is higher than the previous one.",
+          "text_sources": [
+            {
+              "text": "three peaks in a row",
+              "index": 0
+            },
+            {
+              "text": "where each later peak is higher than the previous one",
+              "index": 0
+            }
+          ],
+          "targets": [],
+          "trends": [
+            {
+              "category": {
+                "category": "up",
+                "text_source_id": 0
+              }
+            },
+            {
+              "category": {
+                "category": "down",
+                "text_source_id": 0
+              }
+            },
+            {
+              "category": {
+                "category": "up",
+                "text_source_id": 0
+              }
+            },
+            {
+              "category": {
+                "category": "down",
+                "text_source_id": 0
+              }
+            },
+            {
+              "category": {
+                "category": "up",
+                "text_source_id": 0
+              }
+            },
+            {
+              "category": {
+                "category": "down",
+                "text_source_id": 0
+              }
+            }
+          ],
+          "single_relations": [
+            {
+              "id1": 0,
+              "id2": 2,
+              "attribute": "end_value",
+              "comparator": "<",
+              "text_source_id": 1
+            },
+            {
+              "id1": 2,
+              "id2": 4,
+              "attribute": "end_value",
+              "comparator": "<",
+              "text_source_id": 1
+            }
+          ],
+          "trend_groups": [],
+          "group_relations": []
+        }
+      },
+      "parsed": {
+        "original_text": "Find intervals with three peaks in a row, where each later peak is higher than the previous one.",
+        "text_sources": [
+          {
+            "text": "three peaks in a row",
+            "index": 0
+          },
+          {
+            "text": "where each later peak is higher than the previous one",
+            "index": 0
+          }
+        ],
+        "targets": [],
+        "trends": [
+          {
+            "category": {
+              "category": "up",
+              "text_source_id": 0
+            }
+          },
+          {
+            "category": {
+              "category": "down",
+              "text_source_id": 0
+            }
+          },
+          {
+            "category": {
+              "category": "up",
+              "text_source_id": 0
+            }
+          },
+          {
+            "category": {
+              "category": "down",
+              "text_source_id": 0
+            }
+          },
+          {
+            "category": {
+              "category": "up",
+              "text_source_id": 0
+            }
+          },
+          {
+            "category": {
+              "category": "down",
+              "text_source_id": 0
+            }
+          }
+        ],
+        "single_relations": [
+          {
+            "id1": 0,
+            "id2": 2,
+            "attribute": "end_value",
+            "comparator": "<",
+            "text_source_id": 1
+          },
+          {
+            "id1": 2,
+            "id2": 4,
+            "attribute": "end_value",
+            "comparator": "<",
+            "text_source_id": 1
+          }
+        ],
+        "trend_groups": [],
+        "group_relations": []
+      },
+      "raw_response": "{\n  \"original_text\": \"Find intervals with three peaks in a row, where each later peak is higher than the previous one.\",\n  \"text_sources\": [\n    {\n      \"text\": \"three peaks in a row\"\n    },\n    {\n      \"text\": \"where each later peak is higher than the previous one\"\n    }\n  ],\n  \"targets\": [],\n  \"trends\": [\n    {\n      \"category\": {\n        \"category\": \"up\",\n        \"text_source_id\": 0\n      }\n    },\n    {\n      \"category\": {\n        \"category\": \"down\",\n        \"text_source_id\": 0\n      }\n    },\n    {\n      \"category\": {\n        \"category\": \"up\",\n        \"text_source_id\": 0\n      }\n    },\n    {\n      \"category\": {\n        \"category\": \"down\",\n        \"text_source_id\": 0\n      }\n    },\n    {\n      \"category\": {\n        \"category\": \"up\",\n        \"text_source_id\": 0\n      }\n    },\n    {\n      \"category\": {\n        \"category\": \"down\",\n        \"text_source_id\": 0\n      }\n    }\n  ],\n  \"single_relations\": [\n    {\n      \"id1\": 0,\n      \"id2\": 2,\n      \"attribute\": \"end_value\",\n      \"comparator\": \"<\",\n      \"text_source_id\": 1\n    },\n    {\n      \"id1\": 2,\n      \"id2\": 4,\n      \"attribute\": \"end_value\",\n      \"comparator\": \"<\",\n      \"text_source_id\": 1\n    }\n  ],\n  \"trend_groups\": [],\n  \"group_relations\": []\n}",
+      "attempts": [
+        {
+          "attempt": 1,
+          "parse_error": null,
+          "raw_response": "{\n  \"original_text\": \"Find intervals with three peaks in a row, where each later peak is higher than the previous one.\",\n  \"text_sources\": [\n    {\n      \"text\": \"three peaks in a row\"\n    },\n    {\n      \"text\": \"where each later peak is higher than the previous one\"\n    }\n  ],\n  \"targets\": [],\n  \"trends\": [\n    {\n      \"category\": {\n        \"category\": \"up\",\n        \"text_source_id\": 0\n      }\n    },\n    {\n      \"category\": {\n        \"category\": \"down\",\n        \"text_source_id\": 0\n      }\n    },\n    {\n      \"category\": {\n        \"category\": \"up\",\n        \"text_source_id\": 0\n      }\n    },\n    {\n      \"category\": {\n        \"category\": \"down\",\n        \"text_source_id\": 0\n      }\n    },\n    {\n      \"category\": {\n        \"category\": \"up\",\n        \"text_source_id\": 0\n      }\n    },\n    {\n      \"category\": {\n        \"category\": \"down\",\n        \"text_source_id\": 0\n      }\n    }\n  ],\n  \"single_relations\": [\n    {\n      \"id1\": 0,\n      \"id2\": 2,\n      \"attribute\": \"end_value\",\n      \"comparator\": \"<\",\n      \"text_source_id\": 1\n    },\n    {\n      \"id1\": 2,\n      \"id2\": 4,\n      \"attribute\": \"end_value\",\n      \"comparator\": \"<\",\n      \"text_source_id\": 1\n    }\n  ],\n  \"trend_groups\": [],\n  \"group_relations\": []\n}"
+        }
+      ]
+    },
+    {
+      "case_id": "rising_three_tops",
+      "source": "model_evaluation",
+      "intent": "Rising-three-tops: three consecutive peaks with increasing values.",
+      "variant_index": 3,
+      "query": "Look for a sequence of three consecutive tops whose peak values rise from left to right.",
+      "passed": true,
+      "format_valid": true,
+      "attempt_count": 1,
+      "failures": [],
+      "failure_class": "pass",
+      "normalized": {
+        "targets": [],
+        "trends": [
+          "up",
+          "down",
+          "up",
+          "down",
+          "up",
+          "down"
+        ],
+        "single_relations": [
+          [
+            2,
+            0,
+            "end_value",
+            ">"
+          ],
+          [
+            4,
+            2,
+            "end_value",
+            ">"
+          ]
+        ],
+        "group_relations": [],
+        "raw": {
+          "original_text": "Look for a sequence of three consecutive tops whose peak values rise from left to right.",
+          "text_sources": [
+            {
+              "text": "three consecutive tops",
+              "index": 0
+            },
+            {
+              "text": "whose peak values rise from left to right",
+              "index": 0
+            }
+          ],
+          "targets": [],
+          "trends": [
+            {
+              "category": {
+                "category": "up",
+                "text_source_id": 0
+              }
+            },
+            {
+              "category": {
+                "category": "down",
+                "text_source_id": 0
+              }
+            },
+            {
+              "category": {
+                "category": "up",
+                "text_source_id": 0
+              }
+            },
+            {
+              "category": {
+                "category": "down",
+                "text_source_id": 0
+              }
+            },
+            {
+              "category": {
+                "category": "up",
+                "text_source_id": 0
+              }
+            },
+            {
+              "category": {
+                "category": "down",
+                "text_source_id": 0
+              }
+            }
+          ],
+          "single_relations": [
+            {
+              "id1": 0,
+              "id2": 2,
+              "attribute": "end_value",
+              "comparator": "<",
+              "text_source_id": 1
+            },
+            {
+              "id1": 2,
+              "id2": 4,
+              "attribute": "end_value",
+              "comparator": "<",
+              "text_source_id": 1
+            }
+          ],
+          "trend_groups": [],
+          "group_relations": []
+        }
+      },
+      "parsed": {
+        "original_text": "Look for a sequence of three consecutive tops whose peak values rise from left to right.",
+        "text_sources": [
+          {
+            "text": "three consecutive tops",
+            "index": 0
+          },
+          {
+            "text": "whose peak values rise from left to right",
+            "index": 0
+          }
+        ],
+        "targets": [],
+        "trends": [
+          {
+            "category": {
+              "category": "up",
+              "text_source_id": 0
+            }
+          },
+          {
+            "category": {
+              "category": "down",
+              "text_source_id": 0
+            }
+          },
+          {
+            "category": {
+              "category": "up",
+              "text_source_id": 0
+            }
+          },
+          {
+            "category": {
+              "category": "down",
+              "text_source_id": 0
+            }
+          },
+          {
+            "category": {
+              "category": "up",
+              "text_source_id": 0
+            }
+          },
+          {
+            "category": {
+              "category": "down",
+              "text_source_id": 0
+            }
+          }
+        ],
+        "single_relations": [
+          {
+            "id1": 0,
+            "id2": 2,
+            "attribute": "end_value",
+            "comparator": "<",
+            "text_source_id": 1
+          },
+          {
+            "id1": 2,
+            "id2": 4,
+            "attribute": "end_value",
+            "comparator": "<",
+            "text_source_id": 1
+          }
+        ],
+        "trend_groups": [],
+        "group_relations": []
+      },
+      "raw_response": "{\"original_text\":\"Look for a sequence of three consecutive tops whose peak values rise from left to right.\",\"text_sources\":[{\"text\":\"three consecutive tops\"},{\"text\":\"whose peak values rise from left to right\"}],\"targets\":[],\"trends\":[{\"category\":{\"category\":\"up\",\"text_source_id\":0}},{\"category\":{\"category\":\"down\",\"text_source_id\":0}},{\"category\":{\"category\":\"up\",\"text_source_id\":0}},{\"category\":{\"category\":\"down\",\"text_source_id\":0}},{\"category\":{\"category\":\"up\",\"text_source_id\":0}},{\"category\":{\"category\":\"down\",\"text_source_id\":0}}],\"single_relations\":[{\"id1\":0,\"id2\":2,\"attribute\":\"end_value\",\"comparator\":\"<\",\"text_source_id\":1},{\"id1\":2,\"id2\":4,\"attribute\":\"end_value\",\"comparator\":\"<\",\"text_source_id\":1}],\"trend_groups\":[],\"group_relations\":[]}",
+      "attempts": [
+        {
+          "attempt": 1,
+          "parse_error": null,
+          "raw_response": "{\"original_text\":\"Look for a sequence of three consecutive tops whose peak values rise from left to right.\",\"text_sources\":[{\"text\":\"three consecutive tops\"},{\"text\":\"whose peak values rise from left to right\"}],\"targets\":[],\"trends\":[{\"category\":{\"category\":\"up\",\"text_source_id\":0}},{\"category\":{\"category\":\"down\",\"text_source_id\":0}},{\"category\":{\"category\":\"up\",\"text_source_id\":0}},{\"category\":{\"category\":\"down\",\"text_source_id\":0}},{\"category\":{\"category\":\"up\",\"text_source_id\":0}},{\"category\":{\"category\":\"down\",\"text_source_id\":0}}],\"single_relations\":[{\"id1\":0,\"id2\":2,\"attribute\":\"end_value\",\"comparator\":\"<\",\"text_source_id\":1},{\"id1\":2,\"id2\":4,\"attribute\":\"end_value\",\"comparator\":\"<\",\"text_source_id\":1}],\"trend_groups\":[],\"group_relations\":[]}"
+        }
+      ]
+    },
+    {
+      "case_id": "falling_two_bottoms",
+      "source": "model_evaluation",
+      "intent": "Falling-two-bottoms: two consecutive valleys where the second valley is lower.",
+      "variant_index": 1,
+      "query": "Find patterns that exhibit two consecutive valleys with decreasing values.",
+      "passed": true,
+      "format_valid": true,
+      "attempt_count": 1,
+      "failures": [],
+      "failure_class": "pass",
+      "normalized": {
+        "targets": [],
+        "trends": [
+          "down",
+          "up",
+          "down",
+          "up"
+        ],
+        "single_relations": [
+          [
+            0,
+            2,
+            "end_value",
+            ">"
+          ]
+        ],
+        "group_relations": [],
+        "raw": {
+          "original_text": "Find patterns that exhibit two consecutive valleys with decreasing values.",
+          "text_sources": [
+            {
+              "text": "two consecutive valleys",
+              "index": 0
+            },
+            {
+              "text": "decreasing values",
+              "index": 0
+            }
+          ],
+          "targets": [],
+          "trends": [
+            {
+              "category": {
+                "category": "down",
+                "text_source_id": 0
+              }
+            },
+            {
+              "category": {
+                "category": "up",
+                "text_source_id": 0
+              }
+            },
+            {
+              "category": {
+                "category": "down",
+                "text_source_id": 0
+              }
+            },
+            {
+              "category": {
+                "category": "up",
+                "text_source_id": 0
+              }
+            }
+          ],
+          "single_relations": [
+            {
+              "id1": 0,
+              "id2": 2,
+              "attribute": "end_value",
+              "comparator": ">",
+              "text_source_id": 1
+            }
+          ],
+          "trend_groups": [],
+          "group_relations": []
+        }
+      },
+      "parsed": {
+        "original_text": "Find patterns that exhibit two consecutive valleys with decreasing values.",
+        "text_sources": [
+          {
+            "text": "two consecutive valleys",
+            "index": 0
+          },
+          {
+            "text": "decreasing values",
+            "index": 0
+          }
+        ],
+        "targets": [],
+        "trends": [
+          {
+            "category": {
+              "category": "down",
+              "text_source_id": 0
+            }
+          },
+          {
+            "category": {
+              "category": "up",
+              "text_source_id": 0
+            }
+          },
+          {
+            "category": {
+              "category": "down",
+              "text_source_id": 0
+            }
+          },
+          {
+            "category": {
+              "category": "up",
+              "text_source_id": 0
+            }
+          }
+        ],
+        "single_relations": [
+          {
+            "id1": 0,
+            "id2": 2,
+            "attribute": "end_value",
+            "comparator": ">",
+            "text_source_id": 1
+          }
+        ],
+        "trend_groups": [],
+        "group_relations": []
+      },
+      "raw_response": "{\n  \"original_text\": \"Find patterns that exhibit two consecutive valleys with decreasing values.\",\n  \"text_sources\": [\n    { \"text\": \"two consecutive valleys\" },\n    { \"text\": \"decreasing values\" }\n  ],\n  \"targets\": [],\n  \"trends\": [\n    {\n      \"category\": {\n        \"category\": \"down\",\n        \"text_source_id\": 0\n      }\n    },\n    {\n      \"category\": {\n        \"category\": \"up\",\n        \"text_source_id\": 0\n      }\n    },\n    {\n      \"category\": {\n        \"category\": \"down\",\n        \"text_source_id\": 0\n      }\n    },\n    {\n      \"category\": {\n        \"category\": \"up\",\n        \"text_source_id\": 0\n      }\n    }\n  ],\n  \"single_relations\": [\n    {\n      \"id1\": 0,\n      \"id2\": 2,\n      \"attribute\": \"end_value\",\n      \"comparator\": \">\",\n      \"text_source_id\": 1\n    }\n  ],\n  \"trend_groups\": [],\n  \"group_relations\": []\n}",
+      "attempts": [
+        {
+          "attempt": 1,
+          "parse_error": null,
+          "raw_response": "{\n  \"original_text\": \"Find patterns that exhibit two consecutive valleys with decreasing values.\",\n  \"text_sources\": [\n    { \"text\": \"two consecutive valleys\" },\n    { \"text\": \"decreasing values\" }\n  ],\n  \"targets\": [],\n  \"trends\": [\n    {\n      \"category\": {\n        \"category\": \"down\",\n        \"text_source_id\": 0\n      }\n    },\n    {\n      \"category\": {\n        \"category\": \"up\",\n        \"text_source_id\": 0\n      }\n    },\n    {\n      \"category\": {\n        \"category\": \"down\",\n        \"text_source_id\": 0\n      }\n    },\n    {\n      \"category\": {\n        \"category\": \"up\",\n        \"text_source_id\": 0\n      }\n    }\n  ],\n  \"single_relations\": [\n    {\n      \"id1\": 0,\n      \"id2\": 2,\n      \"attribute\": \"end_value\",\n      \"comparator\": \">\",\n      \"text_source_id\": 1\n    }\n  ],\n  \"trend_groups\": [],\n  \"group_relations\": []\n}"
+        }
+      ]
+    },
+    {
+      "case_id": "falling_two_bottoms",
+      "source": "model_evaluation",
+      "intent": "Falling-two-bottoms: two consecutive valleys where the second valley is lower.",
+      "variant_index": 2,
+      "query": "Find intervals with two valleys in a row where the second valley is lower than the first.",
+      "passed": true,
+      "format_valid": true,
+      "attempt_count": 2,
+      "failures": [],
+      "failure_class": "pass",
+      "normalized": {
+        "targets": [],
+        "trends": [
+          "down",
+          "up",
+          "down",
+          "up"
+        ],
+        "single_relations": [
+          [
+            0,
+            2,
+            "end_value",
+            ">"
+          ]
+        ],
+        "group_relations": [],
+        "raw": {
+          "original_text": "Find intervals with two valleys in a row where the second valley is lower than the first.",
+          "text_sources": [
+            {
+              "text": "two valleys",
+              "index": 0
+            },
+            {
+              "text": "second valley is lower than the first",
+              "index": 0
+            }
+          ],
+          "targets": [],
+          "trends": [
+            {
+              "category": {
+                "category": "down",
+                "text_source_id": 0
+              }
+            },
+            {
+              "category": {
+                "category": "up",
+                "text_source_id": 0
+              }
+            },
+            {
+              "category": {
+                "category": "down",
+                "text_source_id": 0
+              }
+            },
+            {
+              "category": {
+                "category": "up",
+                "text_source_id": 0
+              }
+            }
+          ],
+          "single_relations": [
+            {
+              "id1": 0,
+              "id2": 2,
+              "attribute": "end_value",
+              "comparator": ">",
+              "text_source_id": 1
+            }
+          ],
+          "trend_groups": [],
+          "group_relations": []
+        }
+      },
+      "parsed": {
+        "original_text": "Find intervals with two valleys in a row where the second valley is lower than the first.",
+        "text_sources": [
+          {
+            "text": "two valleys",
+            "index": 0
+          },
+          {
+            "text": "second valley is lower than the first",
+            "index": 0
+          }
+        ],
+        "targets": [],
+        "trends": [
+          {
+            "category": {
+              "category": "down",
+              "text_source_id": 0
+            }
+          },
+          {
+            "category": {
+              "category": "up",
+              "text_source_id": 0
+            }
+          },
+          {
+            "category": {
+              "category": "down",
+              "text_source_id": 0
+            }
+          },
+          {
+            "category": {
+              "category": "up",
+              "text_source_id": 0
+            }
+          }
+        ],
+        "single_relations": [
+          {
+            "id1": 0,
+            "id2": 2,
+            "attribute": "end_value",
+            "comparator": ">",
+            "text_source_id": 1
+          }
+        ],
+        "trend_groups": [],
+        "group_relations": []
+      },
+      "raw_response": "{\"original_text\":\"Find intervals with two valleys in a row where the second valley is lower than the first.\",\"text_sources\":[{\"text\":\"two valleys\"},{\"text\":\"second valley is lower than the first\"}],\"targets\":[],\"trends\":[{\"category\":{\"category\":\"down\",\"text_source_id\":0}},{\"category\":{\"category\":\"up\",\"text_source_id\":0}},{\"category\":{\"category\":\"down\",\"text_source_id\":0}},{\"category\":{\"category\":\"up\",\"text_source_id\":0}}],\"single_relations\":[{\"id1\":0,\"id2\":2,\"attribute\":\"end_value\",\"comparator\":\">\",\"text_source_id\":1}],\"trend_groups\":[],\"group_relations\":[]}",
+      "attempts": [
+        {
+          "attempt": 1,
+          "parse_error": "invalid_json: Extra data: line 2 column 1 (char 578)",
+          "raw_response": "{\"original_text\":\"Find intervals with two valleys in a row where the second valley is lower than the first.\",\"text_sources\":[{\"text\":\"two valleys in a row\"},{\"text\":\"the second valley is lower than the first\"}],\"targets\":[],\"trends\":[{\"category\":{\"category\":\"down\",\"text_source_id\":0}},{\"category\":{\"category\":\"up\",\"text_source_id\":0}},{\"category\":{\"category\":\"down\",\"text_source_id\":0}},{\"category\":{\"category\":\"up\",\"text_source_id\":0}}],\"single_relations\":[{\"id1\":0,\"id2\":2,\"attribute\":\"end_value\",\"comparator\":\">\",\"text_source_id\":1}],\"trend_groups\":[],\"group_relations\":[]}\n[]}\n_relations\":[]}\n[]}\n_relations\":[]}"
+        },
+        {
+          "attempt": 2,
+          "parse_error": null,
+          "raw_response": "{\"original_text\":\"Find intervals with two valleys in a row where the second valley is lower than the first.\",\"text_sources\":[{\"text\":\"two valleys\"},{\"text\":\"second valley is lower than the first\"}],\"targets\":[],\"trends\":[{\"category\":{\"category\":\"down\",\"text_source_id\":0}},{\"category\":{\"category\":\"up\",\"text_source_id\":0}},{\"category\":{\"category\":\"down\",\"text_source_id\":0}},{\"category\":{\"category\":\"up\",\"text_source_id\":0}}],\"single_relations\":[{\"id1\":0,\"id2\":2,\"attribute\":\"end_value\",\"comparator\":\">\",\"text_source_id\":1}],\"trend_groups\":[],\"group_relations\":[]}"
+        }
+      ]
+    },
+    {
+      "case_id": "falling_two_bottoms",
+      "source": "model_evaluation",
+      "intent": "Falling-two-bottoms: two consecutive valleys where the second valley is lower.",
+      "variant_index": 3,
+      "query": "Look for a double-bottom-like shape whose second bottom reaches a lower value than the first bottom.",
+      "passed": true,
+      "format_valid": true,
+      "attempt_count": 1,
+      "failures": [],
+      "failure_class": "pass",
+      "normalized": {
+        "targets": [],
+        "trends": [
+          "down",
+          "up",
+          "down",
+          "up"
+        ],
+        "single_relations": [
+          [
+            0,
+            2,
+            "end_value",
+            ">"
+          ]
+        ],
+        "group_relations": [],
+        "raw": {
+          "original_text": "Look for a double-bottom-like shape whose second bottom reaches a lower value than the first bottom.",
+          "text_sources": [
+            {
+              "text": "double-bottom-like shape",
+              "index": 0
+            },
+            {
+              "text": "second bottom reaches a lower value than the first bottom",
+              "index": 0
+            }
+          ],
+          "targets": [],
+          "trends": [
+            {
+              "category": {
+                "category": "down",
+                "text_source_id": 0
+              }
+            },
+            {
+              "category": {
+                "category": "up",
+                "text_source_id": 0
+              }
+            },
+            {
+              "category": {
+                "category": "down",
+                "text_source_id": 0
+              }
+            },
+            {
+              "category": {
+                "category": "up",
+                "text_source_id": 0
+              }
+            }
+          ],
+          "single_relations": [
+            {
+              "id1": 0,
+              "id2": 2,
+              "attribute": "end_value",
+              "comparator": ">",
+              "text_source_id": 1
+            }
+          ],
+          "trend_groups": [],
+          "group_relations": []
+        }
+      },
+      "parsed": {
+        "original_text": "Look for a double-bottom-like shape whose second bottom reaches a lower value than the first bottom.",
+        "text_sources": [
+          {
+            "text": "double-bottom-like shape",
+            "index": 0
+          },
+          {
+            "text": "second bottom reaches a lower value than the first bottom",
+            "index": 0
+          }
+        ],
+        "targets": [],
+        "trends": [
+          {
+            "category": {
+              "category": "down",
+              "text_source_id": 0
+            }
+          },
+          {
+            "category": {
+              "category": "up",
+              "text_source_id": 0
+            }
+          },
+          {
+            "category": {
+              "category": "down",
+              "text_source_id": 0
+            }
+          },
+          {
+            "category": {
+              "category": "up",
+              "text_source_id": 0
+            }
+          }
+        ],
+        "single_relations": [
+          {
+            "id1": 0,
+            "id2": 2,
+            "attribute": "end_value",
+            "comparator": ">",
+            "text_source_id": 1
+          }
+        ],
+        "trend_groups": [],
+        "group_relations": []
+      },
+      "raw_response": "{\"original_text\":\"Look for a double-bottom-like shape whose second bottom reaches a lower value than the first bottom.\",\"text_sources\":[{\"text\":\"double-bottom-like shape\"},{\"text\":\"second bottom reaches a lower value than the first bottom\"}],\"targets\":[],\"trends\":[{\"category\":{\"category\":\"down\",\"text_source_id\":0}},{\"category\":{\"category\":\"up\",\"text_source_id\":0}},{\"category\":{\"category\":\"down\",\"text_source_id\":0}},{\"category\":{\"category\":\"up\",\"text_source_id\":0}}],\"single_relations\":[{\"id1\":0,\"id2\":2,\"attribute\":\"end_value\",\"comparator\":\">\",\"text_source_id\":1}],\"trend_groups\":[],\"group_relations\":[]}",
+      "attempts": [
+        {
+          "attempt": 1,
+          "parse_error": null,
+          "raw_response": "{\"original_text\":\"Look for a double-bottom-like shape whose second bottom reaches a lower value than the first bottom.\",\"text_sources\":[{\"text\":\"double-bottom-like shape\"},{\"text\":\"second bottom reaches a lower value than the first bottom\"}],\"targets\":[],\"trends\":[{\"category\":{\"category\":\"down\",\"text_source_id\":0}},{\"category\":{\"category\":\"up\",\"text_source_id\":0}},{\"category\":{\"category\":\"down\",\"text_source_id\":0}},{\"category\":{\"category\":\"up\",\"text_source_id\":0}}],\"single_relations\":[{\"id1\":0,\"id2\":2,\"attribute\":\"end_value\",\"comparator\":\">\",\"text_source_id\":1}],\"trend_groups\":[],\"group_relations\":[]}"
+        }
+      ]
+    },
+    {
+      "case_id": "target_duration_intensity",
+      "source": "parser_feature",
+      "intent": "Targeted query with trend intensity and duration constraints.",
+      "variant_index": 1,
+      "query": "Find periods in AMZN where the price rises sharply for about two weeks and then falls gradually.",
+      "passed": true,
+      "format_valid": true,
+      "attempt_count": 1,
+      "failures": [],
+      "failure_class": "pass",
+      "normalized": {
+        "targets": [
+          "AMZN"
+        ],
+        "trends": [
+          "up",
+          "down"
+        ],
+        "single_relations": [],
+        "group_relations": [],
+        "raw": {
+          "original_text": "Find periods in AMZN where the price rises sharply for about two weeks and then falls gradually.",
+          "text_sources": [
+            {
+              "text": "AMZN",
+              "index": 0
+            },
+            {
+              "text": "rises",
+              "index": 0
+            },
+            {
+              "text": "sharply",
+              "index": 0
+            },
+            {
+              "text": "for about two weeks",
+              "index": 0
+            },
+            {
+              "text": "falls",
+              "index": 0
+            },
+            {
+              "text": "gradually",
+              "index": 0
+            }
+          ],
+          "targets": [
+            {
+              "target": "AMZN",
+              "text_source_id": 0
+            }
+          ],
+          "trends": [
+            {
+              "category": {
+                "category": "up",
+                "text_source_id": 1
+              },
+              "relative_slope_scope_condition": {
+                "min": {
+                  "value": 80,
+                  "inclusive": true
+                },
+                "text_source_id": 2
+              },
+              "duration_condition": {
+                "min": {
+                  "value": 1.8,
+                  "inclusive": true
+                },
+                "max": {
+                  "value": 2.2,
+                  "inclusive": true
+                },
+                "unit": "week",
+                "text_source_id": 3
+              }
+            },
+            {
+              "category": {
+                "category": "down",
+                "text_source_id": 4
+              },
+              "relative_slope_scope_condition": {
+                "max": {
+                  "value": 20,
+                  "inclusive": true
+                },
+                "text_source_id": 5
+              }
+            }
+          ],
+          "single_relations": [],
+          "trend_groups": [],
+          "group_relations": []
+        }
+      },
+      "parsed": {
+        "original_text": "Find periods in AMZN where the price rises sharply for about two weeks and then falls gradually.",
+        "text_sources": [
+          {
+            "text": "AMZN",
+            "index": 0
+          },
+          {
+            "text": "rises",
+            "index": 0
+          },
+          {
+            "text": "sharply",
+            "index": 0
+          },
+          {
+            "text": "for about two weeks",
+            "index": 0
+          },
+          {
+            "text": "falls",
+            "index": 0
+          },
+          {
+            "text": "gradually",
+            "index": 0
+          }
+        ],
+        "targets": [
+          {
+            "target": "AMZN",
+            "text_source_id": 0
+          }
+        ],
+        "trends": [
+          {
+            "category": {
+              "category": "up",
+              "text_source_id": 1
+            },
+            "relative_slope_scope_condition": {
+              "min": {
+                "value": 80,
+                "inclusive": true
+              },
+              "text_source_id": 2
+            },
+            "duration_condition": {
+              "min": {
+                "value": 1.8,
+                "inclusive": true
+              },
+              "max": {
+                "value": 2.2,
+                "inclusive": true
+              },
+              "unit": "week",
+              "text_source_id": 3
+            }
+          },
+          {
+            "category": {
+              "category": "down",
+              "text_source_id": 4
+            },
+            "relative_slope_scope_condition": {
+              "max": {
+                "value": 20,
+                "inclusive": true
+              },
+              "text_source_id": 5
+            }
+          }
+        ],
+        "single_relations": [],
+        "trend_groups": [],
+        "group_relations": []
+      },
+      "raw_response": "{\"original_text\":\"Find periods in AMZN where the price rises sharply for about two weeks and then falls gradually.\",\"text_sources\":[{\"text\":\"AMZN\"},{\"text\":\"rises\"},{\"text\":\"sharply\"},{\"text\":\"for about two weeks\"},{\"text\":\"falls\"},{\"text\":\"gradually\"}],\"targets\":[{\"target\":\"AMZN\",\"text_source_id\":0}],\"trends\":[{\"category\":{\"category\":\"up\",\"text_source_id\":1},\"relative_slope_scope_condition\":{\"min\":{\"value\":80,\"inclusive\":true},\"text_source_id\":2},\"duration_condition\":{\"min\":{\"value\":1.8,\"inclusive\":true},\"max\":{\"value\":2.2,\"inclusive\":true},\"unit\":\"week\",\"text_source_id\":3}},{\"category\":{\"category\":\"down\",\"text_source_id\":4},\"relative_slope_scope_condition\":{\"max\":{\"value\":20,\"inclusive\":true},\"text_source_id\":5}}],\"single_relations\":[],\"trend_groups\":[],\"group_relations\":[]}",
+      "attempts": [
+        {
+          "attempt": 1,
+          "parse_error": null,
+          "raw_response": "{\"original_text\":\"Find periods in AMZN where the price rises sharply for about two weeks and then falls gradually.\",\"text_sources\":[{\"text\":\"AMZN\"},{\"text\":\"rises\"},{\"text\":\"sharply\"},{\"text\":\"for about two weeks\"},{\"text\":\"falls\"},{\"text\":\"gradually\"}],\"targets\":[{\"target\":\"AMZN\",\"text_source_id\":0}],\"trends\":[{\"category\":{\"category\":\"up\",\"text_source_id\":1},\"relative_slope_scope_condition\":{\"min\":{\"value\":80,\"inclusive\":true},\"text_source_id\":2},\"duration_condition\":{\"min\":{\"value\":1.8,\"inclusive\":true},\"max\":{\"value\":2.2,\"inclusive\":true},\"unit\":\"week\",\"text_source_id\":3}},{\"category\":{\"category\":\"down\",\"text_source_id\":4},\"relative_slope_scope_condition\":{\"max\":{\"value\":20,\"inclusive\":true},\"text_source_id\":5}}],\"single_relations\":[],\"trend_groups\":[],\"group_relations\":[]}"
+        }
+      ]
+    },
+    {
+      "case_id": "target_duration_intensity",
+      "source": "parser_feature",
+      "intent": "Targeted query with trend intensity and duration constraints.",
+      "variant_index": 2,
+      "query": "In AMZN, look for a sharp rise lasting around two weeks followed by a gradual decline.",
+      "passed": true,
+      "format_valid": true,
+      "attempt_count": 1,
+      "failures": [],
+      "failure_class": "pass",
+      "normalized": {
+        "targets": [
+          "AMZN"
+        ],
+        "trends": [
+          "up",
+          "down"
+        ],
+        "single_relations": [],
+        "group_relations": [],
+        "raw": {
+          "original_text": "In AMZN, look for a sharp rise lasting around two weeks followed by a gradual decline.",
+          "text_sources": [
+            {
+              "text": "AMZN",
+              "index": 0
+            },
+            {
+              "text": "sharp rise",
+              "index": 0
+            },
+            {
+              "text": "lasting around two weeks",
+              "index": 0
+            },
+            {
+              "text": "gradual decline",
+              "index": 0
+            }
+          ],
+          "targets": [
+            {
+              "target": "AMZN",
+              "text_source_id": 0
+            }
+          ],
+          "trends": [
+            {
+              "category": {
+                "category": "up",
+                "text_source_id": 1
+              },
+              "relative_slope_scope_condition": {
+                "min": {
+                  "value": 80,
+                  "inclusive": true
+                },
+                "text_source_id": 1
+              },
+              "duration_condition": {
+                "min": {
+                  "value": 1.8,
+                  "inclusive": true
+                },
+                "max": {
+                  "value": 2.2,
+                  "inclusive": true
+                },
+                "unit": "week",
+                "text_source_id": 2
+              }
+            },
+            {
+              "category": {
+                "category": "down",
+                "text_source_id": 3
+              },
+              "relative_slope_scope_condition": {
+                "max": {
+                  "value": 20,
+                  "inclusive": true
+                },
+                "text_source_id": 3
+              }
+            }
+          ],
+          "single_relations": [],
+          "trend_groups": [],
+          "group_relations": []
+        }
+      },
+      "parsed": {
+        "original_text": "In AMZN, look for a sharp rise lasting around two weeks followed by a gradual decline.",
+        "text_sources": [
+          {
+            "text": "AMZN",
+            "index": 0
+          },
+          {
+            "text": "sharp rise",
+            "index": 0
+          },
+          {
+            "text": "lasting around two weeks",
+            "index": 0
+          },
+          {
+            "text": "gradual decline",
+            "index": 0
+          }
+        ],
+        "targets": [
+          {
+            "target": "AMZN",
+            "text_source_id": 0
+          }
+        ],
+        "trends": [
+          {
+            "category": {
+              "category": "up",
+              "text_source_id": 1
+            },
+            "relative_slope_scope_condition": {
+              "min": {
+                "value": 80,
+                "inclusive": true
+              },
+              "text_source_id": 1
+            },
+            "duration_condition": {
+              "min": {
+                "value": 1.8,
+                "inclusive": true
+              },
+              "max": {
+                "value": 2.2,
+                "inclusive": true
+              },
+              "unit": "week",
+              "text_source_id": 2
+            }
+          },
+          {
+            "category": {
+              "category": "down",
+              "text_source_id": 3
+            },
+            "relative_slope_scope_condition": {
+              "max": {
+                "value": 20,
+                "inclusive": true
+              },
+              "text_source_id": 3
+            }
+          }
+        ],
+        "single_relations": [],
+        "trend_groups": [],
+        "group_relations": []
+      },
+      "raw_response": "{\"original_text\":\"In AMZN, look for a sharp rise lasting around two weeks followed by a gradual decline.\",\"text_sources\":[{\"text\":\"AMZN\"},{\"text\":\"sharp rise\"},{\"text\":\"lasting around two weeks\"},{\"text\":\"gradual decline\"}],\"targets\":[{\"target\":\"AMZN\",\"text_source_id\":0}],\"trends\":[{\"category\":{\"category\":\"up\",\"text_source_id\":1},\"relative_slope_scope_condition\":{\"min\":{\"value\":80,\"inclusive\":true},\"text_source_id\":1},\"duration_condition\":{\"min\":{\"value\":1.8,\"inclusive\":true},\"max\":{\"value\":2.2,\"inclusive\":true},\"unit\":\"week\",\"text_source_id\":2}},{\"category\":{\"category\":\"down\",\"text_source_id\":3},\"relative_slope_scope_condition\":{\"max\":{\"value\":20,\"inclusive\":true},\"text_source_id\":3}}],\"single_relations\":[],\"trend_groups\":[],\"group_relations\":[]}",
+      "attempts": [
+        {
+          "attempt": 1,
+          "parse_error": null,
+          "raw_response": "{\"original_text\":\"In AMZN, look for a sharp rise lasting around two weeks followed by a gradual decline.\",\"text_sources\":[{\"text\":\"AMZN\"},{\"text\":\"sharp rise\"},{\"text\":\"lasting around two weeks\"},{\"text\":\"gradual decline\"}],\"targets\":[{\"target\":\"AMZN\",\"text_source_id\":0}],\"trends\":[{\"category\":{\"category\":\"up\",\"text_source_id\":1},\"relative_slope_scope_condition\":{\"min\":{\"value\":80,\"inclusive\":true},\"text_source_id\":1},\"duration_condition\":{\"min\":{\"value\":1.8,\"inclusive\":true},\"max\":{\"value\":2.2,\"inclusive\":true},\"unit\":\"week\",\"text_source_id\":2}},{\"category\":{\"category\":\"down\",\"text_source_id\":3},\"relative_slope_scope_condition\":{\"max\":{\"value\":20,\"inclusive\":true},\"text_source_id\":3}}],\"single_relations\":[],\"trend_groups\":[],\"group_relations\":[]}"
+        }
+      ]
+    },
+    {
+      "case_id": "target_duration_intensity",
+      "source": "parser_feature",
+      "intent": "Targeted query with trend intensity and duration constraints.",
+      "variant_index": 3,
+      "query": "Search AMZN for intervals with an upward trend of about two weeks that is sharp, followed by a gentle fall.",
+      "passed": true,
+      "format_valid": true,
+      "attempt_count": 2,
+      "failures": [],
+      "failure_class": "pass",
+      "normalized": {
+        "targets": [
+          "AMZN"
+        ],
+        "trends": [
+          "up",
+          "down"
+        ],
+        "single_relations": [],
+        "group_relations": [],
+        "raw": {
+          "original_text": "Search AMZN for intervals with an upward trend of about two weeks that is sharp, followed by a gentle fall.",
+          "text_sources": [
+            {
+              "text": "AMZN",
+              "index": 0
+            },
+            {
+              "text": "upward trend",
+              "index": 0
+            },
+            {
+              "text": "about two weeks",
+              "index": 0
+            },
+            {
+              "text": "sharp",
+              "index": 0
+            },
+            {
+              "text": "gentle",
+              "index": 0
+            },
+            {
+              "text": "fall",
+              "index": 0
+            }
+          ],
+          "targets": [
+            {
+              "target": "AMZN",
+              "text_source_id": 0
+            }
+          ],
+          "trends": [
+            {
+              "category": {
+                "category": "up",
+                "text_source_id": 1
+              },
+              "duration_condition": {
+                "min": {
+                  "value": 1.8,
+                  "inclusive": true
+                },
+                "max": {
+                  "value": 2.2,
+                  "inclusive": true
+                },
+                "unit": "week",
+                "text_source_id": 2
+              },
+              "relative_slope_scope_condition": {
+                "min": {
+                  "value": 80,
+                  "inclusive": true
+                },
+                "text_source_id": 3
+              }
+            },
+            {
+              "category": {
+                "category": "down",
+                "text_source_id": 5
+              },
+              "relative_slope_scope_condition": {
+                "max": {
+                  "value": 20,
+                  "inclusive": true
+                },
+                "text_source_id": 4
+              }
+            }
+          ],
+          "single_relations": [],
+          "trend_groups": [],
+          "group_relations": []
+        }
+      },
+      "parsed": {
+        "original_text": "Search AMZN for intervals with an upward trend of about two weeks that is sharp, followed by a gentle fall.",
+        "text_sources": [
+          {
+            "text": "AMZN",
+            "index": 0
+          },
+          {
+            "text": "upward trend",
+            "index": 0
+          },
+          {
+            "text": "about two weeks",
+            "index": 0
+          },
+          {
+            "text": "sharp",
+            "index": 0
+          },
+          {
+            "text": "gentle",
+            "index": 0
+          },
+          {
+            "text": "fall",
+            "index": 0
+          }
+        ],
+        "targets": [
+          {
+            "target": "AMZN",
+            "text_source_id": 0
+          }
+        ],
+        "trends": [
+          {
+            "category": {
+              "category": "up",
+              "text_source_id": 1
+            },
+            "duration_condition": {
+              "min": {
+                "value": 1.8,
+                "inclusive": true
+              },
+              "max": {
+                "value": 2.2,
+                "inclusive": true
+              },
+              "unit": "week",
+              "text_source_id": 2
+            },
+            "relative_slope_scope_condition": {
+              "min": {
+                "value": 80,
+                "inclusive": true
+              },
+              "text_source_id": 3
+            }
+          },
+          {
+            "category": {
+              "category": "down",
+              "text_source_id": 5
+            },
+            "relative_slope_scope_condition": {
+              "max": {
+                "value": 20,
+                "inclusive": true
+              },
+              "text_source_id": 4
+            }
+          }
+        ],
+        "single_relations": [],
+        "trend_groups": [],
+        "group_relations": []
+      },
+      "raw_response": "{\n  \"original_text\": \"Search AMZN for intervals with an upward trend of about two weeks that is sharp, followed by a gentle fall.\",\n  \"text_sources\": [\n    {\n      \"text\": \"AMZN\"\n    },\n    {\n      \"text\": \"upward trend\"\n    },\n    {\n      \"text\": \"about two weeks\"\n    },\n    {\n      \"text\": \"sharp\"\n    },\n    {\n      \"text\": \"gentle\"\n    },\n    {\n      \"text\": \"fall\"\n    }\n  ],\n  \"targets\": [\n    {\n      \"target\": \"AMZN\",\n      \"text_source_id\": 0\n    }\n  ],\n  \"trends\": [\n    {\n      \"category\": {\n        \"category\": \"up\",\n        \"text_source_id\": 1\n      },\n      \"duration_condition\": {\n        \"min\": {\n          \"value\": 1.8,\n          \"inclusive\": true\n        },\n        \"max\": {\n          \"value\": 2.2,\n          \"inclusive\": true\n        },\n        \"unit\": \"week\",\n        \"text_source_id\": 2\n      },\n      \"relative_slope_scope_condition\": {\n        \"min\": {\n          \"value\": 80,\n          \"inclusive\": true\n        },\n        \"text_source_id\": 3\n      }\n    },\n    {\n      \"category\": {\n        \"category\": \"down\",\n        \"text_source_id\": 5\n      },\n      \"relative_slope_scope_condition\": {\n        \"max\": {\n          \"value\": 20,\n          \"inclusive\": true\n        },\n        \"text_source_id\": 4\n      }\n    }\n  ],\n  \"single_relations\": [],\n  \"trend_groups\": [],\n  \"group_relations\": []\n}",
+      "attempts": [
+        {
+          "attempt": 1,
+          "parse_error": "invalid_json: Expecting ',' delimiter: line 51 column 6 (char 951)",
+          "raw_response": "{\n  \"original_text\": \"Search AMZN for intervals with an upward trend of about two weeks that is sharp, followed by a gentle fall.\",\n  \"text_sources\": [\n    {\n      \"text\": \"AMZN\"\n    },\n    {\n      \"text\": \"upward trend\"\n    },\n    {\n      \"text\": \"about two weeks\"\n    },\n    {\n      \"text\": \"sharp\"\n    },\n    {\n      \"text\": \"gentle fall\"\n    }\n  ],\n  \"targets\": [\n    {\n      \"target\": \"AMZN\",\n      \"text_source_id\": 0\n    }\n  ],\n  \"trends\": [\n    {\n      \"category\": {\n        \"category\": \"up\",\n        \"text_source_id\": 1\n      },\n      \"duration_condition\": {\n        \"min\": {\n          \"value\": 1.8,\n          \"inclusive\": true\n        },\n        \"max\": {\n          \"value\": 2.2,\n          \"inclusive\": true\n        },\n        \"unit\": \"week\",\n        \"text_source_id\": 2\n      },\n      \"relative_slope_scope_condition\": {\n        \"min\": {\n          \"value\": 80,\n          \"inclusive\": true\n        },\n        \"text_source_id\": 3\n      }\n    },\n    {\n      \"category\": {\n        \"category\": \"down\",\n        \"text_source_id\": 4\n"
+        },
+        {
+          "attempt": 2,
+          "parse_error": null,
+          "raw_response": "{\n  \"original_text\": \"Search AMZN for intervals with an upward trend of about two weeks that is sharp, followed by a gentle fall.\",\n  \"text_sources\": [\n    {\n      \"text\": \"AMZN\"\n    },\n    {\n      \"text\": \"upward trend\"\n    },\n    {\n      \"text\": \"about two weeks\"\n    },\n    {\n      \"text\": \"sharp\"\n    },\n    {\n      \"text\": \"gentle\"\n    },\n    {\n      \"text\": \"fall\"\n    }\n  ],\n  \"targets\": [\n    {\n      \"target\": \"AMZN\",\n      \"text_source_id\": 0\n    }\n  ],\n  \"trends\": [\n    {\n      \"category\": {\n        \"category\": \"up\",\n        \"text_source_id\": 1\n      },\n      \"duration_condition\": {\n        \"min\": {\n          \"value\": 1.8,\n          \"inclusive\": true\n        },\n        \"max\": {\n          \"value\": 2.2,\n          \"inclusive\": true\n        },\n        \"unit\": \"week\",\n        \"text_source_id\": 2\n      },\n      \"relative_slope_scope_condition\": {\n        \"min\": {\n          \"value\": 80,\n          \"inclusive\": true\n        },\n        \"text_source_id\": 3\n      }\n    },\n    {\n      \"category\": {\n        \"category\": \"down\",\n        \"text_source_id\": 5\n      },\n      \"relative_slope_scope_condition\": {\n        \"max\": {\n          \"value\": 20,\n          \"inclusive\": true\n        },\n        \"text_source_id\": 4\n      }\n    }\n  ],\n  \"single_relations\": [],\n  \"trend_groups\": [],\n  \"group_relations\": []\n}"
+        }
+      ]
+    },
+    {
+      "case_id": "explicit_multi_relation",
+      "source": "parser_feature",
+      "intent": "Explicit relation query over repeated rising trends.",
+      "variant_index": 1,
+      "query": "Find a pattern that rises, then rises again with a smaller relative slope than the first rise, and then rises once more with a duration approximately equal to the first rise.",
+      "passed": true,
+      "format_valid": true,
+      "attempt_count": 1,
+      "failures": [],
+      "failure_class": "pass",
+      "normalized": {
+        "targets": [],
+        "trends": [
+          "up",
+          "up",
+          "up"
+        ],
+        "single_relations": [
+          [
+            0,
+            1,
+            "relative_slope",
+            ">"
+          ],
+          [
+            0,
+            2,
+            "duration",
+            "~="
+          ]
+        ],
+        "group_relations": [],
+        "raw": {
+          "original_text": "Find a pattern that rises, then rises again with a smaller relative slope than the first rise, and then rises once more with a duration approximately equal to the first rise.",
+          "text_sources": [
+            {
+              "text": "rises",
+              "index": 0
+            },
+            {
+              "text": "rises again with a smaller relative slope than the first rise",
+              "index": 0
+            },
+            {
+              "text": "rises once more with a duration approximately equal to the first rise",
+              "index": 0
+            }
+          ],
+          "targets": [],
+          "trends": [
+            {
+              "category": {
+                "category": "up",
+                "text_source_id": 0
+              }
+            },
+            {
+              "category": {
+                "category": "up",
+                "text_source_id": 1
+              }
+            },
+            {
+              "category": {
+                "category": "up",
+                "text_source_id": 2
+              }
+            }
+          ],
+          "single_relations": [
+            {
+              "id1": 0,
+              "id2": 1,
+              "attribute": "relative_slope",
+              "comparator": ">",
+              "text_source_id": 1
+            },
+            {
+              "id1": 0,
+              "id2": 2,
+              "attribute": "duration",
+              "comparator": "~=",
+              "text_source_id": 2
+            }
+          ],
+          "trend_groups": [],
+          "group_relations": []
+        }
+      },
+      "parsed": {
+        "original_text": "Find a pattern that rises, then rises again with a smaller relative slope than the first rise, and then rises once more with a duration approximately equal to the first rise.",
+        "text_sources": [
+          {
+            "text": "rises",
+            "index": 0
+          },
+          {
+            "text": "rises again with a smaller relative slope than the first rise",
+            "index": 0
+          },
+          {
+            "text": "rises once more with a duration approximately equal to the first rise",
+            "index": 0
+          }
+        ],
+        "targets": [],
+        "trends": [
+          {
+            "category": {
+              "category": "up",
+              "text_source_id": 0
+            }
+          },
+          {
+            "category": {
+              "category": "up",
+              "text_source_id": 1
+            }
+          },
+          {
+            "category": {
+              "category": "up",
+              "text_source_id": 2
+            }
+          }
+        ],
+        "single_relations": [
+          {
+            "id1": 0,
+            "id2": 1,
+            "attribute": "relative_slope",
+            "comparator": ">",
+            "text_source_id": 1
+          },
+          {
+            "id1": 0,
+            "id2": 2,
+            "attribute": "duration",
+            "comparator": "~=",
+            "text_source_id": 2
+          }
+        ],
+        "trend_groups": [],
+        "group_relations": []
+      },
+      "raw_response": "{\n  \"original_text\": \"Find a pattern that rises, then rises again with a smaller relative slope than the first rise, and then rises once more with a duration approximately equal to the first rise.\",\n  \"text_sources\": [\n    {\n      \"text\": \"rises\"\n    },\n    {\n      \"text\": \"rises again with a smaller relative slope than the first rise\"\n    },\n    {\n      \"text\": \"rises once more with a duration approximately equal to the first rise\"\n    }\n  ],\n  \"targets\": [],\n  \"trends\": [\n    {\n      \"category\": {\n        \"category\": \"up\",\n        \"text_source_id\": 0\n      }\n    },\n    {\n      \"category\": {\n        \"category\": \"up\",\n        \"text_source_id\": 1\n      }\n    },\n    {\n      \"category\": {\n        \"category\": \"up\",\n        \"text_source_id\": 2\n      }\n    }\n  ],\n  \"single_relations\": [\n    {\n      \"id1\": 0,\n      \"id2\": 1,\n      \"attribute\": \"relative_slope\",\n      \"comparator\": \">\",\n      \"text_source_id\": 1\n    },\n    {\n      \"id1\": 0,\n      \"id2\": 2,\n      \"attribute\": \"duration\",\n      \"comparator\": \"~=\",\n      \"text_source_id\": 2\n    }\n  ],\n  \"trend_groups\": [],\n  \"group_relations\": []\n}",
+      "attempts": [
+        {
+          "attempt": 1,
+          "parse_error": null,
+          "raw_response": "{\n  \"original_text\": \"Find a pattern that rises, then rises again with a smaller relative slope than the first rise, and then rises once more with a duration approximately equal to the first rise.\",\n  \"text_sources\": [\n    {\n      \"text\": \"rises\"\n    },\n    {\n      \"text\": \"rises again with a smaller relative slope than the first rise\"\n    },\n    {\n      \"text\": \"rises once more with a duration approximately equal to the first rise\"\n    }\n  ],\n  \"targets\": [],\n  \"trends\": [\n    {\n      \"category\": {\n        \"category\": \"up\",\n        \"text_source_id\": 0\n      }\n    },\n    {\n      \"category\": {\n        \"category\": \"up\",\n        \"text_source_id\": 1\n      }\n    },\n    {\n      \"category\": {\n        \"category\": \"up\",\n        \"text_source_id\": 2\n      }\n    }\n  ],\n  \"single_relations\": [\n    {\n      \"id1\": 0,\n      \"id2\": 1,\n      \"attribute\": \"relative_slope\",\n      \"comparator\": \">\",\n      \"text_source_id\": 1\n    },\n    {\n      \"id1\": 0,\n      \"id2\": 2,\n      \"attribute\": \"duration\",\n      \"comparator\": \"~=\",\n      \"text_source_id\": 2\n    }\n  ],\n  \"trend_groups\": [],\n  \"group_relations\": []\n}"
+        }
+      ]
+    },
+    {
+      "case_id": "explicit_multi_relation",
+      "source": "parser_feature",
+      "intent": "Explicit relation query over repeated rising trends.",
+      "variant_index": 2,
+      "query": "Look for three rising trends where the second rise is less steep in relative slope than the first, and the third rise lasts about as long as the first.",
+      "passed": true,
+      "format_valid": true,
+      "attempt_count": 1,
+      "failures": [],
+      "failure_class": "pass",
+      "normalized": {
+        "targets": [],
+        "trends": [
+          "up",
+          "up",
+          "up"
+        ],
+        "single_relations": [
+          [
+            0,
+            1,
+            "relative_slope",
+            ">"
+          ],
+          [
+            0,
+            2,
+            "duration",
+            "~="
+          ]
+        ],
+        "group_relations": [],
+        "raw": {
+          "original_text": "Look for three rising trends where the second rise is less steep in relative slope than the first, and the third rise lasts about as long as the first.",
+          "text_sources": [
+            {
+              "text": "three rising trends",
+              "index": 0
+            },
+            {
+              "text": "second rise is less steep in relative slope than the first",
+              "index": 0
+            },
+            {
+              "text": "third rise lasts about as long as the first",
+              "index": 0
+            }
+          ],
+          "targets": [],
+          "trends": [
+            {
+              "category": {
+                "category": "up",
+                "text_source_id": 0
+              }
+            },
+            {
+              "category": {
+                "category": "up",
+                "text_source_id": 0
+              }
+            },
+            {
+              "category": {
+                "category": "up",
+                "text_source_id": 0
+              }
+            }
+          ],
+          "single_relations": [
+            {
+              "id1": 1,
+              "id2": 0,
+              "attribute": "relative_slope",
+              "comparator": "<",
+              "text_source_id": 1
+            },
+            {
+              "id1": 2,
+              "id2": 0,
+              "attribute": "duration",
+              "comparator": "~=",
+              "text_source_id": 2
+            }
+          ],
+          "trend_groups": [],
+          "group_relations": []
+        }
+      },
+      "parsed": {
+        "original_text": "Look for three rising trends where the second rise is less steep in relative slope than the first, and the third rise lasts about as long as the first.",
+        "text_sources": [
+          {
+            "text": "three rising trends",
+            "index": 0
+          },
+          {
+            "text": "second rise is less steep in relative slope than the first",
+            "index": 0
+          },
+          {
+            "text": "third rise lasts about as long as the first",
+            "index": 0
+          }
+        ],
+        "targets": [],
+        "trends": [
+          {
+            "category": {
+              "category": "up",
+              "text_source_id": 0
+            }
+          },
+          {
+            "category": {
+              "category": "up",
+              "text_source_id": 0
+            }
+          },
+          {
+            "category": {
+              "category": "up",
+              "text_source_id": 0
+            }
+          }
+        ],
+        "single_relations": [
+          {
+            "id1": 1,
+            "id2": 0,
+            "attribute": "relative_slope",
+            "comparator": "<",
+            "text_source_id": 1
+          },
+          {
+            "id1": 2,
+            "id2": 0,
+            "attribute": "duration",
+            "comparator": "~=",
+            "text_source_id": 2
+          }
+        ],
+        "trend_groups": [],
+        "group_relations": []
+      },
+      "raw_response": "{\n  \"original_text\": \"Look for three rising trends where the second rise is less steep in relative slope than the first, and the third rise lasts about as long as the first.\",\n  \"text_sources\": [\n    {\n      \"text\": \"three rising trends\"\n    },\n    {\n      \"text\": \"second rise is less steep in relative slope than the first\"\n    },\n    {\n      \"text\": \"third rise lasts about as long as the first\"\n    }\n  ],\n  \"targets\": [],\n  \"trends\": [\n    {\n      \"category\": {\n        \"category\": \"up\",\n        \"text_source_id\": 0\n      }\n    },\n    {\n      \"category\": {\n        \"category\": \"up\",\n        \"text_source_id\": 0\n      }\n    },\n    {\n      \"category\": {\n        \"category\": \"up\",\n        \"text_source_id\": 0\n      }\n    }\n  ],\n  \"single_relations\": [\n    {\n      \"id1\": 1,\n      \"id2\": 0,\n      \"attribute\": \"relative_slope\",\n      \"comparator\": \"<\",\n      \"text_source_id\": 1\n    },\n    {\n      \"id1\": 2,\n      \"id2\": 0,\n      \"attribute\": \"duration\",\n      \"comparator\": \"~=\",\n      \"text_source_id\": 2\n    }\n  ],\n  \"trend_groups\": [],\n  \"group_relations\": []\n}",
+      "attempts": [
+        {
+          "attempt": 1,
+          "parse_error": null,
+          "raw_response": "{\n  \"original_text\": \"Look for three rising trends where the second rise is less steep in relative slope than the first, and the third rise lasts about as long as the first.\",\n  \"text_sources\": [\n    {\n      \"text\": \"three rising trends\"\n    },\n    {\n      \"text\": \"second rise is less steep in relative slope than the first\"\n    },\n    {\n      \"text\": \"third rise lasts about as long as the first\"\n    }\n  ],\n  \"targets\": [],\n  \"trends\": [\n    {\n      \"category\": {\n        \"category\": \"up\",\n        \"text_source_id\": 0\n      }\n    },\n    {\n      \"category\": {\n        \"category\": \"up\",\n        \"text_source_id\": 0\n      }\n    },\n    {\n      \"category\": {\n        \"category\": \"up\",\n        \"text_source_id\": 0\n      }\n    }\n  ],\n  \"single_relations\": [\n    {\n      \"id1\": 1,\n      \"id2\": 0,\n      \"attribute\": \"relative_slope\",\n      \"comparator\": \"<\",\n      \"text_source_id\": 1\n    },\n    {\n      \"id1\": 2,\n      \"id2\": 0,\n      \"attribute\": \"duration\",\n      \"comparator\": \"~=\",\n      \"text_source_id\": 2\n    }\n  ],\n  \"trend_groups\": [],\n  \"group_relations\": []\n}"
+        }
+      ]
+    },
+    {
+      "case_id": "explicit_multi_relation",
+      "source": "parser_feature",
+      "intent": "Explicit relation query over repeated rising trends.",
+      "variant_index": 3,
+      "query": "Find intervals with an initial rise, a second rise with a smaller relative slope, and a third rise whose duration is approximately equal to the first rise.",
+      "passed": true,
+      "format_valid": true,
+      "attempt_count": 1,
+      "failures": [],
+      "failure_class": "pass",
+      "normalized": {
+        "targets": [],
+        "trends": [
+          "up",
+          "up",
+          "up"
+        ],
+        "single_relations": [
+          [
+            0,
+            1,
+            "relative_slope",
+            ">"
+          ],
+          [
+            0,
+            2,
+            "duration",
+            "~="
+          ]
+        ],
+        "group_relations": [],
+        "raw": {
+          "original_text": "Find intervals with an initial rise, a second rise with a smaller relative slope, and a third rise whose duration is approximately equal to the first rise.",
+          "text_sources": [
+            {
+              "text": "initial rise",
+              "index": 0
+            },
+            {
+              "text": "second rise with a smaller relative slope",
+              "index": 0
+            },
+            {
+              "text": "third rise whose duration is approximately equal to the first rise",
+              "index": 0
+            }
+          ],
+          "targets": [],
+          "trends": [
+            {
+              "category": {
+                "category": "up",
+                "text_source_id": 0
+              }
+            },
+            {
+              "category": {
+                "category": "up",
+                "text_source_id": 1
+              }
+            },
+            {
+              "category": {
+                "category": "up",
+                "text_source_id": 2
+              }
+            }
+          ],
+          "single_relations": [
+            {
+              "id1": 0,
+              "id2": 1,
+              "attribute": "relative_slope",
+              "comparator": ">",
+              "text_source_id": 1
+            },
+            {
+              "id1": 0,
+              "id2": 2,
+              "attribute": "duration",
+              "comparator": "~=",
+              "text_source_id": 2
+            }
+          ],
+          "trend_groups": [],
+          "group_relations": []
+        }
+      },
+      "parsed": {
+        "original_text": "Find intervals with an initial rise, a second rise with a smaller relative slope, and a third rise whose duration is approximately equal to the first rise.",
+        "text_sources": [
+          {
+            "text": "initial rise",
+            "index": 0
+          },
+          {
+            "text": "second rise with a smaller relative slope",
+            "index": 0
+          },
+          {
+            "text": "third rise whose duration is approximately equal to the first rise",
+            "index": 0
+          }
+        ],
+        "targets": [],
+        "trends": [
+          {
+            "category": {
+              "category": "up",
+              "text_source_id": 0
+            }
+          },
+          {
+            "category": {
+              "category": "up",
+              "text_source_id": 1
+            }
+          },
+          {
+            "category": {
+              "category": "up",
+              "text_source_id": 2
+            }
+          }
+        ],
+        "single_relations": [
+          {
+            "id1": 0,
+            "id2": 1,
+            "attribute": "relative_slope",
+            "comparator": ">",
+            "text_source_id": 1
+          },
+          {
+            "id1": 0,
+            "id2": 2,
+            "attribute": "duration",
+            "comparator": "~=",
+            "text_source_id": 2
+          }
+        ],
+        "trend_groups": [],
+        "group_relations": []
+      },
+      "raw_response": "{\"original_text\":\"Find intervals with an initial rise, a second rise with a smaller relative slope, and a third rise whose duration is approximately equal to the first rise.\",\"text_sources\":[{\"text\":\"initial rise\"},{\"text\":\"second rise with a smaller relative slope\"},{\"text\":\"third rise whose duration is approximately equal to the first rise\"}],\"targets\":[],\"trends\":[{\"category\":{\"category\":\"up\",\"text_source_id\":0}},{\"category\":{\"category\":\"up\",\"text_source_id\":1}},{\"category\":{\"category\":\"up\",\"text_source_id\":2}}],\"single_relations\":[{\"id1\":0,\"id2\":1,\"attribute\":\"relative_slope\",\"comparator\":\">\",\"text_source_id\":1},{\"id1\":0,\"id2\":2,\"attribute\":\"duration\",\"comparator\":\"~=\",\"text_source_id\":2}],\"trend_groups\":[],\"group_relations\":[]}",
+      "attempts": [
+        {
+          "attempt": 1,
+          "parse_error": null,
+          "raw_response": "{\"original_text\":\"Find intervals with an initial rise, a second rise with a smaller relative slope, and a third rise whose duration is approximately equal to the first rise.\",\"text_sources\":[{\"text\":\"initial rise\"},{\"text\":\"second rise with a smaller relative slope\"},{\"text\":\"third rise whose duration is approximately equal to the first rise\"}],\"targets\":[],\"trends\":[{\"category\":{\"category\":\"up\",\"text_source_id\":0}},{\"category\":{\"category\":\"up\",\"text_source_id\":1}},{\"category\":{\"category\":\"up\",\"text_source_id\":2}}],\"single_relations\":[{\"id1\":0,\"id2\":1,\"attribute\":\"relative_slope\",\"comparator\":\">\",\"text_source_id\":1},{\"id1\":0,\"id2\":2,\"attribute\":\"duration\",\"comparator\":\"~=\",\"text_source_id\":2}],\"trend_groups\":[],\"group_relations\":[]}"
+        }
+      ]
+    }
+  ]
+}
