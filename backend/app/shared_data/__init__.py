@@ -2,7 +2,7 @@ from typing import List, Optional
 import pandas as pd
 
 from ..ai_agent import myAIClient
-from ..ai_agent.constant import Platforms, Qwen, GroqPlatform, Aichina
+from ..ai_agent.constant import VAPI, Platforms, Qwen, GroqPlatform, Aichina
 from ..ai_agent.prompts import parse_nl_system_prompt, modify_nl_system_prompt
 from ..MyTypes import ApproximationSegmentsContainer, DatasetInfo
 
@@ -53,8 +53,8 @@ approximation_segments_containers_container = APPROXIMATION_SEGMENTS_CONTAINERS_
 # modify_nl_agent = myAIClient(model=Aichina.MODELS.CLAUDE3_5, platform=Platforms.AICHINA)
 # parse_nl_agent = myAIClient(model="gpt-4o", platform=Platforms.AICHINA)
 # modify_nl_agent = myAIClient(model="gpt-4o", platform=Platforms.AICHINA)
-parse_nl_agent = myAIClient(model=Aichina.MODELS.GEMINI2_5, platform=Platforms.AICHINA)
-modify_nl_agent = myAIClient(model=Aichina.MODELS.GEMINI2_5, platform=Platforms.AICHINA)
+# parse_nl_agent = myAIClient(model=Aichina.MODELS.GEMINI2_5, platform=Platforms.AICHINA)
+# modify_nl_agent = myAIClient(model=Aichina.MODELS.GEMINI2_5, platform=Platforms.AICHINA)
 # parse_nl_agent = myAIClient(model="qwen-plus", platform=Platforms.QWEN)
 # modify_nl_agent = myAIClient(model="qwen-plus", platform=Platforms.QWEN)
 # parse_nl_agent = myAIClient(model="qwen-turbo-latest", platform=Platforms.QWEN)
@@ -65,5 +65,7 @@ modify_nl_agent = myAIClient(model=Aichina.MODELS.GEMINI2_5, platform=Platforms.
 # modify_nl_agent = myAIClient(model=GroqPlatform.MODELS.LLAMA3_3, platform=Platforms.GROQ)
 # parse_nl_agent = myAIClient(model=GroqPlatform.MODELS.QWEN2_5_32B, platform=Platforms.GROQ)
 # modify_nl_agent = myAIClient(model=GroqPlatform.MODELS.QWEN2_5_32B, platform=Platforms.GROQ)
+parse_nl_agent = myAIClient(model=VAPI.MODELS.GEMINI_3_5_FLASH, platform=Platforms.VAPI)
+modify_nl_agent = myAIClient(model=VAPI.MODELS.GEMINI_3_5_FLASH, platform=Platforms.VAPI)
 parse_nl_agent.set_system_prompt(parse_nl_system_prompt)
 modify_nl_agent.set_system_prompt(modify_nl_system_prompt)

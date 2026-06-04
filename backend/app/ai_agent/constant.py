@@ -12,6 +12,7 @@ class Platforms:
     GROQ = "groq"
     OLLAMA = "ollama"
     AICHINA = "aichina"
+    VAPI = "vapi"
 
 
 class Azure:
@@ -90,6 +91,12 @@ class Aichina:
         GEMINI2_0 = "gemini-2.0-flash"
         GEMINI2_5 = "gemini-2.5-flash-lite-preview-06-17"
 
+class VAPI:
+    API_KEY = "sk-Xni8Eqoo20RyRaoa0d8e3d7b50054eEe8bD7370eEf445a9c"
+    BASE_URL = "https://api.v36.cm/v1/"
+
+    class MODELS:
+        GEMINI_3_5_FLASH = "gemini-3.5-flash"
 
 PROMPT_SPLITTER = "\n\n"
 NOW = datetime.now().strftime("%Y-%m-%d")
