@@ -2,3 +2,8 @@ __pycache__/
 backend/server.py
 uploads/
 data/
+
+# Local API credentials
+.env
+.env.*
+!.env.example

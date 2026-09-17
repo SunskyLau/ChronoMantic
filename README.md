@@ -21,10 +21,16 @@ ChronoMantic consists of:
 - Node.js 16+
 - npm/yarn package manager
 
+### API Configuration
+
+Copy `.env.example` to `.env` in the repository root and fill in the API keys for the providers you use. The backend loads this file automatically; existing environment variables take precedence.
+
+The local `.env` file is excluded from Git. Provider variable names are listed in `.env.example`.
+
 ### Backend Setup
 ```bash
 cd backend
-pip install flask flask-cors pandas numpy scipy matplotlib groq openai typeguard pydantic
+pip install flask flask-cors pandas numpy scipy matplotlib groq openai typeguard pydantic python-dotenv
 python run.py
 ```
 

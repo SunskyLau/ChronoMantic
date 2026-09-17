@@ -1,4 +1,11 @@
+import os
 from datetime import datetime
+from pathlib import Path
+
+from dotenv import load_dotenv
+
+
+load_dotenv(Path(__file__).resolve().parents[3] / ".env", override=False, interpolate=False)
 
 FUZZY_FACTOR = 0.1
 
@@ -16,7 +23,7 @@ class Platforms:
 
 
 class Azure:
-    API_KEY = "c1812815d31d45aa9b450a22fc875845"
+    API_KEY = os.getenv("CHRONOMANTIC_AZURE_API_KEY", "")
     ENDPOINT = "https://idg-oai.openai.azure.com/"
     API_VERSION = "2024-11-01-preview"
 
@@ -26,7 +33,7 @@ class Azure:
 
 
 class DeepSeek:
-    API_KEY = "sk-8afa35e69734436e88fec6fb5191e954"
+    API_KEY = os.getenv("CHRONOMANTIC_DEEPSEEK_API_KEY", "")
     BASE_URL = "https://api.deepseek.com"
 
     class MODELS:
@@ -35,7 +42,7 @@ class DeepSeek:
 
 
 class SiliconFlow:
-    API_KEY = "sk-vjgfhfunedghhljnnwfdpvnheuppfktpbxvczttcmygtukxh"
+    API_KEY = os.getenv("CHRONOMANTIC_SILICONFLOW_API_KEY", "")
     BASE_URL = "https://api.siliconflow.cn/v1"
 
     class MODELS:
@@ -43,7 +50,7 @@ class SiliconFlow:
 
 
 class Qwen:
-    API_KEY = "sk-36a33471d5da4a468e5121c7273c133d"
+    API_KEY = os.getenv("CHRONOMANTIC_QWEN_API_KEY", "")
     BASE_URL = "https://dashscope.aliyuncs.com/compatible-mode/v1"
 
     class MODELS:
@@ -54,7 +61,7 @@ class Qwen:
 
 
 class Tencent:
-    API_KEY = "sk-bWgXpqCRfyC108ugmWMAV8c8mlc9FORV4x7jszWforXf5RPJ"
+    API_KEY = os.getenv("CHRONOMANTIC_TENCENT_API_KEY", "")
     BASE_URL = "https://api.lkeap.cloud.tencent.com/v1"
 
     class MODELS:
@@ -62,8 +69,7 @@ class Tencent:
 
 
 class GroqPlatform:
-    # API_KEY = "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"
-    API_KEY = "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"
+    API_KEY = os.getenv("CHRONOMANTIC_GROQ_API_KEY", "")
     BASE_URL = "https://api.groq.com/v1"
 
     class MODELS:
@@ -73,7 +79,7 @@ class GroqPlatform:
 
 class Ollama:
     BASE_URL = "http://localhost:11434/v1"
-    API_KEY = "ollama"
+    API_KEY = os.getenv("CHRONOMANTIC_OLLAMA_API_KEY", "ollama")
 
     class MODELS:
         LLAMA3_3 = "llama3.3:70b-it-8192"
@@ -82,7 +88,7 @@ class Ollama:
 
 
 class Aichina:
-    API_KEY = "sk-OMUICYXF9CtERDFhPLDHnTvRqJ2P9QRqlE2Vvge9Qg9dihAC"
+    API_KEY = os.getenv("CHRONOMANTIC_AICHINA_API_KEY", "")
     BASE_URL = "https://ai.api.xn--fiqs8s/v1"
 
     class MODELS:
@@ -92,7 +98,7 @@ class Aichina:
         GEMINI2_5 = "gemini-2.5-flash-lite-preview-06-17"
 
 class VAPI:
-    API_KEY = "sk-Xni8Eqoo20RyRaoa0d8e3d7b50054eEe8bD7370eEf445a9c"
+    API_KEY = os.getenv("CHRONOMANTIC_VAPI_API_KEY", "")
     BASE_URL = "https://api.v36.cm/v1/"
 
     class MODELS:
